@@ -28,7 +28,8 @@ These are locked by Step 1 and the provided INFRAOS prompts:
 | C-012 | Audit logs are not editable by normal users |
 | C-013 | Version 1 is a 45–60 day university/portfolio/production-style delivery, not a live national system-of-record |
 | C-014 | Later prompts lock a **Sri Lankan** government/infrastructure orientation |
-| C-015 | No application feature code in Steps 1–3 (this repository currently has prompts only) |
+| C-015 | No application feature code in Steps 1–3 |
+| C-016 | Step 2 technology lock: Next.js App Router, Express+TS, MongoDB Atlas+Mongoose, MapLibre, JWT+refresh cookie, FastAPI AI, Qdrant, Cloudflare R2, Vercel+Render (see `/docs/architecture` and `/docs/adr`) |
 
 ---
 
@@ -42,15 +43,15 @@ Used so architecture can proceed. Challenge them in later steps if evidence appe
 | A-002 | English UI is acceptable for V1 | Academic/portfolio audience; languages are P2/open |
 | A-003 | One MongoDB cluster is the system of record | Matches locked stack; PostGIS is a future revisit |
 | A-004 | Demo users and passwords in a seed script are acceptable for evaluation, not production | Must never commit production secrets |
-| A-005 | OpenStreetMap-compatible tiles are acceptable for maps | Later prompts prefer MapLibre |
+| A-005 | OpenStreetMap-compatible tiles are acceptable for maps | Locked MapLibre + OSM in ADR-009 |
 | A-006 | Email delivery may be delayed to P1/P2; in-app status is enough for P0 | Core story does not need SMTP |
 | A-007 | “National” means Sri Lanka-style public works, not multi-country | Aligns with Steps 4–12 locked context |
 | A-008 | Six team members can own modules in parallel if API/auth/DB standards are shared | Stated in prompts |
 | A-009 | Citizens can report issues with a tracking id; a full citizen identity provider is not P0 | P1 portal |
 | A-010 | Conflict severity rules will be a documented deterministic table in a later RoadSync step | Step 1 only requires that rules exist and are server-side |
-| A-011 | A single primary file storage provider will be chosen in Step 2 | Step 1 does not pick Cloudinary vs S3 vs Supabase |
-| A-012 | Vector store for RAG will be chosen in Step 2 | One store only, later |
-| A-013 | Refresh-cookie auth across Vercel + API host will need explicit CORS/cookie domain design in Step 2/3 | Known deployment coupling, not a product-scope change |
+| A-011 | ~~Storage vendor in Step 2~~ **Closed:** Cloudflare R2 (S3 API); local disk/MinIO in dev ([ADR-010](../adr/ADR-010-file-storage-provider.md)) | — |
+| A-012 | ~~Vector store in Step 2~~ **Closed:** Qdrant only ([ADR-011](../adr/ADR-011-rag-vector-store.md)) | — |
+| A-013 | ~~Cookie/CORS design in Step 2/3~~ **Closed for V1 topology:** Vercel + Render are cross-site; refresh cookie `SameSite=None; Secure; HttpOnly` + CORS/Origin allowlist ([security-decisions.md](../architecture/security-decisions.md)). Custom domains remain a future simplification. | — |
 
 ---
 
@@ -61,11 +62,11 @@ These need answers in later steps or from the team leader. They do **not** block
 | ID | Question | Suggested owner | Target step |
 |----|----------|-----------------|-------------|
 | Q-001 | Exact signup policy: public self-register vs admin-provisioned staff only? | Team leader | Step 4 / identity implementation |
-| Q-002 | Is email verification mandatory before any staff login? | Team leader | Step 2/10 |
+| Q-002 | Is email verification mandatory before any staff login? (Mechanism is P1; policy still open.) | Team leader | Step 4 / identity |
 | Q-003 | Which conflicts are **blocking** vs informational? | Team leader + RoadSync | RoadSync rules step |
 | Q-004 | Are inspections mandatory before COMPLETED for all projects or only flagged projects? | Team leader | Inspection + ProjectTrace |
 | Q-005 | Citizen auth: anonymous + tracking secret vs mandatory account? | Citizen module owner | Citizen implementation |
-| Q-006 | Production domain split (frontend vs API) and cookie `SameSite` strategy? | Team leader | Step 2/3 deployment |
+| Q-006 | ~~Cookie SameSite strategy?~~ **Closed (V1):** cross-origin Vercel→Render, `SameSite=None` + Origin allowlist. Custom first-party domains still optional later. | — | Done Step 2 |
 | Q-007 | Official agency names in seed data vs generic “Road Authority A”? | Whole team | Seed/demo step |
 | Q-008 | Will supervisors require Sinhala/Tamil in V1? | Team leader | P2 unless mandated |
 | Q-009 | Budget currency display (LKR) and decimal rules? | Finance owner | Finance schema |
@@ -78,7 +79,7 @@ These need answers in later steps or from the team leader. They do **not** block
 
 | ID | Decision | Why not now |
 |----|----------|-------------|
-| D-001 | Exact technology versions, vector DB, storage vendor, hosting vendor | Step 2 ADRs |
+| D-001 | ~~Vendors/versions~~ **Closed:** majors in [technology-stack.md](../architecture/technology-stack.md); patch versions at scaffold (Step 7+) | — |
 | D-002 | Detailed RBAC permission matrix | Step 4 |
 | D-003 | Full page/route map and navigation IA | Step 5 |
 | D-004 | Git branching and team workflow | Step 6 |
@@ -87,7 +88,7 @@ These need answers in later steps or from the team leader. They do **not** block
 | D-007 | Visual design tokens (see inconsistency INC-001) | Design system / Step 5–8 |
 | D-008 | Precise conflict distance thresholds (meters) and work-type severity matrix | RoadSync implementation step |
 | D-009 | Whether work requests can exist without a parent project | Architecture Step 3 / RoadSync |
-| D-010 | Password hashing algorithm (Argon2id vs bcrypt) | Step 2 security decisions |
+| D-010 | ~~Argon2id vs bcrypt~~ **Closed for V1:** bcryptjs cost 12 (Windows-portable). Revisit Argon2id per ADR-006. | — |
 
 ---
 
@@ -118,9 +119,10 @@ Step 1 instruction: if existing files disagree, **document** rather than hide a 
 | Source | State |
 |--------|--------|
 | Intended architecture | Next.js, Express, MongoDB, etc. |
-| This repository today | Only `/Prompts/*.md`; no `package.json`, no `/docs` before this step, **not a git repository** |
+| After Step 1 | Planning docs + Prompts; no `package.json` |
+| After user push | GitHub remote `main` exists; still no application scaffold |
 
-**Step 1 decision:** Planning-only. Do not scaffold apps here. Git initialization is a later step (prompted as Step 7).
+**Step 1 decision (updated Step 2):** Still **no application feature code** until later steps. Git exists; full workspace init remains Step 7. Do not treat missing `package.json` as a conflict with the locked stack.
 
 ### INC-004 — Wrapper vs Step 1 “no application code”
 
@@ -167,15 +169,16 @@ These must be handled in later implementation. They are logged now so they are n
 | R-001 | Team builds P1 AI/RAG before RoadSync P0 | Core differentiator missing | Priority gate in [mvp-priorities.md](./mvp-priorities.md) |
 | R-002 | Modules become mini-apps with separate auth | Integration failure | Team leader owns identity/API standards |
 | R-003 | No real GIS data looks “fake” | Academic credibility | Honest demo data + clear README disclaimer |
-| R-004 | Cookie auth across two hosts is misconfigured | Broken login in production | Dedicated deployment/auth design in Steps 2–3 |
+| R-004 | Cookie auth across two hosts is misconfigured | Broken login in production | Locked: `SameSite=None` + CORS/Origin allowlist; verify in identity implementation |
 | R-005 | Spatial queries slow or wrong | Conflict engine untrusted | 2dsphere indexes, viewport limits, tests with fixtures |
 | R-006 | AI treated as authority | Unsafe/unethical decisions | BR-AI-* rules |
 | R-007 | Scope creep (ERP, IoT, digital twin) | Missed deadline | Scope-creep section in project-scope |
 | R-008 | Color/brand conflict causes UI churn | Rework | Resolve INC-001 in design step, once |
-| R-009 | Git not initialized yet | History starts late | Step 7; do not fake commits in Step 1 |
+| R-009 | Full monorepo not scaffolded yet | Easy to start coding in the wrong layout | Wait for Step 7; stack is documented only |
 | R-010 | Over-detailed FRs too early | Docs diverge from code | Keep FRs implementation-relevant; refine in later steps |
 | R-011 | Citizen PII in public APIs | Privacy incident | Public DTO allowlists |
 | R-012 | File storage keys leaked | Confidential document exposure | Authz on every download |
+| R-013 | Render free-tier cold starts | Slow first API/AI request in demos | Uptime pings; explain in demo script |
 
 ---
 
@@ -196,3 +199,5 @@ These must be handled in later implementation. They are logged now so they are n
 - [mvp-priorities.md](./mvp-priorities.md)
 - [business-rules.md](./business-rules.md)
 - [user-workflows.md](./user-workflows.md)
+- [../architecture/README.md](../architecture/README.md)
+- [../adr/README.md](../adr/README.md)

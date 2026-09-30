@@ -11,37 +11,35 @@ Version 1 is a **Sri Lankan public-infrastructure oriented** university / portfo
 
 ## Current status
 
-**Step 01 complete:** Final Project Requirement & Scope Lock (documentation only).
+**Step 01 complete:** Final Project Requirement & Scope Lock.  
+**Step 02 complete:** Final Technology Stack & Architecture Decisions (documentation only).
 
-No application has been scaffolded yet. Technology ADRs start in Step 2.
+No application has been scaffolded yet. Next: Step 3 (complete system architecture blueprint).
 
 This is a university group project at **South Eastern University of Sri Lanka**.
 
-## Planning source of truth
+## Documentation source of truth
 
-Start here:
+**Product:** [docs/planning/README.md](./docs/planning/README.md)  
+**Technology / ADRs:** [docs/architecture/README.md](./docs/architecture/README.md) · [docs/adr/README.md](./docs/adr/README.md)
 
-- [docs/planning/README.md](./docs/planning/README.md)
-- [docs/planning/project-scope.md](./docs/planning/project-scope.md)
-- [docs/planning/requirements.md](./docs/planning/requirements.md)
-- [docs/planning/mvp-priorities.md](./docs/planning/mvp-priorities.md)
-- [docs/planning/user-workflows.md](./docs/planning/user-workflows.md)
-- [docs/planning/business-rules.md](./docs/planning/business-rules.md)
-- [docs/planning/assumptions-risks.md](./docs/planning/assumptions-risks.md)
-
-## Intended architecture (not implemented in this step)
+## Locked architecture (not implemented yet)
 
 ```text
-Next.js + TypeScript
+Next.js (Vercel)
         ↓
-Node.js + Express + TypeScript
+Express + TypeScript (Render)
         ↓
-Business Modules
+Business modules
         ↓
-MongoDB Atlas
+MongoDB Atlas + Cloudflare R2 + OSM tiles
+        ↓
+FastAPI AI (Render) → LLM adapter + Qdrant
 ```
 
-AI (when required): Express authorizes requests, then a FastAPI service performs risk / RAG / related workloads. Core coordination must work if AI is down.
+Maps: **MapLibre GL** (not Mapbox/Leaflet as the V1 default).  
+Auth: short-lived JWT in memory + HTTP-only refresh cookie.  
+AI is optional for the P0 coordination path.
 
 ## Core P0 story
 

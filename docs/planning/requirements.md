@@ -203,7 +203,7 @@ These are realistic for a 45–60 day university / portfolio / production-style 
 ### NFR-SEC — Security
 
 - HTTPS in production.
-- Passwords hashed (Argon2id or bcrypt).
+- Passwords hashed (**bcryptjs**, cost 12, V1). Argon2id is a documented future revisit.
 - Short-lived access tokens; refresh in HTTP-only Secure cookies.
 - CORS allowlist.
 - Helmet and request size limits.
