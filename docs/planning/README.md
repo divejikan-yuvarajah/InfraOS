@@ -1,0 +1,33 @@
+# INFRAOS Planning Documents
+
+This folder is the **Step 1 source of truth** for INFRAOS product scope, requirements, priorities, workflows, business rules, and risks.
+
+Do not start application feature implementation from these documents until Steps 2–6 architecture and identity work are also accepted.
+
+## Documents
+
+| File | Purpose |
+|------|---------|
+| [project-scope.md](./project-scope.md) | Project definition, problem, users, stakeholders, modules, winning features, ownership, scope-creep protection |
+| [requirements.md](./requirements.md) | Functional requirements, non-functional requirements, lifecycle states and transitions |
+| [mvp-priorities.md](./mvp-priorities.md) | P0–P3 matrix, MVP in/out/future boundary |
+| [user-workflows.md](./user-workflows.md) | Core user journeys and workflow diagrams |
+| [business-rules.md](./business-rules.md) | Cross-module rules that later APIs and UI must obey |
+| [assumptions-risks.md](./assumptions-risks.md) | Confirmed items, assumptions, open questions, risks, documented inconsistencies |
+
+## How later steps must use this folder
+
+- Step 2+ must not silently change locked scope.
+- If a later step needs a change, update these files and record the reason.
+- P0 (ProjectTrace + RoadSync + identity + map layers + audit) outranks P1–P3.
+- AI is decision support. Core workflows must work if AI is unavailable.
+
+## Document control
+
+| Field | Value |
+|-------|--------|
+| Project | INFRAOS — National Infrastructure Intelligence & Coordination Platform |
+| Step | 01 — Final Project Requirement & Scope Lock |
+| Status | Locked for architecture (Steps 2–6) |
+| Geographic orientation | Sri Lanka (government / public infrastructure), documented in scope |
+| Application code created in this step | None |
