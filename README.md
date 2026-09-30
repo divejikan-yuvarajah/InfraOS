@@ -7,11 +7,15 @@ INFRAOS helps government agencies **plan, coordinate, approve, build, verify, mo
 
 Version 1 is a **Sri Lankan public-infrastructure oriented** university / portfolio / production-style platform. It uses **demo and seed data**. It is not a live national government system-of-record.
 
+> Connect Infrastructure. Coordinate Agencies. Build Smarter.
+
 ## Current status
 
 **Step 01 complete:** Final Project Requirement & Scope Lock (documentation only).
 
 No application has been scaffolded yet. Technology ADRs start in Step 2.
+
+This is a university group project at **South Eastern University of Sri Lanka**.
 
 ## Planning source of truth
 
@@ -46,6 +50,11 @@ Create Project → Map Project → Create Work Request
 → Detect Conflict → Coordinate Agency → Resolve Conflict
 → Track Progress → View on Map → Audit History
 ```
+
+## Team
+
+**INFRAOS Development Team**  
+South Eastern University of Sri Lanka
 
 ## Prompts
 
