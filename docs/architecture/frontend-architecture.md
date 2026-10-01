@@ -69,11 +69,12 @@ Rules:
 
 ```text
 /login
-/register          # only if Q-001 allows public signup
 /verify-email
 /forgot-password
 /reset-password
 ```
+
+Staff **self-register is not V1** (Q-001 closed in Step 4: admin-provisioned accounts). Do not ship `/register` for operational roles.
 
 ### Protected application
 

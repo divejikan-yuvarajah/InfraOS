@@ -89,7 +89,7 @@ IDOR: every `/:id` load must verify agency/assignment/public flag. List queries 
 
 Super Admin is not a daily approval bypass ([BR-AUTH-005](../planning/business-rules.md)).
 
-Permission matrix: **Step 4**.
+Permission matrix: [../security/README.md](../security/README.md) (Step 4).
 
 ---
 

@@ -2,9 +2,11 @@
 
 **Document:** `/docs/architecture/authorization-flow.md`  
 **Step:** 03  
-**Status:** Locked  
+**Status:** Locked (Step 3 flow; Step 4 matrix linked)  
 **ADR:** [ADR-007](../adr/ADR-007-rbac-resource-authorization.md)  
-**Matrix:** Step 4 (not duplicated here)
+**Matrix:** [../security/permission-matrix.md](../security/permission-matrix.md) (Step 4)  
+**Catalog:** [../security/permission-catalog.md](../security/permission-catalog.md)  
+**Resource rules:** [../security/resource-authorization.md](../security/resource-authorization.md)
 
 ---
 
@@ -40,7 +42,7 @@ Frontend nav hiding is **not** this pipeline.
 | Inspector verifies, cannot PAID payment | inspect vs finance | — | 403 |
 | Citizen GET confidential document | no | — | 404 |
 | Gov Admin list | `project.list` | ministry/agency scope in query | Scoped list |
-| Super Admin user disable | `user.admin` | platform | Allow; not used to APPROVE roads |
+| Super Admin user disable | `user.disable` | platform | Allow; not used to APPROVE roads |
 
 ---
 
@@ -52,6 +54,10 @@ MongoDB filter **includes** `agencyId` / assignment / public flag. Never fetch a
 
 ## 4. IDOR
 
-Knowing an ObjectId is not access. Private miss and private forbidden → **404** by default.
+Knowing an ObjectId is not authorization. Private miss and private forbidden → **404** (`RESOURCE_SCOPE_DENIED` / `RESOURCE_NOT_ASSIGNED`).
 
 Malformed id → **400**.
+
+Capability routes the role can never use (e.g. `/admin`) → **403** `FORBIDDEN`.
+
+Codes, SoD, and catalog: [../security/README.md](../security/README.md).

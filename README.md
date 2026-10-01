@@ -13,16 +13,18 @@ Version 1 is a **Sri Lankan public-infrastructure oriented** university / portfo
 
 **Step 01 complete:** Final Project Requirement & Scope Lock.  
 **Step 02 complete:** Final Technology Stack & Architecture Decisions.  
-**Step 03 complete:** Complete System Architecture (documentation only).
+**Step 03 complete:** Complete System Architecture.  
+**Step 04 complete:** User Roles & Permission Matrix (documentation only).
 
-No application has been scaffolded yet. Next: Step 4 (user roles & permission matrix).
+No application has been scaffolded yet. Next: Step 5 (information architecture & page/route map).
 
 This is a university group project at **South Eastern University of Sri Lanka**.
 
 ## Documentation source of truth
 
 **Product:** [docs/planning/README.md](./docs/planning/README.md)  
-**Technology / ADRs:** [docs/architecture/README.md](./docs/architecture/README.md) · [docs/adr/README.md](./docs/adr/README.md)
+**Technology / ADRs:** [docs/architecture/README.md](./docs/architecture/README.md) · [docs/adr/README.md](./docs/adr/README.md)  
+**Authorization:** [docs/security/README.md](./docs/security/README.md)
 
 ## Locked architecture (not implemented yet)
 

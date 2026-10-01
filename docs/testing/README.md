@@ -23,4 +23,4 @@ Do **not** add Jest or Cypress unless an ADR supersedes this.
 
 Coverage theatre is not required.
 
-Details: [../architecture/architecture-decisions.md](../architecture/architecture-decisions.md) §8.
+Details: [../architecture/architecture-decisions.md](../architecture/architecture-decisions.md) §8. Authorization cases: [../security/rbac-test-plan.md](../security/rbac-test-plan.md).

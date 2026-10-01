@@ -2,7 +2,7 @@
 
 This folder is the **Step 1 source of truth** for INFRAOS product scope, requirements, priorities, workflows, business rules, and risks.
 
-Technology choices are locked in [../architecture/](../architecture/README.md) and [../adr/](../adr/README.md) (Step 2). Do not silently change P0–P3 or module names to match a new library.
+Technology choices are locked in [../architecture/](../architecture/README.md) and [../adr/](../adr/README.md) (Step 2). Authorization is locked in [../security/](../security/README.md) (Step 4). Do not silently change P0–P3 or module names to match a new library.
 
 Do not start application feature implementation until Steps 2–6 architecture and identity work are also accepted.
 

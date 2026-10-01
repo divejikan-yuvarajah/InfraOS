@@ -31,6 +31,7 @@ These are locked by Step 1 and the provided INFRAOS prompts:
 | C-015 | No application feature code in Steps 1–3 |
 | C-016 | Step 2 technology lock: Next.js App Router, Express+TS, MongoDB Atlas+Mongoose, MapLibre, JWT+refresh cookie, FastAPI AI, Qdrant, Cloudflare R2, Vercel+Render (see `/docs/architecture` and `/docs/adr`) |
 | C-017 | Step 3 system architecture blueprint locked: module boundaries, page map, RoadSync/ProjectTrace/InfraMap/RAG/authz flows, team ownership |
+| C-018 | Step 4 RBAC: seven roles, `resource.action` catalog, org/agency/assignment scopes, SoD (submit≠approve; contractor never verifies/pays), admin-provisioned staff, no impersonation |
 
 ---
 
@@ -62,8 +63,8 @@ These need answers in later steps or from the team leader. They do **not** block
 
 | ID | Question | Suggested owner | Target step |
 |----|----------|-----------------|-------------|
-| Q-001 | Exact signup policy: public self-register vs admin-provisioned staff only? | Team leader | Step 4 / identity implementation |
-| Q-002 | Is email verification mandatory before any staff login? (Mechanism is P1; policy still open.) | Team leader | Step 4 / identity |
+| Q-001 | ~~Staff signup?~~ **Closed:** staff are **admin-provisioned**; no public staff `/register`. | — | Done Step 4 |
+| Q-002 | Is email verification mandatory before any staff login? (Mechanism is P1; **P0 demo seeded staff may log in unverified**.) | Team leader | Identity implementation |
 | Q-003 | Which conflicts are **blocking** vs informational? | Team leader + RoadSync | RoadSync rules step |
 | Q-004 | Are inspections mandatory before COMPLETED for all projects or only flagged projects? | Team leader | Inspection + ProjectTrace |
 | Q-005 | Citizen auth: anonymous + tracking secret vs mandatory account? | Citizen module owner | Citizen implementation |
@@ -72,7 +73,7 @@ These need answers in later steps or from the team leader. They do **not** block
 | Q-008 | Will supervisors require Sinhala/Tamil in V1? | Team leader | P2 unless mandated |
 | Q-009 | Budget currency display (LKR) and decimal rules? | Finance owner | Finance schema |
 | Q-010 | How many demo cities/corridors? | Team leader | Seed data |
-| Q-011 | Is Super Admin allowed to impersonate users? (Default **no**) | Security | Step 4 |
+| Q-011 | ~~Super Admin impersonation?~~ **Closed:** **No.** | — | Done Step 4 |
 
 ---
 
@@ -81,7 +82,7 @@ These need answers in later steps or from the team leader. They do **not** block
 | ID | Decision | Why not now |
 |----|----------|-------------|
 | D-001 | ~~Vendors/versions~~ **Closed:** majors in [technology-stack.md](../architecture/technology-stack.md); patch versions at scaffold (Step 7+) | — |
-| D-002 | Detailed RBAC permission matrix | Step 4 |
+| D-002 | ~~RBAC matrix~~ **Closed:** [../security/README.md](../security/README.md) | — |
 | D-003 | Full page/route map and navigation IA | Initial routes locked in [frontend-architecture.md](../architecture/frontend-architecture.md). **Step 5** still refines IA, nav copy, and any path adjustments. |
 | D-004 | Git branching and team workflow | Step 6 |
 | D-005 | Mongoose schemas and indexes | Later database steps |
