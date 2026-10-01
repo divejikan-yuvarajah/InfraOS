@@ -1,6 +1,13 @@
 # INFRAOS database documentation
 
-**Step:** 07 placeholder  
-Mongoose field-level schemas and indexes are written when models exist (later database steps).
+**Step:** 11 — Atlas connection foundation
 
-Until then, collections and GeoJSON intent live in [../architecture/system-architecture.md](../architecture/system-architecture.md) and [ADR-004](../adr/ADR-004-mongodb-geojson.md).
+Schemas and indexes for Users / Roles / Agencies start in **Step 12**.
+
+| File | Purpose |
+|------|---------|
+| [connection.md](./connection.md) | Mongoose lifecycle, probes, pool, shutdown |
+| [../setup/mongodb-atlas.md](../setup/mongodb-atlas.md) | Atlas project, user, network, URI |
+| [../setup/environment.md](../setup/environment.md) | `MONGODB_URI`, `MONGODB_DB_NAME` |
+
+GeoJSON / `2dsphere` intent remains in [../architecture/system-architecture.md](../architecture/system-architecture.md) and [ADR-004](../adr/ADR-004-mongodb-geojson.md). Do not create project collections in this step.

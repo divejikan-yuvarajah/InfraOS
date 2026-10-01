@@ -229,9 +229,17 @@ export function loadLocalEnvFile(
   process.loadEnvFile(path);
 }
 
+export type MongoConfig = {
+  uri: string;
+  dbName: string;
+};
+
+export function isMongoConnectionString(value: string): boolean {
+  return /^mongodb(\+srv)?:\/\//i.test(value);
+}
+
 /**
- * Guard for Step 11+: automated tests must not target production data.
- * Not enforced at API startup until MongoDB is connected.
+ * Automated tests must not target production-like database names.
  */
 export function assertSafeTestDatabaseName(
   nodeEnv: NodeEnv,
@@ -249,6 +257,61 @@ export function assertSafeTestDatabaseName(
       },
     ]);
   }
+}
+
+/** Development and test processes must not silently use a `_prod` database. */
+export function assertNonProductionDatabaseName(
+  nodeEnv: NodeEnv,
+  dbName: string,
+): void {
+  if (nodeEnv !== "production" && /_prod$/i.test(dbName)) {
+    throw new EnvValidationError([
+      {
+        name: "MONGODB_DB_NAME",
+        message: "must not end with _prod outside NODE_ENV=production",
+      },
+    ]);
+  }
+}
+
+/**
+ * Required for connect, db:check, and production startup.
+ * Does not print URI values.
+ */
+export function requireMongoConfig(source: AppEnv): MongoConfig {
+  const issues: EnvIssue[] = [];
+
+  if (!source.MONGODB_URI) {
+    issues.push({
+      name: "MONGODB_URI",
+      message: "is required to connect to MongoDB",
+    });
+  } else if (!isMongoConnectionString(source.MONGODB_URI)) {
+    issues.push({
+      name: "MONGODB_URI",
+      message: "must start with mongodb:// or mongodb+srv://",
+    });
+  }
+
+  if (!source.MONGODB_DB_NAME) {
+    issues.push({
+      name: "MONGODB_DB_NAME",
+      message: "is required to connect to MongoDB",
+    });
+  }
+
+  if (issues.length > 0 || !source.MONGODB_URI || !source.MONGODB_DB_NAME) {
+    throw new EnvValidationError(issues);
+  }
+
+  const dbName = source.MONGODB_DB_NAME;
+  assertSafeTestDatabaseName(source.NODE_ENV, dbName);
+  assertNonProductionDatabaseName(source.NODE_ENV, dbName);
+
+  return {
+    uri: source.MONGODB_URI,
+    dbName,
+  };
 }
 
 export function parseEnv(
@@ -312,6 +375,20 @@ export function parseEnv(
 
   const mongodbUri = read(source, "MONGODB_URI");
   const mongodbDbName = read(source, "MONGODB_DB_NAME");
+  if (mongodbUri && !isMongoConnectionString(mongodbUri)) {
+    addIssue(
+      issues,
+      "MONGODB_URI",
+      "must start with mongodb:// or mongodb+srv://",
+    );
+  }
+  if (mongodbUri && !mongodbDbName) {
+    addIssue(
+      issues,
+      "MONGODB_DB_NAME",
+      "is required when MONGODB_URI is set",
+    );
+  }
   const accessTokenSecret = parseOptionalSecret(
     issues,
     "ACCESS_TOKEN_SECRET",

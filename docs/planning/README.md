@@ -4,7 +4,7 @@ This folder is the **Step 1 source of truth** for INFRAOS product scope, require
 
 Technology choices are locked in [../architecture/](../architecture/README.md) and [../adr/](../adr/README.md) (Step 2). Authorization is locked in [../security/](../security/README.md) (Step 4). Do not silently change P0–P3 or module names to match a new library.
 
-Do not start application feature implementation until the relevant later step. The npm workspace exists (Step 7). Next.js is Step 8. Express is Step 9. Env catalog: [../setup/environment.md](../setup/environment.md) (Step 10).
+Do not start application feature implementation until the relevant later step. The npm workspace exists (Step 7). Next.js is Step 8. Express is Step 9. Env catalog: [../setup/environment.md](../setup/environment.md) (Step 10). MongoDB Atlas connection: [../setup/mongodb-atlas.md](../setup/mongodb-atlas.md) (Step 11).
 
 ## Documents
 

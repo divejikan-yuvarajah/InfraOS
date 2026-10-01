@@ -3,5 +3,5 @@
   "compilerOptions": {
     "sourceMap": false
   },
-  "exclude": ["**/*.test.ts"]
+  "exclude": ["**/*.test.ts", "src/scripts/**"]
 }

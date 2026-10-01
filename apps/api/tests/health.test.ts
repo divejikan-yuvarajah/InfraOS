@@ -51,6 +51,27 @@ describe("GET /health", () => {
   });
 });
 
+describe("GET /api/v1/ready", () => {
+  it("returns 503 when the database is not connected", async () => {
+    const response = await request(app).get("/api/v1/ready");
+
+    expect(response.status).toBe(503);
+    expect(response.body.success).toBe(false);
+    expect(response.body.error.code).toBe("NOT_READY");
+    expect(JSON.stringify(response.body)).not.toMatch(
+      /SECRET|PASSWORD|mongodb\+srv|cluster\.mongodb/i,
+    );
+  });
+});
+
+describe("GET /ready", () => {
+  it("exposes an unversioned readiness probe", async () => {
+    const response = await request(app).get("/ready");
+    expect(response.status).toBe(503);
+    expect(response.body.error.code).toBe("NOT_READY");
+  });
+});
+
 describe("unknown route", () => {
   it("returns structured JSON 404", async () => {
     const response = await request(app).get("/api/v1/does-not-exist");

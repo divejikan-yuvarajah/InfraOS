@@ -75,7 +75,7 @@ Empty values in `.env.example` are valid until the feature is implemented. When 
 
 | When | Names |
 |------|--------|
-| Step 11 (MongoDB) | `MONGODB_URI`, `MONGODB_DB_NAME` |
+| Step 11 (MongoDB) — **required to connect** | `MONGODB_URI`, `MONGODB_DB_NAME` (`infraos_dev` / `infraos_test` / `infraos_prod`) |
 | Authentication | `ACCESS_TOKEN_SECRET`, `ACCESS_TOKEN_TTL`, `REFRESH_TOKEN_SECRET`, `REFRESH_TOKEN_TTL` |
 | AI service | `AI_BASE_URL`, `AI_INTERNAL_SECRET`, `OPENROUTER_API_KEY` |
 | RAG | `QDRANT_URL`, `QDRANT_API_KEY` |
@@ -109,7 +109,7 @@ The API **rejects** the Step 7 prompt aliases if they are set, so a mixed catalo
 | Automated tests | `infraos_test` |
 | Production | `infraos_prod` |
 
-Never point tests at production. `assertSafeTestDatabaseName()` requires `NODE_ENV=test` names to **end with `_test`**. The guard is tested now and will be enforced when MongoDB connects (Step 11). Do not share production credentials with local development.
+Never point tests at production. `requireMongoConfig()` calls `assertSafeTestDatabaseName()` (name must **end with `_test`** when `NODE_ENV=test`) and blocks `_prod` names outside production. Atlas runbook: [mongodb-atlas.md](./mongodb-atlas.md).
 
 ---
 
