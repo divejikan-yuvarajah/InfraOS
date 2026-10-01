@@ -36,6 +36,7 @@ These are locked by Step 1 and the provided INFRAOS prompts:
 | C-020 | Step 6 Git: `main` + `development` + `feature/fix/chore/docs`; squash-merge feature → `development`; conventional commits; PR template; no force-push; team-leader integrator |
 | C-021 | Step 7 workspace: npm workspaces (`apps/web`, `apps/api`, `packages/*`); Node 22 LTS; FastAPI not an npm workspace; no feature apps yet |
 | C-022 | Step 8 frontend foundation: Next.js App Router + TS strict + Tailwind v4 + shadcn (Button/Input/Card/Badge) + TanStack Query + RHF/Zod installed + `apiClient`; temporary home only |
+| C-023 | Step 9 API foundation: Express 5 + Pino + Helmet + CORS + `/api/v1/health` + JSON 404 + AppError envelope; no MongoDB/auth/features |
 
 ---
 

@@ -21,6 +21,8 @@ npm run test -w @infraos/web
 
 Dev server: `http://localhost:3000`
 
+Point the API client at Express with `NEXT_PUBLIC_API_BASE_URL=http://localhost:4000` in `apps/web/.env.local`. CORS allows `http://localhost:3000` by default.
+
 ## Environment
 
 Public only:

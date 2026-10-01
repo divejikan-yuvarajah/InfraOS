@@ -7,7 +7,7 @@
 
 This document locks **what INFRAOS Version 1 uses**. ADRs explain **why**. Exact Next.js / Express patch versions are chosen when those apps are scaffolded (Steps 8–9), using the current stable major listed below.
 
-**Step 7** created the npm workspace. **Step 8** scaffolds Next.js in `apps/web`. Express remains Step 9. There is still no product-feature code (no ProjectTrace/RoadSync pages).
+**Step 7** created the npm workspace. **Step 8** scaffolds Next.js in `apps/web`. **Step 9** scaffolds Express in `apps/api`. There is still no product-feature code (no ProjectTrace/RoadSync).
 
 ---
 

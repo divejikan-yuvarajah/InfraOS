@@ -1,0 +1,9 @@
+import { Router } from "express";
+
+import { healthRouter } from "../modules/health/health.routes.js";
+
+export function createV1Router(): Router {
+  const router = Router();
+  router.use("/health", healthRouter);
+  return router;
+}

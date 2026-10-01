@@ -46,7 +46,7 @@ packages/*
 
 `apps/ai-service` is Python and is **not** listed in `workspaces`.
 
-Root `package.json` includes working `dev:web`, `build:web`, `lint:web`, and `type-check:web` scripts after Step 8. API scripts are added in Step 9.
+Root `package.json` includes working web and API scripts (`dev:web`, `dev:api`, `lint`, `type-check`, `test`, `build`).
 
 ## Runtimes
 
@@ -61,10 +61,9 @@ Local machines may run a newer Node 22+ for install; CI should use Node 22.
 
 ## What this step does not contain
 
-- Express / Helmet / routes
 - MongoDB / Mongoose
 - Auth / RBAC middleware
-- Feature modules
+- Feature modules (ProjectTrace, RoadSync, …)
 - GitHub Actions CI
-- Real `.env` values
+- Real secret values
 - A third env-name catalog (architecture vs this example: [INC-005](../planning/assumptions-risks.md#inc-005--environment-variable-names); Step 10 unifies)

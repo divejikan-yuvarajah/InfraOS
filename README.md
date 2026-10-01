@@ -18,9 +18,10 @@ Version 1 is a **Sri Lankan public-infrastructure oriented** university / portfo
 **Step 05 complete:** Information Architecture & Complete Page/Route Map.  
 **Step 06 complete:** Team Development & Git Strategy.  
 **Step 07 complete:** Initialize Full Project Repository (npm workspaces).  
-**Step 08 complete:** Configure Next.js Frontend Foundation.
+**Step 08 complete:** Configure Next.js Frontend Foundation.  
+**Step 09 complete:** Configure Express Backend Foundation.
 
-Next: **Step 9** (Express backend foundation).
+Next: **Step 10** (environment variables & secret management).
 
 This is a university group project at **South Eastern University of Sri Lanka**.
 
@@ -81,13 +82,21 @@ npm install
 
 Copy `.env.example` to a local `.env` only when later steps need values. **Never commit secrets.**
 
-Frontend:
+Frontend (terminal 1):
 
 ```powershell
 npm run dev:web
 ```
 
-`apps/api` is still a placeholder until Step 9.
+API (terminal 2):
+
+```powershell
+npm run dev:api
+```
+
+Web: http://localhost:3000 · API health: http://localhost:4000/api/v1/health
+
+Copy `apps/web/.env.example` to `apps/web/.env.local` and set `NEXT_PUBLIC_API_BASE_URL=http://localhost:4000`. **Never commit secrets.**
 
 ## Documentation
 
@@ -96,6 +105,7 @@ npm run dev:web
 **Authorization:** [docs/security/README.md](./docs/security/README.md)  
 **UX / routes:** [docs/ux/README.md](./docs/ux/README.md)  
 **Frontend:** [docs/frontend/setup.md](./docs/frontend/setup.md) · [docs/frontend/conventions.md](./docs/frontend/conventions.md)  
+**Backend:** [docs/backend/setup.md](./docs/backend/setup.md) · [docs/backend/conventions.md](./docs/backend/conventions.md)  
 **Team / Git:** [CONTRIBUTING.md](./CONTRIBUTING.md) · [docs/team/README.md](./docs/team/README.md)  
 **Docs index:** [docs/README.md](./docs/README.md)
 

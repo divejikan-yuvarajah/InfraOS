@@ -1,7 +1,26 @@
 # `@infraos/api`
 
-Express + TypeScript modular-monolith API for INFRAOS.
+Express + TypeScript modular-monolith API for INFRAOS. This process is the **system of record**. Next.js is a client.
 
-This folder is a **workspace placeholder**. The Express process, `/api/v1` envelope, and module folders are created in **Step 9**. Do not add business modules or MongoDB models here until later steps.
+## Run
 
-Express is the system of record for authorization, status transitions, and data writes.
+From the repository root:
+
+```powershell
+npm install
+npm run dev:api
+```
+
+| Script | Command |
+|--------|---------|
+| Dev | `npm run dev:api` |
+| Lint | `npm run lint:api` |
+| Type-check | `npm run type-check:api` |
+| Test | `npm run test:api` |
+| Build | `npm run build:api` |
+| Start (after build) | `npm run start -w @infraos/api` |
+
+Health: [http://localhost:4000/api/v1/health](http://localhost:4000/api/v1/health)  
+Probe: [http://localhost:4000/health](http://localhost:4000/health)
+
+Details: [../../docs/backend/setup.md](../../docs/backend/setup.md)
