@@ -36,16 +36,18 @@ Set `apps/web/.env.local`:
 NEXT_PUBLIC_API_BASE_URL=http://localhost:4000
 ```
 
-Copy `apps/api/.env.example` to `apps/api/.env` only if you need to override `PORT` or `CLIENT_URL`.
+Copy `apps/api/.env.example` to `apps/api/.env` only if you need to override `PORT` or `FRONTEND_ORIGIN`.
 
-## Environment (Step 9)
+## Environment
+
+Canonical catalog: [../setup/environment.md](../setup/environment.md).
 
 | Name | Default | Purpose |
 |------|---------|---------|
 | `NODE_ENV` | `development` | logging / proxy |
 | `PORT` | `4000` | HTTP listen |
-| `CLIENT_URL` | `http://localhost:3000` | CORS allowlist (credentials) |
+| `FRONTEND_ORIGIN` | `http://localhost:3000` | CORS allowlist (credentials); required in production |
 | `LOG_LEVEL` | `info` | Pino level |
 | `API_PREFIX` | `/api/v1` | Versioned API mount |
 
-Do not put JWT, Mongo, or AI secrets in this app yet. Full env validation is **Step 10**.
+Future secrets (`MONGODB_URI`, `ACCESS_TOKEN_SECRET`, `AI_INTERNAL_SECRET`, R2, Qdrant) may be empty until those steps. Do not use `CLIENT_URL` or `JWT_SECRET`.

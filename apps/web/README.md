@@ -21,6 +21,6 @@ Open [http://localhost:3000](http://localhost:3000).
 | Test | `npm run test -w @infraos/web` |
 | Build | `npm run build:web` |
 
-Copy `apps/web/.env.example` to `apps/web/.env.local` and set `NEXT_PUBLIC_API_BASE_URL` when the API exists (Step 9+).
+Copy `apps/web/.env.example` to `apps/web/.env.local`. Public vars only (`NEXT_PUBLIC_*`). Catalog: [../../docs/setup/environment.md](../../docs/setup/environment.md).
 
 Details: [../../docs/frontend/setup.md](../../docs/frontend/setup.md)

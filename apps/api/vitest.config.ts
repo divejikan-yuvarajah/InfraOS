@@ -8,7 +8,7 @@ export default defineConfig({
       NODE_ENV: "test",
       LOG_LEVEL: "silent",
       PORT: "4000",
-      CLIENT_URL: "http://localhost:3000",
+      FRONTEND_ORIGIN: "http://localhost:3000",
       API_PREFIX: "/api/v1",
     },
   },

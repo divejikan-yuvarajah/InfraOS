@@ -10,6 +10,7 @@ This folder holds:
 - **Step 7** — workspace layout: [repository-structure.md](./repository-structure.md)
 - **Step 8** — Next.js foundation: [../frontend/setup.md](../frontend/setup.md)
 - **Step 9** — Express foundation: [../backend/setup.md](../backend/setup.md)
+- **Step 10** — env catalog: [../setup/environment.md](../setup/environment.md)
 
 Product scope remains in [../planning/](../planning/README.md).
 
@@ -53,6 +54,12 @@ ADRs: [../adr/README.md](../adr/README.md).
 |------|---------|
 | [repository-structure.md](./repository-structure.md) | npm workspaces, apps, packages |
 
+## Step 10 — environment
+
+| File | Purpose |
+|------|---------|
+| [../setup/environment.md](../setup/environment.md) | Canonical env catalog, staged secrets, INC-005 |
+
 ## Consistency (Step 3 vs Step 2)
 
 | Topic | Locked value |
@@ -75,5 +82,5 @@ ADRs: [../adr/README.md](../adr/README.md).
 
 | Field | Value |
 |-------|--------|
-| Steps | 02 lock + 03 blueprint + 07–09 workspace/web/api foundations |
+| Steps | 02 lock + 03 blueprint + 07–10 workspace/web/api/env foundations |
 | Application feature code | Temporary web home + API health only; no product features |

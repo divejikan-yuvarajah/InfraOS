@@ -40,7 +40,7 @@ See [docs/team/definition-of-done.md](./docs/team/definition-of-done.md).
 
 ## Secrets
 
-Never commit `.env`, keys, or credentials. Commit `.env.example` with names only.
+Never commit `.env`, keys, or credentials. Commit `.env.example` with names only. Canonical names: [docs/setup/environment.md](./docs/setup/environment.md). Do not use `JWT_SECRET`, `REFRESH_SECRET`, `CLIENT_URL`, or `AI_SERVICE_SECRET`.
 
 ## AI / Cursor
 

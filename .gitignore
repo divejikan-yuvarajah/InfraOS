@@ -2,16 +2,21 @@
 .env
 .env.local
 .env.*.local
+.env.development
+.env.test
+.env.production
 .env.*
 !.env.example
+!**/.env.example
 
 # Dependencies
 node_modules/
 
-# Python (AI service later)
+# Python virtualenvs (AI service later).
+# `/env/` ignores only a repo-root folder named env — not `apps/web/src/lib/env`.
 .venv/
 venv/
-env/
+/env/
 __pycache__/
 *.py[cod]
 *.egg-info/

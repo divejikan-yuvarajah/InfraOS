@@ -4,6 +4,8 @@ Dedicated **Python 3.12 + FastAPI** process for computation only. It is **not** 
 
 This folder is documentation-only until the AI implementation step. Do not install FastAPI, LLM SDKs, or Qdrant clients yet.
 
+Copy `.env.example` to `.env` only when that step starts. Names only live in Git: `AI_INTERNAL_SECRET`, `OPENROUTER_API_KEY`, `QDRANT_URL`, `QDRANT_API_KEY`. Catalog: [../../docs/setup/environment.md](../../docs/setup/environment.md).
+
 ## Future scope
 
 - Risk analysis (decision support; never official status)

@@ -1,6 +1,6 @@
 import pino from "pino";
 
-import { env } from "../config/env.js";
+import { env, SECRET_ENV_NAMES } from "../config/env.js";
 
 export const logger = pino({
   level: env.LOG_LEVEL,
@@ -14,6 +14,8 @@ export const logger = pino({
       "token",
       "*.password",
       "*.token",
+      ...SECRET_ENV_NAMES,
+      ...SECRET_ENV_NAMES.map((name) => `*.${name}`),
     ],
     censor: "[Redacted]",
   },
