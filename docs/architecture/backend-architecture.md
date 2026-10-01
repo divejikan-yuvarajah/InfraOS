@@ -144,6 +144,6 @@ Forbidden: `moduleA.service` → `moduleB.repository` or `moduleA` updating `mod
 
 ## 6. Health
 
-`GET /health` — no auth, no dependency fan-out beyond “process up”.
+`GET /health` and `GET /api/v1/health` — no auth, no dependency fan-out beyond “process up”.
 
-Optional `GET /health/ready` — Mongo ping (used by Render), no secrets.
+Optional `GET /health/ready` — Mongo ping (used by Render) **after Step 11**. No secrets.

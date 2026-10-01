@@ -9,6 +9,7 @@ This folder holds:
 - **Step 6** — Git/team workflow lives in [../team/](../team/README.md)
 - **Step 7** — workspace layout: [repository-structure.md](./repository-structure.md)
 - **Step 8** — Next.js foundation: [../frontend/setup.md](../frontend/setup.md)
+- **Step 9** — Express foundation: [../backend/setup.md](../backend/setup.md)
 
 Product scope remains in [../planning/](../planning/README.md).
 
@@ -74,5 +75,5 @@ ADRs: [../adr/README.md](../adr/README.md).
 
 | Field | Value |
 |-------|--------|
-| Steps | 02 lock + 03 blueprint + 07 workspace + 08 web foundation |
-| Application feature code | Temporary home page only; no product features |
+| Steps | 02 lock + 03 blueprint + 07–09 workspace/web/api foundations |
+| Application feature code | Temporary web home + API health only; no product features |

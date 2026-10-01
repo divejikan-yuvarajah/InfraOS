@@ -1,6 +1,14 @@
 # INFRAOS API documentation
 
-**Step:** 07 placeholder  
-OpenAPI / route docs are written when Express routes exist (**Step 9+**).
+**Step:** 09 foundation
 
-Until then, intended API groups live in [../architecture/system-architecture.md](../architecture/system-architecture.md). Style lock: REST `/api/v1` ([ADR-005](../adr/ADR-005-rest-api.md)).
+Versioned REST base: **`/api/v1`** ([ADR-005](../adr/ADR-005-rest-api.md)). Envelope and errors: [../architecture/architecture-decisions.md](../architecture/architecture-decisions.md). Conventions: [../backend/conventions.md](../backend/conventions.md).
+
+## Current routes
+
+| Method | Path | Auth | Notes |
+|--------|------|------|-------|
+| GET | `/api/v1/health` | Public | Process up. No DB/env dump. |
+| GET | `/health` | Public | Same payload for uptime/Render probes. |
+
+OpenAPI / Swagger UI will be added when feature routes exist. Do not expose unauthenticated Swagger in production.

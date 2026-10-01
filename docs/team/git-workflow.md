@@ -302,14 +302,15 @@ Do not run giant “improve the entire project” rewrites during normal feature
 
 ---
 
-## 14. Current repository facts (Step 8)
+## 14. Current repository facts (Step 9)
 
 | Fact | Value |
 |------|--------|
 | Default branch today | `main` (tracks `origin/main`) |
-| Integration branch | `development` (Step 7+ workspace work) |
+| Integration branch | `development` |
 | Package manager | **npm workspaces** (one `package-lock.json`) |
 | Frontend | Next.js 16.3.8 in `apps/web` |
+| Backend | Express 5 in `apps/api` (`/api/v1/health`) |
 | CI workflows | None (planned after apps exist) |
-| Application scaffold | Web foundation yes; Express Step 9 |
+| Application scaffold | Web + API foundations; no Mongo/auth/features |
 | History rewrite / force-push this step | **Not performed** |
