@@ -12,9 +12,10 @@ Version 1 is a **Sri Lankan public-infrastructure oriented** university / portfo
 ## Current status
 
 **Step 01 complete:** Final Project Requirement & Scope Lock.  
-**Step 02 complete:** Final Technology Stack & Architecture Decisions (documentation only).
+**Step 02 complete:** Final Technology Stack & Architecture Decisions.  
+**Step 03 complete:** Complete System Architecture (documentation only).
 
-No application has been scaffolded yet. Next: Step 3 (complete system architecture blueprint).
+No application has been scaffolded yet. Next: Step 4 (user roles & permission matrix).
 
 This is a university group project at **South Eastern University of Sri Lanka**.
 

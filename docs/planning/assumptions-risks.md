@@ -30,6 +30,7 @@ These are locked by Step 1 and the provided INFRAOS prompts:
 | C-014 | Later prompts lock a **Sri Lankan** government/infrastructure orientation |
 | C-015 | No application feature code in Steps 1–3 |
 | C-016 | Step 2 technology lock: Next.js App Router, Express+TS, MongoDB Atlas+Mongoose, MapLibre, JWT+refresh cookie, FastAPI AI, Qdrant, Cloudflare R2, Vercel+Render (see `/docs/architecture` and `/docs/adr`) |
+| C-017 | Step 3 system architecture blueprint locked: module boundaries, page map, RoadSync/ProjectTrace/InfraMap/RAG/authz flows, team ownership |
 
 ---
 
@@ -81,13 +82,13 @@ These need answers in later steps or from the team leader. They do **not** block
 |----|----------|-------------|
 | D-001 | ~~Vendors/versions~~ **Closed:** majors in [technology-stack.md](../architecture/technology-stack.md); patch versions at scaffold (Step 7+) | — |
 | D-002 | Detailed RBAC permission matrix | Step 4 |
-| D-003 | Full page/route map and navigation IA | Step 5 |
+| D-003 | Full page/route map and navigation IA | Initial routes locked in [frontend-architecture.md](../architecture/frontend-architecture.md). **Step 5** still refines IA, nav copy, and any path adjustments. |
 | D-004 | Git branching and team workflow | Step 6 |
 | D-005 | Mongoose schemas and indexes | Later database steps |
 | D-006 | OpenAPI path list | Later API steps |
 | D-007 | Visual design tokens (see inconsistency INC-001) | Design system / Step 5–8 |
 | D-008 | Precise conflict distance thresholds (meters) and work-type severity matrix | RoadSync implementation step |
-| D-009 | Whether work requests can exist without a parent project | Architecture Step 3 / RoadSync |
+| D-009 | ~~Work request without project?~~ **Closed:** every work request **requires** `projectId` in V1 ([roadsync-architecture.md](../architecture/roadsync-architecture.md)). | — |
 | D-010 | ~~Argon2id vs bcrypt~~ **Closed for V1:** bcryptjs cost 12 (Windows-portable). Revisit Argon2id per ADR-006. | — |
 
 ---
