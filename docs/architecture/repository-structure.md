@@ -46,7 +46,7 @@ packages/*
 
 `apps/ai-service` is Python and is **not** listed in `workspaces`.
 
-Root `package.json` has **no** scripts that call missing child `dev`/`build`/`lint` commands. Those are added when Steps 8 and 9 create them.
+Root `package.json` includes working `dev:web`, `build:web`, `lint:web`, and `type-check:web` scripts after Step 8. API scripts are added in Step 9.
 
 ## Runtimes
 
@@ -61,7 +61,6 @@ Local machines may run a newer Node 22+ for install; CI should use Node 22.
 
 ## What this step does not contain
 
-- Next.js / Tailwind / pages
 - Express / Helmet / routes
 - MongoDB / Mongoose
 - Auth / RBAC middleware

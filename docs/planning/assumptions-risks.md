@@ -35,6 +35,7 @@ These are locked by Step 1 and the provided INFRAOS prompts:
 | C-019 | Step 5 IA: four surfaces, page inventory, role nav, route access policy; `/roadsync/work-requests`; no staff `/register`; `/projects/[id]` → overview |
 | C-020 | Step 6 Git: `main` + `development` + `feature/fix/chore/docs`; squash-merge feature → `development`; conventional commits; PR template; no force-push; team-leader integrator |
 | C-021 | Step 7 workspace: npm workspaces (`apps/web`, `apps/api`, `packages/*`); Node 22 LTS; FastAPI not an npm workspace; no feature apps yet |
+| C-022 | Step 8 frontend foundation: Next.js App Router + TS strict + Tailwind v4 + shadcn (Button/Input/Card/Badge) + TanStack Query + RHF/Zod installed + `apiClient`; temporary home only |
 
 ---
 
@@ -90,7 +91,7 @@ These need answers in later steps or from the team leader. They do **not** block
 | D-004 | ~~Git branching and team workflow~~ **Closed:** [../team/README.md](../team/README.md) | — |
 | D-005 | Mongoose schemas and indexes | Later database steps |
 | D-006 | OpenAPI path list | Later API steps |
-| D-007 | Visual design tokens | Nav/status colors locked in Step 5 IA. Full component tokens remain **Step 8**. |
+| D-007 | ~~Visual design tokens~~ **Foundation locked (Step 8):** flag CSS variables in `apps/web/src/app/globals.css`. Full component system remains a later UI step. | — |
 | D-008 | Precise conflict distance thresholds (meters) and work-type severity matrix | RoadSync implementation step |
 | D-009 | ~~Work request without project?~~ **Closed:** every work request **requires** `projectId` in V1 ([roadsync-architecture.md](../architecture/roadsync-architecture.md)). | — |
 | D-010 | ~~Argon2id vs bcrypt~~ **Closed for V1:** bcryptjs cost 12 (Windows-portable). Revisit Argon2id per ADR-006. | — |
@@ -124,10 +125,10 @@ Step 1 instruction: if existing files disagree, **document** rather than hide a 
 | Source | State |
 |--------|--------|
 | Intended architecture | Next.js, Express, MongoDB, etc. |
-| After Step 7 | npm workspaces + placeholder `apps/web`, `apps/api`, `packages/shared-types`; FastAPI README only |
-| Application feature code | Still none until Steps 8–9+ |
+| After Step 8 | Next.js foundation in `apps/web`; Express still a placeholder |
+| Application feature code | No ProjectTrace/RoadSync/auth product features yet |
 
-**Decision:** Missing Next.js/Express apps is expected until those steps. Do not treat placeholder `package.json` files as a working frontend or API.
+**Decision:** Missing Express is expected until Step 9. Do not treat the temporary Next.js home page as the final landing site.
 
 ### INC-005 — Environment variable names
 

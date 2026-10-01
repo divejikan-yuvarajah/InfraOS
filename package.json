@@ -12,5 +12,12 @@
     "apps/web",
     "apps/api",
     "packages/*"
-  ]
+  ],
+  "scripts": {
+    "dev:web": "npm run dev -w @infraos/web",
+    "build:web": "npm run build -w @infraos/web",
+    "lint:web": "npm run lint -w @infraos/web",
+    "type-check:web": "npm run type-check -w @infraos/web",
+    "test:web": "npm run test -w @infraos/web"
+  }
 }

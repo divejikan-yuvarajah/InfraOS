@@ -11,6 +11,13 @@ Full product tests are created when code exists. This file records the **locked 
 | E2E | **Playwright** (P0 spine when UI exists) |
 | AI service | **pytest** when FastAPI exists |
 
+## Current coverage
+
+| Area | Status |
+|------|--------|
+| `@infraos/web` unit | Vitest: `cn()` and API error parsing (`npm run test:web`) |
+| API / E2E | After Express and product UI exist |
+
 Do **not** add Jest or Cypress unless an ADR supersedes this.
 
 ## Priority of tests (when implementing)
