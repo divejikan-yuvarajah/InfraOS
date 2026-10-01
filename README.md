@@ -17,9 +17,10 @@ Version 1 is a **Sri Lankan public-infrastructure oriented** university / portfo
 **Step 04 complete:** User Roles & Permission Matrix.  
 **Step 05 complete:** Information Architecture & Complete Page/Route Map.  
 **Step 06 complete:** Team Development & Git Strategy.  
-**Step 07 complete:** Initialize Full Project Repository (npm workspaces; no feature apps yet).
+**Step 07 complete:** Initialize Full Project Repository (npm workspaces).  
+**Step 08 complete:** Configure Next.js Frontend Foundation.
 
-Next: **Step 8** (Next.js frontend foundation), then **Step 9** (Express backend foundation).
+Next: **Step 9** (Express backend foundation).
 
 This is a university group project at **South Eastern University of Sri Lanka**.
 
@@ -80,7 +81,13 @@ npm install
 
 Copy `.env.example` to a local `.env` only when later steps need values. **Never commit secrets.**
 
-`apps/web` and `apps/api` are workspace placeholders. They do not start until Steps 8 and 9.
+Frontend:
+
+```powershell
+npm run dev:web
+```
+
+`apps/api` is still a placeholder until Step 9.
 
 ## Documentation
 
@@ -88,6 +95,7 @@ Copy `.env.example` to a local `.env` only when later steps need values. **Never
 **Technology / ADRs:** [docs/architecture/README.md](./docs/architecture/README.md) · [docs/adr/README.md](./docs/adr/README.md)  
 **Authorization:** [docs/security/README.md](./docs/security/README.md)  
 **UX / routes:** [docs/ux/README.md](./docs/ux/README.md)  
+**Frontend:** [docs/frontend/setup.md](./docs/frontend/setup.md) · [docs/frontend/conventions.md](./docs/frontend/conventions.md)  
 **Team / Git:** [CONTRIBUTING.md](./CONTRIBUTING.md) · [docs/team/README.md](./docs/team/README.md)  
 **Docs index:** [docs/README.md](./docs/README.md)
 

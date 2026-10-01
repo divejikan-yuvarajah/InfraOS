@@ -12,7 +12,7 @@ The frontend is a **client of Express**. It is not a second backend.
 ## 1. Suggested folder layout
 
 ```text
-apps/web/src/   (monorepo path locked in Step 7; Next.js itself is Step 8)
+apps/web/src/   (Next.js App Router scaffolded in Step 8)
 ├── app/                    # App Router: pages, layouts, loading, error
 ├── components/
 │   ├── ui/                 # shadcn primitives

@@ -11,6 +11,7 @@ Do not implement product features until the relevant later step prompt is execut
 - [UX / IA](./ux/README.md) — pages, routes, role navigation
 - [Security / RBAC](./security/README.md) — roles, permission catalog, matrices, SoD, route access
 - [Team / Git](./team/README.md) — branches, ownership, PRs, DoD, release
+- [Frontend](./frontend/setup.md) — Next.js run commands and [conventions](./frontend/conventions.md)
 - [API](./api/README.md) — placeholder until Express routes exist
 - [Database](./database/README.md) — placeholder until Mongoose models exist
 - [ADRs](./adr/README.md) — ADR-001 … ADR-012

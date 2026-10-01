@@ -1,7 +1,26 @@
 # `@infraos/web`
 
-Next.js (App Router) frontend for INFRAOS.
+Next.js (App Router) frontend for INFRAOS. This app is a **client of Express**. It must not call MongoDB, R2, Qdrant, or FastAPI directly.
 
-This folder is a **workspace placeholder**. The Next.js app, Tailwind, and `src/` layout are created in **Step 8**. Do not add feature pages here until that step.
+## Run
 
-The frontend is a client of Express. It must not call MongoDB, R2, Qdrant, or FastAPI directly.
+From the repository root:
+
+```powershell
+npm install
+npm run dev:web
+```
+
+Open [http://localhost:3000](http://localhost:3000).
+
+| Script | Command |
+|--------|---------|
+| Dev | `npm run dev:web` |
+| Lint | `npm run lint:web` |
+| Type-check | `npm run type-check:web` |
+| Test | `npm run test -w @infraos/web` |
+| Build | `npm run build:web` |
+
+Copy `apps/web/.env.example` to `apps/web/.env.local` and set `NEXT_PUBLIC_API_BASE_URL` when the API exists (Step 9+).
+
+Details: [../../docs/frontend/setup.md](../../docs/frontend/setup.md)

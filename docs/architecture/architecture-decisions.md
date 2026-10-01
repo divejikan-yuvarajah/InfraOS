@@ -32,7 +32,7 @@ Microservices would multiply auth, CORS, tracing, and “whose database is this?
 | Topic | Decision |
 |-------|----------|
 | Framework | Next.js App Router, React, TypeScript ([ADR-002](../adr/ADR-002-nextjs-frontend.md)) |
-| CSS | Tailwind, tokens later (do not invent a third palette; INC-001 remains for Step 5/8) |
+| CSS | Tailwind + Step 8 token foundation (flag palette; no second navy/orange system) |
 | Components | shadcn/ui customized, not stock shadcn look |
 | Forms | RHF + Zod; **server Zod still mandatory** |
 | Data | TanStack Query for API; Zustand for chrome/map UI only |
@@ -215,7 +215,7 @@ Never mix passwords into either stream.
 | GitHub starter README (Mapbox / Leaflet) | Superseded by MapLibre + OSM |
 | Step 1 D-001 (vendors) | Closed in this step |
 | Step 1 Q-006 (cookies) | Closed in [security-decisions.md](./security-decisions.md) |
-| INC-001 colors | Still deferred to design-system step |
+| INC-001 colors | Nav/status locked Step 5; CSS variables locked Step 8; full component system later |
 | Wrapper UI navy/orange vs flag colors | Not a technology ADR |
 
 ---

@@ -302,13 +302,14 @@ Do not run giant “improve the entire project” rewrites during normal feature
 
 ---
 
-## 14. Current repository facts (Step 7)
+## 14. Current repository facts (Step 8)
 
 | Fact | Value |
 |------|--------|
 | Default branch today | `main` (tracks `origin/main`) |
-| `development` branch | **Not created yet** — team leader creates it from `main` before first feature branch |
+| Integration branch | `development` (Step 7+ workspace work) |
 | Package manager | **npm workspaces** (one `package-lock.json`) |
+| Frontend | Next.js 16.3.8 in `apps/web` |
 | CI workflows | None (planned after apps exist) |
-| Application scaffold | Workspace placeholders; Next.js Step 8; Express Step 9 |
+| Application scaffold | Web foundation yes; Express Step 9 |
 | History rewrite / force-push this step | **Not performed** |

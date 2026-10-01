@@ -8,6 +8,7 @@ This folder holds:
 - **Step 5** — page/route IA lives in [../ux/](../ux/README.md); this file’s page list stays aligned
 - **Step 6** — Git/team workflow lives in [../team/](../team/README.md)
 - **Step 7** — workspace layout: [repository-structure.md](./repository-structure.md)
+- **Step 8** — Next.js foundation: [../frontend/setup.md](../frontend/setup.md)
 
 Product scope remains in [../planning/](../planning/README.md).
 
@@ -73,5 +74,5 @@ ADRs: [../adr/README.md](../adr/README.md).
 
 | Field | Value |
 |-------|--------|
-| Steps | 02 lock + 03 blueprint + 07 workspace |
-| Application feature code | None (workspace placeholders only) |
+| Steps | 02 lock + 03 blueprint + 07 workspace + 08 web foundation |
+| Application feature code | Temporary home page only; no product features |
