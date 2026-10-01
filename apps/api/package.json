@@ -12,6 +12,7 @@
     "build": "tsc -p tsconfig.build.json",
     "start": "node dist/server.js",
     "db:check": "tsx src/scripts/db-check.ts",
+    "db:seed:core": "tsx src/scripts/seed-core.ts",
     "lint": "eslint .",
     "type-check": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run"
@@ -24,7 +25,8 @@
     "mongoose": "^8.24.4",
     "pino": "^10.3.1",
     "pino-http": "^11.0.0",
-    "zod": "^4.6.5"
+    "zod": "^4.6.5",
+    "@infraos/shared-types": "*"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.5",
@@ -37,6 +39,7 @@
     "tsx": "^4.23.15",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.71.0",
-    "vitest": "^3.2.7"
+    "vitest": "^3.2.7",
+    "mongodb-memory-server": "^10.2.3"
   }
 }

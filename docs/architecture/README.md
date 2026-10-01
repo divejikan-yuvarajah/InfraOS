@@ -12,6 +12,7 @@ This folder holds:
 - **Step 9** — Express foundation: [../backend/setup.md](../backend/setup.md)
 - **Step 10** — env catalog: [../setup/environment.md](../setup/environment.md)
 - **Step 11** — MongoDB Atlas: [../setup/mongodb-atlas.md](../setup/mongodb-atlas.md), [../database/connection.md](../database/connection.md)
+- **Step 12** — core models: [../database/core-models.md](../database/core-models.md)
 
 Product scope remains in [../planning/](../planning/README.md).
 
@@ -90,5 +91,5 @@ ADRs: [../adr/README.md](../adr/README.md).
 
 | Field | Value |
 |-------|--------|
-| Steps | 02 lock + 03 blueprint + 07–11 workspace/web/api/env/Atlas connection |
-| Application feature code | Temporary web home + API health only; no product features |
+| Steps | 02 lock + 03 blueprint + 07–12 workspace through core identity models |
+| Application feature code | Temporary web home + API health/ready; identity schemas only; no auth APIs |

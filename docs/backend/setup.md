@@ -18,6 +18,7 @@ npm run type-check:api
 npm run test:api
 npm run build:api
 npm run db:check
+npm run db:seed:core
 ```
 
 ## Local URLs

@@ -4,7 +4,7 @@
 **Module:** `apps/api/src/config/database.ts`  
 **ODM:** Mongoose 8 (no separate `mongodb` package)
 
-Application schemas (users, agencies, projects) start in **Step 12**. This file is the connection lifecycle only.
+Application schemas (users, roles, agencies, refresh sessions) are in [core-models.md](./core-models.md). This file is the connection lifecycle.
 
 Atlas account steps: [../setup/mongodb-atlas.md](../setup/mongodb-atlas.md).
 
@@ -48,6 +48,8 @@ Non-production processes **cannot** use a database name ending in `_prod`.
 These are not national-scale production tuning. Revisit when Render instance count or load is known.
 
 Startup retries: **3 attempts**, **1.5s** apart (1 attempt in `NODE_ENV=test`). No infinite reconnect loop in application code. Do not set `tlsInsecure` or `tlsAllowInvalidCertificates`.
+
+`autoIndex` is **on** in development and test, **off** in production. Production indexes should be applied with a later controlled migration, not `dropDatabase`.
 
 ---
 

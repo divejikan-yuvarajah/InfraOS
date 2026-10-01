@@ -21,6 +21,7 @@ vi.mock("mongoose", () => {
     default: {
       connect: vi.fn(),
       disconnect: vi.fn(),
+      set: vi.fn(),
       connection,
     },
   };

@@ -15,6 +15,7 @@ npm run dev:api
 |--------|---------|
 | Dev | `npm run dev:api` |
 | DB check | `npm run db:check` |
+| Core seed | `npm run db:seed:core` (roles + demo agencies; no users) |
 | Lint | `npm run lint:api` |
 | Type-check | `npm run type-check:api` |
 | Test | `npm run test:api` |
@@ -24,6 +25,6 @@ npm run dev:api
 Health: [http://localhost:4000/api/v1/health](http://localhost:4000/api/v1/health)  
 Ready: [http://localhost:4000/api/v1/ready](http://localhost:4000/api/v1/ready) (503 until Atlas is connected)
 
-Copy `apps/api/.env.example` to `apps/api/.env`. Atlas: [../../docs/setup/mongodb-atlas.md](../../docs/setup/mongodb-atlas.md).
+Copy `apps/api/.env.example` to `apps/api/.env`. Atlas: [../../docs/setup/mongodb-atlas.md](../../docs/setup/mongodb-atlas.md). Core models: [../../docs/database/core-models.md](../../docs/database/core-models.md).
 
 Details: [../../docs/backend/setup.md](../../docs/backend/setup.md)

@@ -106,6 +106,8 @@ export async function pingDatabase(): Promise<void> {
 
 async function connectOnce(config: { uri: string; dbName: string }): Promise<void> {
   attachLifecycleListeners();
+  mongoose.set("strictQuery", true);
+  mongoose.set("autoIndex", env.NODE_ENV !== "production");
   await mongoose.connect(config.uri, {
     dbName: config.dbName,
     ...MONGO_CONNECT_OPTIONS,
