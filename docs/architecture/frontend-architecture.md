@@ -48,7 +48,9 @@ Rules:
 
 ---
 
-## 2. Page map (planned routes)
+## 2. Page map
+
+**Canonical IA:** [../ux/README.md](../ux/README.md) (Step 5). Sketch below matches that lock.
 
 ### Public
 
@@ -74,7 +76,7 @@ Rules:
 /reset-password
 ```
 
-Staff **self-register is not V1** (Q-001 closed in Step 4: admin-provisioned accounts). Do not ship `/register` for operational roles.
+Staff **self-register is not V1**. No `/register`.
 
 ### Protected application
 
@@ -82,7 +84,7 @@ Staff **self-register is not V1** (Q-001 closed in Step 4: admin-provisioned acc
 /dashboard
 /projects
 /projects/new
-/projects/[id]
+/projects/[id]                    → redirect to overview
 /projects/[id]/overview
 /projects/[id]/timeline
 /projects/[id]/milestones
@@ -91,16 +93,22 @@ Staff **self-register is not V1** (Q-001 closed in Step 4: admin-provisioned acc
 /projects/[id]/inspections
 /projects/[id]/risks
 /roadsync
-/roadsync/new
+/roadsync/work-requests
+/roadsync/work-requests/new
+/roadsync/work-requests/[id]
 /roadsync/conflicts
 /roadsync/conflicts/[id]
+/roadsync/coordination
 /map
 /contractors
 /contractors/[id]
 /assets
 /assets/[id]
 /documents
+/inspections
+/inspections/[id]
 /issues
+/issues/[id]
 /reports
 /notifications
 /profile
@@ -127,19 +135,7 @@ Staff **self-register is not V1** (Q-001 closed in Step 4: admin-provisioned acc
 /maintenance
 ```
 
-Role **navigation** (UX only; API still enforces):
-
-| Area | Super Admin | Gov Admin | Officer | PM | Contractor | Inspector | Citizen |
-|------|-------------|-----------|---------|----|------------|-----------|---------|
-| Public | yes | yes | yes | yes | yes | yes | **primary** |
-| Dashboard | yes | yes | yes | yes | limited | limited | no |
-| Projects | all (admin) | scoped | agency | assigned | assigned subset | assigned inspect | public only |
-| RoadSync | yes | scoped | yes | yes | no | no | no |
-| Map (app) | yes | yes | yes | yes | limited | limited | public-map |
-| Admin | yes | limited | no | no | no | no | no |
-| Citizen issues inbox | — | scoped | agency | — | — | — | own tickets |
-
-Exact permission IDs: Step 4.
+Role navigation: [../ux/navigation-by-role.md](../ux/navigation-by-role.md). Permissions: [../security/route-access-policy.md](../security/route-access-policy.md).
 
 ---
 

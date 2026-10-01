@@ -10,5 +10,6 @@
 | [resource-authorization.md](./resource-authorization.md) | Scope, IDOR, status-based rules |
 | [segregation-of-duties.md](./segregation-of-duties.md) | SoD and over-permission guards |
 | [rbac-test-plan.md](./rbac-test-plan.md) | Future API/E2E authorization tests |
+| [route-access-policy.md](./route-access-policy.md) | Next.js route vs permission (UX only) |
 
 Related: [../architecture/authorization-flow.md](../architecture/authorization-flow.md)

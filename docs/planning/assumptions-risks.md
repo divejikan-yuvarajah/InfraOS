@@ -32,6 +32,7 @@ These are locked by Step 1 and the provided INFRAOS prompts:
 | C-016 | Step 2 technology lock: Next.js App Router, Express+TS, MongoDB Atlas+Mongoose, MapLibre, JWT+refresh cookie, FastAPI AI, Qdrant, Cloudflare R2, Vercel+Render (see `/docs/architecture` and `/docs/adr`) |
 | C-017 | Step 3 system architecture blueprint locked: module boundaries, page map, RoadSync/ProjectTrace/InfraMap/RAG/authz flows, team ownership |
 | C-018 | Step 4 RBAC: seven roles, `resource.action` catalog, org/agency/assignment scopes, SoD (submit≠approve; contractor never verifies/pays), admin-provisioned staff, no impersonation |
+| C-019 | Step 5 IA: four surfaces, page inventory, role nav, route access policy; `/roadsync/work-requests`; no staff `/register`; `/projects/[id]` → overview |
 
 ---
 
@@ -83,11 +84,11 @@ These need answers in later steps or from the team leader. They do **not** block
 |----|----------|-------------|
 | D-001 | ~~Vendors/versions~~ **Closed:** majors in [technology-stack.md](../architecture/technology-stack.md); patch versions at scaffold (Step 7+) | — |
 | D-002 | ~~RBAC matrix~~ **Closed:** [../security/README.md](../security/README.md) | — |
-| D-003 | Full page/route map and navigation IA | Initial routes locked in [frontend-architecture.md](../architecture/frontend-architecture.md). **Step 5** still refines IA, nav copy, and any path adjustments. |
+| D-003 | ~~Page/route map~~ **Closed:** [../ux/README.md](../ux/README.md) | — |
 | D-004 | Git branching and team workflow | Step 6 |
 | D-005 | Mongoose schemas and indexes | Later database steps |
 | D-006 | OpenAPI path list | Later API steps |
-| D-007 | Visual design tokens (see inconsistency INC-001) | Design system / Step 5–8 |
+| D-007 | Visual design tokens | Nav/status colors locked in Step 5 IA. Full component tokens remain **Step 8**. |
 | D-008 | Precise conflict distance thresholds (meters) and work-type severity matrix | RoadSync implementation step |
 | D-009 | ~~Work request without project?~~ **Closed:** every work request **requires** `projectId` in V1 ([roadsync-architecture.md](../architecture/roadsync-architecture.md)). | — |
 | D-010 | ~~Argon2id vs bcrypt~~ **Closed for V1:** bcryptjs cost 12 (Windows-portable). Revisit Argon2id per ADR-006. | — |
@@ -105,7 +106,7 @@ Step 1 instruction: if existing files disagree, **document** rather than hide a 
 | Step execution wrapper (UI quality section) | Deep Navy `#0F172A`, Orange `#F97316`, Secondary Blue `#2563EB`, plus semantic green/amber/red/cyan |
 | Prompts Steps 4–9 locked brand | Sri Lankan flag-inspired `#FF5B00`, `#FEB600`, `#8C1F28`, `#279541` with neutrals |
 
-**Step 1 decision:** Do **not** lock a design-token system in product scope. Brand intent is **professional, government, GIS, Sri Lanka-oriented**. Token resolution belongs to the information-architecture / frontend foundation steps. Until then, implementers must not invent a third palette.
+**Step 5 decision:** For **navigation active state and status badges**, use the flag palette (`#FF5B00`, `#FEB600`, `#8C1F28`, `#279541`) plus neutrals — see [information-architecture.md](../ux/information-architecture.md) §11. Do **not** also use wrapper `#F97316` / `#2563EB` as a second status system. Remaining type/dark-chrome tokens: **Step 8**. Always pair color with text/icon.
 
 ### INC-002 — Geographic naming
 

@@ -5,6 +5,7 @@ This folder holds:
 - **Step 2** — which technologies and why (do not silently change ADRs)
 - **Step 3** — how the system is structured (modules, flows, pages, trust, team)
 - **Step 4** — authorization matrices live in [../security/](../security/README.md)
+- **Step 5** — page/route IA lives in [../ux/](../ux/README.md); this file’s page list stays aligned
 
 Product scope remains in [../planning/](../planning/README.md).
 
