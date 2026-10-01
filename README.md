@@ -15,22 +15,15 @@ Version 1 is a **Sri Lankan public-infrastructure oriented** university / portfo
 **Step 02 complete:** Final Technology Stack & Architecture Decisions.  
 **Step 03 complete:** Complete System Architecture.  
 **Step 04 complete:** User Roles & Permission Matrix.  
-**Step 05 complete:** Information Architecture & Complete Page/Route Map (documentation only).  
-**Step 06 complete:** Team Development & Git Strategy (documentation only).
+**Step 05 complete:** Information Architecture & Complete Page/Route Map.  
+**Step 06 complete:** Team Development & Git Strategy.  
+**Step 07 complete:** Initialize Full Project Repository (npm workspaces; no feature apps yet).
 
-No application pages have been scaffolded. Next: Step 7 (initialize full project repository).
+Next: **Step 8** (Next.js frontend foundation), then **Step 9** (Express backend foundation).
 
 This is a university group project at **South Eastern University of Sri Lanka**.
 
-## Documentation source of truth
-
-**Product:** [docs/planning/README.md](./docs/planning/README.md)  
-**Technology / ADRs:** [docs/architecture/README.md](./docs/architecture/README.md) · [docs/adr/README.md](./docs/adr/README.md)  
-**Authorization:** [docs/security/README.md](./docs/security/README.md)  
-**UX / routes:** [docs/ux/README.md](./docs/ux/README.md)  
-**Team / Git:** [CONTRIBUTING.md](./CONTRIBUTING.md) · [docs/team/README.md](./docs/team/README.md)
-
-## Locked architecture (not implemented yet)
+## Architecture
 
 ```text
 Next.js (Vercel)
@@ -48,6 +41,18 @@ Maps: **MapLibre GL** (not Mapbox/Leaflet as the V1 default).
 Auth: short-lived JWT in memory + HTTP-only refresh cookie.  
 AI is optional for the P0 coordination path.
 
+## Repository structure
+
+```text
+apps/web              Next.js frontend (Step 8)
+apps/api              Express API (Step 9)
+apps/ai-service       FastAPI (docs only for now)
+packages/shared-types Shared TypeScript contracts
+docs/                 Planning, architecture, security, UX, team
+```
+
+Details: [docs/architecture/repository-structure.md](./docs/architecture/repository-structure.md).
+
 ## Core P0 story
 
 ```text
@@ -55,6 +60,45 @@ Create Project → Map Project → Create Work Request
 → Detect Conflict → Coordinate Agency → Resolve Conflict
 → Track Progress → View on Map → Audit History
 ```
+
+## Prerequisites
+
+| Tool | Version |
+|------|---------|
+| Node.js | **22 LTS** (`.nvmrc`) |
+| npm | **10+** (workspaces; do not add Yarn/pnpm lockfiles) |
+| Git | 2.x |
+| Python | 3.12 later (AI service) |
+
+## Setup
+
+```powershell
+git clone https://github.com/divejikan-yuvarajah/InfraOS.git
+cd InfraOS
+npm install
+```
+
+Copy `.env.example` to a local `.env` only when later steps need values. **Never commit secrets.**
+
+`apps/web` and `apps/api` are workspace placeholders. They do not start until Steps 8 and 9.
+
+## Documentation
+
+**Product:** [docs/planning/README.md](./docs/planning/README.md)  
+**Technology / ADRs:** [docs/architecture/README.md](./docs/architecture/README.md) · [docs/adr/README.md](./docs/adr/README.md)  
+**Authorization:** [docs/security/README.md](./docs/security/README.md)  
+**UX / routes:** [docs/ux/README.md](./docs/ux/README.md)  
+**Team / Git:** [CONTRIBUTING.md](./CONTRIBUTING.md) · [docs/team/README.md](./docs/team/README.md)  
+**Docs index:** [docs/README.md](./docs/README.md)
+
+## Branch strategy
+
+- `main` — submission-ready  
+- `development` — daily integration (create from `main` before the first feature branch)  
+- `feature/*` `fix/*` `chore/*` `docs/*` — work branches; squash-merge into `development`  
+- Never force-push `main` or `development`
+
+See [docs/team/git-workflow.md](./docs/team/git-workflow.md).
 
 ## Team
 

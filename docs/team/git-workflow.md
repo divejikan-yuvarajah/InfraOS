@@ -65,7 +65,7 @@ git pull
 git checkout -b feature/inframap
 ```
 
-Until `development` exists, create it from `main` once (team leader), then branch from it. Today the repository only has `main`; that is expected before Step 7.
+Until `development` exists, create it from `main` once (team leader), then branch from it. After Step 7 the workspace exists on `main`; create `development` before the first feature PR.
 
 ---
 
@@ -251,7 +251,7 @@ service credentials
 
 If a secret is committed accidentally: rotate it, remove it from the tree in a **new** commit, and treat history rewrite as a last resort requiring explicit team-leader + owner approval (this project forbids casual force-push).
 
-Root `.gitignore` already ignores `.env` and `.env.*` except `.env.example`. Step 7 may extend ignore rules for the monorepo; do not stop ignoring secrets.
+Root `.gitignore` ignores `.env`, `.env.local`, `.env.*.local`, and `.env.*` except `.env.example`. Do not stop ignoring secrets.
 
 ---
 
@@ -302,12 +302,13 @@ Do not run giant “improve the entire project” rewrites during normal feature
 
 ---
 
-## 14. Current repository facts (Step 6)
+## 14. Current repository facts (Step 7)
 
 | Fact | Value |
 |------|--------|
 | Default branch today | `main` (tracks `origin/main`) |
 | `development` branch | **Not created yet** — team leader creates it from `main` before first feature branch |
-| CI workflows | None |
-| Application scaffold | Step 7 |
+| Package manager | **npm workspaces** (one `package-lock.json`) |
+| CI workflows | None (planned after apps exist) |
+| Application scaffold | Workspace placeholders; Next.js Step 8; Express Step 9 |
 | History rewrite / force-push this step | **Not performed** |

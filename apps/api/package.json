@@ -1,0 +1,6 @@
+{
+  "name": "@infraos/api",
+  "private": true,
+  "version": "0.0.0",
+  "description": "INFRAOS Express API. Application scaffold is Step 9."
+}

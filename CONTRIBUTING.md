@@ -10,7 +10,16 @@ INFRAOS is a university group project (South Eastern University of Sri Lanka). T
 4. Follow routes in [docs/ux/README.md](./docs/ux/README.md).
 5. Work only in your owned module ([docs/team/module-ownership.md](./docs/team/module-ownership.md)).
 
-Do not start product features until **Step 7** scaffolds the workspace. Steps 1–6 are documentation locks.
+The npm workspace exists (Step 7). Do not add product features until the relevant later step. Next.js is **Step 8**. Express is **Step 9**. Install with `npm install` from the repository root (one lockfile). Do not add pnpm or Yarn.
+
+## Workspace
+
+```text
+apps/web                 @infraos/web     (Step 8)
+apps/api                 @infraos/api     (Step 9)
+apps/ai-service          FastAPI docs     (not an npm workspace)
+packages/shared-types    shared contracts only
+```
 
 ## Git in one page
 

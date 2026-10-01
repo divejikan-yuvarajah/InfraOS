@@ -34,6 +34,7 @@ These are locked by Step 1 and the provided INFRAOS prompts:
 | C-018 | Step 4 RBAC: seven roles, `resource.action` catalog, org/agency/assignment scopes, SoD (submit≠approve; contractor never verifies/pays), admin-provisioned staff, no impersonation |
 | C-019 | Step 5 IA: four surfaces, page inventory, role nav, route access policy; `/roadsync/work-requests`; no staff `/register`; `/projects/[id]` → overview |
 | C-020 | Step 6 Git: `main` + `development` + `feature/fix/chore/docs`; squash-merge feature → `development`; conventional commits; PR template; no force-push; team-leader integrator |
+| C-021 | Step 7 workspace: npm workspaces (`apps/web`, `apps/api`, `packages/*`); Node 22 LTS; FastAPI not an npm workspace; no feature apps yet |
 
 ---
 
@@ -83,7 +84,7 @@ These need answers in later steps or from the team leader. They do **not** block
 
 | ID | Decision | Why not now |
 |----|----------|-------------|
-| D-001 | ~~Vendors/versions~~ **Closed:** majors in [technology-stack.md](../architecture/technology-stack.md); patch versions at scaffold (Step 7+) | — |
+| D-001 | ~~Vendors/versions~~ **Closed majors:** [technology-stack.md](../architecture/technology-stack.md). **Node 22 LTS** pinned (Step 7). Next.js / Express patch versions: Steps 8–9 | — |
 | D-002 | ~~RBAC matrix~~ **Closed:** [../security/README.md](../security/README.md) | — |
 | D-003 | ~~Page/route map~~ **Closed:** [../ux/README.md](../ux/README.md) | — |
 | D-004 | ~~Git branching and team workflow~~ **Closed:** [../team/README.md](../team/README.md) | — |
@@ -123,10 +124,19 @@ Step 1 instruction: if existing files disagree, **document** rather than hide a 
 | Source | State |
 |--------|--------|
 | Intended architecture | Next.js, Express, MongoDB, etc. |
-| After Step 1 | Planning docs + Prompts; no `package.json` |
-| After user push | GitHub remote `main` exists; still no application scaffold |
+| After Step 7 | npm workspaces + placeholder `apps/web`, `apps/api`, `packages/shared-types`; FastAPI README only |
+| Application feature code | Still none until Steps 8–9+ |
 
-**Step 1 decision (updated Step 2):** Still **no application feature code** until later steps. Git exists; full workspace init remains Step 7. Do not treat missing `package.json` as a conflict with the locked stack.
+**Decision:** Missing Next.js/Express apps is expected until those steps. Do not treat placeholder `package.json` files as a working frontend or API.
+
+### INC-005 — Environment variable names
+
+| Source | Names |
+|--------|--------|
+| Step 7 `.env.example` (this step’s prompt) | `JWT_SECRET`, `REFRESH_SECRET`, `AI_SERVICE_SECRET`, `CLIENT_URL` |
+| Architecture / ADRs | `ACCESS_TOKEN_SECRET`, `REFRESH_TOKEN_SECRET`, `AI_INTERNAL_SECRET`, `FRONTEND_ORIGIN` |
+
+**Decision:** Keep the Step 7 example names as empty placeholders. **Step 10** unifies the canonical env catalog. Do not invent a third set of names in the meantime.
 
 ### INC-004 — Wrapper vs Step 1 “no application code”
 
@@ -178,7 +188,7 @@ These must be handled in later implementation. They are logged now so they are n
 | R-006 | AI treated as authority | Unsafe/unethical decisions | BR-AI-* rules |
 | R-007 | Scope creep (ERP, IoT, digital twin) | Missed deadline | Scope-creep section in project-scope |
 | R-008 | Color/brand conflict causes UI churn | Rework | Resolve INC-001 in design step, once |
-| R-009 | Full monorepo not scaffolded yet | Easy to start coding in the wrong layout | Wait for Step 7; stack is documented only |
+| R-009 | Full Next.js/Express apps not scaffolded yet | Easy to start coding in the wrong layout | Wait for Steps 8–9; workspace paths are locked |
 | R-010 | Over-detailed FRs too early | Docs diverge from code | Keep FRs implementation-relevant; refine in later steps |
 | R-011 | Citizen PII in public APIs | Privacy incident | Public DTO allowlists |
 | R-012 | File storage keys leaked | Confidential document exposure | Authz on every download |
@@ -206,3 +216,4 @@ These must be handled in later implementation. They are logged now so they are n
 - [../architecture/README.md](../architecture/README.md)
 - [../adr/README.md](../adr/README.md)
 - [../team/README.md](../team/README.md)
+- [../architecture/repository-structure.md](../architecture/repository-structure.md)

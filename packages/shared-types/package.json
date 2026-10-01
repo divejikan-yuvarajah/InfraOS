@@ -1,0 +1,10 @@
+{
+  "name": "@infraos/shared-types",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Shared TypeScript contracts used by more than one INFRAOS app",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  }
+}

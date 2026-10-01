@@ -5,9 +5,9 @@
 **Status:** Locked  
 **Product source of truth:** `/docs/planning/`
 
-This document locks **what INFRAOS Version 1 uses**. ADRs explain **why**. Exact package patch versions are chosen when applications are scaffolded (Step 7+), using the current stable major listed below.
+This document locks **what INFRAOS Version 1 uses**. ADRs explain **why**. Exact Next.js / Express patch versions are chosen when those apps are scaffolded (Steps 8–9), using the current stable major listed below.
 
-No application feature code is created in this step. There is no `package.json` yet.
+**Step 7** created the npm workspace (`package.json` + `package-lock.json`). `apps/web` and `apps/api` are placeholders until Steps 8 and 9. There is still no application feature code.
 
 ---
 

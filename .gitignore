@@ -1,10 +1,14 @@
 # Secrets — never commit real values
 .env
+.env.local
+.env.*.local
 .env.*
 !.env.example
 
-# Dependencies (used after Step 7 scaffold)
+# Dependencies
 node_modules/
+
+# Python (AI service later)
 .venv/
 venv/
 env/
@@ -12,6 +16,7 @@ __pycache__/
 *.py[cod]
 *.egg-info/
 .pytest_cache/
+.mypy_cache/
 
 # Build output
 dist/
@@ -21,7 +26,7 @@ out/
 coverage/
 *.tsbuildinfo
 
-# Logs and local dumps
+# Logs
 *.log
 logs/
 npm-debug.log*
@@ -33,10 +38,14 @@ playwright-report/
 test-results/
 .nyc_output/
 
-# OS / editor
+# OS
 .DS_Store
 Thumbs.db
+
+# Editor
 .idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
 *.swp
 *.swo
-.vscode/*.code-workspace
