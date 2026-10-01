@@ -29,9 +29,12 @@ Public only:
 
 ```text
 NEXT_PUBLIC_API_BASE_URL
+NEXT_PUBLIC_MAP_STYLE_URL
 ```
 
-Never put `JWT_SECRET`, `REFRESH_SECRET`, `MONGODB_URI`, `AI_SERVICE_SECRET`, or storage keys in `NEXT_PUBLIC_*`. Full env validation is Step 10.
+CORS uses API `FRONTEND_ORIGIN` (default `http://localhost:3000`).
+
+Never put `ACCESS_TOKEN_SECRET`, `REFRESH_TOKEN_SECRET`, `MONGODB_URI`, `AI_INTERNAL_SECRET`, or storage keys in `NEXT_PUBLIC_*`. Catalog: [../setup/environment.md](../setup/environment.md).
 
 ## Zustand
 

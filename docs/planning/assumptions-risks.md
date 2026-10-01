@@ -135,10 +135,10 @@ Step 1 instruction: if existing files disagree, **document** rather than hide a 
 
 | Source | Names |
 |--------|--------|
-| Step 7 `.env.example` (this step’s prompt) | `JWT_SECRET`, `REFRESH_SECRET`, `AI_SERVICE_SECRET`, `CLIENT_URL` |
+| Step 7 `.env.example` (prompt aliases) | `JWT_SECRET`, `REFRESH_SECRET`, `AI_SERVICE_SECRET`, `CLIENT_URL` |
 | Architecture / ADRs | `ACCESS_TOKEN_SECRET`, `REFRESH_TOKEN_SECRET`, `AI_INTERNAL_SECRET`, `FRONTEND_ORIGIN` |
 
-**Decision:** Keep the Step 7 example names as empty placeholders. **Step 10** unifies the canonical env catalog. Do not invent a third set of names in the meantime.
+**Decision (closed Step 10):** Architecture / ADR names are canonical. See [environment.md](../setup/environment.md). The API rejects the Step 7 aliases if they are set. Do not use `JWT_SECRET`, `REFRESH_SECRET`, `CLIENT_URL`, `AI_SERVICE_SECRET`, or `AI_SERVICE_URL`.
 
 ### INC-004 — Wrapper vs Step 1 “no application code”
 

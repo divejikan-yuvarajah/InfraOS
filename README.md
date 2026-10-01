@@ -19,9 +19,10 @@ Version 1 is a **Sri Lankan public-infrastructure oriented** university / portfo
 **Step 06 complete:** Team Development & Git Strategy.  
 **Step 07 complete:** Initialize Full Project Repository (npm workspaces).  
 **Step 08 complete:** Configure Next.js Frontend Foundation.  
-**Step 09 complete:** Configure Express Backend Foundation.
+**Step 09 complete:** Configure Express Backend Foundation.  
+**Step 10 complete:** Environment Variables & Secret Management.
 
-Next: **Step 10** (environment variables & secret management).
+Next: **Step 11** (MongoDB Atlas complete setup).
 
 This is a university group project at **South Eastern University of Sri Lanka**.
 
@@ -80,7 +81,14 @@ cd InfraOS
 npm install
 ```
 
-Copy `.env.example` to a local `.env` only when later steps need values. **Never commit secrets.**
+Copy per-app examples — not a root `.env` with secrets:
+
+```powershell
+Copy-Item apps\web\.env.example apps\web\.env.local
+Copy-Item apps\api\.env.example apps\api\.env
+```
+
+Catalog: [docs/setup/environment.md](./docs/setup/environment.md). **Never commit secrets.** Do not use `JWT_SECRET` / `CLIENT_URL`.
 
 Frontend (terminal 1):
 
@@ -96,14 +104,13 @@ npm run dev:api
 
 Web: http://localhost:3000 · API health: http://localhost:4000/api/v1/health
 
-Copy `apps/web/.env.example` to `apps/web/.env.local` and set `NEXT_PUBLIC_API_BASE_URL=http://localhost:4000`. **Never commit secrets.**
-
 ## Documentation
 
 **Product:** [docs/planning/README.md](./docs/planning/README.md)  
 **Technology / ADRs:** [docs/architecture/README.md](./docs/architecture/README.md) · [docs/adr/README.md](./docs/adr/README.md)  
 **Authorization:** [docs/security/README.md](./docs/security/README.md)  
 **UX / routes:** [docs/ux/README.md](./docs/ux/README.md)  
+**Environment:** [docs/setup/environment.md](./docs/setup/environment.md)  
 **Frontend:** [docs/frontend/setup.md](./docs/frontend/setup.md) · [docs/frontend/conventions.md](./docs/frontend/conventions.md)  
 **Backend:** [docs/backend/setup.md](./docs/backend/setup.md) · [docs/backend/conventions.md](./docs/backend/conventions.md)  
 **Team / Git:** [CONTRIBUTING.md](./CONTRIBUTING.md) · [docs/team/README.md](./docs/team/README.md)  

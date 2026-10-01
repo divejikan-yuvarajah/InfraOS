@@ -9,6 +9,7 @@
 |------|----------------|
 | `src/app.ts` | Create Express app, middleware, routes, 404, error handler |
 | `src/server.ts` | Load config, listen, log startup, SIGINT/SIGTERM shutdown |
+| `src/config/env.ts` | Zod env parse, staged secrets, INC-005 catalog |
 
 Tests import `createApp()` and do not listen on a port.
 
@@ -48,7 +49,8 @@ Pino. Request logs include method, path, status, duration, and requestId. Author
 
 - Helmet (`crossOriginResourcePolicy: cross-origin` so the Vercel/local web origin can call the API)
 - `x-powered-by` disabled
-- CORS exact `CLIENT_URL`, `credentials: true`, never `*` with credentials
+- CORS exact `FRONTEND_ORIGIN`, `credentials: true`, never `*` with credentials
+- Typed env only via `src/config/env.ts` — do not read `process.env` in modules
 - JSON / urlencoded body limit **1mb** (uploads later)
 - Baseline rate limit 300 / 15 minutes (health skipped; auth-specific limits later)
 

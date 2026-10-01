@@ -23,4 +23,6 @@ npm run dev:api
 Health: [http://localhost:4000/api/v1/health](http://localhost:4000/api/v1/health)  
 Probe: [http://localhost:4000/health](http://localhost:4000/health)
 
+Copy `apps/api/.env.example` to `apps/api/.env` to override local non-secret defaults. Canonical names: [../../docs/setup/environment.md](../../docs/setup/environment.md).
+
 Details: [../../docs/backend/setup.md](../../docs/backend/setup.md)

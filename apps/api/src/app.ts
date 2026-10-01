@@ -13,10 +13,10 @@ import { createV1Router } from "./routes/v1.js";
 import { failure } from "./shared/http/envelope.js";
 
 function corsOrigin(): string | false {
-  if (env.CLIENT_URL === "*") {
+  if (env.FRONTEND_ORIGIN === "*") {
     return false;
   }
-  return env.CLIENT_URL;
+  return env.FRONTEND_ORIGIN;
 }
 
 export function createApp() {

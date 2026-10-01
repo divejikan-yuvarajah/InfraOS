@@ -66,4 +66,4 @@ Local machines may run a newer Node 22+ for install; CI should use Node 22.
 - Feature modules (ProjectTrace, RoadSync, …)
 - GitHub Actions CI
 - Real secret values
-- A third env-name catalog (architecture vs this example: [INC-005](../planning/assumptions-risks.md#inc-005--environment-variable-names); Step 10 unifies)
+- A third env-name catalog — **closed Step 10:** [environment.md](../setup/environment.md), [INC-005](../planning/assumptions-risks.md#inc-005--environment-variable-names)
