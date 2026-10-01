@@ -7,6 +7,7 @@ This folder holds:
 - **Step 4** — authorization matrices live in [../security/](../security/README.md)
 - **Step 5** — page/route IA lives in [../ux/](../ux/README.md); this file’s page list stays aligned
 - **Step 6** — Git/team workflow lives in [../team/](../team/README.md)
+- **Step 7** — workspace layout: [repository-structure.md](./repository-structure.md)
 
 Product scope remains in [../planning/](../planning/README.md).
 
@@ -44,6 +45,12 @@ ADRs: [../adr/README.md](../adr/README.md).
 | [security-trust-boundaries.md](./security-trust-boundaries.md) | Threats and trust |
 | [team-integration.md](./team-integration.md) | Who owns which module (product). Git process: [../team/](../team/README.md) |
 
+## Step 7 — workspace
+
+| File | Purpose |
+|------|---------|
+| [repository-structure.md](./repository-structure.md) | npm workspaces, apps, packages |
+
 ## Consistency (Step 3 vs Step 2)
 
 | Topic | Locked value |
@@ -66,5 +73,5 @@ ADRs: [../adr/README.md](../adr/README.md).
 
 | Field | Value |
 |-------|--------|
-| Steps | 02 lock + 03 blueprint |
-| Application feature code | None |
+| Steps | 02 lock + 03 blueprint + 07 workspace |
+| Application feature code | None (workspace placeholders only) |

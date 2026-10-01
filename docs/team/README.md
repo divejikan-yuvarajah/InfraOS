@@ -24,6 +24,7 @@ Pull request template: [../../.github/pull_request_template.md](../../.github/pu
 
 ## Non-goals
 
-- Do not scaffold the monorepo here (Step 7).
-- Do not implement product features.
+- Do not implement product features in this folder.
 - Do not rewrite Git history or force-push `main` / `development`.
+
+Workspace layout: [../architecture/repository-structure.md](../architecture/repository-structure.md).

@@ -1,0 +1,16 @@
+{
+  "name": "infraos",
+  "private": true,
+  "version": "0.1.0",
+  "description": "INFRAOS — National Infrastructure Intelligence & Coordination Platform",
+  "license": "UNLICENSED",
+  "engines": {
+    "node": ">=22.0.0",
+    "npm": ">=10.0.0"
+  },
+  "workspaces": [
+    "apps/web",
+    "apps/api",
+    "packages/*"
+  ]
+}
