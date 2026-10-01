@@ -4,7 +4,7 @@
 **Step:** 03  
 **Status:** Locked
 
-This is the contract between teammates. Public API namespaces, shared types, and “do not touch” lists live here. Folder ownership: [team-integration.md](./team-integration.md).
+This is the contract between teammates. Public API namespaces, shared types, and “do not touch” lists live here. Folder ownership: [team-integration.md](./team-integration.md). Git/PR process: [../team/README.md](../team/README.md).
 
 ---
 

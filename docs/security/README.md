@@ -12,4 +12,4 @@
 | [rbac-test-plan.md](./rbac-test-plan.md) | Future API/E2E authorization tests |
 | [route-access-policy.md](./route-access-policy.md) | Next.js route vs permission (UX only) |
 
-Related: [../architecture/authorization-flow.md](../architecture/authorization-flow.md)
+Related: [../architecture/authorization-flow.md](../architecture/authorization-flow.md). Contributors follow [../team/](../team/README.md) so RBAC changes stay in leader-owned shared middleware.

@@ -6,6 +6,7 @@ This folder holds:
 - **Step 3** — how the system is structured (modules, flows, pages, trust, team)
 - **Step 4** — authorization matrices live in [../security/](../security/README.md)
 - **Step 5** — page/route IA lives in [../ux/](../ux/README.md); this file’s page list stays aligned
+- **Step 6** — Git/team workflow lives in [../team/](../team/README.md)
 
 Product scope remains in [../planning/](../planning/README.md).
 
@@ -41,7 +42,7 @@ ADRs: [../adr/README.md](../adr/README.md).
 | [notification-audit-architecture.md](./notification-audit-architecture.md) | Notifications vs audit |
 | [deployment-architecture.md](./deployment-architecture.md) | Runtime topology |
 | [security-trust-boundaries.md](./security-trust-boundaries.md) | Threats and trust |
-| [team-integration.md](./team-integration.md) | Who owns which module |
+| [team-integration.md](./team-integration.md) | Who owns which module (product). Git process: [../team/](../team/README.md) |
 
 ## Consistency (Step 3 vs Step 2)
 

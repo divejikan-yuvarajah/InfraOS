@@ -74,3 +74,4 @@ Prefer MIT/Apache-2.0. Review GPL before adding.
 1. Search existing package.json / these docs.
 2. If major (new database, new UI kit, new queue): write or supersede an ADR **before** merging.
 3. Never commit credentials inside packages or `.env`.
+4. PR explanation and duplicate-library ban: [../team/dependency-change-policy.md](../team/dependency-change-policy.md).

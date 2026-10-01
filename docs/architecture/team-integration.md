@@ -47,4 +47,4 @@ Identity → Agencies → ProjectTrace → RoadSync → InfraMap layers → Audi
 - Member 5 owns finance/contractor/asset modules
 - Member 6 owns `features/citizen`, `modules/issues`, public routes under `app/(public)`
 
-Conflict on `layout.tsx` / design tokens: wait for Step 5/8; until then do not invent a third palette (INC-001).
+Conflict on `layout.tsx` / design tokens: **Step 5 locked** nav/status to the flag palette (`#FF5B00`, `#FEB600`, `#8C1F28`, `#279541`). Remaining chrome tokens are **Step 8**. Do not invent a third palette (INC-001). Git/PR process: [../team/README.md](../team/README.md).

@@ -33,6 +33,7 @@ These are locked by Step 1 and the provided INFRAOS prompts:
 | C-017 | Step 3 system architecture blueprint locked: module boundaries, page map, RoadSync/ProjectTrace/InfraMap/RAG/authz flows, team ownership |
 | C-018 | Step 4 RBAC: seven roles, `resource.action` catalog, org/agency/assignment scopes, SoD (submit≠approve; contractor never verifies/pays), admin-provisioned staff, no impersonation |
 | C-019 | Step 5 IA: four surfaces, page inventory, role nav, route access policy; `/roadsync/work-requests`; no staff `/register`; `/projects/[id]` → overview |
+| C-020 | Step 6 Git: `main` + `development` + `feature/fix/chore/docs`; squash-merge feature → `development`; conventional commits; PR template; no force-push; team-leader integrator |
 
 ---
 
@@ -85,7 +86,7 @@ These need answers in later steps or from the team leader. They do **not** block
 | D-001 | ~~Vendors/versions~~ **Closed:** majors in [technology-stack.md](../architecture/technology-stack.md); patch versions at scaffold (Step 7+) | — |
 | D-002 | ~~RBAC matrix~~ **Closed:** [../security/README.md](../security/README.md) | — |
 | D-003 | ~~Page/route map~~ **Closed:** [../ux/README.md](../ux/README.md) | — |
-| D-004 | Git branching and team workflow | Step 6 |
+| D-004 | ~~Git branching and team workflow~~ **Closed:** [../team/README.md](../team/README.md) | — |
 | D-005 | Mongoose schemas and indexes | Later database steps |
 | D-006 | OpenAPI path list | Later API steps |
 | D-007 | Visual design tokens | Nav/status colors locked in Step 5 IA. Full component tokens remain **Step 8**. |
@@ -131,7 +132,7 @@ Step 1 instruction: if existing files disagree, **document** rather than hide a 
 
 The user execution wrapper asks for pages, APIs, and tests “where applicable.” The Step 1 prompt **forbids application feature code**.
 
-**Step 1 decision:** Follow the Step 1 prompt. Deliverables are documentation only. Lint/type-check/build/tests are **not available** because no app exists.
+**Step 1 decision:** Follow the step prompt, not the generic wrapper’s “implement pages/APIs” when the step forbids application code. Steps 1–6 deliverables are documentation (and Git/PR conventions). Lint/type-check/build/tests are **not available** until the app is scaffolded.
 
 ---
 
@@ -204,3 +205,4 @@ These must be handled in later implementation. They are logged now so they are n
 - [user-workflows.md](./user-workflows.md)
 - [../architecture/README.md](../architecture/README.md)
 - [../adr/README.md](../adr/README.md)
+- [../team/README.md](../team/README.md)

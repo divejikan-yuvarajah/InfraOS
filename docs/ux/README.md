@@ -13,4 +13,4 @@
 | [dashboard-information-architecture.md](./dashboard-information-architecture.md) | Role dashboards |
 | [map-information-architecture.md](./map-information-architecture.md) | Map chrome and query state |
 
-Route access: [../security/route-access-policy.md](../security/route-access-policy.md)
+Route access: [../security/route-access-policy.md](../security/route-access-policy.md). Shared layout/nav edits: [../team/shared-files-policy.md](../team/shared-files-policy.md).
