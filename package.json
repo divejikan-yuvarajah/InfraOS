@@ -27,6 +27,7 @@
     "type-check": "npm run type-check:web && npm run type-check:api",
     "test:web": "npm run test -w @infraos/web",
     "test:api": "npm run test -w @infraos/api",
-    "test": "npm run test:web && npm run test:api"
+    "test": "npm run test:web && npm run test:api",
+    "db:check": "npm run db:check -w @infraos/api"
   }
 }

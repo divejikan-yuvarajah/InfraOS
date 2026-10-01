@@ -14,6 +14,7 @@ npm run dev:api
 | Script | Command |
 |--------|---------|
 | Dev | `npm run dev:api` |
+| DB check | `npm run db:check` |
 | Lint | `npm run lint:api` |
 | Type-check | `npm run type-check:api` |
 | Test | `npm run test:api` |
@@ -21,8 +22,8 @@ npm run dev:api
 | Start (after build) | `npm run start -w @infraos/api` |
 
 Health: [http://localhost:4000/api/v1/health](http://localhost:4000/api/v1/health)  
-Probe: [http://localhost:4000/health](http://localhost:4000/health)
+Ready: [http://localhost:4000/api/v1/ready](http://localhost:4000/api/v1/ready) (503 until Atlas is connected)
 
-Copy `apps/api/.env.example` to `apps/api/.env` to override local non-secret defaults. Canonical names: [../../docs/setup/environment.md](../../docs/setup/environment.md).
+Copy `apps/api/.env.example` to `apps/api/.env`. Atlas: [../../docs/setup/mongodb-atlas.md](../../docs/setup/mongodb-atlas.md).
 
 Details: [../../docs/backend/setup.md](../../docs/backend/setup.md)

@@ -20,9 +20,10 @@ Version 1 is a **Sri Lankan public-infrastructure oriented** university / portfo
 **Step 07 complete:** Initialize Full Project Repository (npm workspaces).  
 **Step 08 complete:** Configure Next.js Frontend Foundation.  
 **Step 09 complete:** Configure Express Backend Foundation.  
-**Step 10 complete:** Environment Variables & Secret Management.
+**Step 10 complete:** Environment Variables & Secret Management.  
+**Step 11 complete:** MongoDB Atlas Complete Setup.
 
-Next: **Step 11** (MongoDB Atlas complete setup).
+Next: **Step 12** (core MongoDB schema foundation).
 
 This is a university group project at **South Eastern University of Sri Lanka**.
 
@@ -111,6 +112,7 @@ Web: http://localhost:3000 · API health: http://localhost:4000/api/v1/health
 **Authorization:** [docs/security/README.md](./docs/security/README.md)  
 **UX / routes:** [docs/ux/README.md](./docs/ux/README.md)  
 **Environment:** [docs/setup/environment.md](./docs/setup/environment.md)  
+**MongoDB Atlas:** [docs/setup/mongodb-atlas.md](./docs/setup/mongodb-atlas.md) · [docs/database/connection.md](./docs/database/connection.md)  
 **Frontend:** [docs/frontend/setup.md](./docs/frontend/setup.md) · [docs/frontend/conventions.md](./docs/frontend/conventions.md)  
 **Backend:** [docs/backend/setup.md](./docs/backend/setup.md) · [docs/backend/conventions.md](./docs/backend/conventions.md)  
 **Team / Git:** [CONTRIBUTING.md](./CONTRIBUTING.md) · [docs/team/README.md](./docs/team/README.md)  

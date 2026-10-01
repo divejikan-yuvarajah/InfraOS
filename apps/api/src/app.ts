@@ -8,7 +8,7 @@ import { errorHandler } from "./middleware/error-handler.js";
 import { notFoundHandler } from "./middleware/not-found.js";
 import { requestIdMiddleware } from "./middleware/request-id.js";
 import { requestLogger } from "./middleware/request-logger.js";
-import { getHealth } from "./modules/health/health.controller.js";
+import { getHealth, getReady } from "./modules/health/health.controller.js";
 import { createV1Router } from "./routes/v1.js";
 import { failure } from "./shared/http/envelope.js";
 
@@ -50,8 +50,15 @@ export function createApp() {
     limit: env.NODE_ENV === "test" ? 10_000 : 300,
     standardHeaders: "draft-8",
     legacyHeaders: false,
-    skip: (req) =>
-      req.path === "/health" || req.path === `${env.API_PREFIX}/health`,
+    skip: (req) => {
+      const path = req.path;
+      return (
+        path === "/health" ||
+        path === "/ready" ||
+        path === `${env.API_PREFIX}/health` ||
+        path === `${env.API_PREFIX}/ready`
+      );
+    },
     handler: (req, res) => {
       res
         .status(429)
@@ -61,6 +68,7 @@ export function createApp() {
   app.use(limiter);
 
   app.get("/health", getHealth);
+  app.get("/ready", getReady);
   app.use(env.API_PREFIX, createV1Router());
   app.use(notFoundHandler);
   app.use(errorHandler);

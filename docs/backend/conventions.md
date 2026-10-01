@@ -10,14 +10,15 @@
 | `src/app.ts` | Create Express app, middleware, routes, 404, error handler |
 | `src/server.ts` | Load config, listen, log startup, SIGINT/SIGTERM shutdown |
 | `src/config/env.ts` | Zod env parse, staged secrets, INC-005 catalog |
+| `src/config/database.ts` | One Mongoose connection per process, sanitized errors |
 
-Tests import `createApp()` and do not listen on a port.
+Tests import `createApp()` and do not listen on a port. They do not connect to Atlas.
 
 ## Request flow (current)
 
 ```text
 requestId → pino-http → Helmet → CORS → JSON limit → rate limit
-  → routes (/health, /api/v1)
+  → routes (/health, /ready, /api/v1)
   → JSON 404
   → error handler
 ```

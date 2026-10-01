@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  assertNonProductionDatabaseName,
   assertSafeTestDatabaseName,
   EnvValidationError,
   parseEnv,
+  requireMongoConfig,
 } from "../src/config/env.js";
 
 const base = {
@@ -141,6 +143,43 @@ describe("parseEnv", () => {
     const env = parseEnv({ ...base, API_PREFIX: "/api/v1/" });
     expect(env.API_PREFIX).toBe("/api/v1");
   });
+
+  it("accepts a mongodb+srv URI without requiring Atlas at parse time", () => {
+    const env = parseEnv({
+      ...base,
+      MONGODB_URI: "mongodb+srv://user:placeholder@cluster.mongodb.net",
+      MONGODB_DB_NAME: "infraos_dev",
+    });
+    expect(env.MONGODB_DB_NAME).toBe("infraos_dev");
+    expect(env.MONGODB_URI).toMatch(/^mongodb\+srv:\/\//);
+  });
+
+  it("rejects a non-Mongo URI scheme without printing the value", () => {
+    const leaked = "postgres://user:supersecret@db.example/infraos";
+    try {
+      parseEnv({
+        ...base,
+        MONGODB_URI: leaked,
+        MONGODB_DB_NAME: "infraos_dev",
+      });
+      throw new Error("expected EnvValidationError");
+    } catch (error) {
+      expect(error).toBeInstanceOf(EnvValidationError);
+      const message = error instanceof Error ? error.message : String(error);
+      expect(message).toContain("MONGODB_URI");
+      expect(message).not.toContain("supersecret");
+      expect(message).not.toContain(leaked);
+    }
+  });
+
+  it("requires MONGODB_DB_NAME when MONGODB_URI is set", () => {
+    expect(() =>
+      parseEnv({
+        ...base,
+        MONGODB_URI: "mongodb://127.0.0.1:27017",
+      }),
+    ).toThrow(/MONGODB_DB_NAME/);
+  });
 });
 
 describe("assertSafeTestDatabaseName", () => {
@@ -159,12 +198,54 @@ describe("assertSafeTestDatabaseName", () => {
     );
   });
 
-  it("does not constrain development or production names", () => {
+  it("does not constrain development names that are not _prod", () => {
     expect(() =>
       assertSafeTestDatabaseName("development", "infraos_dev"),
     ).not.toThrow();
     expect(() =>
       assertSafeTestDatabaseName("production", "infraos_prod"),
+    ).not.toThrow();
+  });
+});
+
+describe("requireMongoConfig", () => {
+  const mongoBase = parseEnv({
+    ...base,
+    MONGODB_URI: "mongodb://127.0.0.1:27017",
+    MONGODB_DB_NAME: "infraos_dev",
+  });
+
+  it("fails safely when URI is missing", () => {
+    expect(() => requireMongoConfig(parseEnv(base))).toThrow(/MONGODB_URI/);
+  });
+
+  it("does not print the URI on failure", () => {
+    try {
+      requireMongoConfig(parseEnv(base));
+      throw new Error("expected EnvValidationError");
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      expect(message).not.toMatch(/mongodb(\+srv)?:\/\//i);
+    }
+  });
+
+  it("returns uri and db name when both are set", () => {
+    const config = requireMongoConfig(mongoBase);
+    expect(config.dbName).toBe("infraos_dev");
+    expect(config.uri).toBe("mongodb://127.0.0.1:27017");
+  });
+});
+
+describe("assertNonProductionDatabaseName", () => {
+  it("blocks development from using a _prod database", () => {
+    expect(() =>
+      assertNonProductionDatabaseName("development", "infraos_prod"),
+    ).toThrow(/_prod/);
+  });
+
+  it("allows production to use infraos_prod", () => {
+    expect(() =>
+      assertNonProductionDatabaseName("production", "infraos_prod"),
     ).not.toThrow();
   });
 });

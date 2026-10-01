@@ -16,7 +16,7 @@ Full product tests are created when code exists. This file records the **locked 
 | Area | Status |
 |------|--------|
 | `@infraos/web` unit | Vitest: `cn()`, API error parsing, public env (`npm run test:web`) |
-| `@infraos/api` | Vitest + Supertest: health, envelope, validate, **env parse** (`npm run test:api`) |
+| `@infraos/api` | Vitest + Supertest: health, ready 503, envelope, validate, env parse, **Mongo connect module (mocked; no Atlas)** |
 | E2E | Playwright after product UI exists |
 
 Do **not** add Jest or Cypress unless an ADR supersedes this.
