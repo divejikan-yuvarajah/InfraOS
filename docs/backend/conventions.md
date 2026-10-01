@@ -52,6 +52,7 @@ Pino. Request logs include method, path, status, duration, and requestId. Author
 - `x-powered-by` disabled
 - CORS exact `FRONTEND_ORIGIN`, `credentials: true`, never `*` with credentials
 - Typed env only via `src/config/env.ts` — do not read `process.env` in modules
+- Identity models in `modules/identity`; Agency model in `modules/agencies`
 - JSON / urlencoded body limit **1mb** (uploads later)
 - Baseline rate limit 300 / 15 minutes (health skipped; auth-specific limits later)
 

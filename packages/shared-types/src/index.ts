@@ -2,8 +2,26 @@
  * Shared cross-app TypeScript contracts.
  *
  * Only types used by more than one app belong here.
- * Do not dump every domain schema into this package.
- * User / Project / Conflict models are added in later steps.
+ * Mongoose models stay in apps/api. Do not add passwordHash or tokenHash here.
  */
 
-export {};
+export {
+  AGENCY_STATUSES,
+  AGENCY_TYPES,
+  SCOPE_TYPES,
+  SYSTEM_ROLE_KEYS,
+  USER_STATUSES,
+  type AgencyStatus,
+  type AgencyType,
+  type ScopeType,
+  type SystemRoleKey,
+  type UserStatus,
+} from "./identity.js";
+
+export {
+  PERMISSION_CATALOG,
+  PERMISSION_SET,
+  isPermission,
+  isPermissionFormat,
+  type Permission,
+} from "./permissions.js";

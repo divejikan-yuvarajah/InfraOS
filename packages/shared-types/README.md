@@ -1,5 +1,11 @@
 # `@infraos/shared-types`
 
-Only genuinely shared cross-app TypeScript contracts belong here. Do not dump every type into this package.
+Cross-app TypeScript contracts only. Mongoose models stay in `apps/api`.
 
-This package is an empty foundation until identity, envelope, and domain contracts are implemented. Do not define User, Project, or Conflict schemas here in Step 7.
+Currently exported:
+
+- System role keys (`GOV_ADMIN`, not `GOVERNMENT_ADMIN`)
+- User statuses, agency types/statuses, scope types
+- Permission catalog strings from Step 4
+
+Do not put `passwordHash`, `tokenHash`, or Mongo document shapes here.

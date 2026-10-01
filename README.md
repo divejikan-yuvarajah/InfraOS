@@ -21,9 +21,10 @@ Version 1 is a **Sri Lankan public-infrastructure oriented** university / portfo
 **Step 08 complete:** Configure Next.js Frontend Foundation.  
 **Step 09 complete:** Configure Express Backend Foundation.  
 **Step 10 complete:** Environment Variables & Secret Management.  
-**Step 11 complete:** MongoDB Atlas Complete Setup.
+**Step 11 complete:** MongoDB Atlas Complete Setup.  
+**Step 12 complete:** Core MongoDB Schema Foundation.
 
-Next: **Step 12** (core MongoDB schema foundation).
+Next: **Step 13** (complete INFRAOS database models).
 
 This is a university group project at **South Eastern University of Sri Lanka**.
 
