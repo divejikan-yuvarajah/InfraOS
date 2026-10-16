@@ -10,7 +10,7 @@ const contactSchema = new Schema({
 
 const contractorSchema = new Schema({
   name: textField(200, true),
-  registrationNumber: { ...textField(80, true), uppercase: true, match: /^[A-Z0-9][A-Z0-9/-]*$/ },
+  registrationNumber: { ...textField(80, true), uppercase: true, unique: true, match: /^[A-Z0-9][A-Z0-9/-]*$/ },
   contact: { type: contactSchema },
   rating: { type: Number, min: 0, max: 5 },
   // Optional caches, not counters updated by schema hooks. Missing means unknown.

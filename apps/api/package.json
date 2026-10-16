@@ -12,6 +12,7 @@
     "build": "tsc -p tsconfig.build.json",
     "start": "node dist/server.js",
     "db:check": "tsx src/scripts/db-check.ts",
+    "db:indexes:check": "tsx src/scripts/check-indexes.ts",
     "db:seed:core": "tsx src/scripts/seed-core.ts",
     "lint": "eslint .",
     "type-check": "tsc -p tsconfig.json --noEmit",

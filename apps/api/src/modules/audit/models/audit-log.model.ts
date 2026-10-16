@@ -59,5 +59,8 @@ auditLogSchema.pre("deleteOne", { document: true, query: false }, appendOnly);
 auditLogSchema.pre("bulkWrite", appendOnly);
 // Native collection access can bypass ODM hooks; DB privileges remain essential.
 
+auditLogSchema.index({ resourceType: 1, resourceId: 1, timestamp: -1 });
+auditLogSchema.index({ userId: 1, timestamp: -1 });
+
 export type AuditLogDocument = mongoose.InferSchemaType<typeof auditLogSchema> & { _id: mongoose.Types.ObjectId };
 export const AuditLog = (mongoose.models.AuditLog as mongoose.Model<AuditLogDocument> | undefined) ?? mongoose.model<AuditLogDocument>("AuditLog", auditLogSchema);

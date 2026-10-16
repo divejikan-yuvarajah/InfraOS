@@ -4,7 +4,7 @@ import { geometryField } from "../../../shared/database/geometry.js";
 import { PROJECT_STATUSES, PROJECT_TYPES } from "../project.constants.js";
 
 const projectSchema = new Schema({
-  projectCode: { ...textField(48, true), immutable: true, match: /^INF-[A-Z_]+-[0-9]+$/ },
+  projectCode: { ...textField(48, true), immutable: true, unique: true, match: /^INF-[A-Z_]+-[0-9]+$/ },
   title: textField(200, true),
   description: textField(5000),
   projectType: { type: String, enum: PROJECT_TYPES, required: true },
@@ -27,6 +27,14 @@ const projectSchema = new Schema({
 }, { timestamps: true, strict: "throw", collection: "projects" });
 
 dateOrder(projectSchema, "startDate", "plannedEndDate");
+dateOrder(projectSchema, "startDate", "actualEndDate");
+
+projectSchema.index({ agencyId: 1, status: 1, plannedEndDate: 1 });
+projectSchema.index({ status: 1, plannedEndDate: 1 });
+projectSchema.index({ managerId: 1, status: 1 });
+projectSchema.index({ contractorId: 1, status: 1 });
+projectSchema.index({ projectType: 1, status: 1 });
+projectSchema.index({ geometry: "2dsphere" });
 
 export type ProjectDocument = mongoose.InferSchemaType<typeof projectSchema> & { _id: mongoose.Types.ObjectId };
 export const Project = (mongoose.models.Project as mongoose.Model<ProjectDocument> | undefined) ?? mongoose.model<ProjectDocument>("Project", projectSchema);

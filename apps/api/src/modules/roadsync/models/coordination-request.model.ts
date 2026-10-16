@@ -11,5 +11,9 @@ const coordinationRequestSchema = new Schema({
   response: textField(4000),
 }, { timestamps: true, strict: "throw", collection: "coordinationRequests" });
 
+coordinationRequestSchema.index({ toAgency: 1, status: 1, createdAt: -1 });
+coordinationRequestSchema.index({ conflictId: 1, createdAt: -1 });
+coordinationRequestSchema.index({ fromAgency: 1, createdAt: -1 });
+
 export type CoordinationRequestDocument = mongoose.InferSchemaType<typeof coordinationRequestSchema> & { _id: mongoose.Types.ObjectId };
 export const CoordinationRequest = (mongoose.models.CoordinationRequest as mongoose.Model<CoordinationRequestDocument> | undefined) ?? mongoose.model<CoordinationRequestDocument>("CoordinationRequest", coordinationRequestSchema);

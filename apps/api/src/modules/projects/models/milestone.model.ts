@@ -17,5 +17,7 @@ const milestoneSchema = new Schema({
 dateOrder(milestoneSchema, "plannedStart", "plannedEnd");
 dateOrder(milestoneSchema, "actualStart", "actualEnd");
 
+milestoneSchema.index({ projectId: 1, plannedEnd: 1 });
+
 export type MilestoneDocument = mongoose.InferSchemaType<typeof milestoneSchema> & { _id: mongoose.Types.ObjectId };
 export const Milestone = (mongoose.models.Milestone as mongoose.Model<MilestoneDocument> | undefined) ?? mongoose.model<MilestoneDocument>("Milestone", milestoneSchema);

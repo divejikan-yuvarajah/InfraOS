@@ -29,5 +29,10 @@ const citizenIssueSchema = new Schema({
   },
 });
 
+citizenIssueSchema.index({ assignedAgency: 1, status: 1, createdAt: -1 });
+citizenIssueSchema.index({ citizenId: 1, createdAt: -1 });
+citizenIssueSchema.index({ status: 1, priority: 1 });
+citizenIssueSchema.index({ geometry: "2dsphere" });
+
 export type CitizenIssueDocument = mongoose.InferSchemaType<typeof citizenIssueSchema> & { _id: mongoose.Types.ObjectId };
 export const CitizenIssue = (mongoose.models.CitizenIssue as mongoose.Model<CitizenIssueDocument> | undefined) ?? mongoose.model<CitizenIssueDocument>("CitizenIssue", citizenIssueSchema);
