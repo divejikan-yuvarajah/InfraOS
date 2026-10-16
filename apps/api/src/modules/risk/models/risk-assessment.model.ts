@@ -19,5 +19,7 @@ const riskAssessmentSchema = new Schema({
   modelVersion: { ...textField(100, true), match: /^[A-Za-z0-9_.:-]+$/ },
 }, { timestamps: { createdAt: true, updatedAt: false }, strict: "throw", collection: "riskAssessments" });
 
+riskAssessmentSchema.index({ projectId: 1, createdAt: -1 });
+
 export type RiskAssessmentDocument = mongoose.InferSchemaType<typeof riskAssessmentSchema> & { _id: mongoose.Types.ObjectId };
 export const RiskAssessment = (mongoose.models.RiskAssessment as mongoose.Model<RiskAssessmentDocument> | undefined) ?? mongoose.model<RiskAssessmentDocument>("RiskAssessment", riskAssessmentSchema);

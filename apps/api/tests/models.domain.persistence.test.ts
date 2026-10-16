@@ -31,7 +31,7 @@ describe("Step 13 domain persistence in disposable MongoDB", { timeout: 60_000 }
     const agency = await Agency.create({ code: "TEST_ROAD", name: "Synthetic agency", type: "ROAD" });
     const otherAgency = await Agency.create({ code: "TEST_WATER", name: "Synthetic water agency", type: "WATER" });
     const user = await User.create({ firstName: "Test", lastName: "User", email: "test@example.test", passwordHash: "test-only-placeholder".repeat(3), roleId: role._id, agencyId: agency._id });
-    const contractor = await fixtures.Contractor().save();
+    const contractor = await fixtures.Contractor({ registrationNumber: "TEST-GRAPH-0001" }).save();
     const project = await fixtures.Project({ projectCode: "INF-ROAD-0002", agencyId: agency._id, managerId: user._id, createdBy: user._id, contractorId: contractor._id }).save();
     await project.populate(["agencyId", "managerId", "contractorId", "createdBy"]);
     expect(project.populated("agencyId")).toEqual(agency._id);

@@ -20,5 +20,9 @@ projectPaymentSchema.pre("validate", function () {
   }
 });
 
+projectPaymentSchema.index({ projectId: 1, date: -1 });
+projectPaymentSchema.index({ contractorId: 1, date: -1 });
+projectPaymentSchema.index({ status: 1, date: -1 });
+
 export type ProjectPaymentDocument = mongoose.InferSchemaType<typeof projectPaymentSchema> & { _id: mongoose.Types.ObjectId };
 export const ProjectPayment = (mongoose.models.ProjectPayment as mongoose.Model<ProjectPaymentDocument> | undefined) ?? mongoose.model<ProjectPaymentDocument>("ProjectPayment", projectPaymentSchema);

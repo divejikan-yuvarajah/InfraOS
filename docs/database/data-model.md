@@ -2,8 +2,10 @@
 
 Step 13 implements the 16 remaining domain models in Express. Step 12 User,
 Role, Agency, and RefreshSession schemas remain unchanged, including the existing
-`refresh_sessions` collection name. No feature routes, services, authentication,
-AI calls, indexes, or demo seeding are introduced here.
+`refresh_sessions` collection name. Step 14 adds the query indexes and integrity
+constraints documented in [indexes.md](./indexes.md), [geospatial.md](./geospatial.md),
+and [constraints.md](./constraints.md). No feature routes, services, AI calls, or
+demo seeding are introduced here.
 
 Source: `Prompts/INFRAOS_Cursor_Prompts_Steps_13_to_15.md`, Step 13.
 Connections: [connection.md](./connection.md). Identity: [core-models.md](./core-models.md).
@@ -108,8 +110,8 @@ except Notification and RiskAssessment (creation time only) and AuditLog
 | AuditLog | action, resourceType, resourceId | userId absent only for system-originated actions; oldValue/newValue safe snapshots; ipAddress; userAgent; requestId; agencyId for scoped reads; timestamp assigned on insertion |
 
 Project codes are immutable, human-readable `INF-<UPPERCASE_TYPE>-<DIGITS>` values.
-The future service generates codes. Unique enforcement and its index are **Step 14**;
-Step 13 does not claim concurrent duplicate protection. Contractor registration
+The future service generates codes. Step 14 provides concurrent duplicate
+protection through a unique index. Contractor registration
 numbers are trimmed uppercase identifiers allowing letters, digits, slash, and hyphen.
 
 Optional additions have specific purposes: payment createdBy supports attribution
