@@ -1,0 +1,3 @@
+export const NOTIFICATION_TYPES = ["CONFLICT", "COORDINATION", "RISK", "APPROVAL", "MILESTONE", "INSPECTION", "CITIZEN_ISSUE", "SYSTEM"] as const;
+// Application resource keys, never dynamic Mongoose model names/refPath values.
+export const NOTIFICATION_RESOURCES = ["PROJECT", "WORK_REQUEST", "CONFLICT", "COORDINATION_REQUEST", "MILESTONE", "INSPECTION", "CITIZEN_ISSUE", "DOCUMENT", "PAYMENT", "ASSET", "RISK_ASSESSMENT"] as const;
