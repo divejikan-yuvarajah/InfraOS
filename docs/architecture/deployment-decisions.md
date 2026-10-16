@@ -108,6 +108,6 @@ Kubernetes is rejected.
 
 ## 8. Secrets inventory (names only)
 
-To be created in Step 10. Examples: `MONGODB_URI`, `ACCESS_TOKEN_SECRET`, `REFRESH_TOKEN_SECRET`, `FRONTEND_ORIGIN`, `R2_*`, `AI_INTERNAL_SECRET`, `AI_BASE_URL`, `OPENROUTER_API_KEY`, `QDRANT_URL`, `QDRANT_API_KEY`.
+Canonical catalog (Step 10): [environment.md](../setup/environment.md). Names: `MONGODB_URI`, `ACCESS_TOKEN_SECRET`, `REFRESH_TOKEN_SECRET`, `FRONTEND_ORIGIN`, `R2_*`, `AI_INTERNAL_SECRET`, `AI_BASE_URL`, `OPENROUTER_API_KEY`, `QDRANT_URL`, `QDRANT_API_KEY`.
 
 Never commit values.

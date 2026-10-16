@@ -8,6 +8,11 @@ This folder holds:
 - **Step 5** — page/route IA lives in [../ux/](../ux/README.md); this file’s page list stays aligned
 - **Step 6** — Git/team workflow lives in [../team/](../team/README.md)
 - **Step 7** — workspace layout: [repository-structure.md](./repository-structure.md)
+- **Step 8** — Next.js foundation: [../frontend/setup.md](../frontend/setup.md)
+- **Step 9** — Express foundation: [../backend/setup.md](../backend/setup.md)
+- **Step 10** — env catalog: [../setup/environment.md](../setup/environment.md)
+- **Step 11** — MongoDB Atlas: [../setup/mongodb-atlas.md](../setup/mongodb-atlas.md), [../database/connection.md](../database/connection.md)
+- **Step 12** — core models: [../database/core-models.md](../database/core-models.md)
 
 Product scope remains in [../planning/](../planning/README.md).
 
@@ -51,6 +56,19 @@ ADRs: [../adr/README.md](../adr/README.md).
 |------|---------|
 | [repository-structure.md](./repository-structure.md) | npm workspaces, apps, packages |
 
+## Step 10 — environment
+
+| File | Purpose |
+|------|---------|
+| [../setup/environment.md](../setup/environment.md) | Canonical env catalog, staged secrets, INC-005 |
+
+## Step 11 — database connection
+
+| File | Purpose |
+|------|---------|
+| [../setup/mongodb-atlas.md](../setup/mongodb-atlas.md) | Atlas project, user, network |
+| [../database/connection.md](../database/connection.md) | Mongoose lifecycle |
+
 ## Consistency (Step 3 vs Step 2)
 
 | Topic | Locked value |
@@ -73,5 +91,5 @@ ADRs: [../adr/README.md](../adr/README.md).
 
 | Field | Value |
 |-------|--------|
-| Steps | 02 lock + 03 blueprint + 07 workspace |
-| Application feature code | None (workspace placeholders only) |
+| Steps | 02 lock + 03 blueprint + 07–12 workspace through core identity models |
+| Application feature code | Temporary web home + API health/ready; identity schemas only; no auth APIs |

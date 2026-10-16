@@ -12,4 +12,6 @@
 | [rbac-test-plan.md](./rbac-test-plan.md) | Future API/E2E authorization tests |
 | [route-access-policy.md](./route-access-policy.md) | Next.js route vs permission (UX only) |
 
+Env catalog and secret handling: [../setup/environment.md](../setup/environment.md) (Step 10). Express remains the only place that may hold Mongo, JWT, AI, and storage secrets.
+
 Related: [../architecture/authorization-flow.md](../architecture/authorization-flow.md). Contributors follow [../team/](../team/README.md) so RBAC changes stay in leader-owned shared middleware.

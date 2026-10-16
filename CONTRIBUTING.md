@@ -10,7 +10,7 @@ INFRAOS is a university group project (South Eastern University of Sri Lanka). T
 4. Follow routes in [docs/ux/README.md](./docs/ux/README.md).
 5. Work only in your owned module ([docs/team/module-ownership.md](./docs/team/module-ownership.md)).
 
-The npm workspace exists (Step 7). Do not add product features until the relevant later step. Next.js is **Step 8**. Express is **Step 9**. Install with `npm install` from the repository root (one lockfile). Do not add pnpm or Yarn.
+The npm workspace exists. Next.js: `npm run dev:web`. Express: `npm run dev:api`. Install with `npm install` from the repository root (one lockfile). Do not add pnpm or Yarn.
 
 ## Workspace
 
@@ -40,7 +40,7 @@ See [docs/team/definition-of-done.md](./docs/team/definition-of-done.md).
 
 ## Secrets
 
-Never commit `.env`, keys, or credentials. Commit `.env.example` with names only.
+Never commit `.env`, keys, or credentials. Commit `.env.example` with names only. Canonical names: [docs/setup/environment.md](./docs/setup/environment.md). Do not use `JWT_SECRET`, `REFRESH_SECRET`, `CLIENT_URL`, or `AI_SERVICE_SECRET`.
 
 ## AI / Cursor
 

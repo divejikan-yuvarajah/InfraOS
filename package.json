@@ -12,5 +12,23 @@
     "apps/web",
     "apps/api",
     "packages/*"
-  ]
+  ],
+  "scripts": {
+    "dev:web": "npm run dev -w @infraos/web",
+    "dev:api": "npm run dev -w @infraos/api",
+    "build:web": "npm run build -w @infraos/web",
+    "build:api": "npm run build -w @infraos/api",
+    "build": "npm run build:web && npm run build:api",
+    "lint:web": "npm run lint -w @infraos/web",
+    "lint:api": "npm run lint -w @infraos/api",
+    "lint": "npm run lint:web && npm run lint:api",
+    "type-check:web": "npm run type-check -w @infraos/web",
+    "type-check:api": "npm run type-check -w @infraos/api",
+    "type-check": "npm run type-check:web && npm run type-check:api",
+    "test:web": "npm run test -w @infraos/web",
+    "test:api": "npm run test -w @infraos/api",
+    "test": "npm run test:web && npm run test:api",
+    "db:check": "npm run db:check -w @infraos/api",
+    "db:seed:core": "npm run db:seed:core -w @infraos/api"
+  }
 }

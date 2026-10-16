@@ -11,6 +11,14 @@ Full product tests are created when code exists. This file records the **locked 
 | E2E | **Playwright** (P0 spine when UI exists) |
 | AI service | **pytest** when FastAPI exists |
 
+## Current coverage
+
+| Area | Status |
+|------|--------|
+| `@infraos/web` unit | Vitest: `cn()`, API error parsing, public env (`npm run test:web`) |
+| `@infraos/api` | Health/ready, env, Mongo connect (mocked) + **identity/agency model tests on mongodb-memory-server** (`infraos_test` only) |
+| E2E | Playwright after product UI exists |
+
 Do **not** add Jest or Cypress unless an ADR supersedes this.
 
 ## Priority of tests (when implementing)

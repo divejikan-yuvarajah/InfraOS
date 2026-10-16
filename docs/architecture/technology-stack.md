@@ -7,7 +7,7 @@
 
 This document locks **what INFRAOS Version 1 uses**. ADRs explain **why**. Exact Next.js / Express patch versions are chosen when those apps are scaffolded (Steps 8–9), using the current stable major listed below.
 
-**Step 7** created the npm workspace (`package.json` + `package-lock.json`). `apps/web` and `apps/api` are placeholders until Steps 8 and 9. There is still no application feature code.
+**Step 7** created the npm workspace. **Step 8** scaffolds Next.js in `apps/web`. **Step 9** scaffolds Express in `apps/api`. There is still no product-feature code (no ProjectTrace/RoadSync).
 
 ---
 
@@ -170,7 +170,7 @@ Pin exact versions at scaffold time.
 |---------|----------------|
 | Node.js | 22 LTS |
 | TypeScript | 5.x |
-| Next.js | Current stable App Router major at scaffold (15 or 16) |
+| Next.js | **16.3.x** App Router (scaffolded Step 8: 16.3.8) |
 | Python | 3.12 |
 | MongoDB | Atlas 7.x/8.x compatible |
 

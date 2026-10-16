@@ -11,7 +11,11 @@ Do not implement product features until the relevant later step prompt is execut
 - [UX / IA](./ux/README.md) — pages, routes, role navigation
 - [Security / RBAC](./security/README.md) — roles, permission catalog, matrices, SoD, route access
 - [Team / Git](./team/README.md) — branches, ownership, PRs, DoD, release
-- [API](./api/README.md) — placeholder until Express routes exist
-- [Database](./database/README.md) — placeholder until Mongoose models exist
+- [Setup / environment](./setup/environment.md) — canonical env catalog and secret policy (Step 10, INC-005)
+- [Setup / MongoDB Atlas](./setup/mongodb-atlas.md) — Atlas runbook (Step 11)
+- [Frontend](./frontend/setup.md) — Next.js run commands and [conventions](./frontend/conventions.md)
+- [Backend](./backend/setup.md) — Express run commands and [conventions](./backend/conventions.md)
+- [API](./api/README.md) — `/api/v1` health and readiness; OpenAPI later
+- [Database](./database/README.md) — Atlas connection + [core identity models](./database/core-models.md)
 - [ADRs](./adr/README.md) — ADR-001 … ADR-012
 - [Testing](./testing/README.md) — Vitest / Supertest / Playwright / pytest lock

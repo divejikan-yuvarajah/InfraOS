@@ -17,9 +17,14 @@ Version 1 is a **Sri Lankan public-infrastructure oriented** university / portfo
 **Step 04 complete:** User Roles & Permission Matrix.  
 **Step 05 complete:** Information Architecture & Complete Page/Route Map.  
 **Step 06 complete:** Team Development & Git Strategy.  
-**Step 07 complete:** Initialize Full Project Repository (npm workspaces; no feature apps yet).
+**Step 07 complete:** Initialize Full Project Repository (npm workspaces).  
+**Step 08 complete:** Configure Next.js Frontend Foundation.  
+**Step 09 complete:** Configure Express Backend Foundation.  
+**Step 10 complete:** Environment Variables & Secret Management.  
+**Step 11 complete:** MongoDB Atlas Complete Setup.  
+**Step 12 complete:** Core MongoDB Schema Foundation.
 
-Next: **Step 8** (Next.js frontend foundation), then **Step 9** (Express backend foundation).
+Next: **Step 13** (complete INFRAOS database models).
 
 This is a university group project at **South Eastern University of Sri Lanka**.
 
@@ -78,9 +83,28 @@ cd InfraOS
 npm install
 ```
 
-Copy `.env.example` to a local `.env` only when later steps need values. **Never commit secrets.**
+Copy per-app examples — not a root `.env` with secrets:
 
-`apps/web` and `apps/api` are workspace placeholders. They do not start until Steps 8 and 9.
+```powershell
+Copy-Item apps\web\.env.example apps\web\.env.local
+Copy-Item apps\api\.env.example apps\api\.env
+```
+
+Catalog: [docs/setup/environment.md](./docs/setup/environment.md). **Never commit secrets.** Do not use `JWT_SECRET` / `CLIENT_URL`.
+
+Frontend (terminal 1):
+
+```powershell
+npm run dev:web
+```
+
+API (terminal 2):
+
+```powershell
+npm run dev:api
+```
+
+Web: http://localhost:3000 · API health: http://localhost:4000/api/v1/health
 
 ## Documentation
 
@@ -88,6 +112,10 @@ Copy `.env.example` to a local `.env` only when later steps need values. **Never
 **Technology / ADRs:** [docs/architecture/README.md](./docs/architecture/README.md) · [docs/adr/README.md](./docs/adr/README.md)  
 **Authorization:** [docs/security/README.md](./docs/security/README.md)  
 **UX / routes:** [docs/ux/README.md](./docs/ux/README.md)  
+**Environment:** [docs/setup/environment.md](./docs/setup/environment.md)  
+**MongoDB Atlas:** [docs/setup/mongodb-atlas.md](./docs/setup/mongodb-atlas.md) · [docs/database/connection.md](./docs/database/connection.md)  
+**Frontend:** [docs/frontend/setup.md](./docs/frontend/setup.md) · [docs/frontend/conventions.md](./docs/frontend/conventions.md)  
+**Backend:** [docs/backend/setup.md](./docs/backend/setup.md) · [docs/backend/conventions.md](./docs/backend/conventions.md)  
 **Team / Git:** [CONTRIBUTING.md](./CONTRIBUTING.md) · [docs/team/README.md](./docs/team/README.md)  
 **Docs index:** [docs/README.md](./docs/README.md)
 
