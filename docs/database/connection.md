@@ -49,7 +49,11 @@ These are not national-scale production tuning. Revisit when Render instance cou
 
 Startup retries: **3 attempts**, **1.5s** apart (1 attempt in `NODE_ENV=test`). No infinite reconnect loop in application code. Do not set `tlsInsecure` or `tlsAllowInvalidCertificates`.
 
-`autoIndex` is **on** in development and test, **off** in production. Production indexes should be applied with a later controlled migration, not `dropDatabase`.
+`autoIndex` is **on** in development and test, **off** in production. Production
+indexes must be applied as a reviewed operational change, never with
+`dropDatabase`. Step 14's `npm run db:indexes:check` override keeps automatic
+creation off in every environment and only reports declared/installed metadata;
+see [indexes.md](./indexes.md).
 
 ---
 

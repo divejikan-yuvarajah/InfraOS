@@ -29,6 +29,7 @@
     "test:api": "npm run test -w @infraos/api",
     "test": "npm run test:web && npm run test:api",
     "db:check": "npm run db:check -w @infraos/api",
+    "db:indexes:check": "npm run db:indexes:check -w @infraos/api",
     "db:seed:core": "npm run db:seed:core -w @infraos/api"
   }
 }

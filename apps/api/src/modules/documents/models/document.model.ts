@@ -34,5 +34,8 @@ const documentSchema = new Schema({
   },
 });
 
+documentSchema.index({ projectId: 1, documentType: 1 });
+documentSchema.index({ projectId: 1, createdAt: -1 });
+
 export type DocumentDocument = mongoose.InferSchemaType<typeof documentSchema> & { _id: mongoose.Types.ObjectId };
 export const Document = (mongoose.models.Document as mongoose.Model<DocumentDocument> | undefined) ?? mongoose.model<DocumentDocument>("Document", documentSchema);

@@ -104,10 +104,17 @@ export async function pingDatabase(): Promise<void> {
   await db.admin().command({ ping: 1 });
 }
 
-async function connectOnce(config: { uri: string; dbName: string }): Promise<void> {
+type DatabaseConnectOptions = {
+  autoIndex?: boolean;
+};
+
+async function connectOnce(
+  config: { uri: string; dbName: string },
+  autoIndex: boolean,
+): Promise<void> {
   attachLifecycleListeners();
   mongoose.set("strictQuery", true);
-  mongoose.set("autoIndex", env.NODE_ENV !== "production");
+  mongoose.set("autoIndex", autoIndex);
   await mongoose.connect(config.uri, {
     dbName: config.dbName,
     ...MONGO_CONNECT_OPTIONS,
@@ -119,6 +126,7 @@ async function connectOnce(config: { uri: string; dbName: string }): Promise<voi
  */
 export async function connectDatabase(
   source: AppEnv = env,
+  options: DatabaseConnectOptions = {},
 ): Promise<void> {
   if (isDatabaseReady()) {
     return;
@@ -136,7 +144,10 @@ export async function connectDatabase(
     let lastError: unknown;
     for (let attempt = 1; attempt <= attempts; attempt += 1) {
       try {
-        await connectOnce(config);
+        await connectOnce(
+          config,
+          options.autoIndex ?? source.NODE_ENV !== "production",
+        );
         return;
       } catch (error) {
         lastError = error;

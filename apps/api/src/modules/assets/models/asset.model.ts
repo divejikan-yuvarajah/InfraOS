@@ -18,5 +18,9 @@ const assetSchema = new Schema({
   nextMaintenanceAt: { type: Date },
 }, { timestamps: true, strict: "throw", collection: "assets" });
 
+assetSchema.index({ agencyId: 1, condition: 1 });
+assetSchema.index({ nextMaintenanceAt: 1 });
+assetSchema.index({ geometry: "2dsphere" });
+
 export type AssetDocument = mongoose.InferSchemaType<typeof assetSchema> & { _id: mongoose.Types.ObjectId };
 export const Asset = (mongoose.models.Asset as mongoose.Model<AssetDocument> | undefined) ?? mongoose.model<AssetDocument>("Asset", assetSchema);

@@ -18,5 +18,7 @@ notificationSchema.pre("validate", function () {
   }
 });
 
+notificationSchema.index({ userId: 1, isRead: 1, createdAt: -1 });
+
 export type NotificationDocument = mongoose.InferSchemaType<typeof notificationSchema> & { _id: mongoose.Types.ObjectId };
 export const Notification = (mongoose.models.Notification as mongoose.Model<NotificationDocument> | undefined) ?? mongoose.model<NotificationDocument>("Notification", notificationSchema);
