@@ -29,7 +29,7 @@ Version 1 is a **Sri Lankan public-infrastructure oriented** university / portfo
 
 **Step 16 complete:** Shared Types, Constants & API Contracts.
 
-Next: **Step 17** (brand and color system).
+Design tokens: [brand-color-system.md](docs/design/brand-color-system.md) (Step 17). Next: **Step 18** (typography, spacing & remaining tokens) after Step 17 is merged.
 
 This is a university group project at **South Eastern University of Sri Lanka**.
 
