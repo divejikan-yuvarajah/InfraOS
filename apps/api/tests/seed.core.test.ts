@@ -25,8 +25,9 @@ describe("core seed", { timeout: 60_000 }, () => {
   });
 
   it("upserts seven system roles and demo agencies without users", async () => {
-    await seedCoreIdentity();
-    await seedCoreIdentity();
+    const seedEnv = { NODE_ENV: "test" as const, MONGODB_DB_NAME: "infraos_test" };
+    await seedCoreIdentity(seedEnv);
+    await seedCoreIdentity(seedEnv);
 
     expect(await Role.countDocuments()).toBe(SYSTEM_ROLE_KEYS.length);
     expect(await Agency.countDocuments()).toBe(4);

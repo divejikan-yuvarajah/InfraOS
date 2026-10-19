@@ -30,6 +30,9 @@
     "test": "npm run test:web && npm run test:api",
     "db:check": "npm run db:check -w @infraos/api",
     "db:indexes:check": "npm run db:indexes:check -w @infraos/api",
-    "db:seed:core": "npm run db:seed:core -w @infraos/api"
+    "db:seed:core": "npm run db:seed:core -w @infraos/api",
+    "db:seed:demo": "npm run db:seed:demo -w @infraos/api",
+    "db:seed:verify": "npm run db:seed:verify -w @infraos/api",
+    "db:seed:reset-demo": "npm run db:seed:reset-demo -w @infraos/api"
   }
 }

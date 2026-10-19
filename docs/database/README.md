@@ -1,6 +1,6 @@
 # INFRAOS database documentation
 
-**Steps:** 12–14 — model foundation, indexes, GeoJSON, and constraints
+**Steps:** 12–15 — models, indexes, GeoJSON, constraints, and demo seeds
 
 Step 12 identity schemas are preserved; Step 13 adds the remaining domain schemas.
 
@@ -15,5 +15,7 @@ Step 12 identity schemas are preserved; Step 13 adds the remaining domain schema
 | [constraints.md](./constraints.md) | Schema constraints, overlap rule, and service integrity obligations |
 | [../setup/mongodb-atlas.md](../setup/mongodb-atlas.md) | Atlas project, user, network, URI |
 | [../setup/environment.md](../setup/environment.md) | `MONGODB_URI`, `MONGODB_DB_NAME` |
+| [demo-data.md](./demo-data.md) | Safe demo seed commands, guards, reset (Step 15) |
+| [../demo/infraos-demo-scenario.md](../demo/infraos-demo-scenario.md) | Synthetic demo narrative and RoadSync fixtures |
 
 The Step 14 spatial implementation follows [ADR-004](../adr/ADR-004-mongodb-geojson.md). It prepares indexed candidate retrieval but does not implement RoadSync conflict classification or resolution.

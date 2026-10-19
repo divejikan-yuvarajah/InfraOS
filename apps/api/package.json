@@ -14,6 +14,9 @@
     "db:check": "tsx src/scripts/db-check.ts",
     "db:indexes:check": "tsx src/scripts/check-indexes.ts",
     "db:seed:core": "tsx src/scripts/seed-core.ts",
+    "db:seed:demo": "tsx src/scripts/seed-demo.ts",
+    "db:seed:verify": "tsx src/scripts/verify-demo-seed.ts",
+    "db:seed:reset-demo": "tsx src/scripts/reset-demo-seed.ts",
     "lint": "eslint .",
     "type-check": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run"
