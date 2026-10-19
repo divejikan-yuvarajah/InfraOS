@@ -1,4 +1,5 @@
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -6,6 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { projectStatusVisual } from "@/lib/design/semantic-colors";
 
 const LIFECYCLE = [
   "Plan",
@@ -18,7 +20,18 @@ const LIFECYCLE = [
   "Maintain",
 ] as const;
 
+const STATUS_SAMPLES = [
+  { label: "Pending review", variant: "pending" as const },
+  { label: "Schedule warning", variant: "warning" as const },
+  { label: "High conflict", variant: "critical" as const },
+  { label: "Approved", variant: "success" as const },
+  { label: "Draft", variant: "neutral" as const },
+  { label: "Informational", variant: "info" as const },
+] as const;
+
 export default function HomePage() {
+  const approvedVariant = projectStatusVisual("APPROVED");
+
   return (
     <main
       id="main"
@@ -61,6 +74,44 @@ export default function HomePage() {
               </li>
             ))}
           </ol>
+        </CardContent>
+      </Card>
+
+      <Card aria-labelledby="brand-tokens-heading">
+        <CardHeader>
+          <CardTitle id="brand-tokens-heading" className="text-lg">
+            Brand & status tokens (Step 17)
+          </CardTitle>
+          <CardDescription>
+            Semantic colors are visual only. Each badge includes a text label;
+            do not rely on color alone for meaning.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex flex-wrap gap-2">
+            {STATUS_SAMPLES.map(({ label, variant }) => (
+              <Badge key={label} variant={variant}>
+                {label}
+              </Badge>
+            ))}
+          </div>
+          <p className="text-sm text-text-secondary">
+            Step 16 mapping example: project status{" "}
+            <Badge variant={approvedVariant}>APPROVED</Badge> →{" "}
+            <span className="font-mono text-xs">{approvedVariant}</span>
+          </p>
+          <div className="flex flex-wrap items-center gap-3">
+            <Button type="button">Primary action</Button>
+            <Button type="button" variant="outline">
+              Secondary
+            </Button>
+            <Button type="button" variant="destructive">
+              Critical action
+            </Button>
+            <Button type="button" variant="link">
+              Link on canvas
+            </Button>
+          </div>
         </CardContent>
       </Card>
     </main>

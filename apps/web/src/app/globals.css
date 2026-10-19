@@ -1,79 +1,9 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
+@import "../styles/tokens.css";
 
 @custom-variant dark (&:is(.dark *));
-
-:root {
-  --infra-orange: #ff5b00;
-  --infra-yellow: #feb600;
-  --infra-maroon: #8c1f28;
-  --infra-green: #279541;
-
-  --background: #f8fafc;
-  --surface: #ffffff;
-  --text-primary: #111827;
-  --text-secondary: #475569;
-  --text-muted: #64748b;
-  --border: #e2e8f0;
-
-  --foreground: var(--text-primary);
-  --card: var(--surface);
-  --card-foreground: var(--text-primary);
-  --popover: var(--surface);
-  --popover-foreground: var(--text-primary);
-  --primary: var(--infra-orange);
-  --primary-foreground: #ffffff;
-  --secondary: #f1f5f9;
-  --secondary-foreground: var(--text-primary);
-  --muted: #f1f5f9;
-  --muted-foreground: var(--text-muted);
-  --accent: #fff4ed;
-  --accent-foreground: var(--text-primary);
-  --destructive: var(--infra-maroon);
-  --input: var(--border);
-  --ring: var(--infra-orange);
-  --radius: 0.5rem;
-  --chart-1: var(--infra-orange);
-  --chart-2: var(--infra-green);
-  --chart-3: var(--infra-yellow);
-  --chart-4: var(--infra-maroon);
-  --chart-5: #475569;
-  --sidebar: var(--surface);
-  --sidebar-foreground: var(--text-primary);
-  --sidebar-primary: var(--infra-orange);
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #fff4ed;
-  --sidebar-accent-foreground: var(--text-primary);
-  --sidebar-border: var(--border);
-  --sidebar-ring: var(--infra-orange);
-}
-
-/* Dark tokens exist for later P2 work. Do not auto-enable via prefers-color-scheme. */
-.dark {
-  --background: #111827;
-  --surface: #1f2937;
-  --text-primary: #f9fafb;
-  --text-secondary: #cbd5e1;
-  --text-muted: #94a3b8;
-  --border: #334155;
-  --foreground: var(--text-primary);
-  --card: var(--surface);
-  --card-foreground: var(--text-primary);
-  --popover: var(--surface);
-  --popover-foreground: var(--text-primary);
-  --primary: var(--infra-orange);
-  --primary-foreground: #ffffff;
-  --secondary: #1f2937;
-  --secondary-foreground: var(--text-primary);
-  --muted: #1f2937;
-  --muted-foreground: var(--text-muted);
-  --accent: #3f1d0a;
-  --accent-foreground: var(--text-primary);
-  --destructive: #f87171;
-  --input: var(--border);
-  --ring: var(--infra-orange);
-}
 
 @theme inline {
   --color-infra-orange: var(--infra-orange);
@@ -84,6 +14,27 @@
   --color-text-primary: var(--text-primary);
   --color-text-secondary: var(--text-secondary);
   --color-text-muted: var(--text-muted);
+  --color-link: var(--link-foreground);
+  --color-status-neutral-bg: var(--status-neutral-bg);
+  --color-status-neutral-fg: var(--status-neutral-fg);
+  --color-status-pending-bg: var(--status-pending-bg);
+  --color-status-pending-fg: var(--status-pending-fg);
+  --color-status-pending-border: var(--status-pending-border);
+  --color-status-warning-bg: var(--status-warning-bg);
+  --color-status-warning-fg: var(--status-warning-fg);
+  --color-status-warning-border: var(--status-warning-border);
+  --color-status-critical-bg: var(--status-critical-bg);
+  --color-status-critical-fg: var(--status-critical-fg);
+  --color-status-critical-border: var(--status-critical-border);
+  --color-status-success-bg: var(--status-success-bg);
+  --color-status-success-fg: var(--status-success-fg);
+  --color-status-success-border: var(--status-success-border);
+  --color-status-neutral-bg: var(--status-neutral-bg);
+  --color-status-neutral-fg: var(--status-neutral-fg);
+  --color-status-neutral-border: var(--status-neutral-border);
+  --color-status-info-bg: var(--status-info-bg);
+  --color-status-info-fg: var(--status-info-fg);
+  --color-status-info-border: var(--status-info-border);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-sans);
@@ -140,9 +91,20 @@
     @apply bg-background text-foreground;
   }
 
+  ::selection {
+    background-color: var(--selection-bg);
+    color: var(--text-primary);
+  }
+
   :focus-visible {
-    outline: 2px solid var(--infra-orange);
-    outline-offset: 2px;
+    outline: var(--focus-ring-offset) solid var(--focus-ring);
+    outline-offset: var(--focus-ring-offset);
+  }
+
+  @media (forced-colors: active) {
+    :focus-visible {
+      outline: 2px solid CanvasText;
+    }
   }
 }
 

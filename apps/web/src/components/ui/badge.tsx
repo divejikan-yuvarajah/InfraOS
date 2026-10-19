@@ -17,7 +17,18 @@ const badgeVariants = cva(
           "border-border text-foreground [a]:hover:bg-muted [a]:hover:text-muted-foreground",
         ghost:
           "hover:bg-muted hover:text-muted-foreground dark:hover:bg-muted/50",
-        link: "text-primary underline-offset-4 hover:underline",
+        link: "text-link underline-offset-4 hover:underline",
+        pending:
+          "border-status-pending-border bg-status-pending-bg text-status-pending-fg",
+        warning:
+          "border-status-warning-border bg-status-warning-bg text-status-warning-fg",
+        critical:
+          "border-status-critical-border bg-status-critical-bg text-status-critical-fg",
+        success:
+          "border-status-success-border bg-status-success-bg text-status-success-fg",
+        neutral:
+          "border-status-neutral-border bg-status-neutral-bg text-status-neutral-fg",
+        info: "border-status-info-border bg-status-info-bg text-status-info-fg",
       },
     },
     defaultVariants: {

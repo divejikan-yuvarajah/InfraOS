@@ -1,0 +1,133 @@
+/**
+ * INFRAOS brand + semantic color tokens (Step 17).
+ * Single source of truth — do not duplicate hex values elsewhere in the web app.
+ */
+
+:root {
+  /* Raw brand identity (exact approved hex) */
+  --infra-orange: #ff5b00;
+  --infra-yellow: #feb600;
+  --infra-maroon: #8c1f28;
+  --infra-green: #279541;
+
+  /* Neutrals */
+  --infra-canvas: #f8fafc;
+  --infra-surface: #ffffff;
+  --infra-text: #111827;
+  --infra-text-secondary: #475569;
+  --infra-text-muted: #64748b;
+  --infra-border: #e2e8f0;
+  --infra-border-strong: #cbd5e1;
+
+  /* Accessible text on light surfaces (derived; brand swatches unchanged) */
+  --infra-orange-text: #b63d00;
+  --infra-green-text: #166b30;
+  --infra-yellow-text: #6c5311;
+  --infra-critical-text: #8c1f28;
+
+  /* shadcn semantic bridge (light theme) */
+  --background: var(--infra-canvas);
+  --surface: var(--infra-surface);
+  --text-primary: var(--infra-text);
+  --text-secondary: var(--infra-text-secondary);
+  --text-muted: var(--infra-text-muted);
+  --border: var(--infra-border);
+  --foreground: var(--text-primary);
+  --card: var(--surface);
+  --card-foreground: var(--text-primary);
+  --popover: var(--surface);
+  --popover-foreground: var(--text-primary);
+  --primary: var(--infra-orange);
+  --primary-foreground: var(--infra-text);
+  --secondary: #f1f5f9;
+  --secondary-foreground: var(--text-primary);
+  --muted: #f1f5f9;
+  --muted-foreground: var(--text-muted);
+  --accent: #fff4ed;
+  --accent-foreground: var(--text-primary);
+  --destructive: var(--infra-maroon);
+  --destructive-foreground: #ffffff;
+  --input: var(--border);
+  --ring: var(--infra-orange);
+  --link-foreground: var(--infra-orange-text);
+  --radius: 0.5rem;
+
+  /* Interactive states */
+  --focus-ring: var(--infra-orange);
+  --focus-ring-offset: 2px;
+  --selection-bg: #fff4ed;
+  --selection-border: var(--infra-orange);
+  --disabled-opacity: 0.5;
+
+  /* Semantic status surfaces (always pair with visible label/icon) */
+  --status-neutral-bg: #f1f5f9;
+  --status-neutral-fg: var(--infra-text);
+  --status-neutral-border: var(--infra-border);
+
+  --status-pending-bg: #fff8e6;
+  --status-pending-fg: var(--infra-yellow-text);
+  --status-pending-border: var(--infra-yellow);
+
+  --status-warning-bg: #fff8e6;
+  --status-warning-fg: var(--infra-yellow-text);
+  --status-warning-border: var(--infra-yellow);
+
+  --status-critical-bg: #fdecee;
+  --status-critical-fg: var(--infra-critical-text);
+  --status-critical-border: var(--infra-maroon);
+
+  --status-success-bg: #ecfdf3;
+  --status-success-fg: var(--infra-green-text);
+  --status-success-border: var(--infra-green);
+
+  --status-info-bg: #f1f5f9;
+  --status-info-fg: var(--infra-text-secondary);
+  --status-info-border: var(--infra-border);
+
+  --status-selected-bg: var(--selection-bg);
+  --status-selected-fg: var(--infra-text);
+  --status-selected-border: var(--selection-border);
+
+  /* Charts / future map legend (ordered severity) */
+  --chart-1: var(--infra-orange);
+  --chart-2: var(--infra-green);
+  --chart-3: var(--infra-yellow);
+  --chart-4: var(--infra-maroon);
+  --chart-5: var(--infra-text-secondary);
+
+  /* Sidebar (future shell) */
+  --sidebar: var(--surface);
+  --sidebar-foreground: var(--text-primary);
+  --sidebar-primary: var(--infra-orange);
+  --sidebar-primary-foreground: var(--infra-text);
+  --sidebar-accent: #fff4ed;
+  --sidebar-accent-foreground: var(--text-primary);
+  --sidebar-border: var(--border);
+  --sidebar-ring: var(--infra-orange);
+}
+
+/* P2 dark theme — not auto-enabled. Documented in docs/design/dark-mode-plan.md */
+.dark {
+  --background: #111827;
+  --surface: #1f2937;
+  --text-primary: #f9fafb;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+  --border: #334155;
+  --foreground: var(--text-primary);
+  --card: var(--surface);
+  --card-foreground: var(--text-primary);
+  --popover: var(--surface);
+  --popover-foreground: var(--text-primary);
+  --primary: var(--infra-orange);
+  --primary-foreground: var(--infra-text);
+  --secondary: #1f2937;
+  --secondary-foreground: var(--text-primary);
+  --muted: #1f2937;
+  --muted-foreground: var(--text-muted);
+  --accent: #3f1d0a;
+  --accent-foreground: var(--text-primary);
+  --destructive: #f87171;
+  --input: var(--border);
+  --ring: var(--infra-orange);
+}
