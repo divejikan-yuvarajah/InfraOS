@@ -1,11 +1,16 @@
-# `@infraos/shared-types`
+# @infraos/shared-types
 
-Cross-app TypeScript contracts only. Mongoose models stay in `apps/api`.
+Wire contracts shared by Next.js and Express. Mongoose models stay in `apps/api`.
 
-Currently exported:
+```ts
+import type { ProjectSummaryDto, ApiResponse } from "@infraos/shared-types";
+import { PROJECT_STATUSES, isApiSuccess, isInfraGeometry } from "@infraos/shared-types";
+```
 
-- System role keys (`GOV_ADMIN`, not `GOVERNMENT_ADMIN`)
-- User statuses, agency types/statuses, scope types
-- Permission catalog strings from Step 4
+The package exports TypeScript source (`exports["."] = ./src/index.ts`). It must not import Mongoose, Express, Next, or React.
 
-Do not put `passwordHash`, `tokenHash`, or Mongo document shapes here.
+Permission constants describe names only. They do not authorize a request.
+
+Role key is `GOV_ADMIN`, not `GOVERNMENT_ADMIN`.
+
+See `docs/architecture/shared-contracts.md`.
