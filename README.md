@@ -23,8 +23,11 @@ Version 1 is a **Sri Lankan public-infrastructure oriented** university / portfo
 **Step 10 complete:** Environment Variables & Secret Management.  
 **Step 11 complete:** MongoDB Atlas Complete Setup.  
 **Step 12 complete:** Core MongoDB Schema Foundation.
+**Step 13 complete:** Complete INFRAOS Database Models.
+**Step 14 complete:** Database Indexes, GeoJSON & Constraints.
+**Step 15 complete:** Seed & Demo Data Architecture.
 
-Next: **Step 13** (complete INFRAOS database models).
+Next: **Step 16** (shared types, constants & API contracts).
 
 This is a university group project at **South Eastern University of Sri Lanka**.
 
