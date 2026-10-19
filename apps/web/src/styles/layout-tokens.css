@@ -1,0 +1,48 @@
+/**
+ * Layout, elevation, motion tokens (Step 18).
+ * Spacing uses Tailwind's default 4px-based scale (gap-1 = 4px, etc.).
+ */
+
+:root {
+  /* Page gutters (horizontal padding recipes) */
+  --gutter-page-mobile: 1rem;
+  --gutter-page-sm: 1.25rem;
+  --gutter-page-md: 1.5rem;
+  --gutter-page-lg: 2rem;
+
+  /* Max content widths */
+  --container-prose: 42rem;
+  --container-form: 32rem;
+  --container-content: 48rem;
+  --container-dashboard: 90rem;
+  --container-full: 100%;
+
+  /* Radius (align with shadcn --radius 0.5rem base) */
+  --radius-sm-token: 0.375rem;
+  --radius-md-token: 0.5rem;
+  --radius-lg-token: 0.75rem;
+  --radius-xl-token: 1rem;
+
+  /* Elevation */
+  --shadow-none: none;
+  --shadow-sm: 0 1px 2px rgb(17 24 39 / 0.05);
+  --shadow-md: 0 4px 12px rgb(17 24 39 / 0.08);
+  --shadow-lg: 0 12px 32px rgb(17 24 39 / 0.12);
+
+  /* Z-index ladder (align with Radix/shadcn ~50 for overlays) */
+  --z-base: 0;
+  --z-sticky: 20;
+  --z-map-controls: 30;
+  --z-dropdown: 40;
+  --z-overlay: 50;
+  --z-modal: 50;
+  --z-toast: 60;
+  --z-skip-link: 70;
+
+  /* Motion */
+  --motion-duration-fast: 150ms;
+  --motion-duration-normal: 200ms;
+  --motion-duration-slow: 300ms;
+  --motion-ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --motion-ease-out: cubic-bezier(0, 0, 0.2, 1);
+}
