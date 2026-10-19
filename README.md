@@ -27,7 +27,9 @@ Version 1 is a **Sri Lankan public-infrastructure oriented** university / portfo
 **Step 14 complete:** Database Indexes, GeoJSON & Constraints.
 **Step 15 complete:** Seed & Demo Data Architecture.
 
-Next: **Step 16** (shared types, constants & API contracts).
+**Step 16 complete:** Shared Types, Constants & API Contracts.
+
+Next: **Step 17** (brand and color system).
 
 This is a university group project at **South Eastern University of Sri Lanka**.
 
