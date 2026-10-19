@@ -1,0 +1,36 @@
+/**
+ * Typography tokens (Step 18). Color tokens remain in tokens.css (Step 17).
+ */
+
+:root {
+  /* Stack: Geist (next/font) + OS/script fallbacks for mixed Latin / Tamil / Sinhala */
+  --font-family-sans-fallback: ui-sans-serif, system-ui, "Segoe UI", roboto,
+    "Noto Sans", "Noto Sans Tamil", "Noto Sans Sinhala", sans-serif;
+  --font-family-sans: var(--font-sans), var(--font-family-sans-fallback);
+  --font-family-mono: var(--font-geist-mono), ui-monospace, "Cascadia Code",
+    "Segoe UI Mono", monospace;
+
+  /* Type scale (responsive where noted) */
+  --font-size-display: clamp(2rem, 1.75rem + 1vw, 2.75rem);
+  --font-size-page-title: clamp(1.75rem, 1.65rem + 0.4vw, 2rem);
+  --font-size-section-title: clamp(1.25rem, 1.2rem + 0.25vw, 1.5rem);
+  --font-size-card-title: 1.125rem;
+  --font-size-body: 1rem;
+  --font-size-body-small: 0.875rem;
+  --font-size-label: 0.8125rem;
+  --font-size-caption: 0.75rem;
+  --font-size-metric: clamp(1.5rem, 1.4rem + 0.35vw, 2rem);
+
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  --line-height-body: 1.6;
+  --line-height-heading: 1.25;
+  --line-height-compact: 1.35;
+  --line-height-metric: 1.15;
+
+  --letter-spacing-heading: -0.02em;
+  --letter-spacing-normal: 0;
+}

@@ -5,6 +5,7 @@
 | Layer | Path | Role |
 |---|---|---|
 | CSS variables | `apps/web/src/styles/tokens.css` | Authoritative runtime tokens (brand hex, neutrals, semantic status, shadcn bridge) |
+| Typography / layout | `typography-tokens.css`, `layout-tokens.css` | Step 18 — see [design-tokens.md](./design-tokens.md) |
 | Tailwind v4 theme | `apps/web/src/app/globals.css` (`@theme inline`) | Maps CSS vars to utility classes (`bg-primary`, `text-status-success-fg`, etc.) |
 | Programmatic hex | `apps/web/src/lib/design/brand-tokens.ts` | Charts/tests only — must stay in sync with `tokens.css` |
 | Step 16 visual mapping | `apps/web/src/lib/design/semantic-colors.ts` | Maps domain enums → badge variants (**visual only**, not authorization) |
