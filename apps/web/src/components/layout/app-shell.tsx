@@ -29,7 +29,7 @@ export function AppShell({
     <div className="flex min-h-[32rem] flex-col overflow-hidden rounded-lg border border-border bg-background">
       <a
         href="#shell-main"
-        className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:m-2 focus:rounded-md focus:bg-surface focus:px-3 focus:py-2"
+        className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:m-2 focus:rounded-md focus:bg-surface focus:px-3 focus:py-2 focus:outline-2 focus:outline-offset-2 focus:outline-ring"
       >
         Skip to shell content
       </a>
@@ -43,7 +43,8 @@ export function AppShell({
             id="shell-main"
             role="region"
             aria-label={title}
-            className="min-w-0 flex-1 overflow-x-hidden"
+            className="min-w-0 flex-1 overflow-x-hidden scroll-mt-16 outline-none"
+            tabIndex={-1}
           >
             <PageContainer variant={variant}>
               <Breadcrumbs items={breadcrumbs} />
