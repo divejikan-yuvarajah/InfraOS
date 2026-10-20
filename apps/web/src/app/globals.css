@@ -4,6 +4,7 @@
 @import "../styles/tokens.css";
 @import "../styles/typography-tokens.css";
 @import "../styles/layout-tokens.css";
+@import "../styles/public-landing-motion.css";
 
 @custom-variant dark (&:is(.dark *));
 

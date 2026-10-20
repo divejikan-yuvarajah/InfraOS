@@ -34,7 +34,7 @@ export function InfrastructureLifecycleSection({ copy }: { copy: PublicLandingCo
                 return (
                   <li
                     key={stageId}
-                    className="min-w-0 rounded-lg border border-border bg-background p-4 shadow-elevation-sm motion-reduce:transition-none"
+                    className="public-motion-interactive min-w-0 rounded-lg border border-border bg-background p-4 shadow-elevation-sm hover:border-border/80 motion-reduce:transition-none"
                   >
                     <p className="type-caption text-text-muted">
                       {lifecycle.stageLabel} {index + 1}
