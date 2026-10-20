@@ -29,7 +29,7 @@ Version 1 is a **Sri Lankan public-infrastructure oriented** university / portfo
 
 **Step 16 complete:** Shared Types, Constants & API Contracts.
 
-Design: [design-tokens.md](docs/design/design-tokens.md) (Steps 17–18), [component-library.md](docs/design/component-library.md) (Step 19). Next: **Step 20** (forms) after Step 19 is merged.
+Design: [design-tokens.md](docs/design/design-tokens.md), [component-library.md](docs/design/component-library.md), [forms-and-validation.md](docs/design/forms-and-validation.md). Next: **Step 21** after Step 20 is merged.
 
 This is a university group project at **South Eastern University of Sri Lanka**.
 
