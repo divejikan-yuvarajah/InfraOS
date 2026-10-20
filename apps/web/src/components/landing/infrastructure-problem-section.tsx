@@ -1,3 +1,4 @@
+import { Badge } from "@/components/ui/badge";
 import {
   Card,
   CardContent,
@@ -5,35 +6,33 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import type { PublicLandingCopy } from "@/lib/landing/messages";
 import { PROBLEM_SECTION_ANCHOR } from "@/lib/landing/navigation";
-import { PUBLIC_PROBLEM } from "@/lib/landing/public-content";
 
-export function InfrastructureProblemSection() {
+export function InfrastructureProblemSection({ copy }: { copy: PublicLandingCopy }) {
   return (
     <section
       id={PROBLEM_SECTION_ANCHOR}
       aria-labelledby="problem-heading"
-      className="border-b border-border bg-surface scroll-mt-24 lg:scroll-mt-28"
+      className="scroll-mt-28 border-b border-border bg-surface"
       tabIndex={-1}
     >
       <div className="container-dashboard gutter-page py-12 md:py-16">
-        <header className="mx-auto max-w-prose space-y-3 text-center md:text-left">
-          <p className="type-label text-infra-orange">{PUBLIC_PROBLEM.eyebrow}</p>
-          <h2 id="problem-heading" className="type-section-title text-text-primary">
-            {PUBLIC_PROBLEM.title}
+        <header className="mx-auto max-w-prose space-y-3">
+          <p className="type-label text-link">{copy.problem.eyebrow}</p>
+          <h2 id="problem-heading" className="type-section-title text-balance text-text-primary">
+            {copy.problem.title}
           </h2>
-          <p className="type-body text-text-secondary">{PUBLIC_PROBLEM.intro}</p>
+          <p className="type-body text-text-secondary">{copy.problem.intro}</p>
         </header>
-
         <ul className="mt-10 grid gap-4 sm:grid-cols-2 lg:gap-6">
-          {PUBLIC_PROBLEM.cards.map((card) => (
-            <li key={card.id}>
+          {copy.problem.cards.map((card) => (
+            <li key={card.id} className="min-w-0">
               <Card className="h-full shadow-elevation-sm">
                 <CardHeader className="gap-2">
                   <div className="flex flex-wrap items-center gap-2">
                     <CardTitle className="type-card-title">{card.title}</CardTitle>
-                    <Badge variant={card.badge.variant}>{card.badge.label}</Badge>
+                    <Badge variant={card.variant}>{card.badge}</Badge>
                   </div>
                 </CardHeader>
                 <CardContent>

@@ -6,7 +6,8 @@
   /* Stack: Geist (next/font) + OS/script fallbacks for mixed Latin / Tamil / Sinhala */
   --font-family-sans-fallback: ui-sans-serif, system-ui, "Segoe UI", roboto,
     "Noto Sans", "Noto Sans Tamil", "Noto Sans Sinhala", sans-serif;
-  --font-family-sans: var(--font-sans), var(--font-family-sans-fallback);
+  --font-family-sans: var(--font-sans), var(--font-sinhala), var(--font-tamil),
+    var(--font-family-sans-fallback);
   --font-family-mono: var(--font-geist-mono), ui-monospace, "Cascadia Code",
     "Segoe UI Mono", monospace;
 
