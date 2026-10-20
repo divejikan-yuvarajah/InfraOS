@@ -13,6 +13,7 @@ import { FeedbackPreview } from "@/components/feedback/feedback-preview";
 import { AppShellPreview } from "@/components/layout/app-shell-preview";
 import { DemoCoordinationForm } from "@/components/forms/demo-coordination-form";
 import { MIXED_SCRIPT_SAMPLES } from "@/lib/design/design-tokens";
+import { MAIN_CONTENT_ID } from "@/lib/accessibility/document-landmarks";
 import { projectStatusVisual } from "@/lib/design/semantic-colors";
 
 const LIFECYCLE = [
@@ -40,8 +41,9 @@ export default function HomePage() {
 
   return (
     <main
-      id="main"
-      className="container-content gutter-page flex w-full flex-1 flex-col justify-center gap-8 py-12"
+      id={MAIN_CONTENT_ID}
+      tabIndex={-1}
+      className="container-content gutter-page flex w-full flex-1 flex-col justify-center gap-8 py-12 scroll-mt-16 outline-none"
     >
       <header className="space-y-3">
         <Badge variant="secondary">Frontend foundation</Badge>

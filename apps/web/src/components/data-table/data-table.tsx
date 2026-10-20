@@ -200,7 +200,12 @@ export function DataTable<TData>({
           ) : null}
         </div>
       ) : null}
-      <div className="overflow-x-auto rounded-lg border border-border">
+      <div
+        className="overflow-x-auto rounded-lg border border-border"
+        tabIndex={0}
+        role="region"
+        aria-label={`${tableLabel} horizontal scroll`}
+      >
         <DataTableView
           table={table}
           loading={loading}
