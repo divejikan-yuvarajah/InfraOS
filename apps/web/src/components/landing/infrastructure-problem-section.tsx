@@ -18,7 +18,7 @@ export function InfrastructureProblemSection({ copy }: { copy: PublicLandingCopy
       className="scroll-mt-28 border-b border-border bg-surface"
       tabIndex={-1}
     >
-      <div className="container-dashboard gutter-page py-12 md:py-16">
+      <div className="container-dashboard gutter-page public-section-pad">
         <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_min(100%,22rem)] lg:items-start lg:gap-12">
           <header className="max-w-prose space-y-3">
             <p className="type-label text-link">{copy.problem.eyebrow}</p>

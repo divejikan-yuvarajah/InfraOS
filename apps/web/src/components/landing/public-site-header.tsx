@@ -54,7 +54,7 @@ export function PublicSiteHeader({
   return (
     <header className="sticky top-0 z-[var(--z-sticky)] border-b border-border bg-surface">
       <div className="border-b border-border bg-background">
-        <div className="container-dashboard gutter-page flex flex-wrap items-center justify-between gap-2 py-2">
+        <div className="container-dashboard gutter-page flex flex-wrap items-center justify-between gap-2 border-s-[3px] border-s-link py-2 ps-4">
           <p className="type-caption text-text-muted">{copy.demoBanner}</p>
           <PublicLanguageNav
             locale={locale}

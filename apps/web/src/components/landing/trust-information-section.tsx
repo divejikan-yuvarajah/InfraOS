@@ -11,7 +11,7 @@ export function TrustInformationSection({ copy }: { copy: PublicLandingCopy }) {
       className="scroll-mt-28 border-b border-border bg-surface"
       tabIndex={-1}
     >
-      <div className="container-dashboard gutter-page py-12 md:py-16">
+      <div className="container-dashboard gutter-page public-section-pad">
         <header className="mx-auto max-w-prose space-y-3">
           <p className="type-label text-link">{trust.eyebrow}</p>
           <h2 id="trust-heading" className="type-section-title text-balance text-text-primary">

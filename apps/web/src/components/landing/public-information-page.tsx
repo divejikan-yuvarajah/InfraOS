@@ -61,7 +61,7 @@ export function PublicInformationPage({
   const page = copy.infoPages[slug];
 
   return (
-    <>
+    <div className="public-site flex min-h-full flex-1 flex-col">
       <PublicSiteHeader locale={locale} copy={copy} infoSlug={slug} />
       <main
         id={MAIN_CONTENT_ID}
@@ -69,7 +69,7 @@ export function PublicInformationPage({
         tabIndex={-1}
         className="flex min-w-0 flex-1 flex-col scroll-mt-28 outline-none"
       >
-        <article className="container-dashboard gutter-page py-10 md:py-14">
+        <article className="container-dashboard gutter-page public-section-pad">
           <header className="mb-10 max-w-prose space-y-4">
             <p className="type-caption text-text-muted">
               <Link
@@ -86,6 +86,6 @@ export function PublicInformationPage({
         </article>
       </main>
       <PublicSiteFooter copy={copy} locale={locale} infoSlug={slug} />
-    </>
+    </div>
   );
 }
