@@ -6,7 +6,7 @@ import { SOLUTION_SECTION_ANCHOR } from "./navigation";
 describe("public hero copy", () => {
   it("states prototype positioning and avoids official claims", () => {
     const combined = Object.values(PUBLIC_HERO).join(" ").toLowerCase();
-    expect(PUBLIC_HERO.prototypeNote.toLowerCase()).toContain("prototype");
+    expect(PUBLIC_HERO.prototypeNote.toLowerCase()).toMatch(/prototype|demonstration/);
     expect(combined).not.toMatch(/government approved|official national|live analytics/);
     expect(combined).not.toMatch(/\d+%/);
   });
@@ -20,7 +20,7 @@ describe("public hero copy", () => {
   });
 
   it("points hero CTA copy at the solution section (Step 26)", () => {
-    expect(PUBLIC_HERO.ctaPrimaryLabel.toLowerCase()).toContain("infraos");
+    expect(PUBLIC_HERO.ctaPrimaryLabel.toLowerCase()).toMatch(/roadsync|infraos/);
     expect(SOLUTION_SECTION_ANCHOR).toBe("solution");
     expect(PUBLIC_SOLUTION.intro).toMatch(/RoadSync/i);
     expect(PUBLIC_PROBLEM.cards.length).toBeGreaterThanOrEqual(3);

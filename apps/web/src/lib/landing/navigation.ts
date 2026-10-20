@@ -1,16 +1,13 @@
 /**
- * Public marketing navigation — only links to verified routes or in-page anchors
- * that exist in the current checkpoint. Extend when Steps 26+ add sections.
- * Staff sign-in is omitted until an authentication route exists.
+ * Public marketing navigation — verified routes and in-page anchors on the homepage.
  */
 
-import { publicHomePath, type PublicLocale } from "./locales";
+import { publicHomePath, publicInfoPath, type PublicLocale } from "./locales";
 import type { PublicLandingCopy } from "./messages";
 
 export type PublicNavLink = {
   label: string;
   href: string;
-  /** When false, link is omitted from rendered nav (reserved for future steps). */
   isAvailable: boolean;
 };
 
@@ -21,47 +18,19 @@ export const SOLUTION_SECTION_ANCHOR = "solution";
 export const FEATURES_SECTION_ANCHOR = "features";
 export const HOW_IT_WORKS_SECTION_ANCHOR = "how-it-works";
 export const AUDIENCES_SECTION_ANCHOR = "audiences";
+export const TRANSPARENCY_SECTION_ANCHOR = "transparency";
 
 export const PUBLIC_PRIMARY_NAV: readonly PublicNavLink[] = [
   { label: "Home", href: "/", isAvailable: true },
-  {
-    label: "The coordination gap",
-    href: `#${PROBLEM_SECTION_ANCHOR}`,
-    isAvailable: true,
-  },
-  {
-    label: "How INFRAOS works",
-    href: `#${SOLUTION_SECTION_ANCHOR}`,
-    isAvailable: true,
-  },
-  {
-    label: "Platform functions",
-    href: `#${FEATURES_SECTION_ANCHOR}`,
-    isAvailable: true,
-  },
-  {
-    label: "Project lifecycle",
-    href: `#${HOW_IT_WORKS_SECTION_ANCHOR}`,
-    isAvailable: true,
-  },
-  {
-    label: "Who it helps",
-    href: `#${AUDIENCES_SECTION_ANCHOR}`,
-    isAvailable: true,
-  },
-  {
-    label: "Coordination example",
-    href: `#${HERO_OVERVIEW_ANCHOR}`,
-    isAvailable: true,
-  },
+  { label: "About", href: "/about", isAvailable: true },
+  { label: "How it works", href: "/how-it-works", isAvailable: true },
+  { label: "FAQ", href: "/faq", isAvailable: true },
+  { label: "Contact", href: "/contact", isAvailable: true },
 ] as const;
 
-export function getPublicNavLinks(
-  copy: PublicLandingCopy,
-  locale: PublicLocale,
-): PublicNavLink[] {
+/** Full homepage section links (footer / secondary). */
+export function getPublicHomeSectionLinks(copy: PublicLandingCopy): PublicNavLink[] {
   return [
-    { label: copy.nav.home, href: publicHomePath(locale), isAvailable: true },
     { label: copy.nav.problem, href: `#${PROBLEM_SECTION_ANCHOR}`, isAvailable: true },
     { label: copy.nav.solution, href: `#${SOLUTION_SECTION_ANCHOR}`, isAvailable: true },
     { label: copy.nav.features, href: `#${FEATURES_SECTION_ANCHOR}`, isAvailable: true },
@@ -75,23 +44,46 @@ export function getPublicNavLinks(
       href: `#${AUDIENCES_SECTION_ANCHOR}`,
       isAvailable: true,
     },
-    { label: copy.nav.example, href: `#${HERO_OVERVIEW_ANCHOR}`, isAvailable: true },
   ];
 }
 
-/** Civic Atlas header: four destinations. Other anchors stay on the page and in the full link list. */
+export function getPublicNavLinks(
+  copy: PublicLandingCopy,
+  locale: PublicLocale,
+): PublicNavLink[] {
+  return [
+    { label: copy.nav.home, href: publicHomePath(locale), isAvailable: true },
+    { label: copy.nav.about, href: publicInfoPath(locale, "about"), isAvailable: true },
+    {
+      label: copy.nav.howItWorks,
+      href: publicInfoPath(locale, "how-it-works"),
+      isAvailable: true,
+    },
+    { label: copy.nav.faq, href: publicInfoPath(locale, "faq"), isAvailable: true },
+    { label: copy.nav.contact, href: publicInfoPath(locale, "contact"), isAvailable: true },
+  ];
+}
+
+/** Primary header navigation (Section 12 IA). */
+/** ~4 primary destinations; footer/home sections expose the rest. */
 export function getPublicHeaderNavLinks(
   copy: PublicLandingCopy,
   locale: PublicLocale,
 ): PublicNavLink[] {
-  const all = getPublicNavLinks(copy, locale);
-  const keep = new Set([
-    `#${SOLUTION_SECTION_ANCHOR}`,
-    `#${FEATURES_SECTION_ANCHOR}`,
-    `#${HOW_IT_WORKS_SECTION_ANCHOR}`,
-    `#${AUDIENCES_SECTION_ANCHOR}`,
-  ]);
-  return all.filter((item) => keep.has(item.href));
+  return [
+    { label: copy.nav.home, href: publicHomePath(locale), isAvailable: true },
+    {
+      label: copy.nav.coordination,
+      href: `#${SOLUTION_SECTION_ANCHOR}`,
+      isAvailable: true,
+    },
+    {
+      label: copy.nav.howItWorks,
+      href: publicInfoPath(locale, "how-it-works"),
+      isAvailable: true,
+    },
+    { label: copy.nav.about, href: publicInfoPath(locale, "about"), isAvailable: true },
+  ];
 }
 
 export function getAvailablePublicNavLinks(): PublicNavLink[] {
@@ -101,5 +93,9 @@ export function getAvailablePublicNavLinks(): PublicNavLink[] {
 /** In-page anchors must include the locale home path when rendered off the homepage. */
 export function resolvePublicNavHref(locale: PublicLocale, href: string): string {
   if (href.startsWith("#")) return `${publicHomePath(locale)}${href}`;
+  if (href.startsWith("/") && locale !== "en") {
+    const path = href === "/" ? publicHomePath(locale) : `/${locale}${href}`;
+    return path;
+  }
   return href;
 }

@@ -1,9 +1,10 @@
 import { describe, expect, it } from "vitest";
 
+import { getPublicCopy } from "./messages";
 import {
   PROBLEM_SECTION_ANCHOR,
-  PUBLIC_PRIMARY_NAV,
   SOLUTION_SECTION_ANCHOR,
+  getPublicHomeSectionLinks,
 } from "./navigation";
 import { PUBLIC_PROBLEM, PUBLIC_SOLUTION } from "./public-content";
 
@@ -14,10 +15,8 @@ describe("public landing sections (Step 26)", () => {
     expect(PROBLEM_SECTION_ANCHOR).not.toBe(SOLUTION_SECTION_ANCHOR);
   });
 
-  it("wires nav and hero targets to implemented anchors", () => {
-    const hrefs = PUBLIC_PRIMARY_NAV.filter((item) => item.isAvailable).map(
-      (item) => item.href,
-    );
+  it("wires homepage section links to implemented anchors", () => {
+    const hrefs = getPublicHomeSectionLinks(getPublicCopy("en")).map((item) => item.href);
     expect(hrefs).toContain(`#${PROBLEM_SECTION_ANCHOR}`);
     expect(hrefs).toContain(`#${SOLUTION_SECTION_ANCHOR}`);
   });

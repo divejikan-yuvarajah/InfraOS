@@ -6,6 +6,7 @@
 @import "../styles/layout-tokens.css";
 @import "../styles/public-landing-motion.css";
 @import "../styles/public-landing-layout.css";
+@import "../styles/public-landing-visual-rescue.css";
 
 @custom-variant dark (&:is(.dark *));
 

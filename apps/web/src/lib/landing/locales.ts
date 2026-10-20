@@ -4,6 +4,9 @@ export const PUBLIC_LOCALES = ["en", "si", "ta"] as const;
 
 export type PublicLocale = (typeof PUBLIC_LOCALES)[number];
 
+/** ICTA guideline display order: Sinhala, English, Tamil. */
+export const PUBLIC_LOCALE_NAV_ORDER: readonly PublicLocale[] = ["si", "en", "ta"];
+
 export const PUBLIC_LOCALE_LABELS: Record<PublicLocale, string> = {
   en: "English",
   si: "සිංහල",
@@ -30,7 +33,14 @@ export function publicHomePath(locale: PublicLocale): string {
 }
 
 /** Supporting public information pages (Step 32). */
-export const PUBLIC_INFO_SLUGS = ["about", "accessibility", "privacy"] as const;
+export const PUBLIC_INFO_SLUGS = [
+  "about",
+  "how-it-works",
+  "faq",
+  "contact",
+  "accessibility",
+  "privacy",
+] as const;
 
 export type PublicInfoSlug = (typeof PUBLIC_INFO_SLUGS)[number];
 

@@ -2,10 +2,12 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 
 import { InfraosMark } from "@/components/landing/infraos-mark";
+import { LifecycleStepper } from "@/components/landing/lifecycle-stepper";
 import { PublicLanguageNav } from "@/components/landing/public-language-nav";
 import { footerLinkHref } from "@/lib/landing/public-info-pages";
 import type { PublicInfoSlug } from "@/lib/landing/locales";
 import type { PublicLocale } from "@/lib/landing/locales";
+import { lifecycleStagesForStepper } from "@/lib/landing/lifecycle-stepper-data";
 import type { PublicLandingCopy } from "@/lib/landing/messages";
 
 function FooterLink({
@@ -82,6 +84,17 @@ export function PublicSiteFooter({
             ))}
           </ul>
         </nav>
+
+        <div className="space-y-2">
+          <p id="footer-lifecycle-label" className="type-caption text-text-muted">
+            {copy.lifecycle.eyebrow}
+          </p>
+          <LifecycleStepper
+            stages={lifecycleStagesForStepper(copy)}
+            variant="compact"
+            labelledBy="footer-lifecycle-label"
+          />
+        </div>
 
         <PublicLanguageNav
           locale={locale}
