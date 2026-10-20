@@ -3,7 +3,9 @@ import { describe, expect, it } from "vitest";
 import {
   getAvailablePublicNavLinks,
   HERO_OVERVIEW_ANCHOR,
+  PROBLEM_SECTION_ANCHOR,
   PUBLIC_PRIMARY_NAV,
+  SOLUTION_SECTION_ANCHOR,
 } from "./navigation";
 
 describe("public landing navigation", () => {
@@ -17,16 +19,22 @@ describe("public landing navigation", () => {
     }
   });
 
-  it("does not link to auth or future Step 26 anchors yet", () => {
+  it("does not link to auth or future section placeholders", () => {
     const hrefs = PUBLIC_PRIMARY_NAV.map((item) => item.href);
     expect(hrefs).not.toContain("/login");
-    expect(hrefs).not.toContain("#problem");
-    expect(hrefs).not.toContain("#solution");
     expect(hrefs).not.toContain("#features");
+    expect(hrefs).not.toContain("#lifecycle");
+    expect(hrefs).not.toContain("#product");
   });
 
-  it("targets the hero overview anchor implemented in Step 25", () => {
+  it("includes Step 25–26 anchors when marked available", () => {
     expect(PUBLIC_PRIMARY_NAV.some((item) => item.href === `#${HERO_OVERVIEW_ANCHOR}`)).toBe(
+      true,
+    );
+    expect(PUBLIC_PRIMARY_NAV.some((item) => item.href === `#${PROBLEM_SECTION_ANCHOR}`)).toBe(
+      true,
+    );
+    expect(PUBLIC_PRIMARY_NAV.some((item) => item.href === `#${SOLUTION_SECTION_ANCHOR}`)).toBe(
       true,
     );
   });
