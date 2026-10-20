@@ -42,7 +42,7 @@ export function PublicHome({ locale }: { locale: PublicLocale }) {
   const copy = getPublicCopy(locale);
 
   return (
-    <>
+    <div className="public-site flex min-h-full flex-1 flex-col">
       <PublicSiteHeader locale={locale} copy={copy} />
       <main
         id={MAIN_CONTENT_ID}
@@ -65,7 +65,7 @@ export function PublicHome({ locale }: { locale: PublicLocale }) {
         ) : null}
       </main>
       <PublicSiteFooter copy={copy} locale={locale} />
-    </>
+    </div>
   );
 }
 

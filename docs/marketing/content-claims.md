@@ -23,6 +23,6 @@
 
 **Step 32 (footer + supporting pages):** Semantic footer with quick links to About, `#how-it-works`, `#faq`, Accessibility, Privacy, and `/landing/photo-credits.html`. Routes: `/about`, `/accessibility`, `/privacy` and `/si/*`, `/ta/*` equivalents. No contact page (no owner-approved channel). Privacy page states observed codebase behavior; deployment retention marked NEEDS_OWNER_REVIEW. No WCAG certification claims. Language switch preserves supporting-page path. si/ta info body sections largely English draft with localized titles/intros.
 
-**Step 33 (motion):** CSS-only micro-interactions on public landing (link/button feedback, focus-within smooth scroll when motion allowed, mobile menu focus restore). No GSAP; no hidden content behind animation. Global `prefers-reduced-motion` still applies.
+**Step 34 (visual polish):** Public pages wrapped in `.public-site` with consistent section padding and a bordered demonstration callout in the hero. No new photos, claims, or dashboard token changes. Native si/ta review still pending.
 
-**Review:** Update when Step 34 adds polish.
+**Review:** Group PR to `development` after owner accepts remaining native-language and manual a11y gaps.
