@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 
 import { UiFoundationFixtures } from "@/components/dev/ui-foundation-fixtures";
 import { InfraosSolutionSection } from "@/components/landing/infraos-solution-section";
+import { PlatformFeaturesSection } from "@/components/landing/platform-features-section";
 import { InfrastructureProblemSection } from "@/components/landing/infrastructure-problem-section";
 import { LandingHero } from "@/components/landing/landing-hero";
 import { PublicSiteFooter } from "@/components/landing/public-site-footer";
@@ -46,6 +47,7 @@ export function PublicHome({ locale }: { locale: PublicLocale }) {
         <LandingHero copy={copy} />
         <InfrastructureProblemSection copy={copy} />
         <InfraosSolutionSection copy={copy} />
+        <PlatformFeaturesSection copy={copy} />
         {locale === "en" && process.env.NODE_ENV === "development" ? (
           <UiFoundationFixtures />
         ) : null}

@@ -18,6 +18,7 @@ export type PublicNavLink = {
 export const HERO_OVERVIEW_ANCHOR = "hero-overview";
 export const PROBLEM_SECTION_ANCHOR = "problem";
 export const SOLUTION_SECTION_ANCHOR = "solution";
+export const FEATURES_SECTION_ANCHOR = "features";
 
 export const PUBLIC_PRIMARY_NAV: readonly PublicNavLink[] = [
   { label: "Home", href: "/", isAvailable: true },
@@ -29,6 +30,11 @@ export const PUBLIC_PRIMARY_NAV: readonly PublicNavLink[] = [
   {
     label: "How INFRAOS works",
     href: `#${SOLUTION_SECTION_ANCHOR}`,
+    isAvailable: true,
+  },
+  {
+    label: "Platform functions",
+    href: `#${FEATURES_SECTION_ANCHOR}`,
     isAvailable: true,
   },
   {
@@ -46,6 +52,7 @@ export function getPublicNavLinks(
     { label: copy.nav.home, href: publicHomePath(locale), isAvailable: true },
     { label: copy.nav.problem, href: `#${PROBLEM_SECTION_ANCHOR}`, isAvailable: true },
     { label: copy.nav.solution, href: `#${SOLUTION_SECTION_ANCHOR}`, isAvailable: true },
+    { label: copy.nav.features, href: `#${FEATURES_SECTION_ANCHOR}`, isAvailable: true },
     { label: copy.nav.example, href: `#${HERO_OVERVIEW_ANCHOR}`, isAvailable: true },
   ];
 }

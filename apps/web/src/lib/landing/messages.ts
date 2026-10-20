@@ -15,6 +15,7 @@ export type PublicLandingCopy = {
     home: string;
     problem: string;
     solution: string;
+    features: string;
     example: string;
   };
   hero: {
@@ -64,6 +65,21 @@ export type PublicLandingCopy = {
     caption: string;
     modulesNote: string;
   };
+  features: {
+    eyebrow: string;
+    title: string;
+    intro: string;
+    statusDemonstration: string;
+    statusPlanned: string;
+    disclosure: string;
+    items: readonly {
+      id: string;
+      moduleName: string;
+      title: string;
+      body: string;
+      status: "demonstration" | "planned";
+    }[];
+  };
   footerDisclosure: string;
   translationDraftNote: string;
 };
@@ -84,6 +100,7 @@ const en: PublicLandingCopy = {
     home: "Home",
     problem: "The coordination gap",
     solution: "How INFRAOS works",
+    features: "Platform functions",
     example: "Coordination example",
   },
   hero: {
@@ -187,6 +204,58 @@ const en: PublicLandingCopy = {
     modulesNote:
       "InfraMap is intended to add map-based visibility in later product steps. Inspection, risk, and asset modules extend the lifecycle after coordination—without replacing agency decisions.",
   },
+  features: {
+    eyebrow: "Platform functions",
+    title: "Coordinating the information behind infrastructure work",
+    intro:
+      "INFRAOS is a university-developed demonstration of how projects, planned utility work and agency responsibilities can be viewed together. The items below describe platform intent—not live public services on this site.",
+    statusDemonstration: "Demonstration concept",
+    statusPlanned: "Planned capability",
+    disclosure:
+      "None of these modules provide live national infrastructure data on this public website. Operational tools remain behind future authenticated workflows.",
+    items: [
+      {
+        id: "projecttrace",
+        moduleName: "ProjectTrace",
+        title: "Shared project oversight",
+        body:
+          "Organize project details, milestones and delivery progress for review. The public site explains the concept; private project workspaces are not linked from here.",
+        status: "demonstration",
+      },
+      {
+        id: "roadsync",
+        moduleName: "RoadSync",
+        title: "Work coordination",
+        body:
+          "Highlight locations and planned dates where road and utility work may overlap, using deterministic geography and schedule rules for human review—not AI-generated conflict truth.",
+        status: "demonstration",
+      },
+      {
+        id: "inframap",
+        moduleName: "InfraMap",
+        title: "Location awareness",
+        body:
+          "Explore how geographic information can support planning and coordination. Interactive GIS is planned for later steps; there is no live map on this page.",
+        status: "planned",
+      },
+      {
+        id: "verification",
+        moduleName: "Inspections & assets",
+        title: "Verification and long-term care",
+        body:
+          "Relate completed work, inspections and maintenance records across the infrastructure lifecycle. These workflows are roadmap capabilities, not available on the public landing.",
+        status: "planned",
+      },
+      {
+        id: "public-info",
+        moduleName: "Public information",
+        title: "Citizen-facing clarity",
+        body:
+          "Explain projects and coordination in plain language for residents and visitors. Public project listings and issue reporting routes are not implemented on this demonstration site yet.",
+        status: "planned",
+      },
+    ],
+  },
   footerDisclosure:
     "INFRAOS is a university-developed infrastructure coordination demonstration. Project information shown for demonstration may be synthetic and does not represent official government records.",
   translationDraftNote:
@@ -210,6 +279,7 @@ const si: PublicLandingCopy = {
     home: "මුල් පිටුව",
     problem: "සම්බන්ධීකරණ පරතරය",
     solution: "INFRAOS ක්‍රියා කරන ආකාරය",
+    features: "වේදිකා ක්‍රියාකාරිත්ව",
     example: "සම්බන්ධීකරණ උදාහරණය",
   },
   hero: {
@@ -308,6 +378,58 @@ const si: PublicLandingCopy = {
     modulesNote:
       "InfraMap පසු පියවරක සිතියම් දෘශ්‍යතාව සඳහා අපේක්ෂිතය. පරීක්ෂණ, අවදානම සහ වත්කම් මොඩියුල ආයතනික තීරණ ප්‍රතිස්ථාපනය නොකරයි.",
   },
+  features: {
+    eyebrow: "වේදිකා ක්‍රියාකාරිත්ව",
+    title: "යටිතල වැඩ සඳහා තොරතුරු සම්බන්ධීකරණය",
+    intro:
+      "INFRAOS යනු ව්‍යාපෘති, සැලසුම් කළ උපයෝගිතා වැඩ සහ ආයතන වගකීම් එකට බලා ගැනීමේ විශ්වවිද්‍යාල ආදර්ශනයකි. පහත අයිතම ජීවිත සේවා නොව, වේදිකා අරමුණ විස්තර කරයි.",
+    statusDemonstration: "ආදර්ශන සංකල්පය",
+    statusPlanned: "සැලසුම් කළ හැකියාව",
+    disclosure:
+      "මෙම මොඩියුල කිසිවක් මෙම මහජන වෙබ් අඩවියේ සජීවී ජාතික යටිතල දත්ත සපයන්නේ නැත. මෙහෙයුම් මෙවලම් අනාගත සත්‍යාපිත පද්ධතියක් පසුව පමණයි.",
+    items: [
+      {
+        id: "projecttrace",
+        moduleName: "ProjectTrace",
+        title: "හවුල් ව්‍යාපෘති අධීක්ෂණය",
+        body:
+          "ව්‍යාපෘති විස්තර, සන්ධිස්ථාන සහ බෙදාහැරීමේ ප්‍රගතිය සංවිධානය කර සමාලෝචනයට ලක් කරයි. පෞද්ගලික වැඩ අවකාශ මෙතැනින් සබැඳි නොවේ.",
+        status: "demonstration",
+      },
+      {
+        id: "roadsync",
+        moduleName: "RoadSync",
+        title: "වැඩ සම්බන්ධීකරණය",
+        body:
+          "මාර්ග සහ උපයෝගිතා වැඩ අතිච්ඡාදන විය හැකි ස්ථාන සහ දිනයන් පෙන්වයි. නියත භූගෝල සහ කාල නීති මිනිස් සමාලෝචනය සඳහා — AI සත්‍යයක් ලෙස නොවේ.",
+        status: "demonstration",
+      },
+      {
+        id: "inframap",
+        moduleName: "InfraMap",
+        title: "ස්ථාන දැනුවත්භාවය",
+        body:
+          "භූගෝලික තොරතුරු සැලසුම් සහ සම්බන්ධීකරණයට උපකාරී වන ආකාරය පෙන්වයි. සජීවී සිතියම් පසු පියවරකට අපේක්ෂිතය; මෙම පිටුවේ නැත.",
+        status: "planned",
+      },
+      {
+        id: "verification",
+        moduleName: "Inspections & assets",
+        title: "සත්‍යාපනය සහ දිගුකාලීන නඩත්තුව",
+        body:
+          "සම්පූර්ණ කළ වැඩ, පරීක්ෂණ සහ නඩත්තු වාර්තා ජීවන චක්‍රය හරහා සම්බන්ධ කිරීම. මෙය සැලසුම් කළ හැකියාවකි.",
+        status: "planned",
+      },
+      {
+        id: "public-info",
+        moduleName: "Public information",
+        title: "මහජනතාවට පැහැදිලි තොරතුරු",
+        body:
+          "ව්‍යාපෘති සහ සම්බන්ධීකරණය සරල භාෂාවෙන් පැහැදිලි කරයි. මහජන ව්‍යාපෘති ලැයිස්තු හෝ පැමිණිලි මාර්ග තවම නොමැත.",
+        status: "planned",
+      },
+    ],
+  },
   footerDisclosure:
     "INFRAOS යනු විශ්වවිද්‍යාලයක් විසින් සංවර්ධනය කළ යටිතල පහසුකම් සම්බන්ධීකරණ ආදර්ශනයකි. පෙන්වන ව්‍යාපෘති තොරතුරු කෘත්‍රිම විය හැකි අතර නිල රජයේ වාර්තා නොවේ.",
   translationDraftNote:
@@ -331,6 +453,7 @@ const ta: PublicLandingCopy = {
     home: "முகப்பு",
     problem: "ஒருங்கிணைப்பு இடைவெளி",
     solution: "INFRAOS எவ்வாறு செயல்படுகிறது",
+    features: "தள செயல்கள்",
     example: "ஒருங்கிணைப்பு எடுத்துக்காட்டு",
   },
   hero: {
@@ -428,6 +551,58 @@ const ta: PublicLandingCopy = {
     caption: "எடுத்துக்காட்டு காட்சி · நேரடி அரசுத் தரவு அல்ல",
     modulesNote:
       "InfraMap பிந்தைய படியில் வரைபடக் காட்சிக்காக எதிர்பார்க்கப்படுகிறது. ஆய்வு, இடர் மற்றும் சொத்து தொகுதிகள் நிறுவன முடிவுகளை மாற்றாது.",
+  },
+  features: {
+    eyebrow: "தள செயல்கள்",
+    title: "உள்கட்டமைப்பு பணிக்கான தகவல்களை ஒருங்கிணைத்தல்",
+    intro:
+      "INFRAOS என்பது திட்டங்கள், திட்டமிட்ட பயன்பாட்டு பணிகள் மற்றும் நிறுவன பொறுப்புகளை ஒன்றாகப் பார்க்கும் பல்கலைக்கழக செயல்விளக்கம். கீழுள்ளவை நேரடி சேவைகள் அல்ல — தள நோக்கத்தை விளக்குகின்றன.",
+    statusDemonstration: "செயல்விளக்கக் கருத்து",
+    statusPlanned: "திட்டமிடப்பட்ட திறன்",
+    disclosure:
+      "இந்தத் தொகுதிகள் எதுவும் இந்தப் பொது வலைத்தளத்தில் நேரடி தேசிய உள்கட்டமைப்புத் தரவை வழங்காது. செயல்பாட்டு கருவிகள் எதிர்கால அங்கீகரிக்கப்பட்ட அணுகலுக்குப் பிறகே.",
+    items: [
+      {
+        id: "projecttrace",
+        moduleName: "ProjectTrace",
+        title: "பகிரப்பட்ட திட்ட மேற்பார்வை",
+        body:
+          "திட்ட விவரங்கள், மைல்கற்கள் மற்றும் விநியோக முன்னேற்றத்தை ஒழுங்குபடுத்தி மதிப்பாய்வு செய்ய உதவுகிறது. தனியார் பணியிடங்கள் இங்கிருந்து இணைக்கப்படவில்லை.",
+        status: "demonstration",
+      },
+      {
+        id: "roadsync",
+        moduleName: "RoadSync",
+        title: "பணி ஒருங்கிணைப்பு",
+        body:
+          "சாலை மற்றும் பயன்பாட்டு பணிகள் ஒன்றுசேரக்கூடிய இடங்களையும் தேதிகளையும் காட்டுகிறது. நிர்ணய புவியியல் மற்றும் அட்டவணை விதிகள் — AI உண்மையாக அல்ல.",
+        status: "demonstration",
+      },
+      {
+        id: "inframap",
+        moduleName: "InfraMap",
+        title: "இட அறிவு",
+        body:
+          "திட்டமிடல் மற்றும் ஒருங்கிணைப்புக்கு புவியியல் தகவல் எவ்வாறு உதவும் என்பதை விளக்குகிறது. ஊடாடும் வரைபடம் பின்னர் படிகளில்; இப்பக்கத்தில் இல்லை.",
+        status: "planned",
+      },
+      {
+        id: "verification",
+        moduleName: "Inspections & assets",
+        title: "சரிபார்ப்பும் நீண்டகால பராமரிப்பும்",
+        body:
+          "முடிக்கப்பட்ட பணி, ஆய்வுகள் மற்றும் பராமரிப்பு பதிவுகளை வாழ்க்கைச் சுழற்சியில் இணைக்கும் திறன். இது திட்டமிடப்பட்ட திறன்.",
+        status: "planned",
+      },
+      {
+        id: "public-info",
+        moduleName: "Public information",
+        title: "பொதுமக்களுக்கான தெளிவு",
+        body:
+          "திட்டங்களையும் ஒருங்கிணைப்பையும் புரிந்துகொள்ள எளிய மொழியில் விளக்குகிறது. பொது திட்டப் பட்டியல்கள் அல்லது புகார் படிவங்கள் இன்னும் இல்லை.",
+        status: "planned",
+      },
+    ],
   },
   footerDisclosure:
     "INFRAOS ஒரு பல்கலைக்கழகத்தால் உருவாக்கப்பட்ட உள்கட்டமைப்பு ஒருங்கிணைப்பு செயல்விளக்கம். காட்டப்படும் திட்டத் தகவல் செயற்கையாக இருக்கலாம்; அது அதிகாரப்பூர்வ அரசுப் பதிவு அல்ல.",
