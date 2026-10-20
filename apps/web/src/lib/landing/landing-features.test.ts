@@ -2,14 +2,14 @@ import { describe, expect, it } from "vitest";
 
 import { PUBLIC_LOCALES } from "./locales";
 import { getPublicCopy } from "./messages";
-import { FEATURES_SECTION_ANCHOR, getPublicNavLinks } from "./navigation";
+import { FEATURES_SECTION_ANCHOR, getPublicHomeSectionLinks } from "./navigation";
 
 describe("public landing features (Step 27)", () => {
   it("defines a unique #features anchor wired in navigation for every locale", () => {
     expect(FEATURES_SECTION_ANCHOR).toBe("features");
     for (const locale of PUBLIC_LOCALES) {
       const copy = getPublicCopy(locale);
-      const hrefs = getPublicNavLinks(copy, locale).map((link) => link.href);
+      const hrefs = getPublicHomeSectionLinks(copy).map((link) => link.href);
       expect(hrefs).toContain(`#${FEATURES_SECTION_ANCHOR}`);
       if (locale !== "en") {
         expect(copy.nav.features).not.toBe(getPublicCopy("en").nav.features);

@@ -1,5 +1,3 @@
-import { FAQ_SECTION_ANCHOR } from "./faq-items";
-import { HOW_IT_WORKS_SECTION_ANCHOR } from "./navigation";
 import type { PublicInfoSlug } from "./locales";
 import { publicHomePath, type PublicLocale } from "./locales";
 import { publicInfoPath } from "./locales";
@@ -10,9 +8,6 @@ export function publicHomeAnchor(locale: PublicLocale, anchor: string): string {
   const id = anchor.startsWith("#") ? anchor : `#${anchor}`;
   return `${publicHomePath(locale)}${id}`;
 }
-
-export const FOOTER_COORDINATION_ANCHOR = HOW_IT_WORKS_SECTION_ANCHOR;
-export const FOOTER_FAQ_ANCHOR = FAQ_SECTION_ANCHOR;
 
 export function footerLinkHref(
   locale: PublicLocale,
@@ -26,9 +21,9 @@ export function footerLinkHref(
     case "privacy":
       return publicInfoPath(locale, "privacy");
     case "coordination":
-      return publicHomeAnchor(locale, FOOTER_COORDINATION_ANCHOR);
+      return publicInfoPath(locale, "how-it-works");
     case "faq":
-      return publicHomeAnchor(locale, FOOTER_FAQ_ANCHOR);
+      return publicInfoPath(locale, "faq");
     case "photoCredits":
       return "/landing/photo-credits.html";
     default: {

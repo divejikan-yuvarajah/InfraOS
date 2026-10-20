@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 
-import { InfraosSolutionSection } from "@/components/landing/infraos-solution-section";
+import { RoadsyncSignatureSection } from "@/components/landing/roadsync-signature-section";
 import { InfrastructureLifecycleSection } from "@/components/landing/infrastructure-lifecycle-section";
 import { LandingFaqSection } from "@/components/landing/landing-faq-section";
 import { LandingNextStepsSection } from "@/components/landing/landing-next-steps-section";
 import { ProductGisPreviewSection } from "@/components/landing/product-gis-preview-section";
+import { PlatformTransparencySection } from "@/components/landing/platform-transparency-section";
 import { TrustInformationSection } from "@/components/landing/trust-information-section";
 import { PublicAudiencesSection } from "@/components/landing/public-audiences-section";
 import { PlatformFeaturesSection } from "@/components/landing/platform-features-section";
@@ -41,7 +42,7 @@ export function PublicHome({ locale }: { locale: PublicLocale }) {
   const copy = getPublicCopy(locale);
 
   return (
-    <div className="public-site flex min-h-full flex-1 flex-col">
+    <div className="public-site public-visual-rescue flex min-h-full flex-1 flex-col">
       <PublicSiteHeader locale={locale} copy={copy} />
       <main
         id={MAIN_CONTENT_ID}
@@ -51,12 +52,13 @@ export function PublicHome({ locale }: { locale: PublicLocale }) {
       >
         <LandingHero copy={copy} />
         <InfrastructureProblemSection copy={copy} />
-        <InfraosSolutionSection copy={copy} />
+        <RoadsyncSignatureSection copy={copy} />
         <PlatformFeaturesSection copy={copy} />
         <InfrastructureLifecycleSection copy={copy} />
         <PublicAudiencesSection copy={copy} />
         <ProductGisPreviewSection copy={copy} />
         <TrustInformationSection copy={copy} />
+        <PlatformTransparencySection copy={copy} />
         <LandingFaqSection copy={copy} />
         <LandingNextStepsSection copy={copy} />
       </main>
