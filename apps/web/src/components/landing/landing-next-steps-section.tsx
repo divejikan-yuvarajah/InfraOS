@@ -39,13 +39,13 @@ export function LandingNextStepsSection({ copy }: { copy: PublicLandingCopy }) {
         <div className="mx-auto mt-8 flex max-w-prose flex-col gap-3 sm:flex-row sm:flex-wrap">
           <Link
             href={primaryHref}
-            className="inline-flex min-h-11 items-center justify-center rounded-md bg-primary px-4 py-2 text-primary-foreground type-body-small hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+            className="public-motion-interactive inline-flex min-h-11 items-center justify-center rounded-md bg-primary px-4 py-2 text-primary-foreground type-body-small hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
           >
             {next.primaryLabel}
           </Link>
           <Link
             href={secondaryHref}
-            className="inline-flex min-h-11 items-center justify-center rounded-md border border-border bg-background px-4 py-2 type-body-small text-text-primary hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+            className="public-motion-interactive inline-flex min-h-11 items-center justify-center rounded-md border border-border bg-background px-4 py-2 type-body-small text-text-primary hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
           >
             {next.secondaryLabel}
           </Link>
