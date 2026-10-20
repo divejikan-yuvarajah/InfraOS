@@ -3,6 +3,10 @@ import type { Metadata } from "next";
 import { UiFoundationFixtures } from "@/components/dev/ui-foundation-fixtures";
 import { InfraosSolutionSection } from "@/components/landing/infraos-solution-section";
 import { InfrastructureLifecycleSection } from "@/components/landing/infrastructure-lifecycle-section";
+import { LandingFaqSection } from "@/components/landing/landing-faq-section";
+import { LandingNextStepsSection } from "@/components/landing/landing-next-steps-section";
+import { ProductGisPreviewSection } from "@/components/landing/product-gis-preview-section";
+import { TrustInformationSection } from "@/components/landing/trust-information-section";
 import { PublicAudiencesSection } from "@/components/landing/public-audiences-section";
 import { PlatformFeaturesSection } from "@/components/landing/platform-features-section";
 import { InfrastructureProblemSection } from "@/components/landing/infrastructure-problem-section";
@@ -52,11 +56,15 @@ export function PublicHome({ locale }: { locale: PublicLocale }) {
         <PlatformFeaturesSection copy={copy} />
         <InfrastructureLifecycleSection copy={copy} />
         <PublicAudiencesSection copy={copy} />
+        <ProductGisPreviewSection copy={copy} />
+        <TrustInformationSection copy={copy} />
+        <LandingFaqSection copy={copy} />
+        <LandingNextStepsSection copy={copy} />
         {locale === "en" && process.env.NODE_ENV === "development" ? (
           <UiFoundationFixtures />
         ) : null}
       </main>
-      <PublicSiteFooter copy={copy} />
+      <PublicSiteFooter copy={copy} locale={locale} />
     </>
   );
 }

@@ -120,6 +120,47 @@ export type PublicLandingCopy = {
       actionAnchor: "problem" | "solution" | "features" | "lifecycle";
     }[];
   };
+  preview: {
+    eyebrow: string;
+    title: string;
+    intro: string;
+    disclaimer: string;
+    figureTitle: string;
+    figureDescription: string;
+    figureCaption: string;
+    notToScale: string;
+    legendRoad: string;
+    legendWater: string;
+    legendOverlap: string;
+    overlapMark: string;
+    scheduleRoad: string;
+    scheduleWater: string;
+    overlapDates: string;
+    statusNote: string;
+  };
+  trust: {
+    eyebrow: string;
+    title: string;
+    intro: string;
+    demoNotice: string;
+    points: readonly { id: string; title: string; body: string }[];
+  };
+  faq: {
+    eyebrow: string;
+    title: string;
+    intro: string;
+    items: readonly { id: string; question: string; answer: string }[];
+  };
+  nextSteps: {
+    eyebrow: string;
+    title: string;
+    intro: string;
+    primaryLabel: string;
+    primaryAnchor: "features" | "lifecycle" | "preview";
+    secondaryLabel: string;
+    secondaryAnchor: "features" | "lifecycle" | "preview";
+    staffNote: string;
+  };
   photography: {
     problemExpresswayAlt: string;
     problemExpresswayCredit: string;
@@ -127,8 +168,34 @@ export type PublicLandingCopy = {
     lifecycleExpresswayCredit: string;
     manifestLinkLabel: string;
   };
-  footerDisclosure: string;
+  footer: {
+    identityTitle: string;
+    identityLine: string;
+    navLabel: string;
+    linkAbout: string;
+    linkCoordination: string;
+    linkFaq: string;
+    linkAccessibility: string;
+    linkPrivacy: string;
+    linkPhotoCredits: string;
+    languageLabel: string;
+    disclosure: string;
+    copyrightPrefix: string;
+  };
+  infoPages: {
+    about: PublicInfoPageCopy;
+    accessibility: PublicInfoPageCopy;
+    privacy: PublicInfoPageCopy;
+  };
   translationDraftNote: string;
+};
+
+export type PublicInfoPageCopy = {
+  metaTitle: string;
+  metaDescription: string;
+  title: string;
+  intro: string;
+  sections: readonly { id: string; heading: string; body: string }[];
 };
 
 const en: PublicLandingCopy = {
@@ -427,6 +494,137 @@ const en: PublicLandingCopy = {
       },
     ],
   },
+  preview: {
+    eyebrow: "Illustrative preview",
+    title: "What coordinated road and utility planning can look like",
+    intro:
+      "This diagram shows a conceptual shared road section where resurfacing and water-pipeline work are both planned. It is not a live map, a computed conflict, or an official project.",
+    disclaimer:
+      "Illustrative prototype — not live government data. Conceptual diagram, not to scale.",
+    figureTitle: "Conceptual overlap of road resurfacing and water-pipeline work",
+    figureDescription:
+      "A solid orange line represents planned road resurfacing. A dashed grey line represents planned water-pipeline work on part of the same corridor. A dashed maroon box marks the shared section. The drawing is not a geographic map.",
+    figureCaption:
+      "Road work and water work share a section of the corridor and occur in the same date period. This is a sample story for explanation only.",
+    notToScale: "Conceptual · not to scale",
+    legendRoad: "Solid line — planned road resurfacing",
+    legendWater: "Dashed line — planned water-pipeline work",
+    legendOverlap: "Dashed outline — shared section (schedule also overlaps)",
+    overlapMark: "1",
+    scheduleRoad: "Sample road dates",
+    scheduleWater: "Sample water dates",
+    overlapDates: "Shared dates",
+    statusNote:
+      "InfraMap and RoadSync are demonstration concepts on this site. This figure does not query maps, detect live conflicts, or approve work.",
+  },
+  trust: {
+    eyebrow: "Trust and access",
+    title: "How this demonstration handles information and access",
+    intro:
+      "INFRAOS is a university GovTech prototype. This page explains coordination concepts in plain language—it is not an official government service or a certified security product.",
+    demoNotice:
+      "About this demonstration: examples and diagrams use synthetic data. They do not represent live national infrastructure records or ministry approvals.",
+    points: [
+      {
+        id: "coordination",
+        title: "Coordinated planning (design intent)",
+        body:
+          "The platform concept is intended to help agencies see when planned work may overlap in place or time. What you read here describes that intent—not live operational results on this public site.",
+      },
+      {
+        id: "access",
+        title: "Public information vs protected workflows",
+        body:
+          "Anyone can read this marketing site without signing in. Staff workspaces, role-based access, and audit trails are planned for protected application routes—not exposed on this page.",
+      },
+      {
+        id: "traceability",
+        title: "Traceable process (when implemented)",
+        body:
+          "ProjectTrace and related modules aim to support documented milestones and responsibilities. This public site does not show private project files or approval decisions.",
+      },
+      {
+        id: "privacy",
+        title: "No live citizen or agency data here",
+        body:
+          "This landing page does not query databases or publish real project coordinates. Future public-safe views would need separate review before any live data appears.",
+      },
+    ],
+  },
+  faq: {
+    eyebrow: "Common questions",
+    title: "Frequently asked questions",
+    intro:
+      "Short answers about what INFRAOS is today versus what the roadmap describes. If something is not built yet, we say so.",
+    items: [
+      {
+        id: "what-is-infraos",
+        question: "What is INFRAOS?",
+        answer:
+          "INFRAOS is a university-developed demonstration of how infrastructure projects, schedules, and responsibilities could be coordinated across agencies. It is a prototype, not a deployed national service.",
+      },
+      {
+        id: "official-government",
+        question: "Is INFRAOS an official government website or service?",
+        answer:
+          "No. INFRAOS is not operated by a ministry or public authority. It does not publish official government records, endorsements, or live national project registries.",
+      },
+      {
+        id: "who-for",
+        question: "Who is the platform intended for?",
+        answer:
+          "The public site is for anyone curious about coordination—residents, students, officers, and evaluators. Protected operational tools, when they exist, stay behind authenticated routes.",
+      },
+      {
+        id: "projecttrace",
+        question: "What is ProjectTrace?",
+        answer:
+          "ProjectTrace is the intended module for project oversight, milestones, and delivery accountability. On this public site it is described as a demonstration concept; private workspaces are not linked here.",
+      },
+      {
+        id: "roadsync-conflicts",
+        question: "How is RoadSync meant to identify work conflicts?",
+        answer:
+          "RoadSync is designed to use deterministic geography and schedule rules to flag candidate overlaps for human review—not AI verdicts and not automatic cancellation. The Step 30 diagram is illustrative only.",
+      },
+      {
+        id: "public-projects-now",
+        question: "Can I look up real public infrastructure projects here?",
+        answer:
+          "Not on this demonstration site. There is no live project map, search, or registry. Any scenarios shown are synthetic examples for learning.",
+      },
+      {
+        id: "citizen-reporting",
+        question: "Can residents report road or utility issues through INFRAOS yet?",
+        answer:
+          "No public complaint or issue-reporting route exists on this landing page. Citizen-facing services are roadmap items and would need their own review before launch.",
+      },
+      {
+        id: "staff-access",
+        question: "How do staff sign in or access agency data?",
+        answer:
+          "Staff sign-in and operational dashboards are not linked from this public site until a reviewed authentication route and permissions model exist. There is no fake login button here.",
+      },
+      {
+        id: "languages",
+        question: "Which languages does the public site support?",
+        answer:
+          "English, Sinhala, and Tamil content is provided at /, /si, and /ta. Sinhala and Tamil strings are draft copies pending qualified native-speaker review.",
+      },
+    ],
+  },
+  nextSteps: {
+    eyebrow: "Next steps",
+    title: "Continue exploring the demonstration",
+    intro:
+      "Use the links below to read sections that already exist on this page. They stay on the same locale route—no registration required.",
+    primaryLabel: "Read the coordination lifecycle",
+    primaryAnchor: "lifecycle",
+    secondaryLabel: "See the illustrative preview",
+    secondaryAnchor: "preview",
+    staffNote:
+      "Staff and agency access will be offered only when a real sign-in route is implemented and reviewed—not through this public marketing site.",
+  },
   photography: {
     problemExpresswayAlt:
       "Earthworks and construction activity along a Sri Lankan expressway corridor near Seeduwa. Illustrative photo only—not an INFRAOS project or official government record.",
@@ -438,8 +636,144 @@ const en: PublicLandingCopy = {
       "Photo: Dinesh De Alwis, Wikimedia Commons (CC BY-SA 4.0). Context only; no government endorsement implied.",
     manifestLinkLabel: "Photo credits and licenses",
   },
-  footerDisclosure:
-    "INFRAOS is a university-developed infrastructure coordination demonstration. Project information shown for demonstration may be synthetic and does not represent official government records.",
+  footer: {
+    identityTitle: "INFRAOS",
+    identityLine:
+      "University infrastructure coordination demonstration — not an official Sri Lankan government platform or live public records service.",
+    navLabel: "Footer navigation",
+    linkAbout: "About INFRAOS",
+    linkCoordination: "How coordination works",
+    linkFaq: "FAQ",
+    linkAccessibility: "Accessibility",
+    linkPrivacy: "Privacy and data use",
+    linkPhotoCredits: "Photo credits",
+    languageLabel: "Languages",
+    disclosure:
+      "Demonstration data may be synthetic. This site does not publish official government approvals, certifications, or operational project records.",
+    copyrightPrefix: "South Eastern University of Sri Lanka · INFRAOS demonstration",
+  },
+  infoPages: {
+    about: {
+      metaTitle: "About INFRAOS",
+      metaDescription:
+        "What INFRAOS is, who it is for, and how the university demonstration differs from an official government service.",
+      title: "About INFRAOS",
+      intro:
+        "INFRAOS is a Sri Lankan university GovTech demonstration for coordinating infrastructure planning, schedules, and clearer public information. It is not operated as a national government portal.",
+      sections: [
+        {
+          id: "what",
+          heading: "What this project is",
+          body:
+            "INFRAOS explores how agencies could share where and when road, water, telecom, electricity, and related works are planned so communities see fewer repeated excavations. The public website explains the concept using synthetic examples. It is developed as a university group project at South Eastern University of Sri Lanka.",
+        },
+        {
+          id: "why",
+          heading: "Why coordination matters",
+          body:
+            "When schedules and locations stay in separate silos, the same corridor can be opened more than once and residents receive fragmented updates. INFRAOS describes intended workflows—such as explainable overlap review and accountable progress tracking—without claiming they are deployed nationwide today.",
+        },
+        {
+          id: "modules",
+          heading: "How the platform is designed to work",
+          body:
+            "ProjectTrace is intended to support delivery milestones and accountable progress. RoadSync is designed to surface geographic and date overlaps for human agency review—not autonomous approvals. InfraMap and other modules remain roadmap items until implemented and authorized for public description.",
+        },
+        {
+          id: "audiences",
+          heading: "Who may use it",
+          body:
+            "The demonstration speaks to residents, field staff, coordinators, and evaluators. Protected staff workflows, dashboards, and citizen issue reporting are not offered from this public marketing site until real routes and policies exist.",
+        },
+        {
+          id: "today",
+          heading: "Demonstration today vs planned capabilities",
+          body:
+            "The landing page includes illustrative lifecycle content, a static coordination preview, trust information, and FAQ answers grounded in the current codebase. Live national datasets, staff sign-in, complaint intake, and operational GIS are planned or internal-only—not advertised as available here.",
+        },
+      ],
+    },
+    accessibility: {
+      metaTitle: "Accessibility information",
+      metaDescription:
+        "How the public INFRAOS site supports inclusive use, known limitations, and review status—without claiming formal certification.",
+      title: "Accessibility information",
+      intro:
+        "The team aims for clear structure, keyboard access, and readable contrast on public pages. This statement describes implemented features and honest limits—it is not a WCAG certificate or government accreditation.",
+      sections: [
+        {
+          id: "approach",
+          heading: "Inclusive design approach",
+          body:
+            "Public pages use semantic landmarks (header, main, footer), a skip link to main content, visible focus styles on interactive elements, and design tokens tested for contrast in the shared UI foundation. English, Sinhala, and Tamil copy is provided; Sinhala and Tamil strings remain draft pending qualified native-speaker review.",
+        },
+        {
+          id: "supported",
+          heading: "Supported interactions on the public site",
+          body:
+            "Primary navigation and footer links are reachable by keyboard. The homepage FAQ uses native disclosure controls (`details` / `summary`). Images that illustrate infrastructure include localized alternative text. Layouts reflow for narrow viewports and increased zoom where tested in development.",
+        },
+        {
+          id: "fonts",
+          heading: "Text and scripts",
+          body:
+            "Latin, Sinhala, and Tamil scripts use bundled web fonts served with the Next.js application. Mixed-language lines may occur where translations are still draft.",
+        },
+        {
+          id: "limits",
+          heading: "Known limitations and review gaps",
+          body:
+            "Automated axe scans, systematic screen-reader walkthroughs, and independent WCAG 2.2 conformance audits have not been completed for the full public landing. Some operational UI exists only in development fixtures and is not part of this public route set. Accessibility feedback email or forms are not published until owner-approved contact channels exist.",
+        },
+      ],
+    },
+    privacy: {
+      metaTitle: "Privacy and data use",
+      metaDescription:
+        "Factual notes on what the public INFRAOS demonstration site may process—based on the current codebase, not legal advice.",
+      title: "Privacy and data use",
+      intro:
+        "This page summarizes observed behavior of the public marketing site. It is not a lawyer-approved privacy policy and does not describe production deployment retention unless verified by the project owner.",
+      sections: [
+        {
+          id: "scope",
+          heading: "Scope of this site",
+          body:
+            "Routes such as `/`, `/si`, `/ta`, and supporting information pages are public and unauthenticated. They do not include a citizen issue submission form, newsletter signup, or contact form in the current repository.",
+        },
+        {
+          id: "collection",
+          heading: "Information the demo site may involve",
+          body:
+            "When you visit, your browser requests HTML, fonts, images, and other static assets. Hosting platforms (for example Vercel or similar) typically record standard server access metadata such as IP address, user agent, and requested URL in server logs. The application source reviewed for Step 32 did not add third-party analytics scripts, advertising trackers, or marketing cookies on public pages.",
+        },
+        {
+          id: "cookies",
+          heading: "Cookies and local storage",
+          body:
+            "No dedicated analytics or consent cookies were identified in the public landing implementation. Next.js and hosting infrastructure may set technical cookies or cache data as part of normal operation—exact behavior depends on deployment settings and should be confirmed before any legal publication.",
+        },
+        {
+          id: "fonts",
+          heading: "Fonts and external requests",
+          body:
+            "Typography is loaded through Next.js font optimization (bundled delivery from the application origin rather than a live third-party embed in page markup). Wikimedia-sourced photographs are stored under `/landing/photos/` and credited on the photo credits page.",
+        },
+        {
+          id: "staff",
+          heading: "Staff and protected areas",
+          body:
+            "Future authenticated dashboards and operational data are separate from this public site. Staff sign-in is not linked from the landing page until a reviewed authentication route exists.",
+        },
+        {
+          id: "owner",
+          heading: "Owner review",
+          body:
+            "Retention periods, subprocessors, and jurisdiction-specific privacy law statements require owner and legal review before they can be marked approved. Until then, treat operational privacy details as NEEDS_OWNER_REVIEW.",
+        },
+      ],
+    },
+  },
   translationDraftNote:
     "Sinhala and Tamil text on this public site is an unverified draft pending native-speaker review.",
 };
@@ -736,6 +1070,137 @@ const si: PublicLandingCopy = {
       },
     ],
   },
+  preview: {
+    eyebrow: "ආදර්ශන පෙරදසුන",
+    title: "සම්බන්ධීකරණය කළ මාර්ග සහ උපයෝගිතා සැලසුමක් පෙනෙන්නේ කෙසේද",
+    intro:
+      "මෙම රූප සටහන මාර්ග ප්‍රතිසංස්කරණය සහ ජල නල වැඩ දෙකම සැලසුම් කළ සංකල්පීය හවුල් කොටසක් පෙන්වයි. මෙය සජීවී සිතියමක්, ගණනය කළ ගැටුමක් හෝ නිල ව්‍යාපෘතියක් නොවේ.",
+    disclaimer:
+      "ආදර්ශන මූලාකෘතිය — සජීවී රජයේ දත්ත නොවේ. සංකල්පීය රූප සටහනකි; පරිමාණයට නොවේ.",
+    figureTitle: "මාර්ග ප්‍රතිසංස්කරණය සහ ජල නල වැඩ අතිච්ඡාදනයේ සංකල්පය",
+    figureDescription:
+      "තැඹිලි ඝන රේඛාව සැලසුම් කළ මාර්ග ප්‍රතිසංස්කරණයයි. ඉරි ඇති අළු රේඛාව එම කොරිඩෝවේ කොටසක සැලසුම් කළ ජල නල වැඩයි. ඉරි ඇති මෙරූන් කොටුව හවුල් කොටස සලකුණු කරයි. මෙය භූගෝලීය සිතියමක් නොවේ.",
+    figureCaption:
+      "මාර්ග වැඩ සහ ජල වැඩ කොරිඩෝවේ කොටසක් බෙදා ගනී; දින පරාසයන් ද අතිච්ඡාදනය වේ. මෙය පැහැදිලි කිරීම සඳහා නියැදි කතාවකි.",
+    notToScale: "සංකල්පීය · පරිමාණයට නොවේ",
+    legendRoad: "ඝන රේඛාව — සැලසුම් කළ මාර්ග ප්‍රතිසංස්කරණය",
+    legendWater: "ඉරි ඇති රේඛාව — සැලසුම් කළ ජල නල වැඩ",
+    legendOverlap: "ඉරි ඇති දාරය — හවුල් කොටස (දිනද අතිච්ඡාදනය)",
+    overlapMark: "1",
+    scheduleRoad: "නියැදි මාර්ග දින",
+    scheduleWater: "නියැදි ජල දින",
+    overlapDates: "හවුල් දින",
+    statusNote:
+      "InfraMap සහ RoadSync මෙම අඩවියේ ආදර්ශන සංකල්ප වේ. මෙම රූපය සිතියම් විමසන්නේ නැත, සජීවී ගැටුම් හඳුනන්නේ නැත, වැඩ අනුමත කරන්නේ නැත.",
+  },
+  trust: {
+    eyebrow: "විශ්වාසය සහ ප්‍රවේශය",
+    title: "මෙම ආදර්ශනය තොරතුරු සහ ප්‍රවේශය හසුරුවන ආකාරය",
+    intro:
+      "INFRAOS යනු විශ්වවිද්‍යාල GovTech මූලාකෘතියකි. මෙම පිටුව සම්බන්ධීකරණ සංකල්ප පැහැදිලි කරයි — නිල රජයේ සේවාවක් හෝ සහතික කළ ආරක්ෂණ නිෂ්පාදනයක් නොවේ.",
+    demoNotice:
+      "මෙම ආදර්ශනය ගැන: උදාහරණ සහ රූප සටහන් කෘත්‍රිම දත්ත භාවිතා කරයි. ඒවා සජීවී ජාතික යටිතල වාර්තා හෝ අමාත්‍යාංශ අනුමැතිය නොවේ.",
+    points: [
+      {
+        id: "coordination",
+        title: "සම්බන්ධීකරණ සැලසුම (සැලසුම් අරමුණ)",
+        body:
+          "වේදිකා සංකල්පය අනුව ආයතන වැඩ ස්ථානයේ හෝ කාලයේ අතිච්ඡාදන මුලදීම දැක ගැනීමට උපකාරී විය හැක. මෙහි පෙන්වන්නේ අරමුණ පමණි — මෙම මහජන අඩවියේ සජීවී මෙහෙයුම් ප්‍රතිඵල නොවේ.",
+      },
+      {
+        id: "access",
+        title: "මහජන තොරතුරු vs ආරක්ෂිත ක්‍රමවේද",
+        body:
+          "පිවිසීමක් නොමැතිව මෙම අඩවිය කියවිය හැක. කාර්ය මණ්ඩල වැඩබිම්, role-based access සහ audit trails ආරක්ෂිත මාර්ග සඳහා සැලසුම් — මෙම පිටුවේ නොපෙන්වයි.",
+      },
+      {
+        id: "traceability",
+        title: "අනුගමනය කළ හැකි ක්‍රියාවලිය (ක්‍රියාත්මක වූ විට)",
+        body:
+          "ProjectTrace සහ related modules සන්ධිස්ථාන සහ වගකීම් ලියාපදිංචි කිරීමට aiming. මෙම මහජන අඩවිය පෞද්ගලික ව්‍යාපෘති ගොනු හෝ අනුමැති තීරණ නොපෙන්වයි.",
+      },
+      {
+        id: "privacy",
+        title: "මෙහි සජීවී පුරවැසි හෝ ආයතන දත්ත නැත",
+        body:
+          "මෙම landing page databases විමසන්නේ නැත හෝ සැබෑ project coordinates ප්‍රකාශ නොකරයි. අනාගත මහජන-ආරක්ෂිත views සඳහා වෙනම සමාලෝචනය අවශ්‍ය.",
+      },
+    ],
+  },
+  faq: {
+    eyebrow: "නිතර අසන ප්‍රශ්න",
+    title: "නිතර අසන ප්‍රශ්න",
+    intro:
+      "INFRAOS අද කුමක්ද සහ roadmap කුමක්ද යන්න.short answers. තවම නිර්මාණය නොකළ දේ අපි පැහැදිලිව කියමු.",
+    items: [
+      {
+        id: "what-is-infraos",
+        question: "INFRAOS කියන්නේ මොකක්ද?",
+        answer:
+          "INFRAOS යනු යටිතල ව්‍යාපෘති, කාලසටහන් සහ වගකීම් ආයතන අතර සම්බන්ධ කළ හැකි ආකාරය පෙන්වන විශ්වවිද්‍යාල ආදර්ශනයකි. මෙය ජාතික සේවාවක් නොව, මූලාකෘතියකි.",
+      },
+      {
+        id: "official-government",
+        question: "INFRAOS නිල රජයේ වෙබ් අඩවියක්ද?",
+        answer:
+          "නැත. අමාත්‍යාංශයක් හෝ පොදු අධිකාරියක් මෙය operate නොකරයි. නිල රජයේ වාර්තා, endorsements හෝ සජීවී registries මෙහි නැත.",
+      },
+      {
+        id: "who-for",
+        question: "වේදිකාව කවුrer සඳහාද?",
+        answer:
+          "මහජන අඩවිය residents, students, officers, evaluators සඳහා — sign-in නොමැත. මෙහෙයුම් tools authenticated routes පිටුbehind.",
+      },
+      {
+        id: "projecttrace",
+        question: "ProjectTrace කියන්නේ?",
+        answer:
+          "ProjectTrace යනු project oversight, milestones සහ accountability සඳහා intended module. මෙම අඩවියේ demonstration concept; private workspaces link නොවේ.",
+      },
+      {
+        id: "roadsync-conflicts",
+        question: "RoadSync ගැටුම් හඳුනා ගන්නේ කෙසේද?",
+        answer:
+          "RoadSync deterministic geography සහ schedule rules මිනිස් review සඳහා candidate overlaps flag කිරීමට designed — AI verdicts හෝ automatic cancellation නොවේ. Step 30 diagram illustrative පමණි.",
+      },
+      {
+        id: "public-projects-now",
+        question: "සැබෑ public projects මෙහි lookup කළ හැකද?",
+        answer:
+          "මෙම demonstration site එකේ නැත. live map, search හෝ registry නැත. scenarios synthetic examples පමණි.",
+      },
+      {
+        id: "citizen-reporting",
+        question: "පුරවැසියන් issues report කළ හැකද?",
+        answer:
+          "public complaint හෝ issue-reporting route මෙම landing page එකේ නැත. citizen services roadmap items.",
+      },
+      {
+        id: "staff-access",
+        question: "staff sign-in කෙසේද?",
+        answer:
+          "reviewed authentication route සහ permissions model සූදානම් වන තුරු staff sign-in link නැත. fake login button නැත.",
+      },
+      {
+        id: "languages",
+        question: "භාෂා මොනවාද?",
+        answer:
+          "English, Sinhala, Tamil — /, /si, /ta. Sinhala/Tamil draft — native-speaker review pending.",
+      },
+    ],
+  },
+  nextSteps: {
+    eyebrow: "ඊළඟ පියවර",
+    title: "ආදර්ශනය further explore කරන්න",
+    intro:
+      "පහත links මෙම පිටුවේ sections වෙත යයි. registration අවශ්‍ය නොවේ.",
+    primaryLabel: "සම්බන්ධීකරණ ජීවන චක්‍රය කියවන්න",
+    primaryAnchor: "lifecycle",
+    secondaryLabel: "ආදර්ශන පෙරදසුන බලන්න",
+    secondaryAnchor: "preview",
+    staffNote:
+      "real sign-in route implemented සහ reviewed වූ පසු staff access — මෙම marketing site හරහා නොව.",
+  },
   photography: {
     problemExpresswayAlt:
       "ශ්‍රී ලංකාව, සීදුව අසල අධිවේගී මාර්ගයේ ඉඩම් වැඩ. ආදර්ශන ඡායාරූපය පමණි — INFRAOS ව්‍යාපෘතියක් හෝ නිල රජයේ වාර්තාවක් නොවේ.",
@@ -747,8 +1212,51 @@ const si: PublicLandingCopy = {
       "ඡායාරූප: Dinesh De Alwis, Wikimedia Commons (CC BY-SA 4.0). සන්දර්භය පමණි.",
     manifestLinkLabel: "ඡායාරූප credit සහ බලපත්‍ර",
   },
-  footerDisclosure:
-    "INFRAOS යනු විශ්වවිද්‍යාලයක් විසින් සංවර්ධනය කළ යටිතල පහසුකම් සම්බන්ධීකරණ ආදර්ශනයකි. පෙන්වන ව්‍යාපෘති තොරතුරු කෘත්‍රිම විය හැකි අතර නිල රජයේ වාර්තා නොවේ.",
+  footer: {
+    identityTitle: "INFRAOS",
+    identityLine:
+      "විශ්වවිද්‍යාල යටිතල සම්බන්ධීකරණ ආදර්ශනය — නිල ශ්‍රී ලංකා රජයේ වේදිකාවක් හෝ live public records සේවාවක් නොවේ.",
+    navLabel: "පාදක සංචාලනය",
+    linkAbout: "INFRAOS ගැන",
+    linkCoordination: "සම්බන්ධීකරණය ක්‍රියා කරන ආකාරය",
+    linkFaq: "නිති අසන ප්‍රශ්න",
+    linkAccessibility: "ප්‍රවේශ්‍යතාව",
+    linkPrivacy: "පෞද්ගලිකත්වය සහ දත්ත භාවිතය",
+    linkPhotoCredits: "ඡායාරූප credit",
+    languageLabel: "භාෂා",
+    disclosure:
+      "ආදර්ශන දත්ත synthetic විය හැක. මෙම site නිල රජයේ අනුමැතිය, සහතික හෝ operational project records පublish නොකරයි.",
+    copyrightPrefix: "South Eastern University of Sri Lanka · INFRAOS demonstration",
+  },
+  infoPages: {
+    about: {
+      ...en.infoPages.about,
+      metaTitle: "INFRAOS ගැන",
+      metaDescription:
+        "INFRAOS කුමක්ද, කාටද යන්න සහ university demonstration එක official government service එකකින් වෙනස් වන ආකාරය.",
+      title: "INFRAOS ගැන",
+      intro:
+        "INFRAOS යනු යටිතල planning, schedules සහ public information සම්බන්ධීකරණය සඳහා Sri Lankan university GovTech demonstration එකකි. එය national government portal ලෙස operate නොවේ.",
+    },
+    accessibility: {
+      ...en.infoPages.accessibility,
+      metaTitle: "ප්‍රවේශ්‍යතා තොරතුරු",
+      metaDescription:
+        "Inclusive use, known limits, review status — WCAG certificate claim නොමැත.",
+      title: "ප්‍රවේශ්‍යතා තොරතුරු",
+      intro:
+        "Public pages සඳහා clear structure, keyboard access, readable contrast අරමුණු කරයි. මෙය formal certification නොවේ.",
+    },
+    privacy: {
+      ...en.infoPages.privacy,
+      metaTitle: "පෞද්ගලිකත්වය සහ දත්ත භාවිතය",
+      metaDescription:
+        "Public demo site හි observed behavior — legal advice නොවේ.",
+      title: "පෞද්ගලිකත්වය සහ දත්ත භාවිතය",
+      intro:
+        "Public marketing site හි observed behavior සාරාංශය. Lawyer-approved policy නොවේ; deployment retention owner review අවශ්‍ය.",
+    },
+  },
   translationDraftNote:
     "මෙම පිටුවේ සිංහල පෙළ ස්වදේශික සමාලෝචනයක් බලාපොරොත්තුවෙන් සිටින තහවුරු නොකළ කෙටුම්පතකි.",
 };
@@ -1045,6 +1553,137 @@ const ta: PublicLandingCopy = {
       },
     ],
   },
+  preview: {
+    eyebrow: "எடுத்துக்காட்டு முன்னோட்டம்",
+    title: "ஒருங்கிணைந்த சாலை மற்றும் பயன்பாட்டு திட்டமிடல் எப்படி இருக்கும்",
+    intro:
+      "இந்த வரைபடம் சாலை புதுப்பிப்பும் நீர் குழாய் பணியும் திட்டமிடப்பட்ட ஒரு கருத்துப்பூர்வ பொது பகுதியைக் காட்டுகிறது. இது நேரடி வரைபடம், கணக்கிடப்பட்ட முரண்பாடு அல்லது அதிகாரப்பூர்வ திட்டம் அல்ல.",
+    disclaimer:
+      "எடுத்துக்காட்டு முன்மாதிரி — நேரடி அரசு தரவு அல்ல. கருத்து வரைபடம்; அளவுகோலுக்கு அல்ல.",
+    figureTitle: "சாலை புதுப்பிப்பு மற்றும் நீர் குழாய் பணியின் கருத்து ஒன்றுசேர்வு",
+    figureDescription:
+      "திட ஆரஞ்சு கோடு திட்டமிட்ட சாலை புதுப்பிப்பு. கோடுகள் கொண்ட சாம்பல் கோடு அதே பாதையின் ஒரு பகுதியில் திட்டமிட்ட நீர் குழாய் பணி. கோடுகள் கொண்ட மெரூன் பெட்டி பொது பகுதியைக் குறிக்கிறது. இது புவியியல் வரைபடம் அல்ல.",
+    figureCaption:
+      "சாலைப் பணியும் நீர் பணியும் பாதையின் ஒரு பகுதியைப் பகிர்கின்றன; தேதி வரம்புகளும் ஒன்றுசேர்கின்றன. இது விளக்கத்திற்கான மாதிரி கதை மட்டும்.",
+    notToScale: "கருத்து · அளவுகோலுக்கு அல்ல",
+    legendRoad: "திடக் கோடு — திட்டமிட்ட சாலை புதுப்பிப்பு",
+    legendWater: "கோடுகள் கொண்ட கோடு — திட்டமிட்ட நீர் குழாய் பணி",
+    legendOverlap: "கோடுகள் கொண்ட விளிம்பு — பொது பகுதி (தேதிகளும் ஒன்றுசேரும்)",
+    overlapMark: "1",
+    scheduleRoad: "மாதிரி சாலை தேதிகள்",
+    scheduleWater: "மாதிரி நீர் தேதிகள்",
+    overlapDates: "பொது தேதிகள்",
+    statusNote:
+      "InfraMap மற்றும் RoadSync இந்தத் தளத்தில் செயல்விளக்கக் கருத்துகள். இந்தப் படம் வரைபடங்களை வினவவில்லை, நேரடி முரண்பாடுகளைக் கண்டறியவில்லை, பணியை அனுமதிக்கவில்லை.",
+  },
+  trust: {
+    eyebrow: "நம்பிக்கை மற்றும் அணுகல்",
+    title: "இந்தச் செயல்விளக்கம் தகவலையும் அணுகலையும் எவ்வாறு கையாளுகிறது",
+    intro:
+      "INFRAOS ஒரு பல்கலைக்கழக GovTech முன்மாதிரி. இந்தப் பக்கம் ஒருங்கிணைப்புக் கருத்துகளை விளக்குகிறது — அதிகாரப்பூர்வ அரசு சேவை அல்ல, சான்றளிக்கப்பட்ட பாதுகாப்பு தயாரிப்பு அல்ல.",
+    demoNotice:
+      "இந்தச் செயல்விளக்கம் பற்றி: எடுத்துக்காட்டுகள் மற்றும் வரைபடங்கள் செயற்கைத் தரவைப் பயன்படுத்துகின்றன. அவை நேரடி தேசிய உள்கட்டமைப்பு பதிவுகள் அல்ல.",
+    points: [
+      {
+        id: "coordination",
+        title: "ஒருங்கிணைந்த திட்டமிடல் (வடிவமைப்பு நோக்கம்)",
+        body:
+          "தளக் கருத்து நிறுவனங்கள் இடம்/நேரத்தில் ஒன்றுசேர்வை முன்கூட்டியே காண உதவும். இங்கு காட்டப்படுவது நோக்கம் மட்டும் — இந்தப் பொது தளத்தில் நேரடி செயல்பாட்டு முடிவுகள் அல்ல.",
+      },
+      {
+        id: "access",
+        title: "பொது தகவல் vs பாதுகாக்கப்பட்ட செயல்முறைகள்",
+        body:
+          "உள்நுழைவு இல்லாமல் இந்தத் தளத்தைப் படிக்கலாம். ஊழியர் workspace, role-based access மற்றும் audit trails பாதுகாக்கப்பட்ட பாதைகளுக்கான திட்டம் — இப்பக்கத்தில் காட்டப்படவில்லை.",
+      },
+      {
+        id: "traceability",
+        title: "கண்காணிக்கக்கூடிய செயல்முறை (செயல்படுத்தப்பட்டால்)",
+        body:
+          "ProjectTrace மற்றும் தொடர்புடைய தொகுதிகள் மைல்கற்கள் மற்றும் பொறுப்புகளை ஆதரிக்க aiming. இந்தப் பொது தளம் private project files அல்லது approval decisions காட்டாது.",
+      },
+      {
+        id: "privacy",
+        title: "இங்கே நேரடி citizen/agency data இல்லை",
+        body:
+          "இந்த landing page databases வினவாது, real project coordinates வெளியிடாது. எதிர்கால public-safe views தனி review தேவை.",
+      },
+    ],
+  },
+  faq: {
+    eyebrow: "அடிக்கடி கேட்கப்படும் கேள்விகள்",
+    title: "அடிக்கடி கேட்கப்படும் கேள்விகள்",
+    intro:
+      "INFRAOS இன்று என்ன, roadmap என்ன — சுருக்கமான பதில்கள். இன்னும் கட்டப்படாதவற்றை வெளிப்படையாகக் கூறுகிறோம்.",
+    items: [
+      {
+        id: "what-is-infraos",
+        question: "INFRAOS என்றால் என்ன?",
+        answer:
+          "INFRAOS என்பது உள்கட்டமைப்பு திட்டங்கள், அட்டவணைகள் மற்றும் பொறுப்புகளை நிறுவனங்களிடையே ஒருங்கிணைக்கும் வகையைக் காட்டும் பல்கலைக்கழக செயல்விளக்கம். இது தேசிய சேவை அல்ல, முன்மாதிரி.",
+      },
+      {
+        id: "official-government",
+        question: "INFRAOS அதிகாரப்பூர்வ அரசு வலைத்தளமா?",
+        answer:
+          "இல்லை. அமைச்சகம் அல்லது public authority operate செய்யாது. அதிகாரப்பூர்வ பதிவுகள், endorsements அல்லது live registries இங்கே இல்லை.",
+      },
+      {
+        id: "who-for",
+        question: "யாருக்காக இந்தத் தளம்?",
+        answer:
+          "பொது தளம் residents, students, officers, evaluators அனைவருக்கும் — sign-in தேவையில்லை. operational tools authenticated routes behind.",
+      },
+      {
+        id: "projecttrace",
+        question: "ProjectTrace என்றால்?",
+        answer:
+          "ProjectTrace project oversight, milestones, accountability க்கான intended module. இந்தப் பொது தளத்தில் demonstration concept; private workspaces link இல்லை.",
+      },
+      {
+        id: "roadsync-conflicts",
+        question: "RoadSync முரண்பாடுகளை எவ்வாறு கண்டறிய aiming?",
+        answer:
+          "RoadSync deterministic geography மற்றும் schedule rules மூலம் human review க்கு candidate overlaps — AI verdicts அல்ல, automatic cancellation அல்ல. Step 30 diagram illustrative மட்டும்.",
+      },
+      {
+        id: "public-projects-now",
+        question: "உண்மையான public projects இங்கே தேட முடியுமா?",
+        answer:
+          "இந்த demonstration site இல் இல்லை. live map, search, registry இல்லை. scenarios synthetic examples.",
+      },
+      {
+        id: "citizen-reporting",
+        question: "குடியிருப்பாளர்கள் issues report செய்ய முடியுமா?",
+        answer:
+          "public complaint/issue-reporting route இந்த landing page இல் இல்லை. citizen services roadmap.",
+      },
+      {
+        id: "staff-access",
+        question: "staff எவ்வாறு sign in?",
+        answer:
+          "reviewed authentication route மற்றும் permissions model ready ஆன பிறகே staff sign-in link. fake login button இல்லை.",
+      },
+      {
+        id: "languages",
+        question: "எந்த மொழிகள்?",
+        answer:
+          "English, Sinhala, Tamil — /, /si, /ta. Sinhala/Tamil draft; native-speaker review pending.",
+      },
+    ],
+  },
+  nextSteps: {
+    eyebrow: "அடுத்த படிகள்",
+    title: "செயல்விளக்கத்தைத் தொடர்ந்து பாருங்கள்",
+    intro:
+      "கீழுள்ள இணைப்புகள் இந்தப் பக்கத்திலுள்ள பகுதிகளுக்குச் செல்கின்றன. registration தேவையில்லை.",
+    primaryLabel: "ஒருங்கிணைப்பு வாழ்க்கைச் சுழற்சியைப் படிக்கவும்",
+    primaryAnchor: "lifecycle",
+    secondaryLabel: "எடுத்துக்காட்டு முன்னோட்டத்தைப் பார்க்கவும்",
+    secondaryAnchor: "preview",
+    staffNote:
+      "real sign-in route implemented மற்றும் reviewed ஆன பிறகே staff access — இந்த marketing site வழியாக அல்ல.",
+  },
   photography: {
     problemExpresswayAlt:
       "சீதுவா அருகிலுள்ள இலங்கை அதிவேக நெடுஞ்சாலையில் நிலப்பணி. எடுத்துக்காட்டு புகைப்படம் மட்டும் — INFRAOS திட்டம் அல்ல.",
@@ -1056,8 +1695,49 @@ const ta: PublicLandingCopy = {
       "புகைப்படம்: Dinesh De Alwis, Wikimedia Commons (CC BY-SA 4.0). சூழல் மட்டும்.",
     manifestLinkLabel: "புகைப்பட credit மற்றும் உரிமம்",
   },
-  footerDisclosure:
-    "INFRAOS ஒரு பல்கலைக்கழகத்தால் உருவாக்கப்பட்ட உள்கட்டமைப்பு ஒருங்கிணைப்பு செயல்விளக்கம். காட்டப்படும் திட்டத் தகவல் செயற்கையாக இருக்கலாம்; அது அதிகாரப்பூர்வ அரசுப் பதிவு அல்ல.",
+  footer: {
+    identityTitle: "INFRAOS",
+    identityLine:
+      "பல்கலைக்கழக உள்கட்டமைப்பு ஒருங்கிணைப்பு செயல்விளக்கம் — அதிகாரப்பூர்வ இலங்கை அரசு தளம் அல்ல.",
+    navLabel: "அடிக்குறிப்பு வழிசெலுத்தல்",
+    linkAbout: "INFRAOS பற்றி",
+    linkCoordination: "ஒருங்கிணைப்பு எவ்வாறு",
+    linkFaq: "அடிக்கடி கேட்கப்படும் கேள்விகள்",
+    linkAccessibility: "அணுகல்தன்மை",
+    linkPrivacy: "தனியுரிமை மற்றும் தரவு பயன்பாடு",
+    linkPhotoCredits: "புகைப்பட credit",
+    languageLabel: "மொழிகள்",
+    disclosure:
+      "செயல்விளக்கத் தரவு செயற்கையாக இருக்கலாம். அதிகாரப்பூர்வ அரசு அனுமதி/சான்றிதழ்/operational records இங்கு வெளியிடப்படவில்லை.",
+    copyrightPrefix: "South Eastern University of Sri Lanka · INFRAOS demonstration",
+  },
+  infoPages: {
+    about: {
+      ...en.infoPages.about,
+      metaTitle: "INFRAOS பற்றி",
+      metaDescription:
+        "INFRAOS என்ன, யாருக்காக, university demonstration official government service-லிருந்து வேறுபாடு.",
+      title: "INFRAOS பற்றி",
+      intro:
+        "INFRAOS என்பது infrastructure planning, schedules, public information ஒருங்கிணைப்புக்கான Sri Lankan university GovTech demonstration. national government portal அல்ல.",
+    },
+    accessibility: {
+      ...en.infoPages.accessibility,
+      metaTitle: "அணுகல்தன்மை தகவல்",
+      metaDescription: "Inclusive use, limits, review status — WCAG certificate claim இல்லை.",
+      title: "அணுகல்தன்மை தகவல்",
+      intro:
+        "Public pages-க்கு clear structure, keyboard access, contrast நோக்கம். formal certification அல்ல.",
+    },
+    privacy: {
+      ...en.infoPages.privacy,
+      metaTitle: "தனியுரிமை மற்றும் தரவு பயன்பாடு",
+      metaDescription: "Public demo site observed behavior — legal advice அல்ல.",
+      title: "தனியுரிமை மற்றும் தரவு பயன்பாடு",
+      intro:
+        "Public marketing site observed behavior சுருக்கம். Lawyer-approved policy அல்ல; deployment retention owner review தேவை.",
+    },
+  },
   translationDraftNote:
     "இந்தப் பக்கத்தின் தமிழ் உரை தாய்மொழி மதிப்பாய்வுக்காக காத்திருக்கும் சரிபார்க்கப்படாத வரைவு.",
 };

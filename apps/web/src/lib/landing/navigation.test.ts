@@ -8,6 +8,7 @@ import {
   HERO_OVERVIEW_ANCHOR,
   AUDIENCES_SECTION_ANCHOR,
   HOW_IT_WORKS_SECTION_ANCHOR,
+  resolvePublicNavHref,
   PROBLEM_SECTION_ANCHOR,
   PUBLIC_PRIMARY_NAV,
   SOLUTION_SECTION_ANCHOR,
@@ -56,5 +57,12 @@ describe("public landing navigation", () => {
   it("includes Step 29 #audiences in localized navigation", () => {
     const hrefs = getPublicNavLinks(getPublicCopy("en"), "en").map((item) => item.href);
     expect(hrefs).toContain(`#${AUDIENCES_SECTION_ANCHOR}`);
+  });
+
+  it("prefixes in-page anchors with locale home when resolving off-home links", () => {
+    expect(resolvePublicNavHref("si", `#${PROBLEM_SECTION_ANCHOR}`)).toBe(
+      `/si#${PROBLEM_SECTION_ANCHOR}`,
+    );
+    expect(resolvePublicNavHref("en", "/about")).toBe("/about");
   });
 });

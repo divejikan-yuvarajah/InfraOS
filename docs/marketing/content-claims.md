@@ -17,4 +17,10 @@
 
 **Visible public routes:** `/` (English), `/si` (Sinhala draft), `/ta` (Tamil draft), plus `#hero-overview`, `#problem`, `#solution`, `#features` on the current locale page. Staff sign-in is omitted until an auth route exists. No licensed hero photograph is in the repo. Step 27 feature cards describe demonstration vs planned capabilities only—no links to unbuilt app routes.
 
-**Review:** Update when Steps 27–29 add sections and nav entries.
+**Step 30 preview (`#preview`):** Conceptual static diagram only — road resurfacing 2026-03-02–2026-03-20 and water-pipeline work 2026-03-10–2026-03-28 (shared dates 2026-03-10–2026-03-20). Labeled illustrative prototype, not a live map, RoadSync detection, or government record. No nav item added (header already has seven links). No new photograph. Sinhala/Tamil preview copy is an unverified draft.
+
+**Step 31 (`#trust-information`, `#faq`, `#next-steps`):** Honest university-demo trust points; 9 FAQ entries (no live project search, complaints, or staff login); CTAs link only to `#how-it-works` and `#preview` on the same page. No new images. si/ta draft pending native review.
+
+**Step 32 (footer + supporting pages):** Semantic footer with quick links to About, `#how-it-works`, `#faq`, Accessibility, Privacy, and `/landing/photo-credits.html`. Routes: `/about`, `/accessibility`, `/privacy` and `/si/*`, `/ta/*` equivalents. No contact page (no owner-approved channel). Privacy page states observed codebase behavior; deployment retention marked NEEDS_OWNER_REVIEW. No WCAG certification claims. Language switch preserves supporting-page path. si/ta info body sections largely English draft with localized titles/intros.
+
+**Review:** Update when Steps 33–34 add sections.
