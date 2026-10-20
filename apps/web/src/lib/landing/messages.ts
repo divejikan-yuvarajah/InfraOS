@@ -16,6 +16,7 @@ export type PublicLandingCopy = {
     problem: string;
     solution: string;
     features: string;
+    lifecycle: string;
     example: string;
   };
   hero: {
@@ -80,6 +81,35 @@ export type PublicLandingCopy = {
       status: "demonstration" | "planned";
     }[];
   };
+  lifecycle: {
+    eyebrow: string;
+    title: string;
+    intro: string;
+    stageLabel: string;
+    scenarioTitle: string;
+    scenarioBody: string;
+    approvalsNote: string;
+    stages: readonly {
+      id:
+        | "plan"
+        | "coordinate"
+        | "approve"
+        | "build"
+        | "verify"
+        | "monitor"
+        | "complete"
+        | "maintain";
+      title: string;
+      body: string;
+    }[];
+  };
+  photography: {
+    problemExpresswayAlt: string;
+    problemExpresswayCredit: string;
+    lifecycleExpresswayAlt: string;
+    lifecycleExpresswayCredit: string;
+    manifestLinkLabel: string;
+  };
   footerDisclosure: string;
   translationDraftNote: string;
 };
@@ -101,6 +131,7 @@ const en: PublicLandingCopy = {
     problem: "The coordination gap",
     solution: "How INFRAOS works",
     features: "Platform functions",
+    lifecycle: "Project lifecycle",
     example: "Coordination example",
   },
   hero: {
@@ -256,6 +287,72 @@ const en: PublicLandingCopy = {
       },
     ],
   },
+  lifecycle: {
+    eyebrow: "From plan to maintenance",
+    title: "The infrastructure coordination lifecycle",
+    intro:
+      "This sequence describes how agencies can move from a proposed work plan through delivery and long-term upkeep. It is a public explanation of coordinated practice—not a live workflow on this demonstration site, and not an automatic approval engine.",
+    stageLabel: "Stage",
+    scenarioTitle: "Illustrative scenario (synthetic data)",
+    scenarioBody:
+      "Suppose road resurfacing and a water-pipeline replacement are planned on the same road segment with overlapping dates. Sharing plans early lets agencies discuss timing and reschedule work before crews mobilize—reducing repeated excavation. This story is fictional and does not describe a real government project or detected conflict in INFRAOS.",
+    approvalsNote:
+      "Approvals and schedule changes are made by authorized officials according to policy. Geographic or schedule overlap signals are for human review; they do not automatically cancel work or imply an emergency.",
+    stages: [
+      {
+        id: "plan",
+        title: "Plan",
+        body: "Agencies propose the work, location, and intended schedule.",
+      },
+      {
+        id: "coordinate",
+        title: "Coordinate",
+        body:
+          "Potential overlaps in work areas and timing are identified for discussion. RoadSync is designed to flag candidate geographic and schedule overlaps for human review—not to resolve conflicts automatically.",
+      },
+      {
+        id: "approve",
+        title: "Approve",
+        body: "Authorized reviewers consider the required decisions and approvals.",
+      },
+      {
+        id: "build",
+        title: "Build",
+        body: "Approved work is carried out and progress can be recorded.",
+      },
+      {
+        id: "verify",
+        title: "Verify",
+        body: "Inspections and evidence help confirm work quality and completion.",
+      },
+      {
+        id: "monitor",
+        title: "Monitor",
+        body: "Schedules, progress, and possible risks are followed during delivery.",
+      },
+      {
+        id: "complete",
+        title: "Complete",
+        body: "Completion and relevant project records can be finalized.",
+      },
+      {
+        id: "maintain",
+        title: "Maintain",
+        body: "Completed infrastructure can be tracked for future upkeep and issues.",
+      },
+    ],
+  },
+  photography: {
+    problemExpresswayAlt:
+      "Earthworks and construction activity along a Sri Lankan expressway corridor near Seeduwa. Illustrative photo only—not an INFRAOS project or official government record.",
+    problemExpresswayCredit:
+      "Photo: Rehman Abubakr, Wikimedia Commons (CC BY-SA). Context only; no government endorsement implied.",
+    lifecycleExpresswayAlt:
+      "Southern Expressway highway in Sri Lanka under clear skies. Illustrative public infrastructure photo—not linked to demonstration data in INFRAOS.",
+    lifecycleExpresswayCredit:
+      "Photo: Dinesh De Alwis, Wikimedia Commons (CC BY-SA 4.0). Context only; no government endorsement implied.",
+    manifestLinkLabel: "Photo credits and licenses",
+  },
   footerDisclosure:
     "INFRAOS is a university-developed infrastructure coordination demonstration. Project information shown for demonstration may be synthetic and does not represent official government records.",
   translationDraftNote:
@@ -280,6 +377,7 @@ const si: PublicLandingCopy = {
     problem: "සම්බන්ධීකරණ පරතරය",
     solution: "INFRAOS ක්‍රියා කරන ආකාරය",
     features: "වේදිකා ක්‍රියාකාරිත්ව",
+    lifecycle: "ව්‍යාපෘති ජීවන චක්‍රය",
     example: "සම්බන්ධීකරණ උදාහරණය",
   },
   hero: {
@@ -430,6 +528,72 @@ const si: PublicLandingCopy = {
       },
     ],
   },
+  lifecycle: {
+    eyebrow: "සැලසුමේ සිට නඩත්තුව දක්වා",
+    title: "යටිතල සම්බන්ධීකරණ ජීවන චක්‍රය",
+    intro:
+      "ආයතන ව්‍යාපෘති සැලසුම, බෙදාහැරීම සහ දිගුකාලීන නඩත්තුව දක්වා කෙසේ ඉදිරියට යා හැකිද යන්න මෙම පිළිවෙල පැහැදිලි කරයි. මෙය මහජන පැහැදිලි කිරීමක් පමණි — මෙම ආදර්ශන අඩවියේ සජීවී ක්‍රියාවලියක් හෝ ස්වයංක්‍රීය අනුමැතියක් නොවේ.",
+    stageLabel: "අදියර",
+    scenarioTitle: "ආදර්ශන දර්ශනය (කෘත්‍රිම දත්ත)",
+    scenarioBody:
+      "මාර්ගය නැවත ඇල්ලීම සහ ජල නල මාර්ග ප්‍රතිස්ථාපනය එකම කොටසේ අතිච්ඡාදන වන දිනවල සැලසුම් කළහොත්, සැලසුම් මුලදීම බෙදාගෙන කාලය සකස් කිරීමෙන් නැවත කැණීම අඩු කළ හැක. මෙය උපකල්පිත කතාවක්; සැබෑ රජයේ ව්‍යාපෘතියක් හෝ INFRAOS හඳුනාගත් ගැටුමක් නොවේ.",
+    approvalsNote:
+      "අනුමැති සහ කාලසටහන් වෙනස්කම් අධිකාරී නිලධාරීන් විසින් ප්‍රතිපත්ති අනුව ගනු ලැබේ. භූගෝලීය හෝ කාල අතිච්ඡාදන සංඥා මනුෂ්‍ය මතිකාරණය සඳහා; ස්වයංක්‍රීයව වැඩ අවලංගු නොකරයි.",
+    stages: [
+      {
+        id: "plan",
+        title: "සැලසුම",
+        body: "ආයතන වැඩ, ස්ථානය සහ අපේක්ෂිත කාලසටහන යෝජනා කරයි.",
+      },
+      {
+        id: "coordinate",
+        title: "සම්බන්ධීකරණය",
+        body:
+          "වැඩ ප්‍රදේශ සහ කාලයේ අතිච්ඡාදන සාකච්ඡාව සඳහා හඳුනා ගනී. RoadSync භූගෝල සහ කාල අතිච්ඡාදන මිනිස් සමාලෝචනය සඳහා පෙන්වීමට නිර්මාණය කර ඇත — ස්වයංක්‍රීයව විසඳන්නේ නොවේ.",
+      },
+      {
+        id: "approve",
+        title: "අනුමැතිය",
+        body: "අධිකාරී සමාලෝචක අවශ්‍ය තීරණ සහ අනුමැති සලකා බලයි.",
+      },
+      {
+        id: "build",
+        title: "නිර්මාණය",
+        body: "අනුමත වැඩ ක්‍රියාත්මක වන අතර ප්‍රගතිය වාර්තා කළ හැක.",
+      },
+      {
+        id: "verify",
+        title: "සත්‍යාපනය",
+        body: "පරීක්ෂණ සහ සාක්ෂි වැඩ ගුණත්වය සහ සම්පූර්ණ කිරීම තහවුරු කිරීමට උදව් කරයි.",
+      },
+      {
+        id: "monitor",
+        title: "නිරීක්ෂණය",
+        body: "බෙදාහැරීම අතරතුර කාලසටහන්, ප්‍රගතිය සහ අවදානම් නිරීක්ෂණය කරයි.",
+      },
+      {
+        id: "complete",
+        title: "සම්පූර්ණ කිරීම",
+        body: "සම්පූර්ණ කිරීම සහ අදාළ වාර්තා අවසන් කළ හැක.",
+      },
+      {
+        id: "maintain",
+        title: "නඩත්තුව",
+        body: "සම්පූර්ණ යටිතල පහසුකම් අනාගත නඩත්තුව සහ ගැටළු සඳහා අධීක්ෂණය කළ හැක.",
+      },
+    ],
+  },
+  photography: {
+    problemExpresswayAlt:
+      "ශ්‍රී ලංකාව, සීදුව අසල අධිවේගී මාර්ගයේ ඉඩම් වැඩ. ආදර්ශන ඡායාරූපය පමණි — INFRAOS ව්‍යාපෘතියක් හෝ නිල රජයේ වාර්තාවක් නොවේ.",
+    problemExpresswayCredit:
+      "ඡායාරූප: Rehman Abubakr, Wikimedia Commons (CC BY-SA). සන්දර්භය පමණි; රජයේ අනුමැතියක් අදහස් නොවේ.",
+    lifecycleExpresswayAlt:
+      "ශ්‍රී ලංකාවේ දකුණු අධිවේගී මාර්ගය. ආදර්ශන ඡායාරූපය — INFRAOS ආදර්ශන දත්ත සමඟ සම්බන්ධ නොවේ.",
+    lifecycleExpresswayCredit:
+      "ඡායාරූප: Dinesh De Alwis, Wikimedia Commons (CC BY-SA 4.0). සන්දර්භය පමණි.",
+    manifestLinkLabel: "ඡායාරූප credit සහ බලපත්‍ර",
+  },
   footerDisclosure:
     "INFRAOS යනු විශ්වවිද්‍යාලයක් විසින් සංවර්ධනය කළ යටිතල පහසුකම් සම්බන්ධීකරණ ආදර්ශනයකි. පෙන්වන ව්‍යාපෘති තොරතුරු කෘත්‍රිම විය හැකි අතර නිල රජයේ වාර්තා නොවේ.",
   translationDraftNote:
@@ -454,6 +618,7 @@ const ta: PublicLandingCopy = {
     problem: "ஒருங்கிணைப்பு இடைவெளி",
     solution: "INFRAOS எவ்வாறு செயல்படுகிறது",
     features: "தள செயல்கள்",
+    lifecycle: "திட்ட வாழ்க்கைச் சுழற்சி",
     example: "ஒருங்கிணைப்பு எடுத்துக்காட்டு",
   },
   hero: {
@@ -603,6 +768,72 @@ const ta: PublicLandingCopy = {
         status: "planned",
       },
     ],
+  },
+  lifecycle: {
+    eyebrow: "திட்டமிடல் முதல் பராமரிப்பு வரை",
+    title: "உள்கட்டமைப்பு ஒருங்கிணைப்பு வாழ்க்கைச் சுழற்சி",
+    intro:
+      "நிறுவனங்கள் திட்டமிடல், விநியோகம் மற்றும் நீண்டகால பராமரிப்பு வரை எவ்வாறு முன்னேறலாம் என்பதை இந்த வரிசை விளக்குகிறது. இது பொது விளக்கம் மட்டுமே — இந்த செயல்விளக்க தளத்தில் நேரடி பணிப்போக்கு அல்லது தானியங்கி அனுமதி அல்ல.",
+    stageLabel: "நிலை",
+    scenarioTitle: "எடுத்துக்காட்டு காட்சி (செயற்கை தரவு)",
+    scenarioBody:
+      "சாலை மேலிறைப் பணி மற்றும் நீர் குழாய் மாற்றீடு ஒரே சாலைப் பகுதியில் ஒன்று சேரும் தேதிகளில் திட்டமிடப்பட்டால், திட்டங்களை முன்கூட்டியே பகிர்வது அட்டவணையை சரிசெய்து மீண்டும் தோண்டுதலைக் குறைக்க உதவும். இது கற்பனைக் கதை; உண்மையான அரசுத் திட்டம் அல்ல.",
+    approvalsNote:
+      "அனுமதிகள் மற்றும் அட்டவணை மாற்றங்கள் அதிகாரப்பூர்வ அதிகாரிகளால் கொள்கைப்படி எடுக்கப்படுகின்றன. புவியியல்/நேர ஒன்றுசேர்வு சமிக்கைகள் மனித மதிப்பாய்வுக்காக; தானாக பணியை ரத்து செய்யாது.",
+    stages: [
+      {
+        id: "plan",
+        title: "திட்டமிடல்",
+        body: "நிறுவனங்கள் பணி, இடம் மற்றும் எதிர்பார்க்கும் அட்டவணையை முன்மொழிகின்றன.",
+      },
+      {
+        id: "coordinate",
+        title: "ஒருங்கிணைப்பு",
+        body:
+          "பணிப் பகுதி மற்றும் நேரத்தில் ஒன்றுசேரக்கூடியவை விவாதத்திற்காக கண்டறியப்படுகின்றன. RoadSync புவியியல் மற்றும் அட்டவணை ஒன்றுசேர்வுகளை மனித மதிப்பாய்வுக்காகக் காட்ட வடிவமைக்கப்பட்டுள்ளது — தானாகத் தீர்க்காது.",
+      },
+      {
+        id: "approve",
+        title: "அனுமதி",
+        body: "அதிகாரப்பூர்வ மதிப்பாய்வாளர்கள் தேவையான முடிவுகள் மற்றும் அனுமதிகளை கருதுகின்றனர்.",
+      },
+      {
+        id: "build",
+        title: "கட்டுமானம்",
+        body: "அனுமதிக்கப்பட்ட பணி நடைபெறுகிறது; முன்னேற்றம் பதிவு செய்யப்படலாம்.",
+      },
+      {
+        id: "verify",
+        title: "சரிபார்ப்பு",
+        body: "ஆய்வுகள் மற்றும் சான்றுகள் தரம் மற்றும் முடிவை உறுதிப்படுத்த உதவுகின்றன.",
+      },
+      {
+        id: "monitor",
+        title: "கண்காணிப்பு",
+        body: "விநியோகத்தின் போது அட்டவணை, முன்னேற்றம் மற்றும் அபாயங்கள் கண்காணிக்கப்படுகின்றன.",
+      },
+      {
+        id: "complete",
+        title: "முடித்தல்",
+        body: "முடிவு மற்றும் தொடர்புடைய திட்ட பதிவுகள் இறுதி செய்யப்படலாம்.",
+      },
+      {
+        id: "maintain",
+        title: "பராமரிப்பு",
+        body: "முடிக்கப்பட்ட உள்கட்டமைப்பு எதிர்கால பராமரிப்பு மற்றும் சிக்கல்களுக்கு கண்காணிக்கப்படலாம்.",
+      },
+    ],
+  },
+  photography: {
+    problemExpresswayAlt:
+      "சீதுவா அருகிலுள்ள இலங்கை அதிவேக நெடுஞ்சாலையில் நிலப்பணி. எடுத்துக்காட்டு புகைப்படம் மட்டும் — INFRAOS திட்டம் அல்ல.",
+    problemExpresswayCredit:
+      "புகைப்படம்: Rehman Abubakr, Wikimedia Commons (CC BY-SA). சூழல் மட்டும்; அரசு அங்கீகாரம் குறிக்கப்படவில்லை.",
+    lifecycleExpresswayAlt:
+      "இலங்கை தெற்கு அதிவேக நெடுஞ்சாலை. எடுத்துக்காட்டு புகைப்படம் — INFRAOS செயல்விளக்க தரவுடன் இணைக்கப்படவில்லை.",
+    lifecycleExpresswayCredit:
+      "புகைப்படம்: Dinesh De Alwis, Wikimedia Commons (CC BY-SA 4.0). சூழல் மட்டும்.",
+    manifestLinkLabel: "புகைப்பட credit மற்றும் உரிமம்",
   },
   footerDisclosure:
     "INFRAOS ஒரு பல்கலைக்கழகத்தால் உருவாக்கப்பட்ட உள்கட்டமைப்பு ஒருங்கிணைப்பு செயல்விளக்கம். காட்டப்படும் திட்டத் தகவல் செயற்கையாக இருக்கலாம்; அது அதிகாரப்பூர்வ அரசுப் பதிவு அல்ல.",

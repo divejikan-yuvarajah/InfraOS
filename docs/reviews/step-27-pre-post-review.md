@@ -22,4 +22,8 @@
 - `components/landing/public-home.tsx`
 - `lib/landing/landing-features.test.ts`
 
-**Photos:** None added.
+**Photos (Step 27 polish):** Two Wikimedia Commons images (CC BY-SA) — problem + lifecycle sections. See `docs/design/public-landing-photography-manifest.md`.
+
+**Manual QA (2026-10-20):** Browser spot-check at 375px mobile emulation on `/`, `/si`; anchor `#how-it-works`; language nav; heading order h1→h2→h3 observed in accessibility tree. **axe-core CLI:** see delivery report. **Playwright:** NOT RUN (not in repo).
+
+**Native review:** Sinhala/Tamil — still **pending** (draft only).
