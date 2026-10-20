@@ -6,6 +6,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { LandingSectionPhoto } from "@/components/landing/landing-section-photo";
 import type { PublicLandingCopy } from "@/lib/landing/messages";
 import { PROBLEM_SECTION_ANCHOR } from "@/lib/landing/navigation";
 
@@ -18,13 +19,21 @@ export function InfrastructureProblemSection({ copy }: { copy: PublicLandingCopy
       tabIndex={-1}
     >
       <div className="container-dashboard gutter-page py-12 md:py-16">
-        <header className="mx-auto max-w-prose space-y-3">
-          <p className="type-label text-link">{copy.problem.eyebrow}</p>
-          <h2 id="problem-heading" className="type-section-title text-balance text-text-primary">
-            {copy.problem.title}
-          </h2>
-          <p className="type-body text-text-secondary">{copy.problem.intro}</p>
-        </header>
+        <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_min(100%,22rem)] lg:items-start lg:gap-12">
+          <header className="max-w-prose space-y-3">
+            <p className="type-label text-link">{copy.problem.eyebrow}</p>
+            <h2 id="problem-heading" className="type-section-title text-balance text-text-primary">
+              {copy.problem.title}
+            </h2>
+            <p className="type-body text-text-secondary">{copy.problem.intro}</p>
+          </header>
+          <LandingSectionPhoto
+            photoId="expresswayConstructionSeeduwa"
+            alt={copy.photography.problemExpresswayAlt}
+            credit={copy.photography.problemExpresswayCredit}
+            className="lg:order-last"
+          />
+        </div>
         <ul className="mt-10 grid gap-4 sm:grid-cols-2 lg:gap-6">
           {copy.problem.cards.map((card) => (
             <li key={card.id} className="min-w-0">

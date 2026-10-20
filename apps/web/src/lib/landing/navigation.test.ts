@@ -6,6 +6,7 @@ import {
   getAvailablePublicNavLinks,
   getPublicNavLinks,
   HERO_OVERVIEW_ANCHOR,
+  HOW_IT_WORKS_SECTION_ANCHOR,
   PROBLEM_SECTION_ANCHOR,
   PUBLIC_PRIMARY_NAV,
   SOLUTION_SECTION_ANCHOR,
@@ -25,8 +26,8 @@ describe("public landing navigation", () => {
   it("does not link to auth or future section placeholders", () => {
     const hrefs = PUBLIC_PRIMARY_NAV.map((item) => item.href);
     expect(hrefs).not.toContain("/login");
-    expect(hrefs).not.toContain("#lifecycle");
     expect(hrefs).not.toContain("#product");
+    expect(hrefs).not.toContain("#lifecycle");
   });
 
   it("includes Step 25–26 anchors when marked available", () => {
@@ -44,5 +45,10 @@ describe("public landing navigation", () => {
   it("includes Step 27 #features in localized navigation", () => {
     const hrefs = getPublicNavLinks(getPublicCopy("en"), "en").map((item) => item.href);
     expect(hrefs).toContain(`#${FEATURES_SECTION_ANCHOR}`);
+  });
+
+  it("includes Step 28 #how-it-works in localized navigation", () => {
+    const hrefs = getPublicNavLinks(getPublicCopy("en"), "en").map((item) => item.href);
+    expect(hrefs).toContain(`#${HOW_IT_WORKS_SECTION_ANCHOR}`);
   });
 });

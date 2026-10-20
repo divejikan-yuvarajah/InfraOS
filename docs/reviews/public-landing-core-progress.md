@@ -2,12 +2,14 @@
 
 | Step | Status | Notes |
 | --- | --- | --- |
-| 25 | Merged to `development` (PR #26) | Header, nav, hero |
-| 26 | Implemented on `feature/public-landing-core` (pending commit) | `#problem`, `#solution`, nav + hero CTA |
-| 27 | Not started | Feature showcase |
-| 28 | Not started | Lifecycle workflow |
-| 29 | Not started | Roles/benefits |
+| 25 | Merged (`main` via PR #26/#28) | Header, nav, hero |
+| 26 | Merged | `#problem`, `#solution` |
+| 27 | **Complete (polish pending merge)** | `#features`, licensed photography, manifest |
+| 28 | **Complete (awaiting your approval for Step 29)** | `#how-it-works`, 8-stage lifecycle en/si/ta |
+| 29 | Not started | Awaiting explicit approval |
 
-**Group PR to `development`:** NOT READY — Steps 27–29 remain.
+**Group PR to `development`:** NOT READY — Step 29 remains.
 
-**Branch:** `feature/public-landing-core` (single shared branch).
+**Branch:** `feature/public-landing-core` (local work; fast-forwarded to `main` at start of Step 27–28 delivery).
+
+**Native Sinhala/Tamil review:** Pending for all public copy including photo alt text.
