@@ -7,6 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { ComponentLibraryPreview } from "@/components/examples/component-library-preview";
 import { MIXED_SCRIPT_SAMPLES } from "@/lib/design/design-tokens";
 import { projectStatusVisual } from "@/lib/design/semantic-colors";
 
@@ -174,6 +175,12 @@ export default function HomePage() {
               </p>
             </div>
           </div>
+        </CardContent>
+      </Card>
+
+      <Card className="shadow-elevation-sm">
+        <CardContent className="p-6">
+          <ComponentLibraryPreview />
         </CardContent>
       </Card>
     </main>
