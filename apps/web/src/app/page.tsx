@@ -8,6 +8,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { ComponentLibraryPreview } from "@/components/examples/component-library-preview";
+import { DemoCoordinationForm } from "@/components/forms/demo-coordination-form";
 import { MIXED_SCRIPT_SAMPLES } from "@/lib/design/design-tokens";
 import { projectStatusVisual } from "@/lib/design/semantic-colors";
 
@@ -183,6 +184,19 @@ export default function HomePage() {
           <ComponentLibraryPreview />
         </CardContent>
       </Card>
+      {process.env.NODE_ENV === "development" ? (
+        <Card className="shadow-elevation-sm">
+          <CardHeader>
+            <CardTitle className="type-card-title">Form validation fixture (Step 20)</CardTitle>
+            <CardDescription>
+              Development only. Client checks are not authorization or a saved record.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <DemoCoordinationForm />
+          </CardContent>
+        </Card>
+      ) : null}
     </main>
   );
 }

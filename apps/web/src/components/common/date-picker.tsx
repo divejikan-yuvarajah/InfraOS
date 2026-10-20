@@ -29,6 +29,8 @@ export type DatePickerProps = {
   className?: string;
   fromDate?: Date;
   toDate?: Date;
+  "aria-invalid"?: boolean;
+  "aria-describedby"?: string;
 };
 
 /**
@@ -45,6 +47,8 @@ export function DatePicker({
   className,
   fromDate,
   toDate,
+  "aria-invalid": ariaInvalid,
+  "aria-describedby": ariaDescribedBy,
 }: DatePickerProps) {
   const [open, setOpen] = React.useState(false);
   const selected = value && isDateOnlyString(value) ? parseDateOnly(value) : undefined;
@@ -68,6 +72,8 @@ export function DatePicker({
             type="button"
             variant="outline"
             disabled={disabled}
+            aria-invalid={ariaInvalid}
+            aria-describedby={ariaDescribedBy}
             className={cn(
               "w-full justify-start text-left font-normal",
               !selected && "text-muted-foreground",
