@@ -64,7 +64,7 @@ export function PublicHome({ locale }: { locale: PublicLocale }) {
           <UiFoundationFixtures />
         ) : null}
       </main>
-      <PublicSiteFooter copy={copy} />
+      <PublicSiteFooter copy={copy} locale={locale} />
     </>
   );
 }

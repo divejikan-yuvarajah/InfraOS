@@ -4,7 +4,8 @@ import { PublicLanguageNav } from "@/components/landing/public-language-nav";
 import { PublicMobileNav } from "@/components/landing/public-mobile-nav";
 import { publicHomePath, type PublicLocale } from "@/lib/landing/locales";
 import type { PublicLandingCopy } from "@/lib/landing/messages";
-import { getPublicNavLinks } from "@/lib/landing/navigation";
+import { getPublicNavLinks, resolvePublicNavHref } from "@/lib/landing/navigation";
+import type { PublicInfoSlug } from "@/lib/landing/locales";
 import { cn } from "@/lib/utils";
 
 function NavLink({
@@ -39,18 +40,27 @@ function NavLink({
 export function PublicSiteHeader({
   locale,
   copy,
+  infoSlug = null,
 }: {
   locale: PublicLocale;
   copy: PublicLandingCopy;
+  infoSlug?: PublicInfoSlug | null;
 }) {
-  const links = getPublicNavLinks(copy, locale);
+  const links = getPublicNavLinks(copy, locale).map((item) => ({
+    ...item,
+    href: resolvePublicNavHref(locale, item.href),
+  }));
 
   return (
     <header className="sticky top-0 z-[var(--z-sticky)] border-b border-border bg-surface">
       <div className="border-b border-border bg-background">
         <div className="container-dashboard gutter-page flex flex-wrap items-center justify-between gap-2 py-2">
           <p className="type-caption text-text-muted">{copy.demoBanner}</p>
-          <PublicLanguageNav locale={locale} label={copy.languageNavLabel} />
+          <PublicLanguageNav
+            locale={locale}
+            label={copy.languageNavLabel}
+            infoSlug={infoSlug}
+          />
         </div>
       </div>
       <div className="container-dashboard gutter-page flex h-14 items-center gap-4">
@@ -75,6 +85,7 @@ export function PublicSiteHeader({
           links={links}
           copy={copy}
           locale={locale}
+          infoSlug={infoSlug}
           className="ml-auto md:hidden"
         />
       </div>

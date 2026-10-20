@@ -21,4 +21,6 @@
 
 **Step 31 (`#trust-information`, `#faq`, `#next-steps`):** Honest university-demo trust points; 9 FAQ entries (no live project search, complaints, or staff login); CTAs link only to `#how-it-works` and `#preview` on the same page. No new images. si/ta draft pending native review.
 
-**Review:** Update when Steps 32–34 add sections.
+**Step 32 (footer + supporting pages):** Semantic footer with quick links to About, `#how-it-works`, `#faq`, Accessibility, Privacy, and `/landing/photo-credits.html`. Routes: `/about`, `/accessibility`, `/privacy` and `/si/*`, `/ta/*` equivalents. No contact page (no owner-approved channel). Privacy page states observed codebase behavior; deployment retention marked NEEDS_OWNER_REVIEW. No WCAG certification claims. Language switch preserves supporting-page path. si/ta info body sections largely English draft with localized titles/intros.
+
+**Review:** Update when Steps 33–34 add sections.

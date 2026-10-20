@@ -33,9 +33,9 @@ describe("public landing locales", () => {
   it("labels the platform as a university demonstration in every locale", () => {
     for (const locale of PUBLIC_LOCALES) {
       const copy = getPublicCopy(locale);
-      expect(copy.footerDisclosure.length).toBeGreaterThan(20);
+      expect(copy.footer.disclosure.length).toBeGreaterThan(20);
       expect(copy.demoBanner.length).toBeGreaterThan(10);
-      expect(`${copy.hero.prototypeNote} ${copy.footerDisclosure} ${copy.metaDescription}`).not.toMatch(
+      expect(`${copy.hero.prototypeNote} ${copy.footer.disclosure} ${copy.metaDescription}`).not.toMatch(
         /official national portal|government approved/i,
       );
     }

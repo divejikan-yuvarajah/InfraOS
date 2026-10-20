@@ -168,8 +168,34 @@ export type PublicLandingCopy = {
     lifecycleExpresswayCredit: string;
     manifestLinkLabel: string;
   };
-  footerDisclosure: string;
+  footer: {
+    identityTitle: string;
+    identityLine: string;
+    navLabel: string;
+    linkAbout: string;
+    linkCoordination: string;
+    linkFaq: string;
+    linkAccessibility: string;
+    linkPrivacy: string;
+    linkPhotoCredits: string;
+    languageLabel: string;
+    disclosure: string;
+    copyrightPrefix: string;
+  };
+  infoPages: {
+    about: PublicInfoPageCopy;
+    accessibility: PublicInfoPageCopy;
+    privacy: PublicInfoPageCopy;
+  };
   translationDraftNote: string;
+};
+
+export type PublicInfoPageCopy = {
+  metaTitle: string;
+  metaDescription: string;
+  title: string;
+  intro: string;
+  sections: readonly { id: string; heading: string; body: string }[];
 };
 
 const en: PublicLandingCopy = {
@@ -610,8 +636,144 @@ const en: PublicLandingCopy = {
       "Photo: Dinesh De Alwis, Wikimedia Commons (CC BY-SA 4.0). Context only; no government endorsement implied.",
     manifestLinkLabel: "Photo credits and licenses",
   },
-  footerDisclosure:
-    "INFRAOS is a university-developed infrastructure coordination demonstration. Project information shown for demonstration may be synthetic and does not represent official government records.",
+  footer: {
+    identityTitle: "INFRAOS",
+    identityLine:
+      "University infrastructure coordination demonstration — not an official Sri Lankan government platform or live public records service.",
+    navLabel: "Footer navigation",
+    linkAbout: "About INFRAOS",
+    linkCoordination: "How coordination works",
+    linkFaq: "FAQ",
+    linkAccessibility: "Accessibility",
+    linkPrivacy: "Privacy and data use",
+    linkPhotoCredits: "Photo credits",
+    languageLabel: "Languages",
+    disclosure:
+      "Demonstration data may be synthetic. This site does not publish official government approvals, certifications, or operational project records.",
+    copyrightPrefix: "South Eastern University of Sri Lanka · INFRAOS demonstration",
+  },
+  infoPages: {
+    about: {
+      metaTitle: "About INFRAOS",
+      metaDescription:
+        "What INFRAOS is, who it is for, and how the university demonstration differs from an official government service.",
+      title: "About INFRAOS",
+      intro:
+        "INFRAOS is a Sri Lankan university GovTech demonstration for coordinating infrastructure planning, schedules, and clearer public information. It is not operated as a national government portal.",
+      sections: [
+        {
+          id: "what",
+          heading: "What this project is",
+          body:
+            "INFRAOS explores how agencies could share where and when road, water, telecom, electricity, and related works are planned so communities see fewer repeated excavations. The public website explains the concept using synthetic examples. It is developed as a university group project at South Eastern University of Sri Lanka.",
+        },
+        {
+          id: "why",
+          heading: "Why coordination matters",
+          body:
+            "When schedules and locations stay in separate silos, the same corridor can be opened more than once and residents receive fragmented updates. INFRAOS describes intended workflows—such as explainable overlap review and accountable progress tracking—without claiming they are deployed nationwide today.",
+        },
+        {
+          id: "modules",
+          heading: "How the platform is designed to work",
+          body:
+            "ProjectTrace is intended to support delivery milestones and accountable progress. RoadSync is designed to surface geographic and date overlaps for human agency review—not autonomous approvals. InfraMap and other modules remain roadmap items until implemented and authorized for public description.",
+        },
+        {
+          id: "audiences",
+          heading: "Who may use it",
+          body:
+            "The demonstration speaks to residents, field staff, coordinators, and evaluators. Protected staff workflows, dashboards, and citizen issue reporting are not offered from this public marketing site until real routes and policies exist.",
+        },
+        {
+          id: "today",
+          heading: "Demonstration today vs planned capabilities",
+          body:
+            "The landing page includes illustrative lifecycle content, a static coordination preview, trust information, and FAQ answers grounded in the current codebase. Live national datasets, staff sign-in, complaint intake, and operational GIS are planned or internal-only—not advertised as available here.",
+        },
+      ],
+    },
+    accessibility: {
+      metaTitle: "Accessibility information",
+      metaDescription:
+        "How the public INFRAOS site supports inclusive use, known limitations, and review status—without claiming formal certification.",
+      title: "Accessibility information",
+      intro:
+        "The team aims for clear structure, keyboard access, and readable contrast on public pages. This statement describes implemented features and honest limits—it is not a WCAG certificate or government accreditation.",
+      sections: [
+        {
+          id: "approach",
+          heading: "Inclusive design approach",
+          body:
+            "Public pages use semantic landmarks (header, main, footer), a skip link to main content, visible focus styles on interactive elements, and design tokens tested for contrast in the shared UI foundation. English, Sinhala, and Tamil copy is provided; Sinhala and Tamil strings remain draft pending qualified native-speaker review.",
+        },
+        {
+          id: "supported",
+          heading: "Supported interactions on the public site",
+          body:
+            "Primary navigation and footer links are reachable by keyboard. The homepage FAQ uses native disclosure controls (`details` / `summary`). Images that illustrate infrastructure include localized alternative text. Layouts reflow for narrow viewports and increased zoom where tested in development.",
+        },
+        {
+          id: "fonts",
+          heading: "Text and scripts",
+          body:
+            "Latin, Sinhala, and Tamil scripts use bundled web fonts served with the Next.js application. Mixed-language lines may occur where translations are still draft.",
+        },
+        {
+          id: "limits",
+          heading: "Known limitations and review gaps",
+          body:
+            "Automated axe scans, systematic screen-reader walkthroughs, and independent WCAG 2.2 conformance audits have not been completed for the full public landing. Some operational UI exists only in development fixtures and is not part of this public route set. Accessibility feedback email or forms are not published until owner-approved contact channels exist.",
+        },
+      ],
+    },
+    privacy: {
+      metaTitle: "Privacy and data use",
+      metaDescription:
+        "Factual notes on what the public INFRAOS demonstration site may process—based on the current codebase, not legal advice.",
+      title: "Privacy and data use",
+      intro:
+        "This page summarizes observed behavior of the public marketing site. It is not a lawyer-approved privacy policy and does not describe production deployment retention unless verified by the project owner.",
+      sections: [
+        {
+          id: "scope",
+          heading: "Scope of this site",
+          body:
+            "Routes such as `/`, `/si`, `/ta`, and supporting information pages are public and unauthenticated. They do not include a citizen issue submission form, newsletter signup, or contact form in the current repository.",
+        },
+        {
+          id: "collection",
+          heading: "Information the demo site may involve",
+          body:
+            "When you visit, your browser requests HTML, fonts, images, and other static assets. Hosting platforms (for example Vercel or similar) typically record standard server access metadata such as IP address, user agent, and requested URL in server logs. The application source reviewed for Step 32 did not add third-party analytics scripts, advertising trackers, or marketing cookies on public pages.",
+        },
+        {
+          id: "cookies",
+          heading: "Cookies and local storage",
+          body:
+            "No dedicated analytics or consent cookies were identified in the public landing implementation. Next.js and hosting infrastructure may set technical cookies or cache data as part of normal operation—exact behavior depends on deployment settings and should be confirmed before any legal publication.",
+        },
+        {
+          id: "fonts",
+          heading: "Fonts and external requests",
+          body:
+            "Typography is loaded through Next.js font optimization (bundled delivery from the application origin rather than a live third-party embed in page markup). Wikimedia-sourced photographs are stored under `/landing/photos/` and credited on the photo credits page.",
+        },
+        {
+          id: "staff",
+          heading: "Staff and protected areas",
+          body:
+            "Future authenticated dashboards and operational data are separate from this public site. Staff sign-in is not linked from the landing page until a reviewed authentication route exists.",
+        },
+        {
+          id: "owner",
+          heading: "Owner review",
+          body:
+            "Retention periods, subprocessors, and jurisdiction-specific privacy law statements require owner and legal review before they can be marked approved. Until then, treat operational privacy details as NEEDS_OWNER_REVIEW.",
+        },
+      ],
+    },
+  },
   translationDraftNote:
     "Sinhala and Tamil text on this public site is an unverified draft pending native-speaker review.",
 };
@@ -1050,8 +1212,51 @@ const si: PublicLandingCopy = {
       "ඡායාරූප: Dinesh De Alwis, Wikimedia Commons (CC BY-SA 4.0). සන්දර්භය පමණි.",
     manifestLinkLabel: "ඡායාරූප credit සහ බලපත්‍ර",
   },
-  footerDisclosure:
-    "INFRAOS යනු විශ්වවිද්‍යාලයක් විසින් සංවර්ධනය කළ යටිතල පහසුකම් සම්බන්ධීකරණ ආදර්ශනයකි. පෙන්වන ව්‍යාපෘති තොරතුරු කෘත්‍රිම විය හැකි අතර නිල රජයේ වාර්තා නොවේ.",
+  footer: {
+    identityTitle: "INFRAOS",
+    identityLine:
+      "විශ්වවිද්‍යාල යටිතල සම්බන්ධීකරණ ආදර්ශනය — නිල ශ්‍රී ලංකා රජයේ වේදිකාවක් හෝ live public records සේවාවක් නොවේ.",
+    navLabel: "පාදක සංචාලනය",
+    linkAbout: "INFRAOS ගැන",
+    linkCoordination: "සම්බන්ධීකරණය ක්‍රියා කරන ආකාරය",
+    linkFaq: "නිති අසන ප්‍රශ්න",
+    linkAccessibility: "ප්‍රවේශ්‍යතාව",
+    linkPrivacy: "පෞද්ගලිකත්වය සහ දත්ත භාවිතය",
+    linkPhotoCredits: "ඡායාරූප credit",
+    languageLabel: "භාෂා",
+    disclosure:
+      "ආදර්ශන දත්ත synthetic විය හැක. මෙම site නිල රජයේ අනුමැතිය, සහතික හෝ operational project records පublish නොකරයි.",
+    copyrightPrefix: "South Eastern University of Sri Lanka · INFRAOS demonstration",
+  },
+  infoPages: {
+    about: {
+      ...en.infoPages.about,
+      metaTitle: "INFRAOS ගැන",
+      metaDescription:
+        "INFRAOS කුමක්ද, කාටද යන්න සහ university demonstration එක official government service එකකින් වෙනස් වන ආකාරය.",
+      title: "INFRAOS ගැන",
+      intro:
+        "INFRAOS යනු යටිතල planning, schedules සහ public information සම්බන්ධීකරණය සඳහා Sri Lankan university GovTech demonstration එකකි. එය national government portal ලෙස operate නොවේ.",
+    },
+    accessibility: {
+      ...en.infoPages.accessibility,
+      metaTitle: "ප්‍රවේශ්‍යතා තොරතුරු",
+      metaDescription:
+        "Inclusive use, known limits, review status — WCAG certificate claim නොමැත.",
+      title: "ප්‍රවේශ්‍යතා තොරතුරු",
+      intro:
+        "Public pages සඳහා clear structure, keyboard access, readable contrast අරමුණු කරයි. මෙය formal certification නොවේ.",
+    },
+    privacy: {
+      ...en.infoPages.privacy,
+      metaTitle: "පෞද්ගලිකත්වය සහ දත්ත භාවිතය",
+      metaDescription:
+        "Public demo site හි observed behavior — legal advice නොවේ.",
+      title: "පෞද්ගලිකත්වය සහ දත්ත භාවිතය",
+      intro:
+        "Public marketing site හි observed behavior සාරාංශය. Lawyer-approved policy නොවේ; deployment retention owner review අවශ්‍ය.",
+    },
+  },
   translationDraftNote:
     "මෙම පිටුවේ සිංහල පෙළ ස්වදේශික සමාලෝචනයක් බලාපොරොත්තුවෙන් සිටින තහවුරු නොකළ කෙටුම්පතකි.",
 };
@@ -1490,8 +1695,49 @@ const ta: PublicLandingCopy = {
       "புகைப்படம்: Dinesh De Alwis, Wikimedia Commons (CC BY-SA 4.0). சூழல் மட்டும்.",
     manifestLinkLabel: "புகைப்பட credit மற்றும் உரிமம்",
   },
-  footerDisclosure:
-    "INFRAOS ஒரு பல்கலைக்கழகத்தால் உருவாக்கப்பட்ட உள்கட்டமைப்பு ஒருங்கிணைப்பு செயல்விளக்கம். காட்டப்படும் திட்டத் தகவல் செயற்கையாக இருக்கலாம்; அது அதிகாரப்பூர்வ அரசுப் பதிவு அல்ல.",
+  footer: {
+    identityTitle: "INFRAOS",
+    identityLine:
+      "பல்கலைக்கழக உள்கட்டமைப்பு ஒருங்கிணைப்பு செயல்விளக்கம் — அதிகாரப்பூர்வ இலங்கை அரசு தளம் அல்ல.",
+    navLabel: "அடிக்குறிப்பு வழிசெலுத்தல்",
+    linkAbout: "INFRAOS பற்றி",
+    linkCoordination: "ஒருங்கிணைப்பு எவ்வாறு",
+    linkFaq: "அடிக்கடி கேட்கப்படும் கேள்விகள்",
+    linkAccessibility: "அணுகல்தன்மை",
+    linkPrivacy: "தனியுரிமை மற்றும் தரவு பயன்பாடு",
+    linkPhotoCredits: "புகைப்பட credit",
+    languageLabel: "மொழிகள்",
+    disclosure:
+      "செயல்விளக்கத் தரவு செயற்கையாக இருக்கலாம். அதிகாரப்பூர்வ அரசு அனுமதி/சான்றிதழ்/operational records இங்கு வெளியிடப்படவில்லை.",
+    copyrightPrefix: "South Eastern University of Sri Lanka · INFRAOS demonstration",
+  },
+  infoPages: {
+    about: {
+      ...en.infoPages.about,
+      metaTitle: "INFRAOS பற்றி",
+      metaDescription:
+        "INFRAOS என்ன, யாருக்காக, university demonstration official government service-லிருந்து வேறுபாடு.",
+      title: "INFRAOS பற்றி",
+      intro:
+        "INFRAOS என்பது infrastructure planning, schedules, public information ஒருங்கிணைப்புக்கான Sri Lankan university GovTech demonstration. national government portal அல்ல.",
+    },
+    accessibility: {
+      ...en.infoPages.accessibility,
+      metaTitle: "அணுகல்தன்மை தகவல்",
+      metaDescription: "Inclusive use, limits, review status — WCAG certificate claim இல்லை.",
+      title: "அணுகல்தன்மை தகவல்",
+      intro:
+        "Public pages-க்கு clear structure, keyboard access, contrast நோக்கம். formal certification அல்ல.",
+    },
+    privacy: {
+      ...en.infoPages.privacy,
+      metaTitle: "தனியுரிமை மற்றும் தரவு பயன்பாடு",
+      metaDescription: "Public demo site observed behavior — legal advice அல்ல.",
+      title: "தனியுரிமை மற்றும் தரவு பயன்பாடு",
+      intro:
+        "Public marketing site observed behavior சுருக்கம். Lawyer-approved policy அல்ல; deployment retention owner review தேவை.",
+    },
+  },
   translationDraftNote:
     "இந்தப் பக்கத்தின் தமிழ் உரை தாய்மொழி மதிப்பாய்வுக்காக காத்திருக்கும் சரிபார்க்கப்படாத வரைவு.",
 };

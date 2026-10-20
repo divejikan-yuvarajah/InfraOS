@@ -12,7 +12,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import type { PublicLocale } from "@/lib/landing/locales";
+import type { PublicInfoSlug, PublicLocale } from "@/lib/landing/locales";
 import type { PublicLandingCopy } from "@/lib/landing/messages";
 import type { PublicNavLink } from "@/lib/landing/navigation";
 import { cn } from "@/lib/utils";
@@ -23,11 +23,13 @@ export function PublicMobileNav({
   links,
   copy,
   locale,
+  infoSlug = null,
   className,
 }: {
   links: readonly PublicNavLink[];
   copy: PublicLandingCopy;
   locale: PublicLocale;
+  infoSlug?: PublicInfoSlug | null;
   className?: string;
 }) {
   const [open, setOpen] = useState(false);
@@ -53,17 +55,8 @@ export function PublicMobileNav({
           </SheetHeader>
           <nav aria-label={copy.primaryNavLabel} className="mt-4 flex flex-col gap-1">
             {links.map((item) => {
-              const isHash = item.href.startsWith("#");
               const className =
                 "rounded-md px-3 py-2 type-body-small text-text-primary hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring";
-
-              if (isHash) {
-                return (
-                  <a key={item.href} href={item.href} className={className} onClick={close}>
-                    {item.label}
-                  </a>
-                );
-              }
 
               return (
                 <Link key={item.href} href={item.href} className={className} onClick={close}>
@@ -75,6 +68,7 @@ export function PublicMobileNav({
           <PublicLanguageNav
             locale={locale}
             label={copy.languageNavLabel}
+            infoSlug={infoSlug}
             className="mt-6 border-t border-border pt-4"
           />
         </SheetContent>

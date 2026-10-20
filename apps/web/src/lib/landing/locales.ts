@@ -29,6 +29,36 @@ export function publicHomePath(locale: PublicLocale): string {
   return `/${locale}`;
 }
 
+/** Supporting public information pages (Step 32). */
+export const PUBLIC_INFO_SLUGS = ["about", "accessibility", "privacy"] as const;
+
+export type PublicInfoSlug = (typeof PUBLIC_INFO_SLUGS)[number];
+
+export function isPublicInfoSlug(value: string): value is PublicInfoSlug {
+  return (PUBLIC_INFO_SLUGS as readonly string[]).includes(value);
+}
+
+export function publicInfoPath(locale: PublicLocale, slug: PublicInfoSlug): string {
+  const home = publicHomePath(locale);
+  if (home === "/") return `/${slug}`;
+  return `${home}/${slug}`;
+}
+
+/** Preserve subpath when switching locale (e.g. `/si/about` → `/ta/about`). */
+export function publicPathForLocale(pathname: string, targetLocale: PublicLocale): string {
+  const normalized = pathname.replace(/\/+$/, "") || "/";
+  let suffix = normalized;
+  if (normalized === "/si" || normalized.startsWith("/si/")) {
+    suffix = normalized.slice(3) || "/";
+  } else if (normalized === "/ta" || normalized.startsWith("/ta/")) {
+    suffix = normalized.slice(3) || "/";
+  }
+  if (suffix === "/" || suffix === "") return publicHomePath(targetLocale);
+  const slug = suffix.replace(/^\//, "");
+  if (isPublicInfoSlug(slug)) return publicInfoPath(targetLocale, slug);
+  return publicHomePath(targetLocale);
+}
+
 export function localeFromHeader(value: string | null): PublicLocale {
   if (value && isPublicLocale(value)) return value;
   return "en";

@@ -82,3 +82,9 @@ export function getPublicNavLinks(
 export function getAvailablePublicNavLinks(): PublicNavLink[] {
   return PUBLIC_PRIMARY_NAV.filter((item) => item.isAvailable);
 }
+
+/** In-page anchors must include the locale home path when rendered off the homepage. */
+export function resolvePublicNavHref(locale: PublicLocale, href: string): string {
+  if (href.startsWith("#")) return `${publicHomePath(locale)}${href}`;
+  return href;
+}
