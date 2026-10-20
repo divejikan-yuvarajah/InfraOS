@@ -19,4 +19,6 @@
 
 **Step 30 preview (`#preview`):** Conceptual static diagram only — road resurfacing 2026-03-02–2026-03-20 and water-pipeline work 2026-03-10–2026-03-28 (shared dates 2026-03-10–2026-03-20). Labeled illustrative prototype, not a live map, RoadSync detection, or government record. No nav item added (header already has seven links). No new photograph. Sinhala/Tamil preview copy is an unverified draft.
 
-**Review:** Update when Steps 31–34 add sections.
+**Step 31 (`#trust-information`, `#faq`, `#next-steps`):** Honest university-demo trust points; 9 FAQ entries (no live project search, complaints, or staff login); CTAs link only to `#how-it-works` and `#preview` on the same page. No new images. si/ta draft pending native review.
+
+**Review:** Update when Steps 32–34 add sections.

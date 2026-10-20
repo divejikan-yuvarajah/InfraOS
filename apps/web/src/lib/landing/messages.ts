@@ -138,6 +138,29 @@ export type PublicLandingCopy = {
     overlapDates: string;
     statusNote: string;
   };
+  trust: {
+    eyebrow: string;
+    title: string;
+    intro: string;
+    demoNotice: string;
+    points: readonly { id: string; title: string; body: string }[];
+  };
+  faq: {
+    eyebrow: string;
+    title: string;
+    intro: string;
+    items: readonly { id: string; question: string; answer: string }[];
+  };
+  nextSteps: {
+    eyebrow: string;
+    title: string;
+    intro: string;
+    primaryLabel: string;
+    primaryAnchor: "features" | "lifecycle" | "preview";
+    secondaryLabel: string;
+    secondaryAnchor: "features" | "lifecycle" | "preview";
+    staffNote: string;
+  };
   photography: {
     problemExpresswayAlt: string;
     problemExpresswayCredit: string;
@@ -467,6 +490,114 @@ const en: PublicLandingCopy = {
     overlapDates: "Shared dates",
     statusNote:
       "InfraMap and RoadSync are demonstration concepts on this site. This figure does not query maps, detect live conflicts, or approve work.",
+  },
+  trust: {
+    eyebrow: "Trust and access",
+    title: "How this demonstration handles information and access",
+    intro:
+      "INFRAOS is a university GovTech prototype. This page explains coordination concepts in plain language—it is not an official government service or a certified security product.",
+    demoNotice:
+      "About this demonstration: examples and diagrams use synthetic data. They do not represent live national infrastructure records or ministry approvals.",
+    points: [
+      {
+        id: "coordination",
+        title: "Coordinated planning (design intent)",
+        body:
+          "The platform concept is intended to help agencies see when planned work may overlap in place or time. What you read here describes that intent—not live operational results on this public site.",
+      },
+      {
+        id: "access",
+        title: "Public information vs protected workflows",
+        body:
+          "Anyone can read this marketing site without signing in. Staff workspaces, role-based access, and audit trails are planned for protected application routes—not exposed on this page.",
+      },
+      {
+        id: "traceability",
+        title: "Traceable process (when implemented)",
+        body:
+          "ProjectTrace and related modules aim to support documented milestones and responsibilities. This public site does not show private project files or approval decisions.",
+      },
+      {
+        id: "privacy",
+        title: "No live citizen or agency data here",
+        body:
+          "This landing page does not query databases or publish real project coordinates. Future public-safe views would need separate review before any live data appears.",
+      },
+    ],
+  },
+  faq: {
+    eyebrow: "Common questions",
+    title: "Frequently asked questions",
+    intro:
+      "Short answers about what INFRAOS is today versus what the roadmap describes. If something is not built yet, we say so.",
+    items: [
+      {
+        id: "what-is-infraos",
+        question: "What is INFRAOS?",
+        answer:
+          "INFRAOS is a university-developed demonstration of how infrastructure projects, schedules, and responsibilities could be coordinated across agencies. It is a prototype, not a deployed national service.",
+      },
+      {
+        id: "official-government",
+        question: "Is INFRAOS an official government website or service?",
+        answer:
+          "No. INFRAOS is not operated by a ministry or public authority. It does not publish official government records, endorsements, or live national project registries.",
+      },
+      {
+        id: "who-for",
+        question: "Who is the platform intended for?",
+        answer:
+          "The public site is for anyone curious about coordination—residents, students, officers, and evaluators. Protected operational tools, when they exist, stay behind authenticated routes.",
+      },
+      {
+        id: "projecttrace",
+        question: "What is ProjectTrace?",
+        answer:
+          "ProjectTrace is the intended module for project oversight, milestones, and delivery accountability. On this public site it is described as a demonstration concept; private workspaces are not linked here.",
+      },
+      {
+        id: "roadsync-conflicts",
+        question: "How is RoadSync meant to identify work conflicts?",
+        answer:
+          "RoadSync is designed to use deterministic geography and schedule rules to flag candidate overlaps for human review—not AI verdicts and not automatic cancellation. The Step 30 diagram is illustrative only.",
+      },
+      {
+        id: "public-projects-now",
+        question: "Can I look up real public infrastructure projects here?",
+        answer:
+          "Not on this demonstration site. There is no live project map, search, or registry. Any scenarios shown are synthetic examples for learning.",
+      },
+      {
+        id: "citizen-reporting",
+        question: "Can residents report road or utility issues through INFRAOS yet?",
+        answer:
+          "No public complaint or issue-reporting route exists on this landing page. Citizen-facing services are roadmap items and would need their own review before launch.",
+      },
+      {
+        id: "staff-access",
+        question: "How do staff sign in or access agency data?",
+        answer:
+          "Staff sign-in and operational dashboards are not linked from this public site until a reviewed authentication route and permissions model exist. There is no fake login button here.",
+      },
+      {
+        id: "languages",
+        question: "Which languages does the public site support?",
+        answer:
+          "English, Sinhala, and Tamil content is provided at /, /si, and /ta. Sinhala and Tamil strings are draft copies pending qualified native-speaker review.",
+      },
+    ],
+  },
+  nextSteps: {
+    eyebrow: "Next steps",
+    title: "Continue exploring the demonstration",
+    intro:
+      "Use the links below to read sections that already exist on this page. They stay on the same locale route—no registration required.",
+    primaryLabel: "Read the coordination lifecycle",
+    primaryAnchor: "lifecycle",
+    secondaryLabel: "See the illustrative preview",
+    secondaryAnchor: "preview",
+    staffNote:
+      "Staff and agency access will be offered only when a real sign-in route is implemented and reviewed—not through this public marketing site.",
   },
   photography: {
     problemExpresswayAlt:
@@ -800,6 +931,114 @@ const si: PublicLandingCopy = {
     statusNote:
       "InfraMap සහ RoadSync මෙම අඩවියේ ආදර්ශන සංකල්ප වේ. මෙම රූපය සිතියම් විමසන්නේ නැත, සජීවී ගැටුම් හඳුනන්නේ නැත, වැඩ අනුමත කරන්නේ නැත.",
   },
+  trust: {
+    eyebrow: "විශ්වාසය සහ ප්‍රවේශය",
+    title: "මෙම ආදර්ශනය තොරතුරු සහ ප්‍රවේශය හසුරුවන ආකාරය",
+    intro:
+      "INFRAOS යනු විශ්වවිද්‍යාල GovTech මූලාකෘතියකි. මෙම පිටුව සම්බන්ධීකරණ සංකල්ප පැහැදිලි කරයි — නිල රජයේ සේවාවක් හෝ සහතික කළ ආරක්ෂණ නිෂ්පාදනයක් නොවේ.",
+    demoNotice:
+      "මෙම ආදර්ශනය ගැන: උදාහරණ සහ රූප සටහන් කෘත්‍රිම දත්ත භාවිතා කරයි. ඒවා සජීවී ජාතික යටිතල වාර්තා හෝ අමාත්‍යාංශ අනුමැතිය නොවේ.",
+    points: [
+      {
+        id: "coordination",
+        title: "සම්බන්ධීකරණ සැලසුම (සැලසුම් අරමුණ)",
+        body:
+          "වේදිකා සංකල්පය අනුව ආයතන වැඩ ස්ථානයේ හෝ කාලයේ අතිච්ඡාදන මුලදීම දැක ගැනීමට උපකාරී විය හැක. මෙහි පෙන්වන්නේ අරමුණ පමණි — මෙම මහජන අඩවියේ සජීවී මෙහෙයුම් ප්‍රතිඵල නොවේ.",
+      },
+      {
+        id: "access",
+        title: "මහජන තොරතුරු vs ආරක්ෂිත ක්‍රමවේද",
+        body:
+          "පිවිසීමක් නොමැතිව මෙම අඩවිය කියවිය හැක. කාර්ය මණ්ඩල වැඩබිම්, role-based access සහ audit trails ආරක්ෂිත මාර්ග සඳහා සැලසුම් — මෙම පිටුවේ නොපෙන්වයි.",
+      },
+      {
+        id: "traceability",
+        title: "අනුගමනය කළ හැකි ක්‍රියාවලිය (ක්‍රියාත්මක වූ විට)",
+        body:
+          "ProjectTrace සහ related modules සන්ධිස්ථාන සහ වගකීම් ලියාපදිංචි කිරීමට aiming. මෙම මහජන අඩවිය පෞද්ගලික ව්‍යාපෘති ගොනු හෝ අනුමැති තීරණ නොපෙන්වයි.",
+      },
+      {
+        id: "privacy",
+        title: "මෙහි සජීවී පුරවැසි හෝ ආයතන දත්ත නැත",
+        body:
+          "මෙම landing page databases විමසන්නේ නැත හෝ සැබෑ project coordinates ප්‍රකාශ නොකරයි. අනාගත මහජන-ආරක්ෂිත views සඳහා වෙනම සමාලෝචනය අවශ්‍ය.",
+      },
+    ],
+  },
+  faq: {
+    eyebrow: "නිතර අසන ප්‍රශ්න",
+    title: "නිතර අසන ප්‍රශ්න",
+    intro:
+      "INFRAOS අද කුමක්ද සහ roadmap කුමක්ද යන්න.short answers. තවම නිර්මාණය නොකළ දේ අපි පැහැදිලිව කියමු.",
+    items: [
+      {
+        id: "what-is-infraos",
+        question: "INFRAOS කියන්නේ මොකක්ද?",
+        answer:
+          "INFRAOS යනු යටිතල ව්‍යාපෘති, කාලසටහන් සහ වගකීම් ආයතන අතර සම්බන්ධ කළ හැකි ආකාරය පෙන්වන විශ්වවිද්‍යාල ආදර්ශනයකි. මෙය ජාතික සේවාවක් නොව, මූලාකෘතියකි.",
+      },
+      {
+        id: "official-government",
+        question: "INFRAOS නිල රජයේ වෙබ් අඩවියක්ද?",
+        answer:
+          "නැත. අමාත්‍යාංශයක් හෝ පොදු අධිකාරියක් මෙය operate නොකරයි. නිල රජයේ වාර්තා, endorsements හෝ සජීවී registries මෙහි නැත.",
+      },
+      {
+        id: "who-for",
+        question: "වේදිකාව කවුrer සඳහාද?",
+        answer:
+          "මහජන අඩවිය residents, students, officers, evaluators සඳහා — sign-in නොමැත. මෙහෙයුම් tools authenticated routes පිටුbehind.",
+      },
+      {
+        id: "projecttrace",
+        question: "ProjectTrace කියන්නේ?",
+        answer:
+          "ProjectTrace යනු project oversight, milestones සහ accountability සඳහා intended module. මෙම අඩවියේ demonstration concept; private workspaces link නොවේ.",
+      },
+      {
+        id: "roadsync-conflicts",
+        question: "RoadSync ගැටුම් හඳුනා ගන්නේ කෙසේද?",
+        answer:
+          "RoadSync deterministic geography සහ schedule rules මිනිස් review සඳහා candidate overlaps flag කිරීමට designed — AI verdicts හෝ automatic cancellation නොවේ. Step 30 diagram illustrative පමණි.",
+      },
+      {
+        id: "public-projects-now",
+        question: "සැබෑ public projects මෙහි lookup කළ හැකද?",
+        answer:
+          "මෙම demonstration site එකේ නැත. live map, search හෝ registry නැත. scenarios synthetic examples පමණි.",
+      },
+      {
+        id: "citizen-reporting",
+        question: "පුරවැසියන් issues report කළ හැකද?",
+        answer:
+          "public complaint හෝ issue-reporting route මෙම landing page එකේ නැත. citizen services roadmap items.",
+      },
+      {
+        id: "staff-access",
+        question: "staff sign-in කෙසේද?",
+        answer:
+          "reviewed authentication route සහ permissions model සූදානම් වන තුරු staff sign-in link නැත. fake login button නැත.",
+      },
+      {
+        id: "languages",
+        question: "භාෂා මොනවාද?",
+        answer:
+          "English, Sinhala, Tamil — /, /si, /ta. Sinhala/Tamil draft — native-speaker review pending.",
+      },
+    ],
+  },
+  nextSteps: {
+    eyebrow: "ඊළඟ පියවර",
+    title: "ආදර්ශනය further explore කරන්න",
+    intro:
+      "පහත links මෙම පිටුවේ sections වෙත යයි. registration අවශ්‍ය නොවේ.",
+    primaryLabel: "සම්බන්ධීකරණ ජීවන චක්‍රය කියවන්න",
+    primaryAnchor: "lifecycle",
+    secondaryLabel: "ආදර්ශන පෙරදසුන බලන්න",
+    secondaryAnchor: "preview",
+    staffNote:
+      "real sign-in route implemented සහ reviewed වූ පසු staff access — මෙම marketing site හරහා නොව.",
+  },
   photography: {
     problemExpresswayAlt:
       "ශ්‍රී ලංකාව, සීදුව අසල අධිවේගී මාර්ගයේ ඉඩම් වැඩ. ආදර්ශන ඡායාරූපය පමණි — INFRAOS ව්‍යාපෘතියක් හෝ නිල රජයේ වාර්තාවක් නොවේ.",
@@ -1131,6 +1370,114 @@ const ta: PublicLandingCopy = {
     overlapDates: "பொது தேதிகள்",
     statusNote:
       "InfraMap மற்றும் RoadSync இந்தத் தளத்தில் செயல்விளக்கக் கருத்துகள். இந்தப் படம் வரைபடங்களை வினவவில்லை, நேரடி முரண்பாடுகளைக் கண்டறியவில்லை, பணியை அனுமதிக்கவில்லை.",
+  },
+  trust: {
+    eyebrow: "நம்பிக்கை மற்றும் அணுகல்",
+    title: "இந்தச் செயல்விளக்கம் தகவலையும் அணுகலையும் எவ்வாறு கையாளுகிறது",
+    intro:
+      "INFRAOS ஒரு பல்கலைக்கழக GovTech முன்மாதிரி. இந்தப் பக்கம் ஒருங்கிணைப்புக் கருத்துகளை விளக்குகிறது — அதிகாரப்பூர்வ அரசு சேவை அல்ல, சான்றளிக்கப்பட்ட பாதுகாப்பு தயாரிப்பு அல்ல.",
+    demoNotice:
+      "இந்தச் செயல்விளக்கம் பற்றி: எடுத்துக்காட்டுகள் மற்றும் வரைபடங்கள் செயற்கைத் தரவைப் பயன்படுத்துகின்றன. அவை நேரடி தேசிய உள்கட்டமைப்பு பதிவுகள் அல்ல.",
+    points: [
+      {
+        id: "coordination",
+        title: "ஒருங்கிணைந்த திட்டமிடல் (வடிவமைப்பு நோக்கம்)",
+        body:
+          "தளக் கருத்து நிறுவனங்கள் இடம்/நேரத்தில் ஒன்றுசேர்வை முன்கூட்டியே காண உதவும். இங்கு காட்டப்படுவது நோக்கம் மட்டும் — இந்தப் பொது தளத்தில் நேரடி செயல்பாட்டு முடிவுகள் அல்ல.",
+      },
+      {
+        id: "access",
+        title: "பொது தகவல் vs பாதுகாக்கப்பட்ட செயல்முறைகள்",
+        body:
+          "உள்நுழைவு இல்லாமல் இந்தத் தளத்தைப் படிக்கலாம். ஊழியர் workspace, role-based access மற்றும் audit trails பாதுகாக்கப்பட்ட பாதைகளுக்கான திட்டம் — இப்பக்கத்தில் காட்டப்படவில்லை.",
+      },
+      {
+        id: "traceability",
+        title: "கண்காணிக்கக்கூடிய செயல்முறை (செயல்படுத்தப்பட்டால்)",
+        body:
+          "ProjectTrace மற்றும் தொடர்புடைய தொகுதிகள் மைல்கற்கள் மற்றும் பொறுப்புகளை ஆதரிக்க aiming. இந்தப் பொது தளம் private project files அல்லது approval decisions காட்டாது.",
+      },
+      {
+        id: "privacy",
+        title: "இங்கே நேரடி citizen/agency data இல்லை",
+        body:
+          "இந்த landing page databases வினவாது, real project coordinates வெளியிடாது. எதிர்கால public-safe views தனி review தேவை.",
+      },
+    ],
+  },
+  faq: {
+    eyebrow: "அடிக்கடி கேட்கப்படும் கேள்விகள்",
+    title: "அடிக்கடி கேட்கப்படும் கேள்விகள்",
+    intro:
+      "INFRAOS இன்று என்ன, roadmap என்ன — சுருக்கமான பதில்கள். இன்னும் கட்டப்படாதவற்றை வெளிப்படையாகக் கூறுகிறோம்.",
+    items: [
+      {
+        id: "what-is-infraos",
+        question: "INFRAOS என்றால் என்ன?",
+        answer:
+          "INFRAOS என்பது உள்கட்டமைப்பு திட்டங்கள், அட்டவணைகள் மற்றும் பொறுப்புகளை நிறுவனங்களிடையே ஒருங்கிணைக்கும் வகையைக் காட்டும் பல்கலைக்கழக செயல்விளக்கம். இது தேசிய சேவை அல்ல, முன்மாதிரி.",
+      },
+      {
+        id: "official-government",
+        question: "INFRAOS அதிகாரப்பூர்வ அரசு வலைத்தளமா?",
+        answer:
+          "இல்லை. அமைச்சகம் அல்லது public authority operate செய்யாது. அதிகாரப்பூர்வ பதிவுகள், endorsements அல்லது live registries இங்கே இல்லை.",
+      },
+      {
+        id: "who-for",
+        question: "யாருக்காக இந்தத் தளம்?",
+        answer:
+          "பொது தளம் residents, students, officers, evaluators அனைவருக்கும் — sign-in தேவையில்லை. operational tools authenticated routes behind.",
+      },
+      {
+        id: "projecttrace",
+        question: "ProjectTrace என்றால்?",
+        answer:
+          "ProjectTrace project oversight, milestones, accountability க்கான intended module. இந்தப் பொது தளத்தில் demonstration concept; private workspaces link இல்லை.",
+      },
+      {
+        id: "roadsync-conflicts",
+        question: "RoadSync முரண்பாடுகளை எவ்வாறு கண்டறிய aiming?",
+        answer:
+          "RoadSync deterministic geography மற்றும் schedule rules மூலம் human review க்கு candidate overlaps — AI verdicts அல்ல, automatic cancellation அல்ல. Step 30 diagram illustrative மட்டும்.",
+      },
+      {
+        id: "public-projects-now",
+        question: "உண்மையான public projects இங்கே தேட முடியுமா?",
+        answer:
+          "இந்த demonstration site இல் இல்லை. live map, search, registry இல்லை. scenarios synthetic examples.",
+      },
+      {
+        id: "citizen-reporting",
+        question: "குடியிருப்பாளர்கள் issues report செய்ய முடியுமா?",
+        answer:
+          "public complaint/issue-reporting route இந்த landing page இல் இல்லை. citizen services roadmap.",
+      },
+      {
+        id: "staff-access",
+        question: "staff எவ்வாறு sign in?",
+        answer:
+          "reviewed authentication route மற்றும் permissions model ready ஆன பிறகே staff sign-in link. fake login button இல்லை.",
+      },
+      {
+        id: "languages",
+        question: "எந்த மொழிகள்?",
+        answer:
+          "English, Sinhala, Tamil — /, /si, /ta. Sinhala/Tamil draft; native-speaker review pending.",
+      },
+    ],
+  },
+  nextSteps: {
+    eyebrow: "அடுத்த படிகள்",
+    title: "செயல்விளக்கத்தைத் தொடர்ந்து பாருங்கள்",
+    intro:
+      "கீழுள்ள இணைப்புகள் இந்தப் பக்கத்திலுள்ள பகுதிகளுக்குச் செல்கின்றன. registration தேவையில்லை.",
+    primaryLabel: "ஒருங்கிணைப்பு வாழ்க்கைச் சுழற்சியைப் படிக்கவும்",
+    primaryAnchor: "lifecycle",
+    secondaryLabel: "எடுத்துக்காட்டு முன்னோட்டத்தைப் பார்க்கவும்",
+    secondaryAnchor: "preview",
+    staffNote:
+      "real sign-in route implemented மற்றும் reviewed ஆன பிறகே staff access — இந்த marketing site வழியாக அல்ல.",
   },
   photography: {
     problemExpresswayAlt:
