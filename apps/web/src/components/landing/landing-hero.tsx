@@ -2,11 +2,11 @@ import { cn } from "cn";
 
 import { HeroCoordinationIllustration } from "@/components/landing/hero-coordination-illustration";
 import { buttonVariants } from "@/components/ui/button";
-import { HERO_OVERVIEW_ANCHOR } from "@/lib/landing/navigation";
+import { HERO_OVERVIEW_ANCHOR, SOLUTION_SECTION_ANCHOR } from "@/lib/landing/navigation";
 import { PUBLIC_HERO } from "@/lib/landing/public-content";
 
 export function LandingHero() {
-  const overviewHref = `#${HERO_OVERVIEW_ANCHOR}`;
+  const primaryCtaHref = `#${SOLUTION_SECTION_ANCHOR}`;
 
   return (
     <section
@@ -26,7 +26,7 @@ export function LandingHero() {
           <p className="type-caption text-text-muted">{PUBLIC_HERO.prototypeNote}</p>
           <div className="flex flex-wrap gap-3 pt-1">
             <a
-              href={overviewHref}
+              href={primaryCtaHref}
               className={cn(buttonVariants({ size: "lg" }))}
             >
               {PUBLIC_HERO.ctaPrimaryLabel}

@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 
 import { UiFoundationFixtures } from "@/components/dev/ui-foundation-fixtures";
+import { InfraosSolutionSection } from "@/components/landing/infraos-solution-section";
+import { InfrastructureProblemSection } from "@/components/landing/infrastructure-problem-section";
 import { LandingHero } from "@/components/landing/landing-hero";
 import { PublicSiteHeader } from "@/components/landing/public-site-header";
 import { MAIN_CONTENT_ID } from "@/lib/accessibility/document-landmarks";
@@ -21,6 +23,8 @@ export default function HomePage() {
         className="flex min-w-0 flex-1 flex-col outline-none scroll-mt-16"
       >
         <LandingHero />
+        <InfrastructureProblemSection />
+        <InfraosSolutionSection />
         {process.env.NODE_ENV === "development" ? <UiFoundationFixtures /> : null}
       </main>
     </>

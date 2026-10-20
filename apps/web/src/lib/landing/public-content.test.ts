@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import { PUBLIC_HERO } from "./public-content";
+import { PUBLIC_HERO, PUBLIC_PROBLEM, PUBLIC_SOLUTION } from "./public-content";
+import { SOLUTION_SECTION_ANCHOR } from "./navigation";
 
 describe("public hero copy", () => {
   it("states prototype positioning and avoids official claims", () => {
@@ -16,5 +17,12 @@ describe("public hero copy", () => {
     expect(PUBLIC_HERO.modules.toLowerCase()).not.toMatch(
       /ai automatically approves|autonomously approves/,
     );
+  });
+
+  it("points hero CTA copy at the solution section (Step 26)", () => {
+    expect(PUBLIC_HERO.ctaPrimaryLabel.toLowerCase()).toContain("infraos");
+    expect(SOLUTION_SECTION_ANCHOR).toBe("solution");
+    expect(PUBLIC_SOLUTION.intro).toMatch(/RoadSync/i);
+    expect(PUBLIC_PROBLEM.cards.length).toBeGreaterThanOrEqual(3);
   });
 });

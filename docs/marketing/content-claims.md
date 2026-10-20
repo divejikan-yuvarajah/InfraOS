@@ -1,6 +1,6 @@
 # INFRAOS public marketing — content claims register
 
-**Step:** 25 (header, navigation, hero)  
+**Steps:** 25–26 (header, hero, problem/solution)
 **Status:** Living document for public landing copy truthfulness
 
 | Topic | Allowed wording | Prohibited without evidence |
@@ -11,8 +11,10 @@
 | Agencies | Supports coordination across agency types in concept | Named departments onboarded or partnered |
 | Data | Demonstration uses synthetic / illustrative scenarios | Live national infrastructure datasets or verified impact metrics |
 | AI | May assist risk/document review in future roadmap | AI autonomously authorizes construction |
-| CTAs | Links only to existing routes or in-page anchors (`#hero-overview` in Step 25) | Login, dashboard, `#problem`, `#solution` before those sections exist |
+| CTAs | Hero primary → `#solution`; nav includes `#problem`, `#solution`, `#hero-overview` | Login, dashboard, `#features`, `#lifecycle` before sections exist |
+| Problem stories | General coordination gaps (repeated works, blind spots, fragmented progress) | Named agencies or verified incident statistics |
+| Solution story | Deterministic RoadSync overlap review + ProjectTrace accountability (intended) | AI as conflict authority; government approval power |
 
-**Step 25 visible routes:** `/`, `#hero-overview` (coordination illustration on home).
+**Visible on `/` (Step 26):** `/`, `#hero-overview`, `#problem`, `#solution`.
 
-**Review:** Update when Steps 26–29 add sections and nav entries.
+**Review:** Update when Steps 27–29 add sections and nav entries.
