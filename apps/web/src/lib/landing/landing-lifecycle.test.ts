@@ -29,6 +29,7 @@ describe("public landing lifecycle (Step 28)", () => {
         .toLowerCase();
       expect(text).toMatch(/human|authorized|official|අධිකාර|மனித|அதிகார/);
       expect(text).not.toMatch(/ai approves|automatically approves|autonomous approval/);
+      expect(text).toMatch(/roadsync/i);
     }
   });
 

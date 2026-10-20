@@ -307,7 +307,8 @@ const en: PublicLandingCopy = {
       {
         id: "coordinate",
         title: "Coordinate",
-        body: "Potential overlaps in work areas and timing are identified for discussion.",
+        body:
+          "Potential overlaps in work areas and timing are identified for discussion. RoadSync is designed to flag candidate geographic and schedule overlaps for human review—not to resolve conflicts automatically.",
       },
       {
         id: "approve",
@@ -547,7 +548,8 @@ const si: PublicLandingCopy = {
       {
         id: "coordinate",
         title: "සම්බන්ධීකරණය",
-        body: "වැඩ ප්‍රදේශ සහ කාලයේ අතිච්ඡාදන සාකච්ඡාව සඳහා හඳුනා ගනී.",
+        body:
+          "වැඩ ප්‍රදේශ සහ කාලයේ අතිච්ඡාදන සාකච්ඡාව සඳහා හඳුනා ගනී. RoadSync භූගෝල සහ කාල අතිච්ඡාදන මිනිස් සමාලෝචනය සඳහා පෙන්වීමට නිර්මාණය කර ඇත — ස්වයංක්‍රීයව විසඳන්නේ නොවේ.",
       },
       {
         id: "approve",
@@ -787,7 +789,8 @@ const ta: PublicLandingCopy = {
       {
         id: "coordinate",
         title: "ஒருங்கிணைப்பு",
-        body: "பணிப் பகுதி மற்றும் நேரத்தில் ஒன்றுசேரக்கூடியவை விவாதத்திற்காக கண்டறியப்படுகின்றன.",
+        body:
+          "பணிப் பகுதி மற்றும் நேரத்தில் ஒன்றுசேரக்கூடியவை விவாதத்திற்காக கண்டறியப்படுகின்றன. RoadSync புவியியல் மற்றும் அட்டவணை ஒன்றுசேர்வுகளை மனித மதிப்பாய்வுக்காகக் காட்ட வடிவமைக்கப்பட்டுள்ளது — தானாகத் தீர்க்காது.",
       },
       {
         id: "approve",
