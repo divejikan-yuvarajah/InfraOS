@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/card";
 import { ComponentLibraryPreview } from "@/components/examples/component-library-preview";
 import { DataTablePreview } from "@/components/data-table/data-table-preview";
+import { FeedbackPreview } from "@/components/feedback/feedback-preview";
 import { DemoCoordinationForm } from "@/components/forms/demo-coordination-form";
 import { MIXED_SCRIPT_SAMPLES } from "@/lib/design/design-tokens";
 import { projectStatusVisual } from "@/lib/design/semantic-colors";
@@ -185,6 +186,19 @@ export default function HomePage() {
           <ComponentLibraryPreview />
         </CardContent>
       </Card>
+      {process.env.NODE_ENV === "development" ? (
+        <Card className="shadow-elevation-sm">
+          <CardHeader>
+            <CardTitle className="type-card-title">Feedback states fixture (Step 22)</CardTitle>
+            <CardDescription>
+              Development only. Illustrates loading, empty, error and success presentation. Not live API data.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <FeedbackPreview />
+          </CardContent>
+        </Card>
+      ) : null}
       {process.env.NODE_ENV === "development" ? (
         <Card className="shadow-elevation-sm">
           <CardHeader>
