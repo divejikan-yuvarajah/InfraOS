@@ -17,6 +17,7 @@ export type PublicLandingCopy = {
     solution: string;
     features: string;
     lifecycle: string;
+    audiences: string;
     example: string;
   };
   hero: {
@@ -103,6 +104,22 @@ export type PublicLandingCopy = {
       body: string;
     }[];
   };
+  audiences: {
+    eyebrow: string;
+    title: string;
+    intro: string;
+    benefitsTitle: string;
+    benefitsDisclaimer: string;
+    staffAccessNote: string;
+    benefits: readonly { id: string; text: string }[];
+    groups: readonly {
+      id: "citizens" | "agency-teams" | "field-teams" | "visitors";
+      title: string;
+      body: string;
+      actionLabel: string;
+      actionAnchor: "problem" | "solution" | "features" | "lifecycle";
+    }[];
+  };
   photography: {
     problemExpresswayAlt: string;
     problemExpresswayCredit: string;
@@ -132,6 +149,7 @@ const en: PublicLandingCopy = {
     solution: "How INFRAOS works",
     features: "Platform functions",
     lifecycle: "Project lifecycle",
+    audiences: "Who it helps",
     example: "Coordination example",
   },
   hero: {
@@ -342,6 +360,73 @@ const en: PublicLandingCopy = {
       },
     ],
   },
+  audiences: {
+    eyebrow: "Public audiences",
+    title: "Who can use this information—and what coordination can aim to support",
+    intro:
+      "Everyone can read this public demonstration without choosing a role or signing in. The groups below describe who may benefit from better infrastructure coordination—not exclusive access tiers on this website.",
+    benefitsTitle: "Intended benefits (not proven national outcomes)",
+    benefitsDisclaimer:
+      "These points describe design goals for coordination on a university prototype. They are not measured savings, official performance claims, or evidence of live government operations.",
+    staffAccessNote:
+      "Staff sign-in, agency workspaces, and operational dashboards are not linked from this public site. Authenticated access will appear only when a reviewed sign-in route and backend permissions exist.",
+    benefits: [
+      {
+        id: "coordination",
+        text: "Shared planning can help agencies notice when work may overlap in location or timing earlier than isolated spreadsheets allow.",
+      },
+      {
+        id: "accountability",
+        text: "Milestones, approvals, and responsibilities can be documented so delivery teams and reviewers share a clearer record.",
+      },
+      {
+        id: "disruption",
+        text: "Early coordination may help reduce avoidable repeated excavation and inconvenience for communities—without guaranteeing zero disruption.",
+      },
+      {
+        id: "public-info",
+        text: "A future public information view can aim to explain projects in plain language when safe public routes are implemented.",
+      },
+      {
+        id: "maintenance",
+        text: "Project and asset records can support more consistent long-term maintenance planning after work is complete.",
+      },
+    ],
+    groups: [
+      {
+        id: "citizens",
+        title: "Residents, citizens, and local communities",
+        body:
+          "Understand how infrastructure plans and coordination are meant to work, and what this demonstration does not provide (no live project registry or complaint channel here).",
+        actionLabel: "Read the coordination lifecycle",
+        actionAnchor: "lifecycle",
+      },
+      {
+        id: "agency-teams",
+        title: "Government and utility officers and administrators",
+        body:
+          "Learn how a shared view of plans, schedules, and responsibilities is intended to support inter-agency discussion—not live operational data on this page.",
+        actionLabel: "See how INFRAOS works",
+        actionAnchor: "solution",
+      },
+      {
+        id: "field-teams",
+        title: "Inspectors, contractors, and technical staff",
+        body:
+          "Follow how verification, delivery, and maintenance fit the public lifecycle story. Uploading inspection evidence requires future authenticated workflows.",
+        actionLabel: "Review lifecycle stages",
+        actionAnchor: "lifecycle",
+      },
+      {
+        id: "visitors",
+        title: "Students, researchers, and general visitors",
+        body:
+          "Explore the platform concept, demonstration modules, and honest prototype status without implying ministry endorsement or national deployment.",
+        actionLabel: "View platform functions",
+        actionAnchor: "features",
+      },
+    ],
+  },
   photography: {
     problemExpresswayAlt:
       "Earthworks and construction activity along a Sri Lankan expressway corridor near Seeduwa. Illustrative photo only—not an INFRAOS project or official government record.",
@@ -378,6 +463,7 @@ const si: PublicLandingCopy = {
     solution: "INFRAOS ක්‍රියා කරන ආකාරය",
     features: "වේදිකා ක්‍රියාකාරිත්ව",
     lifecycle: "ව්‍යාපෘති ජීවන චක්‍රය",
+    audiences: "උපකාර වන අය",
     example: "සම්බන්ධීකරණ උදාහරණය",
   },
   hero: {
@@ -583,6 +669,73 @@ const si: PublicLandingCopy = {
       },
     ],
   },
+  audiences: {
+    eyebrow: "මහජන පිළිගැනීම",
+    title: "මෙම තොරතුරු භාවිතා කළ හැක්කේ කවුද — සම්බන්ධීකරණයෙන් අපේක්ෂිත උපකාර",
+    intro:
+      "භූමිකාවක් තෝරාගැනීමක් හෝ පිවිසීමක් නොමැත. පහත කණ්ඩායම් යටිතල සම්බන්ධීකරණයෙන් ප්‍රයෝජන විය හැකි අය විස්තර කරයි — මෙය වෙනම ප්‍රවේශ මට්ටම් නොවේ.",
+    benefitsTitle: "අපේක්ෂිත ප්‍රයෝජන (සනාථ ජාතික ප්‍රතිඵල නොවේ)",
+    benefitsDisclaimer:
+      "මේවා විශ්වවිද්‍යාල මූලාකෘතියක සැලසුම් අරමුණුය. මැනූ ඉතිරි කිරීම්, නිල කාර්ය සාධන හෝ සජීවී රජ මෙහෙයුම් නොවේ.",
+    staffAccessNote:
+      "කාර්ය මණ්ඩල පිවිසීම, නියෝජිත වැඩබිම් සහ මෙහෙයුම් dashboards මෙම මහජන අඩවියෙන් සබැඳි නොවේ. සත්‍යාපිත පිවිසීම් මාර්ගය සහ backend permissions සූදානම් වූ පසු පමණක් සත්‍යාපිත ප්‍රවේශය හඳුන්වනු ලැබේ.",
+    benefits: [
+      {
+        id: "coordination",
+        text: "හවුල් සැලසුම් නිසා වැඩ ස්ථානයේ හෝ කාලයේ අතිච්ඡාදන මුලදීම හඳුනා ගැනීමට උපකාරී විය හැක.",
+      },
+      {
+        id: "accountability",
+        text: "සන්ධිස්ථාන, අනුමැති සහ වගකීම් වාර්තා කිරීමෙන් බෙදාහැරීමේ කණ්ඩායම්ට පැහැදිලි වාර්තාවක් ලැබිය හැක.",
+      },
+      {
+        id: "disruption",
+        text: "මුල් සම්බන්ධීකරණය නැවත කැණීම් සහ අපහසුතා අඩු කිරීමට උපකාරී විය හැක — නමුත් බාධාවක් සම්පූර්ණයෙන්ම නැති වන බවට නිශ්චිතව සහතික නොකෙරේ.",
+      },
+      {
+        id: "public-info",
+        text: "අනාගත මහජන තොරතුරු දසුනක් ව්‍යාපෘති සරල භාෂාවෙන් පැහැදිලි කිරීමට ඉලක්ක කරයි.",
+      },
+      {
+        id: "maintenance",
+        text: "ව්‍යාපෘති සහ දේපල වාර්තා දිගුකාලීන නඩත්තු සැලසුම් සඳහා සහාය විය හැක.",
+      },
+    ],
+    groups: [
+      {
+        id: "citizens",
+        title: "නවාතැන් පදිංචිකරුවන්, පුරවැසියන් සහ ප්‍රජාවන්",
+        body:
+          "යටිතල සැලසුම් සහ සම්බන්ධීකරණය ක්‍රියාත්මක වන ආකාරය තේරුම් ගන්න. සජීවී ව්‍යාපෘති ලැයිස්තුවක් හෝ පැමිණිලි මාර්ගයක් මෙහි නැත.",
+        actionLabel: "සම්බන්ධීකරණ ජීවන චක්‍රය කියවන්න",
+        actionAnchor: "lifecycle",
+      },
+      {
+        id: "agency-teams",
+        title: "රජයේ සහ උපයෝගිතා නිලධාරීන් සහ පරිපාලකයින්",
+        body:
+          "හවුල් දසුනක් සැලසුම්, කාලසටහන් සහ වගකීම් සඳහා අපේක්ෂිත උපකාරය — මෙම පිටුවේ සජීවී මෙහෙයුම් දත්ත නොමැත.",
+        actionLabel: "INFRAOS ක්‍රියා කරන ආකාරය බලන්න",
+        actionAnchor: "solution",
+      },
+      {
+        id: "field-teams",
+        title: "පරීක්ෂකයින්, කොන්ත්‍රාත්කරුවන් සහ තාක්ෂණික කාර්ය මණ්ඩලය",
+        body:
+          "සත්‍යාපනය, බෙදාහැරීම සහ නඩත්තුව ජීවන චක්‍රයට කෙසේද යන්න අනුගමනය කරන්න. පරීක්ෂණ සාක්ෂි උඩුගත කිරීමට අනාගත සත්‍යාපිත ක්‍රමවේද අවශ්‍ය වේ.",
+        actionLabel: "ජීවන චක්‍ර අදියර සමාලෝචනය කරන්න",
+        actionAnchor: "lifecycle",
+      },
+      {
+        id: "visitors",
+        title: "ශිෂ්‍යයින්, ගවේෂකයින් සහ සාමාන්‍ය සංචාරකයින්",
+        body:
+          "වේදිකා සංකල්පය, ආදර්ශන මොඩියුල සහ අව්‍යාජ මූලාකෘති තත්ත්වය ගවේෂණය කරන්න — අමාත්‍යාංශ අනුමැතිය හෝ ජාතික විහිදුම් අදහස් නොකෙරේ.",
+        actionLabel: "වේදිකා ක්‍රියාකාරිත්ව බලන්න",
+        actionAnchor: "features",
+      },
+    ],
+  },
   photography: {
     problemExpresswayAlt:
       "ශ්‍රී ලංකාව, සීදුව අසල අධිවේගී මාර්ගයේ ඉඩම් වැඩ. ආදර්ශන ඡායාරූපය පමණි — INFRAOS ව්‍යාපෘතියක් හෝ නිල රජයේ වාර්තාවක් නොවේ.",
@@ -619,6 +772,7 @@ const ta: PublicLandingCopy = {
     solution: "INFRAOS எவ்வாறு செயல்படுகிறது",
     features: "தள செயல்கள்",
     lifecycle: "திட்ட வாழ்க்கைச் சுழற்சி",
+    audiences: "யாருக்கு உதவுகிறது",
     example: "ஒருங்கிணைப்பு எடுத்துக்காட்டு",
   },
   hero: {
@@ -821,6 +975,73 @@ const ta: PublicLandingCopy = {
         id: "maintain",
         title: "பராமரிப்பு",
         body: "முடிக்கப்பட்ட உள்கட்டமைப்பு எதிர்கால பராமரிப்பு மற்றும் சிக்கல்களுக்கு கண்காணிக்கப்படலாம்.",
+      },
+    ],
+  },
+  audiences: {
+    eyebrow: "பொது பார்வையாளர்கள்",
+    title: "இந்தத் தகவலை யார் பயன்படுத்தலாம் — ஒருங்கிணைப்பின் நோக்கங்கள்",
+    intro:
+      "பங்கு தேர்ந்தெடுக்க அல்லது உள்நுழைய தேவையில்லை. கீழுள்ள குழுக்கள் உள்கட்டமைப்பு ஒருங்கிணைப்பால் பயனடையக்கூடியவர்களை விளக்குகின்றன — இது தனி அணுகல் நிலை அல்ல.",
+    benefitsTitle: "எதிர்பார்க்கப்படும் நன்மைகள் (நிரூபிக்கப்பட்ட தேசிய முடிவுகள் அல்ல)",
+    benefitsDisclaimer:
+      "இவை பல்கலைக்கழக மாதிரியின் வடிவமைப்பு நோக்கங்கள். அளவிடப்பட்ட சேமிப்பு, அதிகாரப்பூர்வ செயல்திறன் அல்லது நேரடி அரசு செயல்பாடு அல்ல.",
+    staffAccessNote:
+      "ஊழியர் உள்நுழைவு, முகவி பணியிடங்கள் மற்றும் செயல்பாட்டு dashboards இந்தப் பொது தளத்திலிருந்து இணைக்கப்படவில்லை. மதிப்பாய்வு செய்யப்பட்ட உள்நுழைவு பாதையும் backend permissions தயாரான பிறகே மட்டுமே சான்றளிக்கப்பட்ட அணுகல் அறிமுகப்படுத்தப்படும்.",
+    benefits: [
+      {
+        id: "coordination",
+        text: "பகிரப்பட்ட திட்டமிடல் இடம் அல்லது நேரத்தில் வேலை ஒன்றுசேர்வை முன்கூட்டியே காண உதவும்.",
+      },
+      {
+        id: "accountability",
+        text: "மைல்கற்கள், அனுமதிகள் மற்றும் பொறுப்புகள் பதிவு செய்யப்பட்டு விநியோகக் குழுக்களுக்கு தெளிவான பதிவு உருவாக உதவும்.",
+      },
+      {
+        id: "disruption",
+        text: "முன்கூட்டிய ஒருங்கிணைப்பு தவிர்க்கக்கூடிய மீண்டும் தோண்டுதல் மற்றும் சமூகத்திற்கு ஏற்படும் தொல்லைகளைக் குறைக்க உதவும் — தடங்கல் முற்றிலும் இல்லாது என உறுதியளிக்கப்படவில்லை.",
+      },
+      {
+        id: "public-info",
+        text: "எதிர்கால பொது தகவல் பார்வை, பாதுகாப்பான பொது பாதைகள் உருவாக்கப்பட்டால், திட்டங்களை எளிய மொழியில் விளக்க நோக்கமாக உள்ளது.",
+      },
+      {
+        id: "maintenance",
+        text: "திட்டம் மற்றும் சொத்து பதிவுகள் நீண்டகால பராமரிப்பு திட்டத்திற்கு உதவும்.",
+      },
+    ],
+    groups: [
+      {
+        id: "citizens",
+        title: "குடியிருப்பாளர்கள், பொதுமக்கள் மற்றும் உள்ளூர் சமூகங்கள்",
+        body:
+          "உள்கட்டமைப்பு திட்டமிடல் மற்றும் ஒருங்கிணைப்பு எவ்வாறு செயல்பட வேண்டும் என்பதைப் புரிந்துகொள்ளுங்கள். நேரடி திட்டப் பட்டியல் அல்லது புகார் வழி இங்கே இல்லை.",
+        actionLabel: "ஒருங்கிணைப்பு வாழ்க்கைச் சுழற்சியைப் படிக்கவும்",
+        actionAnchor: "lifecycle",
+      },
+      {
+        id: "agency-teams",
+        title: "அரசு மற்றும் பயன்பாட்டு அதிகாரிகள் மற்றும் நிர்வாகிகள்",
+        body:
+          "திட்டங்கள், அட்டவணைகள் மற்றும் பொறுப்புகளுக்கான பகிரப்பட்ட பார்வைக்கான நோக்கம் — இப்பக்கத்தில் நேரடி செயல்பாட்டுத் தரவு இல்லை.",
+        actionLabel: "INFRAOS எவ்வாறு செயல்படுகிறது",
+        actionAnchor: "solution",
+      },
+      {
+        id: "field-teams",
+        title: "ஆய்வாளர்கள், ஒப்பந்ததாரர்கள் மற்றும் தொழில்நுட்பக் குழு",
+        body:
+          "சரிபார்ப்பு, விநியோகம் மற்றும் பராமரிப்பு வாழ்க்கைச் சுழற்சியில் எங்கு பொருந்துகிறது என்பதைப் பின்தொடருங்கள். ஆய்வுச் சான்று பதிவேற்றத்திற்கு எதிர்கால சான்றளிக்கப்பட்ட செயல்முறைகள் தேவை.",
+        actionLabel: "வாழ்க்கைச் சுழற்சி நிலைகளை மதிப்பாய்வு செய்யவும்",
+        actionAnchor: "lifecycle",
+      },
+      {
+        id: "visitors",
+        title: "மாணவர்கள், ஆராய்ச்சியாளர்கள் மற்றும் பொது வருகையாளர்கள்",
+        body:
+          "தளக் கருத்து, செயல்விளக்க தொகுதிகள் மற்றும் நேர்மையான முன்மாதிரி நிலையை ஆராயுங்கள் — அமைச்சக அங்கீகாரம் அல்லது தேசிய விரிவாக்கம் குறிக்கப்படவில்லை.",
+        actionLabel: "தள செயல்களைப் பார்க்கவும்",
+        actionAnchor: "features",
       },
     ],
   },
