@@ -1,10 +1,11 @@
 import Link from "next/link";
 
+import { InfraosMark } from "@/components/landing/infraos-mark";
 import { PublicLanguageNav } from "@/components/landing/public-language-nav";
 import { PublicMobileNav } from "@/components/landing/public-mobile-nav";
 import { publicHomePath, type PublicLocale } from "@/lib/landing/locales";
 import type { PublicLandingCopy } from "@/lib/landing/messages";
-import { getPublicNavLinks, resolvePublicNavHref } from "@/lib/landing/navigation";
+import { getPublicHeaderNavLinks, resolvePublicNavHref } from "@/lib/landing/navigation";
 import type { PublicInfoSlug } from "@/lib/landing/locales";
 import { cn } from "@/lib/utils";
 
@@ -46,7 +47,7 @@ export function PublicSiteHeader({
   copy: PublicLandingCopy;
   infoSlug?: PublicInfoSlug | null;
 }) {
-  const links = getPublicNavLinks(copy, locale).map((item) => ({
+  const links = getPublicHeaderNavLinks(copy, locale).map((item) => ({
     ...item,
     href: resolvePublicNavHref(locale, item.href),
   }));
@@ -63,18 +64,23 @@ export function PublicSiteHeader({
           />
         </div>
       </div>
-      <div className="container-dashboard gutter-page flex h-14 items-center gap-4">
+      <div className="container-dashboard gutter-page flex min-h-14 items-center gap-4 py-2">
         <Link
           href={publicHomePath(locale)}
           className="type-label shrink-0 text-text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
           aria-label={copy.homeLinkLabel}
         >
-          INFRA<span className="text-link">OS</span>
+          <span className="inline-flex items-center gap-2">
+            <InfraosMark className="size-8 shrink-0" />
+            <span>
+              INFRA<span className="text-link">OS</span>
+            </span>
+          </span>
         </Link>
 
         <nav
           aria-label={copy.primaryNavLabel}
-          className="ml-auto hidden items-center gap-1 md:flex"
+          className="ml-auto hidden items-center gap-1 lg:flex"
         >
           {links.map((item) => (
             <NavLink key={item.href} href={item.href} label={item.label} />
@@ -86,7 +92,7 @@ export function PublicSiteHeader({
           copy={copy}
           locale={locale}
           infoSlug={infoSlug}
-          className="ml-auto md:hidden"
+          className="ml-auto lg:hidden"
         />
       </div>
     </header>

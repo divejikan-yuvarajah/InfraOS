@@ -3,6 +3,10 @@
  * Does not change shared dashboard tokens.
  */
 
+.public-site main {
+  overflow-x: clip;
+}
+
 .public-site .public-section-pad {
   padding-top: 3.5rem;
   padding-bottom: 3.5rem;
@@ -13,6 +17,24 @@
     padding-top: 5rem;
     padding-bottom: 5rem;
   }
+}
+
+.atlas-route-stop {
+  position: relative;
+}
+
+.atlas-route-stop:not(:last-child) > span {
+  position: relative;
+}
+
+.atlas-route-stop:not(:last-child) > span::after {
+  content: "";
+  position: absolute;
+  top: 2.5rem;
+  left: 50%;
+  width: 1px;
+  height: calc(100% + 0.5rem);
+  background: var(--border);
 }
 
 .public-site .public-demo-callout {

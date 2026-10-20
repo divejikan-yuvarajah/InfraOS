@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 
+import { InfraosMark } from "@/components/landing/infraos-mark";
 import { PublicLanguageNav } from "@/components/landing/public-language-nav";
 import { footerLinkHref } from "@/lib/landing/public-info-pages";
 import type { PublicInfoSlug } from "@/lib/landing/locales";
@@ -17,7 +18,7 @@ function FooterLink({
   external?: boolean;
 }) {
   const className =
-    "public-motion-interactive type-body-small text-text-secondary underline-offset-4 hover:text-text-primary hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring";
+    "public-motion-interactive inline-flex min-h-11 items-center type-body-small text-text-secondary underline-offset-4 hover:text-text-primary hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring";
 
   if (external) {
     return (
@@ -63,7 +64,10 @@ export function PublicSiteFooter({
     <footer className="border-t border-border bg-surface">
       <div className="container-dashboard gutter-page space-y-8 py-10">
         <div className="space-y-2">
-          <p className="type-label text-text-primary">{footer.identityTitle}</p>
+          <p className="inline-flex items-center gap-2 type-label text-text-primary">
+            <InfraosMark className="size-7" />
+            {footer.identityTitle}
+          </p>
           <p className="type-body-small max-w-prose text-text-secondary">{footer.identityLine}</p>
         </div>
 

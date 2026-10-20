@@ -1,12 +1,5 @@
 import Link from "next/link";
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import type { AudienceActionAnchor } from "@/lib/landing/audience-groups";
 import { AUDIENCE_GROUP_IDS } from "@/lib/landing/audience-groups";
 import type { PublicLandingCopy } from "@/lib/landing/messages";
@@ -44,7 +37,7 @@ export function PublicAudiencesSection({ copy }: { copy: PublicLandingCopy }) {
           <p className="type-body text-text-secondary">{audiences.intro}</p>
         </header>
 
-        <ul className="mt-10 grid gap-4 md:grid-cols-2 md:gap-6">
+        <ul className="mt-10 divide-y divide-border border-y border-border">
           {AUDIENCE_GROUP_IDS.map((groupId) => {
             const group = audiences.groups.find((g) => g.id === groupId);
             if (!group) return null;
@@ -53,27 +46,21 @@ export function PublicAudiencesSection({ copy }: { copy: PublicLandingCopy }) {
               : null;
 
             return (
-              <li key={groupId} className="min-w-0">
-                <Card className="h-full shadow-elevation-sm">
-                  <CardHeader className="gap-2">
-                    <CardTitle className="type-card-title">{group.title}</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    <CardDescription className="type-body-small text-text-secondary">
-                      {group.body}
-                    </CardDescription>
-                    {actionHref && group.actionLabel ? (
-                      <p>
-                        <Link
-                          href={actionHref}
-                          className="type-body-small text-link underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-                        >
-                          {group.actionLabel}
-                        </Link>
-                      </p>
-                    ) : null}
-                  </CardContent>
-                </Card>
+              <li key={groupId} className="grid gap-3 py-6 lg:grid-cols-[14rem_minmax(0,1fr)] lg:gap-10">
+                <h3 className="type-card-title text-text-primary">{group.title}</h3>
+                <div className="min-w-0 space-y-3">
+                  <p className="type-body max-w-prose text-text-secondary">{group.body}</p>
+                  {actionHref && group.actionLabel ? (
+                    <p>
+                      <Link
+                        href={actionHref}
+                        className="type-body-small text-link underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+                      >
+                        {group.actionLabel}
+                      </Link>
+                    </p>
+                  ) : null}
+                </div>
               </li>
             );
           })}
