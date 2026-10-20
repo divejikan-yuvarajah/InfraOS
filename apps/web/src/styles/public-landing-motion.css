@@ -1,0 +1,23 @@
+/**
+ * Step 33 — public landing interaction motion only.
+ * Uses Step 18 duration/easing tokens; no opacity-0 content gates.
+ */
+
+@media (prefers-reduced-motion: no-preference) {
+  html:focus-within {
+    scroll-behavior: smooth;
+  }
+}
+
+.public-motion-interactive {
+  transition-property: color, background-color, border-color, box-shadow, opacity,
+    transform, text-decoration-color;
+  transition-duration: var(--motion-duration-normal);
+  transition-timing-function: var(--motion-ease-standard);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .public-motion-interactive {
+    transition: none !important;
+  }
+}

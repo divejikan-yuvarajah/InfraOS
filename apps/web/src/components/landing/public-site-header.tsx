@@ -18,7 +18,7 @@ function NavLink({
   className?: string;
 }) {
   const linkClass = cn(
-    "rounded-md px-3 py-2 type-body-small text-text-secondary transition-colors hover:text-text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
+    "public-motion-interactive rounded-md px-3 py-2 type-body-small text-text-secondary hover:text-text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
     className,
   );
 

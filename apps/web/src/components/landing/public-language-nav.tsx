@@ -39,7 +39,7 @@ export function PublicLanguageNav({
                 className={
                   current
                     ? "type-label text-text-primary underline decoration-infra-orange underline-offset-4"
-                    : "type-body-small text-text-secondary hover:text-text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+                    : "public-motion-interactive type-body-small text-text-secondary hover:text-text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
                 }
               >
                 {PUBLIC_LOCALE_LABELS[item]}

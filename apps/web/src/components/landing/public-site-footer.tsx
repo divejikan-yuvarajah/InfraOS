@@ -17,7 +17,7 @@ function FooterLink({
   external?: boolean;
 }) {
   const className =
-    "type-body-small text-text-secondary underline-offset-4 hover:text-text-primary hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring";
+    "public-motion-interactive type-body-small text-text-secondary underline-offset-4 hover:text-text-primary hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring";
 
   if (external) {
     return (
