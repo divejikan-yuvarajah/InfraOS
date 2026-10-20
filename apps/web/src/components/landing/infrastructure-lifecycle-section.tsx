@@ -27,20 +27,20 @@ export function InfrastructureLifecycleSection({ copy }: { copy: PublicLandingCo
               <p className="type-body text-text-secondary">{lifecycle.intro}</p>
             </header>
 
-            <ol className="grid list-none gap-4 p-0 md:grid-cols-2 md:gap-x-6 md:gap-y-5">
+            <ol className="atlas-route list-none space-y-0 p-0">
               {LIFECYCLE_STAGE_IDS.map((stageId, index) => {
                 const stage = lifecycle.stages.find((s) => s.id === stageId);
                 if (!stage) return null;
                 return (
-                  <li
-                    key={stageId}
-                    className="public-motion-interactive min-w-0 rounded-lg border border-border bg-background p-4 shadow-elevation-sm hover:border-border/80 motion-reduce:transition-none"
-                  >
-                    <p className="type-caption text-text-muted">
-                      {lifecycle.stageLabel} {index + 1}
-                    </p>
-                    <h3 className="type-card-title mt-1 text-text-primary">{stage.title}</h3>
-                    <p className="type-body-small mt-2 text-text-secondary">{stage.body}</p>
+                  <li key={stageId} className="atlas-route-stop grid grid-cols-[auto_minmax(0,1fr)] gap-4">
+                    <span className="type-label flex size-10 items-center justify-center rounded-full border border-border bg-surface text-text-primary">
+                      {index + 1}
+                    </span>
+                    <div className="min-w-0 pb-8">
+                      <p className="type-caption text-text-muted">{lifecycle.stageLabel}</p>
+                      <h3 className="type-card-title mt-1 text-text-primary">{stage.title}</h3>
+                      <p className="type-body-small mt-2 max-w-prose text-text-secondary">{stage.body}</p>
+                    </div>
                   </li>
                 );
               })}

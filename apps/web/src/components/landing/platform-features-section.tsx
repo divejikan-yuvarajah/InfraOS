@@ -1,11 +1,3 @@
-import { Badge } from "@/components/ui/badge";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import type { PublicLandingCopy } from "@/lib/landing/messages";
 import { FEATURES_SECTION_ANCHOR } from "@/lib/landing/navigation";
 
@@ -28,33 +20,26 @@ export function PlatformFeaturesSection({ copy }: { copy: PublicLandingCopy }) {
           <p className="type-body text-text-secondary">{features.intro}</p>
         </header>
 
-        <ul className="mt-10 grid gap-4 lg:grid-cols-2 lg:gap-6">
+        <div className="mt-12 space-y-10">
           {features.items.map((item) => (
-            <li key={item.id} className="min-w-0">
-              <Card className="h-full shadow-elevation-sm">
-                <CardHeader className="gap-2">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <CardTitle className="type-card-title">
-                      <span lang="en">{item.moduleName}</span>
-                      <span className="sr-only"> — </span>
-                      <span className="font-normal text-text-secondary"> · {item.title}</span>
-                    </CardTitle>
-                    <Badge variant={item.status === "demonstration" ? "info" : "neutral"}>
-                      {item.status === "demonstration"
-                        ? features.statusDemonstration
-                        : features.statusPlanned}
-                    </Badge>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <CardDescription className="type-body-small text-text-secondary">
-                    {item.body}
-                  </CardDescription>
-                </CardContent>
-              </Card>
-            </li>
+            <article key={item.id} className="grid gap-3 border-t border-border pt-6 lg:grid-cols-[12rem_minmax(0,1fr)] lg:gap-10">
+              <p className="type-label text-text-primary">
+                <span lang="en">{item.moduleName}</span>
+              </p>
+              <div className="min-w-0 space-y-2">
+                <h3 className="type-card-title text-text-primary">
+                  {item.title}
+                  <span className="type-caption ms-3 font-normal text-text-muted">
+                    {item.status === "demonstration"
+                      ? features.statusDemonstration
+                      : features.statusPlanned}
+                  </span>
+                </h3>
+                <p className="type-body max-w-prose text-text-secondary">{item.body}</p>
+              </div>
+            </article>
           ))}
-        </ul>
+        </div>
 
         <p className="type-body-small mx-auto mt-8 max-w-prose text-text-secondary">
           {features.disclosure}
