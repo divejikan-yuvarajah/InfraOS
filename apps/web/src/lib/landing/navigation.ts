@@ -79,6 +79,21 @@ export function getPublicNavLinks(
   ];
 }
 
+/** Civic Atlas header: four destinations. Other anchors stay on the page and in the full link list. */
+export function getPublicHeaderNavLinks(
+  copy: PublicLandingCopy,
+  locale: PublicLocale,
+): PublicNavLink[] {
+  const all = getPublicNavLinks(copy, locale);
+  const keep = new Set([
+    `#${SOLUTION_SECTION_ANCHOR}`,
+    `#${FEATURES_SECTION_ANCHOR}`,
+    `#${HOW_IT_WORKS_SECTION_ANCHOR}`,
+    `#${AUDIENCES_SECTION_ANCHOR}`,
+  ]);
+  return all.filter((item) => keep.has(item.href));
+}
+
 export function getAvailablePublicNavLinks(): PublicNavLink[] {
   return PUBLIC_PRIMARY_NAV.filter((item) => item.isAvailable);
 }
