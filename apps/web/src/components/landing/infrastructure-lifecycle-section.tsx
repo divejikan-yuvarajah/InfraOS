@@ -1,10 +1,12 @@
+import { LifecycleStepper } from "@/components/landing/lifecycle-stepper";
 import { LandingSectionPhoto } from "@/components/landing/landing-section-photo";
+import { lifecycleStagesForStepper } from "@/lib/landing/lifecycle-stepper-data";
 import type { PublicLandingCopy } from "@/lib/landing/messages";
-import { LIFECYCLE_STAGE_IDS } from "@/lib/landing/lifecycle-stages";
 import { HOW_IT_WORKS_SECTION_ANCHOR } from "@/lib/landing/navigation";
 
 export function InfrastructureLifecycleSection({ copy }: { copy: PublicLandingCopy }) {
   const lifecycle = copy.lifecycle;
+  const stages = lifecycleStagesForStepper(copy);
 
   return (
     <section
@@ -27,24 +29,11 @@ export function InfrastructureLifecycleSection({ copy }: { copy: PublicLandingCo
               <p className="type-body text-text-secondary">{lifecycle.intro}</p>
             </header>
 
-            <ol className="atlas-route list-none space-y-0 p-0">
-              {LIFECYCLE_STAGE_IDS.map((stageId, index) => {
-                const stage = lifecycle.stages.find((s) => s.id === stageId);
-                if (!stage) return null;
-                return (
-                  <li key={stageId} className="atlas-route-stop grid grid-cols-[auto_minmax(0,1fr)] gap-4">
-                    <span className="type-label flex size-10 items-center justify-center rounded-full border border-border bg-surface text-text-primary">
-                      {index + 1}
-                    </span>
-                    <div className="min-w-0 pb-8">
-                      <p className="type-caption text-text-muted">{lifecycle.stageLabel}</p>
-                      <h3 className="type-card-title mt-1 text-text-primary">{stage.title}</h3>
-                      <p className="type-body-small mt-2 max-w-prose text-text-secondary">{stage.body}</p>
-                    </div>
-                  </li>
-                );
-              })}
-            </ol>
+            <LifecycleStepper
+              stages={stages}
+              variant="vertical"
+              labelledBy="lifecycle-heading"
+            />
 
             <div className="max-w-prose space-y-3 rounded-xl border border-border bg-muted/40 p-4">
               <p className="type-label text-text-primary">{lifecycle.scenarioTitle}</p>

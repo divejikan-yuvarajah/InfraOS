@@ -1,4 +1,4 @@
-import { HeroCoordinationIllustration } from "@/components/landing/hero-coordination-illustration";
+import { CoordinationSequenceDiagram } from "@/components/landing/coordination-sequence-diagram";
 import type { PublicLandingCopy } from "@/lib/landing/messages";
 import { SOLUTION_SECTION_ANCHOR } from "@/lib/landing/navigation";
 
@@ -21,19 +21,10 @@ export function InfraosSolutionSection({ copy }: { copy: PublicLandingCopy }) {
             </h2>
             <p className="type-body text-slate-200">{solution.intro}</p>
           </header>
-          <HeroCoordinationIllustration illustration={copy.illustration} />
+          <div className="rounded-xl border border-white/15 bg-white/5 p-2">
+            <CoordinationSequenceDiagram illustration={copy.illustration} solution={copy.solution} />
+          </div>
         </div>
-        <ol className="mt-12 grid list-none gap-8 p-0 md:grid-cols-3">
-          {solution.flowSteps.map((step, index) => (
-            <li key={step.id} className="relative min-w-0 border-t border-white/20 pt-4">
-              <p className="type-caption text-[#FEB600]">
-                {String(index + 1).padStart(2, "0")} · {solution.flowLabel}
-              </p>
-              <h3 className="type-card-title mt-2 text-white">{step.title}</h3>
-              <p className="type-body-small mt-2 text-slate-200">{step.body}</p>
-            </li>
-          ))}
-        </ol>
         <div className="mt-12 grid gap-8 md:grid-cols-2" aria-labelledby="solution-contrast-heading">
           <h3 id="solution-contrast-heading" className="sr-only">
             {solution.contrastTitle}

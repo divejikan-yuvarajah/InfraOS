@@ -11,8 +11,14 @@ export type PublicLandingCopy = {
   openMenu: string;
   closeMenu: string;
   menuTitle: string;
+  utilityContactLabel: string;
   nav: {
     home: string;
+    about: string;
+    howItWorks: string;
+    faq: string;
+    contact: string;
+    coordination: string;
     problem: string;
     solution: string;
     features: string;
@@ -50,6 +56,31 @@ export type PublicLandingCopy = {
       badge: string;
       variant: "critical" | "warning" | "info" | "neutral";
     }[];
+  };
+  roadsyncSignature: {
+    eyebrow: string;
+    title: string;
+    intro: string;
+    disclaimer: string;
+    diagramTitle: string;
+    diagramDescription: string;
+    mapLabel: string;
+    mobileMapSummary: string;
+    timelineStart: string;
+    timelineEnd: string;
+    roadWorkLabel: string;
+    roadDates: string;
+    pipelineWorkLabel: string;
+    pipelineDates: string;
+    overlapGeoLabel: string;
+    overlapScheduleLabel: string;
+    overlapCaption: string;
+    reviewLabel: string;
+    reviewBody: string;
+    legendRoad: string;
+    legendPipeline: string;
+    legendOverlap: string;
+    callouts: readonly { id: string; title: string; body: string }[];
   };
   solution: {
     eyebrow: string;
@@ -145,6 +176,23 @@ export type PublicLandingCopy = {
     demoNotice: string;
     points: readonly { id: string; title: string; body: string }[];
   };
+  transparency: {
+    eyebrow: string;
+    title: string;
+    intro: string;
+    tableCaption: string;
+    colModule: string;
+    colStatus: string;
+    colNotes: string;
+    footerNote: string;
+    rows: readonly {
+      id: string;
+      module: string;
+      status: "demonstration" | "planned" | "internal";
+      statusLabel: string;
+      note: string;
+    }[];
+  };
   faq: {
     eyebrow: string;
     title: string;
@@ -184,6 +232,9 @@ export type PublicLandingCopy = {
   };
   infoPages: {
     about: PublicInfoPageCopy;
+    "how-it-works": PublicInfoPageCopy;
+    faq: PublicInfoPageCopy;
+    contact: PublicInfoPageCopy;
     accessibility: PublicInfoPageCopy;
     privacy: PublicInfoPageCopy;
   };
@@ -210,8 +261,14 @@ const en: PublicLandingCopy = {
   openMenu: "Open primary navigation",
   closeMenu: "Close primary navigation",
   menuTitle: "Menu",
+  utilityContactLabel: "Public enquiries",
   nav: {
     home: "Home",
+    about: "About",
+    howItWorks: "How it works",
+    faq: "FAQ",
+    contact: "Contact",
+    coordination: "RoadSync scenario",
     problem: "The coordination gap",
     solution: "How INFRAOS works",
     features: "Platform functions",
@@ -221,14 +278,60 @@ const en: PublicLandingCopy = {
   },
   hero: {
     eyebrow: "Infrastructure coordination platform",
-    title: "Coordinating infrastructure work for better communities.",
+    title: "Better infrastructure starts with better coordination.",
     lead:
-      "INFRAOS demonstrates how infrastructure projects can be planned, reviewed and coordinated to reduce overlapping road and utility work and support clearer public information.",
+      "INFRAOS demonstrates how agencies could share where and when road and utility works are planned—before the same corridor is opened twice.",
     modules:
       "ProjectTrace supports delivery and progress accountability. RoadSync is designed to surface explainable geographic and schedule overlaps for agency review—not autonomous approvals.",
     prototypeNote:
-      "University prototype · Demonstration workflows use synthetic data · Not an official government record",
-    ctaPrimaryLabel: "How INFRAOS works",
+      "University demonstration · Synthetic scenarios only · Not an official government service",
+    ctaPrimaryLabel: "See the RoadSync scenario",
+  },
+  roadsyncSignature: {
+    eyebrow: "RoadSync · coordination logic",
+    title: "Two projects. One stretch of road. A decision that cannot wait.",
+    intro:
+      "When resurfacing and pipeline schedules overlap on the same corridor, residents see repeated excavation and agencies lose time. RoadSync is designed to surface that overlap for human review—not to approve work automatically.",
+    disclaimer:
+      "Illustrative scenario — synthetic geography and dates, not a live detected conflict or operational map record.",
+    diagramTitle: "Synthetic corridor overlap — geography and schedule",
+    diagramDescription:
+      "A road resurfacing window from 12 May to 28 May overlaps a water pipeline installation from 20 May to 8 June on the same illustrative corridor segment. Agencies would review sequencing before work starts.",
+    mapLabel: "Same corridor segment (illustrative map strip)",
+    mobileMapSummary:
+      "Road surface work and a crossing pipeline share one corridor segment. The shaded area marks where geography overlaps.",
+    timelineStart: "May",
+    timelineEnd: "June",
+    roadWorkLabel: "Road resurfacing (agency A)",
+    roadDates: "12 May – 28 May",
+    pipelineWorkLabel: "Water pipeline (agency B)",
+    pipelineDates: "20 May – 8 Jun",
+    overlapGeoLabel: "Shared corridor",
+    overlapScheduleLabel: "8-day schedule overlap",
+    overlapCaption: "20 May – 28 May · both works active on the same segment",
+    reviewLabel: "Intended agency response",
+    reviewBody:
+      "Coordinators compare plans, adjust sequencing or methods, and document the decision. INFRAOS does not replace statutory approvals or field authority.",
+    legendRoad: "Road surface work window",
+    legendPipeline: "Utility pipeline window",
+    legendOverlap: "Geographic + schedule overlap (synthetic)",
+    callouts: [
+      {
+        id: "place",
+        title: "Same place",
+        body: "Both teams need access to the same paved corridor—not a spreadsheet typo.",
+      },
+      {
+        id: "time",
+        title: "Same season",
+        body: "Work windows intersect for more than a week in this illustrative example.",
+      },
+      {
+        id: "people",
+        title: "Human review",
+        body: "RoadSync flags candidates; agencies decide what to reschedule or combine.",
+      },
+    ],
   },
   illustration: {
     title: "Illustrative road coordination scenario",
@@ -551,6 +654,62 @@ const en: PublicLandingCopy = {
       },
     ],
   },
+  transparency: {
+    eyebrow: "Build status",
+    title: "What exists in this repository today",
+    intro:
+      "This table lists implementation status for major modules described on the public site. It replaces marketing statistics—nothing here is a live operational count.",
+    tableCaption: "INFRAOS module implementation status for the university demonstration",
+    colModule: "Module",
+    colStatus: "Status",
+    colNotes: "Public site notes",
+    footerNote:
+      "GIS preview figures and coordination diagrams on this site use synthetic geometry and dates. They are labeled illustrative and do not query MongoDB or external map services from these routes.",
+    rows: [
+      {
+        id: "projecttrace",
+        module: "ProjectTrace",
+        status: "demonstration",
+        statusLabel: "Demonstration UI",
+        note: "Operational project views exist in development; not exposed as live public records here.",
+      },
+      {
+        id: "roadsync",
+        module: "RoadSync",
+        status: "demonstration",
+        statusLabel: "Demonstration UI",
+        note: "Conflict concepts are explained statically; automated detection is not advertised as production-ready.",
+      },
+      {
+        id: "inframap",
+        module: "InfraMap",
+        status: "planned",
+        statusLabel: "Planned",
+        note: "Map layers and public discovery routes are roadmap items pending authorization.",
+      },
+      {
+        id: "ai-risk",
+        module: "AI risk intelligence",
+        status: "internal",
+        statusLabel: "Internal service",
+        note: "FastAPI analysis supports staff workflows; no autonomous approvals on the public site.",
+      },
+      {
+        id: "citizen-portal",
+        module: "Citizen issue reporting",
+        status: "planned",
+        statusLabel: "Not available",
+        note: "No public complaint form or tracking route is linked from this marketing site.",
+      },
+      {
+        id: "staff-auth",
+        module: "Staff sign-in",
+        status: "planned",
+        statusLabel: "Not linked publicly",
+        note: "Authentication routes are not published from this landing experience until reviewed.",
+      },
+    ],
+  },
   faq: {
     eyebrow: "Common questions",
     title: "Frequently asked questions",
@@ -693,6 +852,72 @@ const en: PublicLandingCopy = {
         },
       ],
     },
+    "how-it-works": {
+      metaTitle: "How INFRAOS works",
+      metaDescription:
+        "Lifecycle stages and a coordination example for the INFRAOS university demonstration—without claiming live national deployment.",
+      title: "How INFRAOS works",
+      intro:
+        "INFRAOS is designed around a shared infrastructure lifecycle and cross-agency coordination. This page explains those stages and an illustrative road conflict example using synthetic data.",
+      sections: [
+        {
+          id: "lifecycle",
+          heading: "Shared lifecycle",
+          body:
+            "Plan → Coordinate → Approve → Build → Verify → Monitor → Complete → Maintain is the organizing spine for both public explanation and intended operational workflows. Stages describe human responsibilities—not automated government decisions.",
+        },
+        {
+          id: "roadsync",
+          heading: "RoadSync coordination intent",
+          body:
+            "RoadSync is designed to highlight when planned works may overlap in place or time so agencies can discuss sequencing. The public site shows static examples only; it does not run live conflict detection for visitors.",
+        },
+        {
+          id: "example",
+          heading: "Illustrative conflict sequence",
+          body:
+            "The sequence diagram on this page shows resurfacing followed by pipeline work on the same corridor—a common coordination failure mode. Labels mark illustrative status badges, not detected records.",
+        },
+      ],
+    },
+    faq: {
+      metaTitle: "Public FAQ",
+      metaDescription:
+        "Answers to common questions about the INFRAOS university demonstration, RoadSync, and public information boundaries.",
+      title: "Public FAQ",
+      intro:
+        "These answers reflect the current repository and public routes. They do not promise features that are not implemented or authorized for public description.",
+      sections: [
+        {
+          id: "scope",
+          heading: "Using this FAQ",
+          body:
+            "The same questions appear on the homepage FAQ section. This page provides a stable URL for sharing and printing in English, Sinhala, and Tamil (draft translations marked on each locale).",
+        },
+      ],
+    },
+    contact: {
+      metaTitle: "Contact and public enquiries",
+      metaDescription:
+        "How to reach the INFRAOS demonstration team—honest status when no verified public channel exists.",
+      title: "Contact and public enquiries",
+      intro:
+        "INFRAOS is a university demonstration. There is no verified national help desk, hotline, or official ministry contact published in this repository.",
+      sections: [
+        {
+          id: "status",
+          heading: "Public contact status",
+          body:
+            "No owner-approved email address, phone number, or postal contact for public enquiries is stored in the codebase. A contact form and citizen issue intake are not implemented on these routes.",
+        },
+        {
+          id: "next",
+          heading: "What you can do today",
+          body:
+            "Read the About, FAQ, and accessibility pages for project context. For accessibility feedback, use the process described on the accessibility page once an owner-approved channel is published. Do not send sensitive personal data through unverified channels.",
+        },
+      ],
+    },
     accessibility: {
       metaTitle: "Accessibility information",
       metaDescription:
@@ -791,8 +1016,14 @@ const si: PublicLandingCopy = {
   openMenu: "ප්‍රධාන සංචාලනය විවෘත කරන්න",
   closeMenu: "ප්‍රධාන සංචාලනය වසන්න",
   menuTitle: "මෙනුව",
+  utilityContactLabel: "මහජන විමසීම්",
   nav: {
     home: "මුල් පිටුව",
+    about: "පිළිබඳව",
+    howItWorks: "ක්‍රියාකාරීත්වය",
+    faq: "නිති අසන ප්‍රශ්න",
+    contact: "සම්බන්ධ වන්න",
+    coordination: "RoadSync දර්ශනය",
     problem: "සම්බන්ධීකරණ පරතරය",
     solution: "INFRAOS ක්‍රියා කරන ආකාරය",
     features: "වේදිකා ක්‍රියාකාරිත්ව",
@@ -1229,6 +1460,7 @@ const si: PublicLandingCopy = {
     copyrightPrefix: "South Eastern University of Sri Lanka · INFRAOS demonstration",
   },
   infoPages: {
+    ...en.infoPages,
     about: {
       ...en.infoPages.about,
       metaTitle: "INFRAOS ගැන",
@@ -1274,8 +1506,14 @@ const ta: PublicLandingCopy = {
   openMenu: "முதன்மை வழிசெலுத்தலை திறக்கவும்",
   closeMenu: "முதன்மை வழிசெலுத்தலை மூடவும்",
   menuTitle: "பட்டி",
+  utilityContactLabel: "பொது விசாரணைகள்",
   nav: {
     home: "முகப்பு",
+    about: "பற்றி",
+    howItWorks: "எவ்வாறு செயல்படுகிறது",
+    faq: "அடிக்கடி கேட்கப்படும் கேள்விகள்",
+    contact: "தொடர்பு",
+    coordination: "RoadSync காட்சி",
     problem: "ஒருங்கிணைப்பு இடைவெளி",
     solution: "INFRAOS எவ்வாறு செயல்படுகிறது",
     features: "தள செயல்கள்",
@@ -1712,6 +1950,7 @@ const ta: PublicLandingCopy = {
     copyrightPrefix: "South Eastern University of Sri Lanka · INFRAOS demonstration",
   },
   infoPages: {
+    ...en.infoPages,
     about: {
       ...en.infoPages.about,
       metaTitle: "INFRAOS பற்றி",

@@ -19,7 +19,7 @@ function NavLink({
   className?: string;
 }) {
   const linkClass = cn(
-    "public-motion-interactive rounded-md px-3 py-2 type-body-small text-text-secondary hover:text-text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
+    "public-motion-interactive rounded-md px-3 py-2 type-body-small focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
     className,
   );
 
@@ -53,27 +53,33 @@ export function PublicSiteHeader({
   }));
 
   return (
-    <header className="sticky top-0 z-[var(--z-sticky)] border-b border-border bg-surface">
-      <div className="border-b border-border bg-background">
-        <div className="container-dashboard gutter-page flex flex-wrap items-center justify-between gap-2 border-s-[3px] border-s-link py-2 ps-4">
-          <p className="type-caption text-text-muted">{copy.demoBanner}</p>
+    <header className="public-rescue-header sticky top-0 z-[var(--z-sticky)]">
+      <div className="border-b border-white/10">
+        <div className="container-dashboard gutter-page flex flex-wrap items-center justify-between gap-2 py-2">
+          <p className="type-caption text-slate-400">{copy.demoBanner}</p>
           <PublicLanguageNav
             locale={locale}
             label={copy.languageNavLabel}
             infoSlug={infoSlug}
+            className="[&_a]:text-slate-300 [&_a:hover]:text-white [&_span[aria-current]]:text-white [&_span[aria-current]]:decoration-[#FF5B00]"
           />
         </div>
       </div>
-      <div className="container-dashboard gutter-page flex min-h-14 items-center gap-4 py-2">
+      <div className="container-dashboard gutter-page flex min-h-[3.75rem] items-center gap-4 py-2">
         <Link
           href={publicHomePath(locale)}
-          className="type-label shrink-0 text-text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+          className="public-rescue-wordmark shrink-0 text-slate-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FEB600]"
           aria-label={copy.homeLinkLabel}
         >
-          <span className="inline-flex items-center gap-2">
-            <InfraosMark className="size-8 shrink-0" />
-            <span>
-              INFRA<span className="text-link">OS</span>
+          <span className="inline-flex items-center gap-3">
+            <InfraosMark className="size-10 shrink-0" />
+            <span className="flex flex-col leading-tight">
+              <span>
+                INFRA<span className="text-[#FF5B00]">OS</span>
+              </span>
+              <span className="type-caption font-normal tracking-normal text-slate-400">
+                {copy.hero.eyebrow}
+              </span>
             </span>
           </span>
         </Link>
@@ -83,7 +89,12 @@ export function PublicSiteHeader({
           className="ml-auto hidden items-center gap-1 lg:flex"
         >
           {links.map((item) => (
-            <NavLink key={item.href} href={item.href} label={item.label} />
+            <NavLink
+              key={item.href}
+              href={item.href}
+              label={item.label}
+              className="text-slate-300 hover:text-white"
+            />
           ))}
         </nav>
 
@@ -92,7 +103,7 @@ export function PublicSiteHeader({
           copy={copy}
           locale={locale}
           infoSlug={infoSlug}
-          className="ml-auto lg:hidden"
+          className="ml-auto text-slate-100 lg:hidden"
         />
       </div>
     </header>

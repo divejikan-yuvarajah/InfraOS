@@ -2,17 +2,12 @@ import { describe, expect, it } from "vitest";
 
 import { getPublicCopy } from "./messages";
 import {
-  FEATURES_SECTION_ANCHOR,
   getAvailablePublicNavLinks,
+  getPublicHeaderNavLinks,
   getPublicNavLinks,
-  HERO_OVERVIEW_ANCHOR,
-  AUDIENCES_SECTION_ANCHOR,
-  HOW_IT_WORKS_SECTION_ANCHOR,
   resolvePublicNavHref,
-  PROBLEM_SECTION_ANCHOR,
-  PUBLIC_PRIMARY_NAV,
-  SOLUTION_SECTION_ANCHOR,
 } from "./navigation";
+import { publicInfoPath } from "./locales";
 
 describe("public landing navigation", () => {
   it("exposes only available links with real destinations", () => {
@@ -25,44 +20,39 @@ describe("public landing navigation", () => {
     }
   });
 
-  it("does not link to auth or future section placeholders", () => {
-    const hrefs = PUBLIC_PRIMARY_NAV.map((item) => item.href);
+  it("does not link to auth placeholders", () => {
+    const hrefs = getAvailablePublicNavLinks().map((item) => item.href);
     expect(hrefs).not.toContain("/login");
-    expect(hrefs).not.toContain("#product");
-    expect(hrefs).not.toContain("#lifecycle");
   });
 
-  it("includes Step 25–26 anchors when marked available", () => {
-    expect(PUBLIC_PRIMARY_NAV.some((item) => item.href === `#${HERO_OVERVIEW_ANCHOR}`)).toBe(
-      true,
-    );
-    expect(PUBLIC_PRIMARY_NAV.some((item) => item.href === `#${PROBLEM_SECTION_ANCHOR}`)).toBe(
-      true,
-    );
-    expect(PUBLIC_PRIMARY_NAV.some((item) => item.href === `#${SOLUTION_SECTION_ANCHOR}`)).toBe(
-      true,
-    );
-  });
-
-  it("includes Step 27 #features in localized navigation", () => {
+  it("includes dedicated public pages in localized navigation", () => {
     const hrefs = getPublicNavLinks(getPublicCopy("en"), "en").map((item) => item.href);
-    expect(hrefs).toContain(`#${FEATURES_SECTION_ANCHOR}`);
+    expect(hrefs).toContain("/about");
+    expect(hrefs).toContain("/how-it-works");
+    expect(hrefs).toContain("/faq");
+    expect(hrefs).toContain("/contact");
   });
 
-  it("includes Step 28 #how-it-works in localized navigation", () => {
-    const hrefs = getPublicNavLinks(getPublicCopy("en"), "en").map((item) => item.href);
-    expect(hrefs).toContain(`#${HOW_IT_WORKS_SECTION_ANCHOR}`);
+  it("localizes dedicated page paths for Sinhala", () => {
+    const hrefs = getPublicNavLinks(getPublicCopy("si"), "si").map((item) => item.href);
+    expect(hrefs).toContain("/si/about");
+    expect(hrefs).toContain("/si/how-it-works");
   });
 
-  it("includes Step 29 #audiences in localized navigation", () => {
-    const hrefs = getPublicNavLinks(getPublicCopy("en"), "en").map((item) => item.href);
-    expect(hrefs).toContain(`#${AUDIENCES_SECTION_ANCHOR}`);
+  it("header nav uses four primary destinations", () => {
+    const header = getPublicHeaderNavLinks(getPublicCopy("en"), "en");
+    expect(header).toHaveLength(4);
+    expect(header.map((l) => l.href)).toEqual([
+      "/",
+      "#solution",
+      publicInfoPath("en", "how-it-works"),
+      publicInfoPath("en", "about"),
+    ]);
   });
 
   it("prefixes in-page anchors with locale home when resolving off-home links", () => {
-    expect(resolvePublicNavHref("si", `#${PROBLEM_SECTION_ANCHOR}`)).toBe(
-      `/si#${PROBLEM_SECTION_ANCHOR}`,
-    );
+    expect(resolvePublicNavHref("si", "#problem")).toBe("/si#problem");
     expect(resolvePublicNavHref("en", "/about")).toBe("/about");
+    expect(resolvePublicNavHref("si", "/about")).toBe("/si/about");
   });
 });
