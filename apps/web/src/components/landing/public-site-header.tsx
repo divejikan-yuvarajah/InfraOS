@@ -1,7 +1,10 @@
 import Link from "next/link";
 
+import { PublicLanguageNav } from "@/components/landing/public-language-nav";
 import { PublicMobileNav } from "@/components/landing/public-mobile-nav";
-import { getAvailablePublicNavLinks } from "@/lib/landing/navigation";
+import { publicHomePath, type PublicLocale } from "@/lib/landing/locales";
+import type { PublicLandingCopy } from "@/lib/landing/messages";
+import { getPublicNavLinks } from "@/lib/landing/navigation";
 import { cn } from "@/lib/utils";
 
 function NavLink({
@@ -33,22 +36,34 @@ function NavLink({
   );
 }
 
-export function PublicSiteHeader() {
-  const links = getAvailablePublicNavLinks();
+export function PublicSiteHeader({
+  locale,
+  copy,
+}: {
+  locale: PublicLocale;
+  copy: PublicLandingCopy;
+}) {
+  const links = getPublicNavLinks(copy, locale);
 
   return (
-    <header className="sticky top-0 z-[var(--z-sticky)] border-b border-border bg-surface/95 supports-backdrop-filter:backdrop-blur-sm">
+    <header className="sticky top-0 z-[var(--z-sticky)] border-b border-border bg-surface">
+      <div className="border-b border-border bg-background">
+        <div className="container-dashboard gutter-page flex flex-wrap items-center justify-between gap-2 py-2">
+          <p className="type-caption text-text-muted">{copy.demoBanner}</p>
+          <PublicLanguageNav locale={locale} label={copy.languageNavLabel} />
+        </div>
+      </div>
       <div className="container-dashboard gutter-page flex h-14 items-center gap-4">
         <Link
-          href="/"
+          href={publicHomePath(locale)}
           className="type-label shrink-0 text-text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-          aria-label="INFRAOS — Home"
+          aria-label={copy.homeLinkLabel}
         >
-          INFRA<span className="text-infra-orange">OS</span>
+          INFRA<span className="text-link">OS</span>
         </Link>
 
         <nav
-          aria-label="Primary"
+          aria-label={copy.primaryNavLabel}
           className="ml-auto hidden items-center gap-1 md:flex"
         >
           {links.map((item) => (
@@ -56,7 +71,12 @@ export function PublicSiteHeader() {
           ))}
         </nav>
 
-        <PublicMobileNav links={links} className="ml-auto md:hidden" />
+        <PublicMobileNav
+          links={links}
+          copy={copy}
+          locale={locale}
+          className="ml-auto md:hidden"
+        />
       </div>
     </header>
   );

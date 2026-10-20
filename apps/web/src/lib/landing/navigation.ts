@@ -1,7 +1,11 @@
 /**
  * Public marketing navigation — only links to verified routes or in-page anchors
  * that exist in the current checkpoint. Extend when Steps 26+ add sections.
+ * Staff sign-in is omitted until an authentication route exists.
  */
+
+import { publicHomePath, type PublicLocale } from "./locales";
+import type { PublicLandingCopy } from "./messages";
 
 export type PublicNavLink = {
   label: string;
@@ -33,6 +37,18 @@ export const PUBLIC_PRIMARY_NAV: readonly PublicNavLink[] = [
     isAvailable: true,
   },
 ] as const;
+
+export function getPublicNavLinks(
+  copy: PublicLandingCopy,
+  locale: PublicLocale,
+): PublicNavLink[] {
+  return [
+    { label: copy.nav.home, href: publicHomePath(locale), isAvailable: true },
+    { label: copy.nav.problem, href: `#${PROBLEM_SECTION_ANCHOR}`, isAvailable: true },
+    { label: copy.nav.solution, href: `#${SOLUTION_SECTION_ANCHOR}`, isAvailable: true },
+    { label: copy.nav.example, href: `#${HERO_OVERVIEW_ANCHOR}`, isAvailable: true },
+  ];
+}
 
 export function getAvailablePublicNavLinks(): PublicNavLink[] {
   return PUBLIC_PRIMARY_NAV.filter((item) => item.isAvailable);

@@ -15,6 +15,6 @@
 | Problem stories | General coordination gaps (repeated works, blind spots, fragmented progress) | Named agencies or verified incident statistics |
 | Solution story | Deterministic RoadSync overlap review + ProjectTrace accountability (intended) | AI as conflict authority; government approval power |
 
-**Visible on `/` (Step 26):** `/`, `#hero-overview`, `#problem`, `#solution`.
+**Visible public routes:** `/` (English), `/si` (Sinhala draft), `/ta` (Tamil draft), plus `#hero-overview`, `#problem`, `#solution` on the current locale page. Staff sign-in is omitted until an auth route exists. No licensed hero photograph is in the repo.
 
 **Review:** Update when Steps 27–29 add sections and nav entries.
