@@ -6,6 +6,7 @@ import {
   getAvailablePublicNavLinks,
   getPublicNavLinks,
   HERO_OVERVIEW_ANCHOR,
+  AUDIENCES_SECTION_ANCHOR,
   HOW_IT_WORKS_SECTION_ANCHOR,
   PROBLEM_SECTION_ANCHOR,
   PUBLIC_PRIMARY_NAV,
@@ -50,5 +51,10 @@ describe("public landing navigation", () => {
   it("includes Step 28 #how-it-works in localized navigation", () => {
     const hrefs = getPublicNavLinks(getPublicCopy("en"), "en").map((item) => item.href);
     expect(hrefs).toContain(`#${HOW_IT_WORKS_SECTION_ANCHOR}`);
+  });
+
+  it("includes Step 29 #audiences in localized navigation", () => {
+    const hrefs = getPublicNavLinks(getPublicCopy("en"), "en").map((item) => item.href);
+    expect(hrefs).toContain(`#${AUDIENCES_SECTION_ANCHOR}`);
   });
 });
