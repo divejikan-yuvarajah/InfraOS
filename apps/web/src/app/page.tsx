@@ -8,6 +8,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { ComponentLibraryPreview } from "@/components/examples/component-library-preview";
+import { DataTablePreview } from "@/components/data-table/data-table-preview";
 import { DemoCoordinationForm } from "@/components/forms/demo-coordination-form";
 import { MIXED_SCRIPT_SAMPLES } from "@/lib/design/design-tokens";
 import { projectStatusVisual } from "@/lib/design/semantic-colors";
@@ -184,6 +185,19 @@ export default function HomePage() {
           <ComponentLibraryPreview />
         </CardContent>
       </Card>
+      {process.env.NODE_ENV === "development" ? (
+        <Card className="shadow-elevation-sm">
+          <CardHeader>
+            <CardTitle className="type-card-title">Data table fixture (Step 21)</CardTitle>
+            <CardDescription>
+              Development only. Synthetic rows. Selection and filters do not authorize actions.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <DataTablePreview />
+          </CardContent>
+        </Card>
+      ) : null}
       {process.env.NODE_ENV === "development" ? (
         <Card className="shadow-elevation-sm">
           <CardHeader>
