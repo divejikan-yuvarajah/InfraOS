@@ -17,4 +17,6 @@
 
 **Visible public routes:** `/` (English), `/si` (Sinhala draft), `/ta` (Tamil draft), plus `#hero-overview`, `#problem`, `#solution`, `#features` on the current locale page. Staff sign-in is omitted until an auth route exists. No licensed hero photograph is in the repo. Step 27 feature cards describe demonstration vs planned capabilities only—no links to unbuilt app routes.
 
-**Review:** Update when Steps 27–29 add sections and nav entries.
+**Step 30 preview (`#preview`):** Conceptual static diagram only — road resurfacing 2026-03-02–2026-03-20 and water-pipeline work 2026-03-10–2026-03-28 (shared dates 2026-03-10–2026-03-20). Labeled illustrative prototype, not a live map, RoadSync detection, or government record. No nav item added (header already has seven links). No new photograph. Sinhala/Tamil preview copy is an unverified draft.
+
+**Review:** Update when Steps 31–34 add sections.

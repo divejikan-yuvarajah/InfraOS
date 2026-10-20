@@ -120,6 +120,24 @@ export type PublicLandingCopy = {
       actionAnchor: "problem" | "solution" | "features" | "lifecycle";
     }[];
   };
+  preview: {
+    eyebrow: string;
+    title: string;
+    intro: string;
+    disclaimer: string;
+    figureTitle: string;
+    figureDescription: string;
+    figureCaption: string;
+    notToScale: string;
+    legendRoad: string;
+    legendWater: string;
+    legendOverlap: string;
+    overlapMark: string;
+    scheduleRoad: string;
+    scheduleWater: string;
+    overlapDates: string;
+    statusNote: string;
+  };
   photography: {
     problemExpresswayAlt: string;
     problemExpresswayCredit: string;
@@ -426,6 +444,29 @@ const en: PublicLandingCopy = {
         actionAnchor: "features",
       },
     ],
+  },
+  preview: {
+    eyebrow: "Illustrative preview",
+    title: "What coordinated road and utility planning can look like",
+    intro:
+      "This diagram shows a conceptual shared road section where resurfacing and water-pipeline work are both planned. It is not a live map, a computed conflict, or an official project.",
+    disclaimer:
+      "Illustrative prototype — not live government data. Conceptual diagram, not to scale.",
+    figureTitle: "Conceptual overlap of road resurfacing and water-pipeline work",
+    figureDescription:
+      "A solid orange line represents planned road resurfacing. A dashed grey line represents planned water-pipeline work on part of the same corridor. A dashed maroon box marks the shared section. The drawing is not a geographic map.",
+    figureCaption:
+      "Road work and water work share a section of the corridor and occur in the same date period. This is a sample story for explanation only.",
+    notToScale: "Conceptual · not to scale",
+    legendRoad: "Solid line — planned road resurfacing",
+    legendWater: "Dashed line — planned water-pipeline work",
+    legendOverlap: "Dashed outline — shared section (schedule also overlaps)",
+    overlapMark: "1",
+    scheduleRoad: "Sample road dates",
+    scheduleWater: "Sample water dates",
+    overlapDates: "Shared dates",
+    statusNote:
+      "InfraMap and RoadSync are demonstration concepts on this site. This figure does not query maps, detect live conflicts, or approve work.",
   },
   photography: {
     problemExpresswayAlt:
@@ -736,6 +777,29 @@ const si: PublicLandingCopy = {
       },
     ],
   },
+  preview: {
+    eyebrow: "ආදර්ශන පෙරදසුන",
+    title: "සම්බන්ධීකරණය කළ මාර්ග සහ උපයෝගිතා සැලසුමක් පෙනෙන්නේ කෙසේද",
+    intro:
+      "මෙම රූප සටහන මාර්ග ප්‍රතිසංස්කරණය සහ ජල නල වැඩ දෙකම සැලසුම් කළ සංකල්පීය හවුල් කොටසක් පෙන්වයි. මෙය සජීවී සිතියමක්, ගණනය කළ ගැටුමක් හෝ නිල ව්‍යාපෘතියක් නොවේ.",
+    disclaimer:
+      "ආදර්ශන මූලාකෘතිය — සජීවී රජයේ දත්ත නොවේ. සංකල්පීය රූප සටහනකි; පරිමාණයට නොවේ.",
+    figureTitle: "මාර්ග ප්‍රතිසංස්කරණය සහ ජල නල වැඩ අතිච්ඡාදනයේ සංකල්පය",
+    figureDescription:
+      "තැඹිලි ඝන රේඛාව සැලසුම් කළ මාර්ග ප්‍රතිසංස්කරණයයි. ඉරි ඇති අළු රේඛාව එම කොරිඩෝවේ කොටසක සැලසුම් කළ ජල නල වැඩයි. ඉරි ඇති මෙරූන් කොටුව හවුල් කොටස සලකුණු කරයි. මෙය භූගෝලීය සිතියමක් නොවේ.",
+    figureCaption:
+      "මාර්ග වැඩ සහ ජල වැඩ කොරිඩෝවේ කොටසක් බෙදා ගනී; දින පරාසයන් ද අතිච්ඡාදනය වේ. මෙය පැහැදිලි කිරීම සඳහා නියැදි කතාවකි.",
+    notToScale: "සංකල්පීය · පරිමාණයට නොවේ",
+    legendRoad: "ඝන රේඛාව — සැලසුම් කළ මාර්ග ප්‍රතිසංස්කරණය",
+    legendWater: "ඉරි ඇති රේඛාව — සැලසුම් කළ ජල නල වැඩ",
+    legendOverlap: "ඉරි ඇති දාරය — හවුල් කොටස (දිනද අතිච්ඡාදනය)",
+    overlapMark: "1",
+    scheduleRoad: "නියැදි මාර්ග දින",
+    scheduleWater: "නියැදි ජල දින",
+    overlapDates: "හවුල් දින",
+    statusNote:
+      "InfraMap සහ RoadSync මෙම අඩවියේ ආදර්ශන සංකල්ප වේ. මෙම රූපය සිතියම් විමසන්නේ නැත, සජීවී ගැටුම් හඳුනන්නේ නැත, වැඩ අනුමත කරන්නේ නැත.",
+  },
   photography: {
     problemExpresswayAlt:
       "ශ්‍රී ලංකාව, සීදුව අසල අධිවේගී මාර්ගයේ ඉඩම් වැඩ. ආදර්ශන ඡායාරූපය පමණි — INFRAOS ව්‍යාපෘතියක් හෝ නිල රජයේ වාර්තාවක් නොවේ.",
@@ -1044,6 +1108,29 @@ const ta: PublicLandingCopy = {
         actionAnchor: "features",
       },
     ],
+  },
+  preview: {
+    eyebrow: "எடுத்துக்காட்டு முன்னோட்டம்",
+    title: "ஒருங்கிணைந்த சாலை மற்றும் பயன்பாட்டு திட்டமிடல் எப்படி இருக்கும்",
+    intro:
+      "இந்த வரைபடம் சாலை புதுப்பிப்பும் நீர் குழாய் பணியும் திட்டமிடப்பட்ட ஒரு கருத்துப்பூர்வ பொது பகுதியைக் காட்டுகிறது. இது நேரடி வரைபடம், கணக்கிடப்பட்ட முரண்பாடு அல்லது அதிகாரப்பூர்வ திட்டம் அல்ல.",
+    disclaimer:
+      "எடுத்துக்காட்டு முன்மாதிரி — நேரடி அரசு தரவு அல்ல. கருத்து வரைபடம்; அளவுகோலுக்கு அல்ல.",
+    figureTitle: "சாலை புதுப்பிப்பு மற்றும் நீர் குழாய் பணியின் கருத்து ஒன்றுசேர்வு",
+    figureDescription:
+      "திட ஆரஞ்சு கோடு திட்டமிட்ட சாலை புதுப்பிப்பு. கோடுகள் கொண்ட சாம்பல் கோடு அதே பாதையின் ஒரு பகுதியில் திட்டமிட்ட நீர் குழாய் பணி. கோடுகள் கொண்ட மெரூன் பெட்டி பொது பகுதியைக் குறிக்கிறது. இது புவியியல் வரைபடம் அல்ல.",
+    figureCaption:
+      "சாலைப் பணியும் நீர் பணியும் பாதையின் ஒரு பகுதியைப் பகிர்கின்றன; தேதி வரம்புகளும் ஒன்றுசேர்கின்றன. இது விளக்கத்திற்கான மாதிரி கதை மட்டும்.",
+    notToScale: "கருத்து · அளவுகோலுக்கு அல்ல",
+    legendRoad: "திடக் கோடு — திட்டமிட்ட சாலை புதுப்பிப்பு",
+    legendWater: "கோடுகள் கொண்ட கோடு — திட்டமிட்ட நீர் குழாய் பணி",
+    legendOverlap: "கோடுகள் கொண்ட விளிம்பு — பொது பகுதி (தேதிகளும் ஒன்றுசேரும்)",
+    overlapMark: "1",
+    scheduleRoad: "மாதிரி சாலை தேதிகள்",
+    scheduleWater: "மாதிரி நீர் தேதிகள்",
+    overlapDates: "பொது தேதிகள்",
+    statusNote:
+      "InfraMap மற்றும் RoadSync இந்தத் தளத்தில் செயல்விளக்கக் கருத்துகள். இந்தப் படம் வரைபடங்களை வினவவில்லை, நேரடி முரண்பாடுகளைக் கண்டறியவில்லை, பணியை அனுமதிக்கவில்லை.",
   },
   photography: {
     problemExpresswayAlt:
