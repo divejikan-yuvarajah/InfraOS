@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
 
+import { getPublicCopy } from "./messages";
 import {
+  FEATURES_SECTION_ANCHOR,
   getAvailablePublicNavLinks,
+  getPublicNavLinks,
   HERO_OVERVIEW_ANCHOR,
   PROBLEM_SECTION_ANCHOR,
   PUBLIC_PRIMARY_NAV,
@@ -22,7 +25,6 @@ describe("public landing navigation", () => {
   it("does not link to auth or future section placeholders", () => {
     const hrefs = PUBLIC_PRIMARY_NAV.map((item) => item.href);
     expect(hrefs).not.toContain("/login");
-    expect(hrefs).not.toContain("#features");
     expect(hrefs).not.toContain("#lifecycle");
     expect(hrefs).not.toContain("#product");
   });
@@ -37,5 +39,10 @@ describe("public landing navigation", () => {
     expect(PUBLIC_PRIMARY_NAV.some((item) => item.href === `#${SOLUTION_SECTION_ANCHOR}`)).toBe(
       true,
     );
+  });
+
+  it("includes Step 27 #features in localized navigation", () => {
+    const hrefs = getPublicNavLinks(getPublicCopy("en"), "en").map((item) => item.href);
+    expect(hrefs).toContain(`#${FEATURES_SECTION_ANCHOR}`);
   });
 });
