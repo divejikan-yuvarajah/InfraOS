@@ -1,47 +1,73 @@
-import { LandingSectionPhoto } from "@/components/landing/landing-section-photo";
+import Image from "next/image";
+import { CalendarRange, MapPin, Shovel } from "lucide-react";
+
+import { LANDING_PHOTO_PATHS } from "@/lib/landing/landing-photos";
 import type { PublicLandingCopy } from "@/lib/landing/messages";
 import { PROBLEM_SECTION_ANCHOR } from "@/lib/landing/navigation";
 
+const FACT_ICONS = [MapPin, CalendarRange, Shovel] as const;
+
 export function InfrastructureProblemSection({ copy }: { copy: PublicLandingCopy }) {
-  const narrativeCards = copy.problem.cards.slice(0, 3);
+  const facts = copy.problem.cards.slice(0, 3);
 
   return (
     <section
       id={PROBLEM_SECTION_ANCHOR}
       aria-labelledby="problem-heading"
-      className="public-problem-section scroll-mt-28 border-b border-border"
+      className="cf-problem-section scroll-mt-28"
       tabIndex={-1}
     >
-      <div className="container-dashboard gutter-page public-section-pad">
-        <div className="grid gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] lg:items-center">
-          <div className="public-problem-section__story min-w-0 space-y-6">
-            <header className="max-w-prose space-y-3">
-              <p className="type-label text-link">{copy.problem.eyebrow}</p>
-              <h2 id="problem-heading" className="type-section-title text-balance text-text-primary">
-                {copy.problem.title}
-              </h2>
-              <p className="type-body text-text-secondary">{copy.problem.intro}</p>
-            </header>
-            <ol className="space-y-4">
-              {narrativeCards.map((card, index) => (
-                <li key={card.id}>
-                  <p className="type-caption text-text-muted">
-                    {String(index + 1).padStart(2, "0")} · {card.badge}
-                  </p>
-                  <h3 className="type-card-title mt-1 text-text-primary">{card.title}</h3>
-                  <p className="type-body-small mt-1 text-text-secondary">{card.body}</p>
-                </li>
-              ))}
-            </ol>
+      <div className="container-dashboard gutter-page cf-problem-section__inner">
+        <div className="cf-problem-section__visual">
+          <figure className="cf-problem-section__figure">
+            <div className="cf-problem-section__photo">
+              <Image
+                src={LANDING_PHOTO_PATHS.expresswayConstructionSeeduwa}
+                alt={copy.photography.problemExpresswayAlt}
+                fill
+                sizes="(max-width: 1023px) 100vw, 46vw"
+                className="object-cover object-[center_45%]"
+              />
+              <div className="cf-problem-section__photo-accent" aria-hidden />
+            </div>
+            <figcaption className="cf-problem-section__credit">
+              {copy.photography.problemExpresswayCredit}
+            </figcaption>
+          </figure>
+          <div className="cf-problem-section__flow-card" aria-hidden>
+            <span className="cf-problem-section__flow-road" />
+            <span className="cf-problem-section__flow-pipe" />
+            <p className="cf-problem-section__flow-label">{copy.problem.flowLabel}</p>
           </div>
-          <LandingSectionPhoto
-            photoId="southernExpressway"
-            alt={copy.photography.lifecycleExpresswayAlt}
-            credit={copy.photography.lifecycleExpresswayCredit}
-            aspectClassName="aspect-[16/10]"
-            editorial
-            className="lg:max-w-none"
-          />
+        </div>
+
+        <div className="cf-problem-section__story min-w-0">
+          <header className="cf-problem-section__header">
+            <p className="cf-problem-section__eyebrow">{copy.problem.eyebrow}</p>
+            <h2 id="problem-heading" className="cf-problem-section__title text-balance">
+              {copy.problem.title}
+            </h2>
+            <p className="cf-problem-section__intro">{copy.problem.intro}</p>
+            <p className="cf-problem-section__callout">{copy.problem.callout}</p>
+          </header>
+
+          <ul className="cf-problem-section__facts">
+            {facts.map((fact, index) => {
+              const Icon = FACT_ICONS[index] ?? MapPin;
+              return (
+                <li key={fact.id} className={`cf-problem-fact cf-problem-fact--${fact.variant}`}>
+                  <span className="cf-problem-fact__icon" aria-hidden>
+                    <Icon strokeWidth={1.75} />
+                  </span>
+                  <div className="cf-problem-fact__copy">
+                    <p className="cf-problem-fact__badge">{fact.badge}</p>
+                    <h3 className="cf-problem-fact__title">{fact.title}</h3>
+                    <p className="cf-problem-fact__body">{fact.body}</p>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
         </div>
       </div>
     </section>

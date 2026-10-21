@@ -50,6 +50,8 @@ export type PublicLandingCopy = {
     eyebrow: string;
     title: string;
     intro: string;
+    callout: string;
+    flowLabel: string;
     cards: readonly {
       id: string;
       title: string;
@@ -103,6 +105,7 @@ export type PublicLandingCopy = {
     eyebrow: string;
     title: string;
     intro: string;
+    plannedPanelTitle: string;
     statusDemonstration: string;
     statusPlanned: string;
     disclosure: string;
@@ -355,30 +358,33 @@ const en: PublicLandingCopy = {
     eyebrow: "The coordination gap",
     title: "When infrastructure plans live separately, avoidable conflicts follow.",
     intro:
-      "A resurfaced road and a planned pipeline can share the same location and work window without a common view. INFRAOS is designed to make those overlaps visible before teams start work.",
+      "A road may be resurfaced, then opened again for utility work when agencies cannot see each other's schedules. INFRAOS illustrates how a shared view could reduce that friction—using synthetic examples only.",
+    callout:
+      "Two agencies, one corridor: this is a coordination gap in planning systems—not proof that teams failed to cooperate.",
+    flowLabel: "Same corridor · separate schedules (illustrative)",
     cards: [
       {
         id: "repeated-excavation",
-        title: "Repeated excavation",
+        title: "Shared location",
         body:
-          "One utility repairs a corridor shortly after resurfacing because schedules and locations sit in separate plans—not because teams ignore each other.",
-        badge: "Schedule overlap",
+          "Road resurfacing and pipeline work can be planned on the same segment without a map or list that both agencies consult.",
+        badge: "Geographic overlap",
         variant: "critical",
       },
       {
         id: "schedule-blind-spots",
-        title: "Schedule blind spots",
+        title: "Conflicting schedules",
         body:
-          "Teams working the same corridor may not see each other's planned work windows when timelines live in different systems or spreadsheets.",
-        badge: "Pending coordination",
+          "Work windows that overlap on a calendar may stay hidden when each agency keeps dates in its own spreadsheet or system.",
+        badge: "Schedule overlap",
         variant: "warning",
       },
       {
         id: "fragmented-progress",
-        title: "Fragmented project progress",
+        title: "Repeated disruption",
         body:
-          "Milestones, spending, and delivery status can be tracked in disconnected views, making accountability harder for officers and the public.",
-        badge: "Informational",
+          "Residents can see the same stretch dug twice when sequencing is decided too late—not because crews ignore each other.",
+        badge: "Public impact",
         variant: "info",
       },
       {
@@ -434,6 +440,7 @@ const en: PublicLandingCopy = {
     title: "Coordinating the information behind infrastructure work",
     intro:
       "INFRAOS is a university-developed demonstration of how projects, planned utility work and agency responsibilities can be viewed together. The items below describe platform intent—not live public services on this site.",
+    plannedPanelTitle: "Planned capabilities (not live on this site)",
     statusDemonstration: "Demonstration concept",
     statusPlanned: "Planned capability",
     disclosure:
@@ -1120,27 +1127,31 @@ const si: PublicLandingCopy = {
     eyebrow: "සම්බන්ධීකරණ පරතරය",
     title: "සැලසුම් වෙන වෙනම තිබෙන විට, වළක්වා ගත හැකි ගැටුම් ඇති වේ.",
     intro:
-      "නැවත ඇල්ලූ මාර්ගයක් සහ සැලසුම් කළ නල මාර්ගයක් එකම ස්ථානයේ සහ කාලයේ වැඩ කළ හැක. INFRAOS එම අතිච්ඡාදන වැඩ ආරම්භයට පෙර පෙනෙන ලෙස නිර්මාණය කර ඇත.",
+      "මාර්ගය නැවත ඇල්ලූ පසු උපයෝගිතා වැඩ සඳහා නැවත විවෘත විය හැක — ආයතන එකිනෙකාගේ කාලසටහන් නොදකින විට. INFRAOS එය කෘත්‍රිම උදාහරණවලින් පෙන්වයි.",
+    callout:
+      "ආයතන දෙක, එක මාර්ග කොටස: මෙය සැලසුම් පද්ධතිවල පරතරයක් — කණ්ඩායම් අසමත් වූ බවක් නොවේ.",
+    flowLabel: "එක කොටස · වෙන වෙනම කාලසටහන් (උදාහරණ)",
     cards: [
       {
         id: "repeated-excavation",
-        title: "නැවත නැවත කැණීම",
-        body: "වෙන වෙනම සැලසුම් නිසා මාර්ගය ඇල්ලූ විගසම උපයෝගිතාවක් නැවත කැණීමට සිදු විය හැක.",
-        badge: "කාලසටහන් අතිච්ඡාදනය",
+        title: "හවුල් ස්ථානය",
+        body: "මාර්ග නැවත ඇල්ලීම සහ නල මාර්ග වැඩ එකම කොටසේ සැලසුම් කළ හැක — දෙපාර්ශ්වයටම පෙනෙන සිතියමක් නැත.",
+        badge: "භූගෝලීය අතිච්ඡාදනය",
         variant: "critical",
       },
       {
         id: "schedule-blind-spots",
-        title: "කාලසටහන් අන්ධ ලක්ෂ්‍ය",
-        body: "එකම මාර්ගයේ කණ්ඩායම්වලට අනෙක් අයගේ වැඩ කවුළු නොපෙනී යා හැක.",
-        badge: "සම්බන්ධීකරණය බලාපොරොත්තුවෙන්",
+        title: "ගැටුම්කාරී කාලසටහන්",
+        body: "දින දර්ශනයේ එකිනෙක overlap වුවත්, එක් ආයතනයක spreadsheet එකේ පමණක් තිබිය හැක.",
+        badge: "කාලසටහන් overlap",
         variant: "warning",
       },
       {
         id: "fragmented-progress",
-        title: "ඛණ්ඩනය වූ ප්‍රගතිය",
-        body: "සන්ධිස්ථාන, වියදම් සහ බෙදාහැරීම වෙන වෙනම තිබෙන විට වගවීම අපහසු වේ.",
-        badge: "තොරතුරු",
+        title: "නැවත නැවත බාධා",
+        body:
+          "අනුපිළිවෙල ගොඩක් ප්‍රමාද වූ විට ප්‍රජාව එම කොටස දෙවරක් කැණූ බව දකී — කණ්ඩායම් පරස්පර නොසලකා නොවේ.",
+        badge: "මහජන බලපෑම",
         variant: "info",
       },
       {
@@ -1193,6 +1204,7 @@ const si: PublicLandingCopy = {
     title: "යටිතල වැඩ සඳහා තොරතුරු සම්බන්ධීකරණය",
     intro:
       "INFRAOS යනු ව්‍යාපෘති, සැලසුම් කළ උපයෝගිතා වැඩ සහ ආයතන වගකීම් එකට බලා ගැනීමේ විශ්වවිද්‍යාල ආදර්ශනයකි. පහත අයිතම ජීවිත සේවා නොව, වේදිකා අරමුණ විස්තර කරයි.",
+    plannedPanelTitle: "සැලසුම් කළ හැකියාවන් (මෙම අඩවියේ සජීවී නොවේ)",
     statusDemonstration: "ආදර්ශන සංකල්පය",
     statusPlanned: "සැලසුම් කළ හැකියාව",
     disclosure:
@@ -1666,27 +1678,30 @@ const ta: PublicLandingCopy = {
     eyebrow: "ஒருங்கிணைப்பு இடைவெளி",
     title: "திட்டங்கள் தனித்தனியாக இருக்கும்போது தவிர்க்கக்கூடிய மோதல்கள் ஏற்படும்.",
     intro:
-      "மறுபாவு செய்யப்பட்ட சாலையும் திட்டமிட்ட குழாய் பணியும் ஒரே இடத்திலும் நேரத்திலும் இருக்கலாம். INFRAOS அந்த ஒன்றுசேர்வுகளை பணி தொடங்கும் முன் காட்ட வடிவமைக்கப்பட்டுள்ளது.",
+      "சாலை மறுபavement செய்த பிறகு, அட்டவணைகள் பகிரப்படாவிட்டால் பயன்பாட்டு பணிக்காக மீண்டும் திறக்கப்படலாம். INFRAOS இதை செயற்கை எடுத்துக்காட்டுகளில் காட்டுகிறது.",
+    callout:
+      "இரு நிறுவனங்கள், ஒரே பாதை: இது திட்டமிடல் அமைப்பின் இடைவெளி — குழுக்கள் தவறவில்லை.",
+    flowLabel: "ஒரே பகுதி · தனித்த அட்டவணைகள் (எடுத்துக்காட்டு)",
     cards: [
       {
         id: "repeated-excavation",
-        title: "மீண்டும் மீண்டும் தோண்டல்",
-        body: "தனி திட்டங்களால் சாலை பாவப்பட்ட உடனே ஒரு பயன்பாடு மீண்டும் தோண்ட வேண்டியிருக்கலாம்.",
-        badge: "அட்டவணை ஒன்றுசேர்வு",
+        title: "பகிரப்பட்ட இடம்",
+        body: "சாலை மற்றும் குழாய் பணி ஒரே பகுதியில் திட்டமிடப்படலாம் — இரு தரப்புக்கும் பொதுவான வரைபடம் இல்லாமல்.",
+        badge: "புவியியல் ஒன்றுசேர்வு",
         variant: "critical",
       },
       {
         id: "schedule-blind-spots",
-        title: "அட்டவணை குருட்டுப் புள்ளிகள்",
-        body: "ஒரே பாதையில் பணிபுரியும் குழுக்கள் மற்றவரின் பணிச் சாளரங்களைக் காணாமல் போகலாம்.",
-        badge: "ஒருங்கிணைப்பு நிலுவையில்",
+        title: "முரண்பட்ட அட்டவணைகள்",
+        body: "நாள்காட்டியில் overlap இருந்தாலும், ஒவ்வொரு நிறுவனத்தின் spreadsheet-இல் மட்டுமே தெரியலாம்.",
+        badge: "அட்டவணை overlap",
         variant: "warning",
       },
       {
         id: "fragmented-progress",
-        title: "துண்டான முன்னேற்றம்",
-        body: "மைல்கற்கள், செலவு மற்றும் விநியோகம் தனித்தனியாக இருக்கும்போது பொறுப்பு கடினமாகும்.",
-        badge: "தகவல்",
+        title: "மீண்டும் மீண்டும் இடையூறு",
+        body: "வரிசை முடிவு தாமதமானால், அதே பகுதி இருமுறை தோண்டப்படுவதை பொதுமக்கள் காணலாம் — குழுக்கள் புறக்கணிப்பதால் அல்ல.",
+        badge: "பொது தாக்கம்",
         variant: "info",
       },
       {
@@ -1739,6 +1754,7 @@ const ta: PublicLandingCopy = {
     title: "உள்கட்டமைப்பு பணிக்கான தகவல்களை ஒருங்கிணைத்தல்",
     intro:
       "INFRAOS என்பது திட்டங்கள், திட்டமிட்ட பயன்பாட்டு பணிகள் மற்றும் நிறுவன பொறுப்புகளை ஒன்றாகப் பார்க்கும் பல்கலைக்கழக செயல்விளக்கம். கீழுள்ளவை நேரடி சேவைகள் அல்ல — தள நோக்கத்தை விளக்குகின்றன.",
+    plannedPanelTitle: "திட்டமிடப்பட்ட திறன்கள் (இந்தத் தளத்தில் நேரடி அல்ல)",
     statusDemonstration: "செயல்விளக்கக் கருத்து",
     statusPlanned: "திட்டமிடப்பட்ட திறன்",
     disclosure:
