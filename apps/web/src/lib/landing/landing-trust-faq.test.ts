@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   FAQ_ITEM_IDS,
   FAQ_SECTION_ANCHOR,
+  FAQ_TOPIC_GROUPS,
   NEXT_STEPS_SECTION_ANCHOR,
   TRUST_SECTION_ANCHOR,
 } from "./faq-items";
@@ -11,6 +12,7 @@ import { getPublicCopy } from "./messages";
 import {
   FEATURES_SECTION_ANCHOR,
   HOW_IT_WORKS_SECTION_ANCHOR,
+  SOLUTION_SECTION_ANCHOR,
 } from "./navigation";
 import { PREVIEW_SECTION_ANCHOR } from "./preview-data";
 
@@ -18,6 +20,7 @@ const VALID_NEXT_ANCHORS = {
   features: FEATURES_SECTION_ANCHOR,
   lifecycle: HOW_IT_WORKS_SECTION_ANCHOR,
   preview: PREVIEW_SECTION_ANCHOR,
+  solution: SOLUTION_SECTION_ANCHOR,
 } as const;
 
 describe("public landing trust, FAQ and next steps (Step 31)", () => {
@@ -25,6 +28,13 @@ describe("public landing trust, FAQ and next steps (Step 31)", () => {
     expect(TRUST_SECTION_ANCHOR).toBe("trust-information");
     expect(FAQ_SECTION_ANCHOR).toBe("faq");
     expect(NEXT_STEPS_SECTION_ANCHOR).toBe("next-steps");
+  });
+
+  it("groups every FAQ item in a homepage topic section", () => {
+    const grouped = new Set(FAQ_TOPIC_GROUPS.flatMap((g) => [...g.itemIds]));
+    for (const id of FAQ_ITEM_IDS) {
+      expect(grouped.has(id)).toBe(true);
+    }
   });
 
   it("defines nine FAQ items in every locale", () => {

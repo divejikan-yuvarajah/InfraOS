@@ -6,80 +6,134 @@ export function CoordinationPreviewFigure({ copy }: { copy: PublicLandingCopy })
   const overlap = sharedDateWindow(PREVIEW_SCHEDULES.road, PREVIEW_SCHEDULES.water);
 
   return (
-    <figure className="min-w-0 space-y-3">
-      <svg
-        role="img"
-        aria-labelledby="preview-figure-title preview-figure-desc"
-        viewBox="0 0 640 220"
-        className="h-auto w-full rounded-lg border border-border bg-surface"
-      >
-        <title id="preview-figure-title">{preview.figureTitle}</title>
-        <desc id="preview-figure-desc">{preview.figureDescription}</desc>
-        <rect x="24" y="36" width="592" height="120" rx="8" fill="#F8FAFC" stroke="#E2E8F0" />
-        <line
-          x1={PREVIEW_CORRIDOR.road.x1}
-          y1={PREVIEW_CORRIDOR.y}
-          x2={PREVIEW_CORRIDOR.road.x2}
-          y2={PREVIEW_CORRIDOR.y}
-          stroke="#FF5B00"
-          strokeWidth="8"
-          strokeLinecap="round"
-        />
-        <line
-          x1={PREVIEW_CORRIDOR.water.x1}
-          y1={PREVIEW_CORRIDOR.y}
-          x2={PREVIEW_CORRIDOR.water.x2}
-          y2={PREVIEW_CORRIDOR.y}
-          stroke="#475569"
-          strokeWidth="4"
-          strokeDasharray="10 7"
-          strokeLinecap="round"
-        />
-        <rect
-          x={PREVIEW_CORRIDOR.water.x1 - 12}
-          y="64"
-          width={PREVIEW_CORRIDOR.water.x2 - PREVIEW_CORRIDOR.water.x1 + 24}
-          height="72"
-          fill="none"
-          stroke="#8C1F28"
-          strokeWidth="2"
-          strokeDasharray="4 3"
-        />
-        <text x={PREVIEW_CORRIDOR.water.x1} y="56" fill="#111827" fontSize="14">
-          {preview.overlapMark}
-        </text>
-      </svg>
-      <figcaption className="space-y-2">
-        <p className="type-body-small text-text-primary">{preview.figureCaption}</p>
-        <p className="type-caption text-text-muted">{preview.notToScale}</p>
-        <ul className="type-caption grid gap-1 text-text-secondary sm:grid-cols-3">
-          <li>
-            <span aria-hidden="true" className="me-2 inline-block h-1 w-6 align-middle bg-[#FF5B00]" />
+    <figure
+      className="cf-gis-canvas min-w-0"
+      aria-labelledby="cf-gis-figure-title"
+      role="group"
+    >
+      <p id="cf-gis-figure-title" className="sr-only">
+        {preview.figureTitle}
+      </p>
+      <div className="cf-gis-canvas__grid">
+        <div className="cf-gis-map">
+          <svg
+            className="cf-gis-map__svg"
+            viewBox="0 0 640 220"
+            aria-hidden
+            focusable="false"
+          >
+            <rect x="0" y="0" width="640" height="220" fill="transparent" />
+            <rect x="24" y="28" width="592" height="164" rx="10" fill="#0f172a" stroke="#334155" />
+            <path
+              d="M48 140 Q 200 120, 320 130 T 592 125"
+              fill="none"
+              stroke="#1e293b"
+              strokeWidth="24"
+              strokeLinecap="round"
+            />
+            <line
+              x1={PREVIEW_CORRIDOR.road.x1}
+              y1={PREVIEW_CORRIDOR.y}
+              x2={PREVIEW_CORRIDOR.road.x2}
+              y2={PREVIEW_CORRIDOR.y}
+              stroke="#FF5B00"
+              strokeWidth="10"
+              strokeLinecap="round"
+            />
+            <line
+              x1={PREVIEW_CORRIDOR.water.x1}
+              y1={PREVIEW_CORRIDOR.y - 18}
+              x2={PREVIEW_CORRIDOR.water.x2}
+              y2={PREVIEW_CORRIDOR.y - 18}
+              stroke="#94A3B8"
+              strokeWidth="5"
+              strokeDasharray="10 7"
+              strokeLinecap="round"
+            />
+            <rect
+              x={PREVIEW_CORRIDOR.water.x1 - 10}
+              y="58"
+              width={PREVIEW_CORRIDOR.water.x2 - PREVIEW_CORRIDOR.water.x1 + 20}
+              height="88"
+              fill="rgb(254 182 0 / 0.12)"
+              stroke="#8C1F28"
+              strokeWidth="2"
+              strokeDasharray="5 4"
+              rx="4"
+            />
+            <circle cx={PREVIEW_CORRIDOR.water.x1} cy={PREVIEW_CORRIDOR.y} r="6" fill="#279541" />
+            <circle cx={PREVIEW_CORRIDOR.water.x2} cy={PREVIEW_CORRIDOR.y} r="6" fill="#279541" />
+          </svg>
+          <ul className="cf-gis-callouts" aria-hidden>
+            <li className="cf-gis-callouts__item cf-gis-callouts__item--road">
+              {preview.agencyRoadLabel}
+            </li>
+            <li className="cf-gis-callouts__item cf-gis-callouts__item--water">
+              {preview.agencyWaterLabel}
+            </li>
+            <li className="cf-gis-callouts__item cf-gis-callouts__item--shared">
+              {preview.sharedSegmentLabel}
+            </li>
+          </ul>
+        </div>
+
+        <div className="cf-gis-timeline" aria-hidden={false}>
+          <div className="cf-gis-timeline__row">
+            <span className="cf-gis-timeline__label">{preview.scheduleRoad}</span>
+            <div className="cf-gis-timeline__bar">
+              <span className="cf-gis-timeline__fill cf-gis-timeline__fill--road" />
+            </div>
+            <span className="cf-gis-footnote">
+              {PREVIEW_SCHEDULES.road.startDate} – {PREVIEW_SCHEDULES.road.endDate}
+            </span>
+          </div>
+          <div className="cf-gis-timeline__row">
+            <span className="cf-gis-timeline__label">{preview.scheduleWater}</span>
+            <div className="cf-gis-timeline__bar">
+              <span className="cf-gis-timeline__fill cf-gis-timeline__fill--water" />
+            </div>
+            <span className="cf-gis-footnote">
+              {PREVIEW_SCHEDULES.water.startDate} – {PREVIEW_SCHEDULES.water.endDate}
+            </span>
+          </div>
+          {overlap ? (
+            <div className="cf-gis-timeline__row">
+              <span className="cf-gis-timeline__label">{preview.overlapDates}</span>
+              <div className="cf-gis-timeline__bar">
+                <span className="cf-gis-timeline__fill cf-gis-timeline__fill--overlap" />
+              </div>
+              <span className="cf-gis-footnote">
+                {overlap.startDate} – {overlap.endDate}
+              </span>
+            </div>
+          ) : null}
+        </div>
+      </div>
+
+      <figcaption className="mt-3 space-y-2">
+        <p className="sr-only">{preview.figureDescription}</p>
+        <p className="cf-gis-footnote text-[#cbd5e1]">{preview.figureCaption}</p>
+        <p className="cf-gis-footnote text-[#64748b]">{preview.notToScale}</p>
+        <ul className="cf-gis-legend">
+          <li className="cf-gis-legend__item">
+            <span aria-hidden className="inline-block h-1 w-5 rounded bg-[#FF5B00]" />
             {preview.legendRoad}
           </li>
-          <li>
+          <li className="cf-gis-legend__item">
             <span
-              aria-hidden="true"
-              className="me-2 inline-block h-0 w-6 border-t-2 border-dashed border-[#475569] align-middle"
+              aria-hidden
+              className="inline-block h-0 w-5 border-t-2 border-dashed border-[#94A3B8]"
             />
             {preview.legendWater}
           </li>
-          <li>
+          <li className="cf-gis-legend__item">
             <span
-              aria-hidden="true"
-              className="me-2 inline-block h-3 w-6 border border-dashed border-[#8C1F28] align-middle"
+              aria-hidden
+              className="inline-block h-3 w-5 border border-dashed border-[#8C1F28]"
             />
             {preview.legendOverlap}
           </li>
         </ul>
-        {overlap ? (
-          <p className="type-caption text-text-muted">
-            {preview.scheduleRoad}: {PREVIEW_SCHEDULES.road.startDate} – {PREVIEW_SCHEDULES.road.endDate}
-            . {preview.scheduleWater}: {PREVIEW_SCHEDULES.water.startDate} –{" "}
-            {PREVIEW_SCHEDULES.water.endDate}. {preview.overlapDates}: {overlap.startDate} –{" "}
-            {overlap.endDate}.
-          </p>
-        ) : null}
       </figcaption>
     </figure>
   );

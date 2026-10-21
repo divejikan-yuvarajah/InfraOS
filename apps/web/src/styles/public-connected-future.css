@@ -18,7 +18,21 @@
   --cf-hero-display-size: clamp(1.875rem, 2.4vw, 3rem);
   --cf-section-title-size: clamp(1.5rem, 2.8vw, 2.25rem);
   --cf-body-max: 36rem;
+  /* Sticky header: demo utility bar + nav bar (~6.5–7.5rem); extra pad for anchor targets */
+  --cf-anchor-scroll-margin: 8.75rem;
+  scroll-padding-top: var(--cf-anchor-scroll-margin);
   font-family: var(--font-sans), system-ui, sans-serif;
+}
+
+@media (min-width: 1024px) {
+  .public-connected-future {
+    --cf-anchor-scroll-margin: 7.75rem;
+  }
+}
+
+.public-connected-future section.scroll-mt-28,
+.public-connected-future main.scroll-mt-28 {
+  scroll-margin-top: var(--cf-anchor-scroll-margin);
 }
 
 .public-connected-future .cf-hero__title,

@@ -11,11 +11,20 @@ export function publicHomeAnchor(locale: PublicLocale, anchor: string): string {
 
 export function footerLinkHref(
   locale: PublicLocale,
-  kind: "about" | "coordination" | "faq" | "accessibility" | "privacy" | "photoCredits",
+  kind:
+    | "about"
+    | "coordination"
+    | "faq"
+    | "contact"
+    | "accessibility"
+    | "privacy"
+    | "photoCredits",
 ): string {
   switch (kind) {
     case "about":
       return publicInfoPath(locale, "about");
+    case "contact":
+      return publicInfoPath(locale, "contact");
     case "accessibility":
       return publicInfoPath(locale, "accessibility");
     case "privacy":

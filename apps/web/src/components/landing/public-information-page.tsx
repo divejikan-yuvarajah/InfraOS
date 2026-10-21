@@ -37,13 +37,15 @@ export function publicInformationMetadata(
 
 function InfoSections({ page }: { page: PublicInfoPageCopy }) {
   return (
-    <div className="space-y-10">
+    <div>
       {page.sections.map((section) => (
-        <section key={section.id} aria-labelledby={`${section.id}-heading`} className="space-y-3">
-          <h2 id={`${section.id}-heading`} className="type-heading-3 text-text-primary">
-            {section.heading}
-          </h2>
-          <p className="type-body max-w-prose text-text-secondary">{section.body}</p>
+        <section
+          key={section.id}
+          aria-labelledby={`${section.id}-heading`}
+          className="cf-info-page__section"
+        >
+          <h2 id={`${section.id}-heading`}>{section.heading}</h2>
+          <p>{section.body}</p>
         </section>
       ))}
     </div>
@@ -61,16 +63,16 @@ export function PublicInformationPage({
   const page = copy.infoPages[slug];
 
   return (
-    <div className="public-site public-visual-rescue flex min-h-full flex-1 flex-col">
-      <PublicSiteHeader locale={locale} copy={copy} infoSlug={slug} />
+    <div lang={locale} className="public-site public-connected-future flex min-h-full flex-1 flex-col">
+      <PublicSiteHeader locale={locale} copy={copy} connectedFuture infoSlug={slug} />
       <main
         id={MAIN_CONTENT_ID}
         lang={locale}
         tabIndex={-1}
-        className="flex min-w-0 flex-1 flex-col scroll-mt-28 outline-none"
+        className="cf-info-page flex min-w-0 flex-1 flex-col scroll-mt-28 outline-none"
       >
         <article className="container-dashboard gutter-page public-section-pad">
-          <header className="mb-10 max-w-prose space-y-4">
+          <header className="cf-info-page__banner max-w-prose space-y-4">
             <p className="type-caption text-text-muted">
               <Link
                 href={publicHomePath(locale)}
@@ -79,7 +81,7 @@ export function PublicInformationPage({
                 {copy.nav.home}
               </Link>
             </p>
-            <h1 className="type-heading-1 text-text-primary">{page.title}</h1>
+            <h1 className="cf-info-page__title">{page.title}</h1>
             <p className="type-body-lead text-text-secondary">{page.intro}</p>
           </header>
           <InfoSections page={page} />

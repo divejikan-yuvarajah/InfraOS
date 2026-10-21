@@ -30,6 +30,7 @@ describe("Step 32 footer and public information routes", () => {
     for (const locale of PUBLIC_LOCALES) {
       expect(footerLinkHref(locale, "about")).toBe(publicInfoPath(locale, "about"));
       expect(footerLinkHref(locale, "faq")).toBe(publicInfoPath(locale, "faq"));
+      expect(footerLinkHref(locale, "contact")).toBe(publicInfoPath(locale, "contact"));
       expect(footerLinkHref(locale, "coordination")).toBe(publicInfoPath(locale, "how-it-works"));
       expect(footerLinkHref(locale, "photoCredits")).toBe("/landing/photo-credits.html");
     }

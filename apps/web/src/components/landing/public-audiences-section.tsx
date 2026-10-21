@@ -1,6 +1,7 @@
 import Link from "next/link";
+import { ArrowUpRight, Building2, ClipboardCheck, GraduationCap, Users } from "lucide-react";
 
-import type { AudienceActionAnchor } from "@/lib/landing/audience-groups";
+import type { AudienceActionAnchor, AudienceGroupId } from "@/lib/landing/audience-groups";
 import { AUDIENCE_GROUP_IDS } from "@/lib/landing/audience-groups";
 import type { PublicLandingCopy } from "@/lib/landing/messages";
 import {
@@ -18,6 +19,13 @@ const ACTION_HREF: Record<AudienceActionAnchor, string> = {
   lifecycle: `#${HOW_IT_WORKS_SECTION_ANCHOR}`,
 };
 
+const PATH_ICONS: Record<AudienceGroupId, typeof Users> = {
+  citizens: Users,
+  "agency-teams": Building2,
+  "field-teams": ClipboardCheck,
+  visitors: GraduationCap,
+};
+
 export function PublicAudiencesSection({ copy }: { copy: PublicLandingCopy }) {
   const audiences = copy.audiences;
 
@@ -25,62 +33,60 @@ export function PublicAudiencesSection({ copy }: { copy: PublicLandingCopy }) {
     <section
       id={AUDIENCES_SECTION_ANCHOR}
       aria-labelledby="audiences-heading"
-      className="scroll-mt-28 border-b border-border bg-background"
+      className="cf-audiences-section scroll-mt-28"
       tabIndex={-1}
     >
-      <div className="container-dashboard gutter-page public-section-pad">
-        <header className="mx-auto max-w-prose space-y-3">
-          <p className="type-label text-link">{audiences.eyebrow}</p>
-          <h2 id="audiences-heading" className="type-section-title text-balance text-text-primary">
+      <div className="container-dashboard gutter-page cf-audiences-section__inner">
+        <header className="cf-audiences-section__header">
+          <p className="cf-gis-section__eyebrow">{audiences.eyebrow}</p>
+          <h2 id="audiences-heading" className="cf-gis-section__title text-balance">
             {audiences.title}
           </h2>
-          <p className="type-body text-text-secondary">{audiences.intro}</p>
+          <p className="cf-gis-section__intro">{audiences.intro}</p>
         </header>
 
-        <ul className="mt-10 divide-y divide-border border-y border-border">
+        <ul className="cf-audiences-pathways list-none p-0 m-0">
           {AUDIENCE_GROUP_IDS.map((groupId) => {
             const group = audiences.groups.find((g) => g.id === groupId);
             if (!group) return null;
-            const actionHref = group.actionAnchor
-              ? ACTION_HREF[group.actionAnchor]
-              : null;
+            const Icon = PATH_ICONS[groupId];
+            const actionHref = group.actionAnchor ? ACTION_HREF[group.actionAnchor] : null;
 
             return (
-              <li key={groupId} className="grid gap-3 py-6 lg:grid-cols-[14rem_minmax(0,1fr)] lg:gap-10">
-                <h3 className="type-card-title text-text-primary">{group.title}</h3>
-                <div className="min-w-0 space-y-3">
-                  <p className="type-body max-w-prose text-text-secondary">{group.body}</p>
-                  {actionHref && group.actionLabel ? (
-                    <p>
-                      <Link
-                        href={actionHref}
-                        className="type-body-small text-link underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-                      >
+              <li key={groupId}>
+                <article className={`cf-audience-path cf-audience-path--${groupId}`}>
+                  <div className="cf-audience-path__icon" aria-hidden>
+                    <Icon strokeWidth={1.75} />
+                  </div>
+                  <div className="min-w-0">
+                    <h3 className="cf-audience-path__title">{group.title}</h3>
+                    <p className="cf-audience-path__body">{group.body}</p>
+                    {actionHref && group.actionLabel ? (
+                      <Link href={actionHref} className="cf-audience-path__link">
                         {group.actionLabel}
+                        <ArrowUpRight className="size-3.5" aria-hidden />
                       </Link>
-                    </p>
-                  ) : null}
-                </div>
+                    ) : null}
+                  </div>
+                </article>
               </li>
             );
           })}
         </ul>
 
-        <div className="mt-10 max-w-prose space-y-4">
-          <h3 className="type-label text-text-primary">{audiences.benefitsTitle}</h3>
-          <ul className="list-disc space-y-2 ps-5">
+        <aside className="cf-audiences-aside" aria-labelledby="audiences-benefits-title">
+          <h3 id="audiences-benefits-title" className="cf-audiences-aside__title">
+            {audiences.benefitsTitle}
+          </h3>
+          <ul className="cf-audiences-aside__list">
             {audiences.benefits.map((item) => (
-              <li key={item.id} className="type-body-small text-text-secondary">
-                {item.text}
-              </li>
+              <li key={item.id}>{item.text}</li>
             ))}
           </ul>
-          <p className="type-caption text-text-muted">{audiences.benefitsDisclaimer}</p>
-        </div>
+          <p className="cf-audiences-staff-note mt-3">{audiences.benefitsDisclaimer}</p>
+        </aside>
 
-        <p className="type-body-small mx-auto mt-8 max-w-prose text-text-secondary">
-          {audiences.staffAccessNote}
-        </p>
+        <p className="cf-audiences-staff-note">{audiences.staffAccessNote}</p>
       </div>
     </section>
   );

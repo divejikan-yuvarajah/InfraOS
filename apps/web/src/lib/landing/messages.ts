@@ -50,6 +50,8 @@ export type PublicLandingCopy = {
     eyebrow: string;
     title: string;
     intro: string;
+    callout: string;
+    flowLabel: string;
     cards: readonly {
       id: string;
       title: string;
@@ -103,6 +105,7 @@ export type PublicLandingCopy = {
     eyebrow: string;
     title: string;
     intro: string;
+    plannedPanelTitle: string;
     statusDemonstration: string;
     statusPlanned: string;
     disclosure: string;
@@ -157,6 +160,10 @@ export type PublicLandingCopy = {
     title: string;
     intro: string;
     disclaimer: string;
+    syntheticBadge: string;
+    agencyRoadLabel: string;
+    agencyWaterLabel: string;
+    sharedSegmentLabel: string;
     figureTitle: string;
     figureDescription: string;
     figureCaption: string;
@@ -174,13 +181,17 @@ export type PublicLandingCopy = {
     eyebrow: string;
     title: string;
     intro: string;
+    ribbonLabel: string;
     demoNotice: string;
+    humanReviewNote: string;
     points: readonly { id: string; title: string; body: string }[];
   };
   transparency: {
     eyebrow: string;
     title: string;
     intro: string;
+    exploreBandTitle: string;
+    plannedBandTitle: string;
     tableCaption: string;
     colModule: string;
     colStatus: string;
@@ -198,6 +209,11 @@ export type PublicLandingCopy = {
     eyebrow: string;
     title: string;
     intro: string;
+    topicDemonstration: string;
+    topicCoordination: string;
+    topicPublicAccess: string;
+    fullPagePrompt: string;
+    fullPageLink: string;
     items: readonly { id: string; question: string; answer: string }[];
   };
   nextSteps: {
@@ -205,9 +221,9 @@ export type PublicLandingCopy = {
     title: string;
     intro: string;
     primaryLabel: string;
-    primaryAnchor: "features" | "lifecycle" | "preview";
+    primaryAnchor: "features" | "lifecycle" | "preview" | "solution";
     secondaryLabel: string;
-    secondaryAnchor: "features" | "lifecycle" | "preview";
+    secondaryAnchor: "features" | "lifecycle" | "preview" | "solution";
     staffNote: string;
   };
   photography: {
@@ -228,9 +244,12 @@ export type PublicLandingCopy = {
     linkAbout: string;
     linkCoordination: string;
     linkFaq: string;
+    linkContact: string;
     linkAccessibility: string;
     linkPrivacy: string;
     linkPhotoCredits: string;
+    navExploreTitle: string;
+    navInformationTitle: string;
     languageLabel: string;
     disclosure: string;
     copyrightPrefix: string;
@@ -355,30 +374,33 @@ const en: PublicLandingCopy = {
     eyebrow: "The coordination gap",
     title: "When infrastructure plans live separately, avoidable conflicts follow.",
     intro:
-      "A resurfaced road and a planned pipeline can share the same location and work window without a common view. INFRAOS is designed to make those overlaps visible before teams start work.",
+      "A road may be resurfaced, then opened again for utility work when agencies cannot see each other's schedules. INFRAOS illustrates how a shared view could reduce that friction—using synthetic examples only.",
+    callout:
+      "Two agencies, one corridor: this is a coordination gap in planning systems—not proof that teams failed to cooperate.",
+    flowLabel: "Same corridor · separate schedules (illustrative)",
     cards: [
       {
         id: "repeated-excavation",
-        title: "Repeated excavation",
+        title: "Shared location",
         body:
-          "One utility repairs a corridor shortly after resurfacing because schedules and locations sit in separate plans—not because teams ignore each other.",
-        badge: "Schedule overlap",
+          "Road resurfacing and pipeline work can be planned on the same segment without a map or list that both agencies consult.",
+        badge: "Geographic overlap",
         variant: "critical",
       },
       {
         id: "schedule-blind-spots",
-        title: "Schedule blind spots",
+        title: "Conflicting schedules",
         body:
-          "Teams working the same corridor may not see each other's planned work windows when timelines live in different systems or spreadsheets.",
-        badge: "Pending coordination",
+          "Work windows that overlap on a calendar may stay hidden when each agency keeps dates in its own spreadsheet or system.",
+        badge: "Schedule overlap",
         variant: "warning",
       },
       {
         id: "fragmented-progress",
-        title: "Fragmented project progress",
+        title: "Repeated disruption",
         body:
-          "Milestones, spending, and delivery status can be tracked in disconnected views, making accountability harder for officers and the public.",
-        badge: "Informational",
+          "Residents can see the same stretch dug twice when sequencing is decided too late—not because crews ignore each other.",
+        badge: "Public impact",
         variant: "info",
       },
       {
@@ -434,6 +456,7 @@ const en: PublicLandingCopy = {
     title: "Coordinating the information behind infrastructure work",
     intro:
       "INFRAOS is a university-developed demonstration of how projects, planned utility work and agency responsibilities can be viewed together. The items below describe platform intent—not live public services on this site.",
+    plannedPanelTitle: "Planned capabilities (not live on this site)",
     statusDemonstration: "Demonstration concept",
     statusPlanned: "Planned capability",
     disclosure:
@@ -610,6 +633,10 @@ const en: PublicLandingCopy = {
       "This diagram shows a conceptual shared road section where resurfacing and water-pipeline work are both planned. It is not a live map, a computed conflict, or an official project.",
     disclaimer:
       "Illustrative prototype — not live government data. Conceptual diagram, not to scale.",
+    syntheticBadge: "Illustrative example · Synthetic data · Not a live map",
+    agencyRoadLabel: "Road agency · resurfacing plan",
+    agencyWaterLabel: "Water utility · pipeline plan",
+    sharedSegmentLabel: "Shared corridor segment",
     figureTitle: "Conceptual overlap of road resurfacing and water-pipeline work",
     figureDescription:
       "A solid orange line represents planned road resurfacing. A dashed grey line represents planned water-pipeline work on part of the same corridor. A dashed maroon box marks the shared section. The drawing is not a geographic map.",
@@ -631,8 +658,11 @@ const en: PublicLandingCopy = {
     title: "How this demonstration handles information and access",
     intro:
       "INFRAOS is a university GovTech prototype. This page explains coordination concepts in plain language—it is not an official government service or a certified security product.",
+    ribbonLabel: "University-developed demonstration",
     demoNotice:
       "About this demonstration: examples and diagrams use synthetic data. They do not represent live national infrastructure records or ministry approvals.",
+    humanReviewNote:
+      "Overlap hints are for human review. RoadSync does not approve work, certify safety, or replace agency decision-makers.",
     points: [
       {
         id: "coordination",
@@ -665,6 +695,8 @@ const en: PublicLandingCopy = {
     title: "What exists in this repository today",
     intro:
       "This table lists implementation status for major modules described on the public site. It replaces marketing statistics—nothing here is a live operational count.",
+    exploreBandTitle: "Available to explore on this public site",
+    plannedBandTitle: "Planned, internal, or not linked here",
     tableCaption: "INFRAOS module implementation status for the university demonstration",
     colModule: "Module",
     colStatus: "Status",
@@ -721,6 +753,11 @@ const en: PublicLandingCopy = {
     title: "Frequently asked questions",
     intro:
       "Short answers about what INFRAOS is today versus what the roadmap describes. If something is not built yet, we say so.",
+    topicDemonstration: "About this demonstration",
+    topicCoordination: "Coordination concepts",
+    topicPublicAccess: "Public site and access",
+    fullPagePrompt: "Need every answer on one page?",
+    fullPageLink: "Open the full FAQ page",
     items: [
       {
         id: "what-is-infraos",
@@ -780,13 +817,13 @@ const en: PublicLandingCopy = {
   },
   nextSteps: {
     eyebrow: "Next steps",
-    title: "Continue exploring the demonstration",
+    title: "See coordination in context",
     intro:
-      "Use the links below to read sections that already exist on this page. They stay on the same locale route—no registration required.",
-    primaryLabel: "Read the coordination lifecycle",
-    primaryAnchor: "lifecycle",
-    secondaryLabel: "See the illustrative preview",
-    secondaryAnchor: "preview",
+      "Two quick stops on this page: a synthetic RoadSync walkthrough, then the eight-stage lifecycle story. No sign-in or live project lookup.",
+    primaryLabel: "See the RoadSync example",
+    primaryAnchor: "solution",
+    secondaryLabel: "Review the coordination lifecycle",
+    secondaryAnchor: "lifecycle",
     staffNote:
       "Staff and agency access will be offered only when a real sign-in route is implemented and reviewed—not through this public marketing site.",
   },
@@ -817,9 +854,12 @@ const en: PublicLandingCopy = {
     linkAbout: "About INFRAOS",
     linkCoordination: "How coordination works",
     linkFaq: "FAQ",
+    linkContact: "Contact and project status",
     linkAccessibility: "Accessibility",
     linkPrivacy: "Privacy and data use",
     linkPhotoCredits: "Photo credits",
+    navExploreTitle: "Explore",
+    navInformationTitle: "Information",
     languageLabel: "Languages",
     disclosure:
       "Demonstration data may be synthetic. This site does not publish official government approvals, certifications, or operational project records.",
@@ -1120,27 +1160,31 @@ const si: PublicLandingCopy = {
     eyebrow: "සම්බන්ධීකරණ පරතරය",
     title: "සැලසුම් වෙන වෙනම තිබෙන විට, වළක්වා ගත හැකි ගැටුම් ඇති වේ.",
     intro:
-      "නැවත ඇල්ලූ මාර්ගයක් සහ සැලසුම් කළ නල මාර්ගයක් එකම ස්ථානයේ සහ කාලයේ වැඩ කළ හැක. INFRAOS එම අතිච්ඡාදන වැඩ ආරම්භයට පෙර පෙනෙන ලෙස නිර්මාණය කර ඇත.",
+      "මාර්ගය නැවත ඇල්ලූ පසු උපයෝගිතා වැඩ සඳහා නැවත විවෘත විය හැක — ආයතන එකිනෙකාගේ කාලසටහන් නොදකින විට. INFRAOS එය කෘත්‍රිම උදාහරණවලින් පෙන්වයි.",
+    callout:
+      "ආයතන දෙක, එක මාර්ග කොටස: මෙය සැලසුම් පද්ධතිවල පරතරයක් — කණ්ඩායම් අසමත් වූ බවක් නොවේ.",
+    flowLabel: "එක කොටස · වෙන වෙනම කාලසටහන් (උදාහරණ)",
     cards: [
       {
         id: "repeated-excavation",
-        title: "නැවත නැවත කැණීම",
-        body: "වෙන වෙනම සැලසුම් නිසා මාර්ගය ඇල්ලූ විගසම උපයෝගිතාවක් නැවත කැණීමට සිදු විය හැක.",
-        badge: "කාලසටහන් අතිච්ඡාදනය",
+        title: "හවුල් ස්ථානය",
+        body: "මාර්ග නැවත ඇල්ලීම සහ නල මාර්ග වැඩ එකම කොටසේ සැලසුම් කළ හැක — දෙපාර්ශ්වයටම පෙනෙන සිතියමක් නැත.",
+        badge: "භූගෝලීය අතිච්ඡාදනය",
         variant: "critical",
       },
       {
         id: "schedule-blind-spots",
-        title: "කාලසටහන් අන්ධ ලක්ෂ්‍ය",
-        body: "එකම මාර්ගයේ කණ්ඩායම්වලට අනෙක් අයගේ වැඩ කවුළු නොපෙනී යා හැක.",
-        badge: "සම්බන්ධීකරණය බලාපොරොත්තුවෙන්",
+        title: "ගැටුම්කාරී කාලසටහන්",
+        body: "දින දර්ශනයේ එකිනෙක overlap වුවත්, එක් ආයතනයක spreadsheet එකේ පමණක් තිබිය හැක.",
+        badge: "කාලසටහන් overlap",
         variant: "warning",
       },
       {
         id: "fragmented-progress",
-        title: "ඛණ්ඩනය වූ ප්‍රගතිය",
-        body: "සන්ධිස්ථාන, වියදම් සහ බෙදාහැරීම වෙන වෙනම තිබෙන විට වගවීම අපහසු වේ.",
-        badge: "තොරතුරු",
+        title: "නැවත නැවත බාධා",
+        body:
+          "අනුපිළිවෙල ගොඩක් ප්‍රමාද වූ විට ප්‍රජාව එම කොටස දෙවරක් කැණූ බව දකී — කණ්ඩායම් පරස්පර නොසලකා නොවේ.",
+        badge: "මහජන බලපෑම",
         variant: "info",
       },
       {
@@ -1193,6 +1237,7 @@ const si: PublicLandingCopy = {
     title: "යටිතල වැඩ සඳහා තොරතුරු සම්බන්ධීකරණය",
     intro:
       "INFRAOS යනු ව්‍යාපෘති, සැලසුම් කළ උපයෝගිතා වැඩ සහ ආයතන වගකීම් එකට බලා ගැනීමේ විශ්වවිද්‍යාල ආදර්ශනයකි. පහත අයිතම ජීවිත සේවා නොව, වේදිකා අරමුණ විස්තර කරයි.",
+    plannedPanelTitle: "සැලසුම් කළ හැකියාවන් (මෙම අඩවියේ සජීවී නොවේ)",
     statusDemonstration: "ආදර්ශන සංකල්පය",
     statusPlanned: "සැලසුම් කළ හැකියාව",
     disclosure:
@@ -1369,6 +1414,10 @@ const si: PublicLandingCopy = {
       "මෙම රූප සටහන මාර්ග ප්‍රතිසංස්කරණය සහ ජල නල වැඩ දෙකම සැලසුම් කළ සංකල්පීය හවුල් කොටසක් පෙන්වයි. මෙය සජීවී සිතියමක්, ගණනය කළ ගැටුමක් හෝ නිල ව්‍යාපෘතියක් නොවේ.",
     disclaimer:
       "ආදර්ශන මූලාකෘතිය — සජීවී රජයේ දත්ත නොවේ. සංකල්පීය රූප සටහනකි; පරිමාණයට නොවේ.",
+    syntheticBadge: "ආදර්ශන උදාහරණ · කෘත්‍රිම දත්ත · සජීවී සිතියමක් නොවේ",
+    agencyRoadLabel: "මාර්ග ආයතන · ප්‍රතිසංස්කරණ සැලසුම",
+    agencyWaterLabel: "ජල උපයෝගිතාව · නල සැලසුම",
+    sharedSegmentLabel: "හවුල් කොරිඩෝ කොටස",
     figureTitle: "මාර්ග ප්‍රතිසංස්කරණය සහ ජල නල වැඩ අතිච්ඡාදනයේ සංකල්පය",
     figureDescription:
       "තැඹිලි ඝන රේඛාව සැලසුම් කළ මාර්ග ප්‍රතිසංස්කරණයයි. ඉරි ඇති අළු රේඛාව එම කොරිඩෝවේ කොටසක සැලසුම් කළ ජල නල වැඩයි. ඉරි ඇති මෙරූන් කොටුව හවුල් කොටස සලකුණු කරයි. මෙය භූගෝලීය සිතියමක් නොවේ.",
@@ -1390,8 +1439,11 @@ const si: PublicLandingCopy = {
     title: "මෙම ආදර්ශනය තොරතුරු සහ ප්‍රවේශය හසුරුවන ආකාරය",
     intro:
       "INFRAOS යනු විශ්වවිද්‍යාල GovTech මූලාකෘතියකි. මෙම පිටුව සම්බන්ධීකරණ සංකල්ප පැහැදිලි කරයි — නිල රජයේ සේවාවක් හෝ සහතික කළ ආරක්ෂණ නිෂ්පාදනයක් නොවේ.",
+    ribbonLabel: "විශ්වවිද්‍යාල ආදර්ශනය",
     demoNotice:
       "මෙම ආදර්ශනය ගැන: උදාහරණ සහ රූප සටහන් කෘත්‍රිම දත්ත භාවිතා කරයි. ඒවා සජීවී ජාතික යටිතල වාර්තා හෝ අමාත්‍යාංශ අනුමැතිය නොවේ.",
+    humanReviewNote:
+      "අතිච්ඡාදන ඉඟි මිනිස් සමාලෝචනය සඳහාය. RoadSync වැඩ අනුමත නොකරයි, ආරක්ෂාව සහතික නොකරයි, ආයතන තීරණකරුවන් replace නොකරයි.",
     points: [
       {
         id: "coordination",
@@ -1419,11 +1471,21 @@ const si: PublicLandingCopy = {
       },
     ],
   },
+  transparency: {
+    ...en.transparency,
+    exploreBandTitle: "මෙම මහජන අඩවියේ explore කළ හැකි දේ",
+    plannedBandTitle: "සැලසුම්, අභ්‍යන්තර හෝ මෙහි link නොකළ දේ",
+  },
   faq: {
     eyebrow: "නිතර අසන ප්‍රශ්න",
     title: "නිතර අසන ප්‍රශ්න",
     intro:
       "INFRAOS අද කුමක්ද සහ roadmap කුමක්ද යන්න.short answers. තවම නිර්මාණය නොකළ දේ අපි පැහැදිලිව කියමු.",
+    topicDemonstration: "මෙම ආදර්ශනය ගැන",
+    topicCoordination: "සම්බන්ධීකරණ සංකල්ප",
+    topicPublicAccess: "මහජන අඩවිය සහ ප්‍රවේශය",
+    fullPagePrompt: "සියලු පිළිතුරු එක් පිටුවක?",
+    fullPageLink: "සම්පූර්ණ FAQ පිටුව",
     items: [
       {
         id: "what-is-infraos",
@@ -1483,13 +1545,13 @@ const si: PublicLandingCopy = {
   },
   nextSteps: {
     eyebrow: "ඊළඟ පියවර",
-    title: "ආදර්ශනය further explore කරන්න",
+    title: "සම්බන්ධීකරණය සන්දර්භයේ බලන්න",
     intro:
-      "පහත links මෙම පිටුවේ sections වෙත යයි. registration අවශ්‍ය නොවේ.",
-    primaryLabel: "සම්බන්ධීකරණ ජීවන චක්‍රය කියවන්න",
-    primaryAnchor: "lifecycle",
-    secondaryLabel: "ආදර්ශන පෙරදසුන බලන්න",
-    secondaryAnchor: "preview",
+      "RoadSync ආදර්ශන walkthrough එක සහ අට අදියර ජීවන චක්‍ර කතාව — sign-in හෝ live lookup නැත.",
+    primaryLabel: "RoadSync උදාහරණය බලන්න",
+    primaryAnchor: "solution",
+    secondaryLabel: "සම්බන්ධීකරණ ජීවන චක්‍රය සමාලෝචනය කරන්න",
+    secondaryAnchor: "lifecycle",
     staffNote:
       "real sign-in route implemented සහ reviewed වූ පසු staff access — මෙම marketing site හරහා නොව.",
   },
@@ -1521,9 +1583,12 @@ const si: PublicLandingCopy = {
     linkAbout: "INFRAOS ගැන",
     linkCoordination: "සම්බන්ධීකරණය ක්‍රියා කරන ආකාරය",
     linkFaq: "නිති අසන ප්‍රශ්න",
+    linkContact: "සම්බන්ධතාව සහ ව්‍යාපෘති තත්ත්වය",
     linkAccessibility: "ප්‍රවේශ්‍යතාව",
     linkPrivacy: "පෞද්ගලිකත්වය සහ දත්ත භාවිතය",
     linkPhotoCredits: "ඡායාරූප credit",
+    navExploreTitle: "Explore",
+    navInformationTitle: "තොරතුරු",
     languageLabel: "භාෂා",
     disclosure:
       "ආදර්ශන දත්ත synthetic විය හැක. මෙම site නිල රජයේ අනුමැතිය, සහතික හෝ operational project records පublish නොකරයි.",
@@ -1666,27 +1731,30 @@ const ta: PublicLandingCopy = {
     eyebrow: "ஒருங்கிணைப்பு இடைவெளி",
     title: "திட்டங்கள் தனித்தனியாக இருக்கும்போது தவிர்க்கக்கூடிய மோதல்கள் ஏற்படும்.",
     intro:
-      "மறுபாவு செய்யப்பட்ட சாலையும் திட்டமிட்ட குழாய் பணியும் ஒரே இடத்திலும் நேரத்திலும் இருக்கலாம். INFRAOS அந்த ஒன்றுசேர்வுகளை பணி தொடங்கும் முன் காட்ட வடிவமைக்கப்பட்டுள்ளது.",
+      "சாலை மறுபavement செய்த பிறகு, அட்டவணைகள் பகிரப்படாவிட்டால் பயன்பாட்டு பணிக்காக மீண்டும் திறக்கப்படலாம். INFRAOS இதை செயற்கை எடுத்துக்காட்டுகளில் காட்டுகிறது.",
+    callout:
+      "இரு நிறுவனங்கள், ஒரே பாதை: இது திட்டமிடல் அமைப்பின் இடைவெளி — குழுக்கள் தவறவில்லை.",
+    flowLabel: "ஒரே பகுதி · தனித்த அட்டவணைகள் (எடுத்துக்காட்டு)",
     cards: [
       {
         id: "repeated-excavation",
-        title: "மீண்டும் மீண்டும் தோண்டல்",
-        body: "தனி திட்டங்களால் சாலை பாவப்பட்ட உடனே ஒரு பயன்பாடு மீண்டும் தோண்ட வேண்டியிருக்கலாம்.",
-        badge: "அட்டவணை ஒன்றுசேர்வு",
+        title: "பகிரப்பட்ட இடம்",
+        body: "சாலை மற்றும் குழாய் பணி ஒரே பகுதியில் திட்டமிடப்படலாம் — இரு தரப்புக்கும் பொதுவான வரைபடம் இல்லாமல்.",
+        badge: "புவியியல் ஒன்றுசேர்வு",
         variant: "critical",
       },
       {
         id: "schedule-blind-spots",
-        title: "அட்டவணை குருட்டுப் புள்ளிகள்",
-        body: "ஒரே பாதையில் பணிபுரியும் குழுக்கள் மற்றவரின் பணிச் சாளரங்களைக் காணாமல் போகலாம்.",
-        badge: "ஒருங்கிணைப்பு நிலுவையில்",
+        title: "முரண்பட்ட அட்டவணைகள்",
+        body: "நாள்காட்டியில் overlap இருந்தாலும், ஒவ்வொரு நிறுவனத்தின் spreadsheet-இல் மட்டுமே தெரியலாம்.",
+        badge: "அட்டவணை overlap",
         variant: "warning",
       },
       {
         id: "fragmented-progress",
-        title: "துண்டான முன்னேற்றம்",
-        body: "மைல்கற்கள், செலவு மற்றும் விநியோகம் தனித்தனியாக இருக்கும்போது பொறுப்பு கடினமாகும்.",
-        badge: "தகவல்",
+        title: "மீண்டும் மீண்டும் இடையூறு",
+        body: "வரிசை முடிவு தாமதமானால், அதே பகுதி இருமுறை தோண்டப்படுவதை பொதுமக்கள் காணலாம் — குழுக்கள் புறக்கணிப்பதால் அல்ல.",
+        badge: "பொது தாக்கம்",
         variant: "info",
       },
       {
@@ -1739,6 +1807,7 @@ const ta: PublicLandingCopy = {
     title: "உள்கட்டமைப்பு பணிக்கான தகவல்களை ஒருங்கிணைத்தல்",
     intro:
       "INFRAOS என்பது திட்டங்கள், திட்டமிட்ட பயன்பாட்டு பணிகள் மற்றும் நிறுவன பொறுப்புகளை ஒன்றாகப் பார்க்கும் பல்கலைக்கழக செயல்விளக்கம். கீழுள்ளவை நேரடி சேவைகள் அல்ல — தள நோக்கத்தை விளக்குகின்றன.",
+    plannedPanelTitle: "திட்டமிடப்பட்ட திறன்கள் (இந்தத் தளத்தில் நேரடி அல்ல)",
     statusDemonstration: "செயல்விளக்கக் கருத்து",
     statusPlanned: "திட்டமிடப்பட்ட திறன்",
     disclosure:
@@ -1915,6 +1984,10 @@ const ta: PublicLandingCopy = {
       "இந்த வரைபடம் சாலை புதுப்பிப்பும் நீர் குழாய் பணியும் திட்டமிடப்பட்ட ஒரு கருத்துப்பூர்வ பொது பகுதியைக் காட்டுகிறது. இது நேரடி வரைபடம், கணக்கிடப்பட்ட முரண்பாடு அல்லது அதிகாரப்பூர்வ திட்டம் அல்ல.",
     disclaimer:
       "எடுத்துக்காட்டு முன்மாதிரி — நேரடி அரசு தரவு அல்ல. கருத்து வரைபடம்; அளவுகோலுக்கு அல்ல.",
+    syntheticBadge: "எடுத்துக்காட்டு · செயற்கைத் தரவு · நேரடி வரைபடம் அல்ல",
+    agencyRoadLabel: "சாலை நிறுவனம் · புதுப்பிப்பு திட்டம்",
+    agencyWaterLabel: "நீர் பயன்பாடு · குழாய் திட்டம்",
+    sharedSegmentLabel: "பொது பாதைப் பகுதி",
     figureTitle: "சாலை புதுப்பிப்பு மற்றும் நீர் குழாய் பணியின் கருத்து ஒன்றுசேர்வு",
     figureDescription:
       "திட ஆரஞ்சு கோடு திட்டமிட்ட சாலை புதுப்பிப்பு. கோடுகள் கொண்ட சாம்பல் கோடு அதே பாதையின் ஒரு பகுதியில் திட்டமிட்ட நீர் குழாய் பணி. கோடுகள் கொண்ட மெரூன் பெட்டி பொது பகுதியைக் குறிக்கிறது. இது புவியியல் வரைபடம் அல்ல.",
@@ -1936,8 +2009,11 @@ const ta: PublicLandingCopy = {
     title: "இந்தச் செயல்விளக்கம் தகவலையும் அணுகலையும் எவ்வாறு கையாளுகிறது",
     intro:
       "INFRAOS ஒரு பல்கலைக்கழக GovTech முன்மாதிரி. இந்தப் பக்கம் ஒருங்கிணைப்புக் கருத்துகளை விளக்குகிறது — அதிகாரப்பூர்வ அரசு சேவை அல்ல, சான்றளிக்கப்பட்ட பாதுகாப்பு தயாரிப்பு அல்ல.",
+    ribbonLabel: "பல்கலைக்கழக செயல்விளக்கம்",
     demoNotice:
       "இந்தச் செயல்விளக்கம் பற்றி: எடுத்துக்காட்டுகள் மற்றும் வரைபடங்கள் செயற்கைத் தரவைப் பயன்படுத்துகின்றன. அவை நேரடி தேசிய உள்கட்டமைப்பு பதிவுகள் அல்ல.",
+    humanReviewNote:
+      "ஒன்றுசேர்வு குறிப்புகள் மனித மதிப்பாய்வுக்கானவை. RoadSync பணியை அனுமதிக்காது, பாதுகாப்பை சான்றளிக்காது, நிறுவன முடிவெடுப்பாளர்களை மாற்றாது.",
     points: [
       {
         id: "coordination",
@@ -1965,11 +2041,21 @@ const ta: PublicLandingCopy = {
       },
     ],
   },
+  transparency: {
+    ...en.transparency,
+    exploreBandTitle: "இந்தப் பொது தளத்தில் ஆராயலாம்",
+    plannedBandTitle: "திட்டம், உள்ளகம் அல்லது இங்கு இணைக்கப்படவில்லை",
+  },
   faq: {
     eyebrow: "அடிக்கடி கேட்கப்படும் கேள்விகள்",
     title: "அடிக்கடி கேட்கப்படும் கேள்விகள்",
     intro:
       "INFRAOS இன்று என்ன, roadmap என்ன — சுருக்கமான பதில்கள். இன்னும் கட்டப்படாதவற்றை வெளிப்படையாகக் கூறுகிறோம்.",
+    topicDemonstration: "இந்தச் செயல்விளக்கம் பற்றி",
+    topicCoordination: "ஒருங்கிணைப்புக் கருத்துகள்",
+    topicPublicAccess: "பொது தளம் மற்றும் அணுகல்",
+    fullPagePrompt: "அனைத்து பதில்களும் ஒரே பக்கத்தில்?",
+    fullPageLink: "முழு FAQ பக்கம்",
     items: [
       {
         id: "what-is-infraos",
@@ -2029,13 +2115,13 @@ const ta: PublicLandingCopy = {
   },
   nextSteps: {
     eyebrow: "அடுத்த படிகள்",
-    title: "செயல்விளக்கத்தைத் தொடர்ந்து பாருங்கள்",
+    title: "ஒருங்கிணைப்பை சூழலில் பாருங்கள்",
     intro:
-      "கீழுள்ள இணைப்புகள் இந்தப் பக்கத்திலுள்ள பகுதிகளுக்குச் செல்கின்றன. registration தேவையில்லை.",
-    primaryLabel: "ஒருங்கிணைப்பு வாழ்க்கைச் சுழற்சியைப் படிக்கவும்",
-    primaryAnchor: "lifecycle",
-    secondaryLabel: "எடுத்துக்காட்டு முன்னோட்டத்தைப் பார்க்கவும்",
-    secondaryAnchor: "preview",
+      "RoadSync எடுத்துக்காட்டு walkthrough மற்றும் எட்டு நிலை வாழ்க்கைச் சுழற்சி — sign-in அல்லது live lookup இல்லை.",
+    primaryLabel: "RoadSync எடுத்துக்காட்டைப் பார்க்கவும்",
+    primaryAnchor: "solution",
+    secondaryLabel: "ஒருங்கிணைப்பு வாழ்க்கைச் சுழற்சியை மதிப்பாய்வு செய்யவும்",
+    secondaryAnchor: "lifecycle",
     staffNote:
       "real sign-in route implemented மற்றும் reviewed ஆன பிறகே staff access — இந்த marketing site வழியாக அல்ல.",
   },
@@ -2067,9 +2153,12 @@ const ta: PublicLandingCopy = {
     linkAbout: "INFRAOS பற்றி",
     linkCoordination: "ஒருங்கிணைப்பு எவ்வாறு",
     linkFaq: "அடிக்கடி கேட்கப்படும் கேள்விகள்",
+    linkContact: "தொடர்பு மற்றும் திட்ட நிலை",
     linkAccessibility: "அணுகல்தன்மை",
     linkPrivacy: "தனியுரிமை மற்றும் தரவு பயன்பாடு",
     linkPhotoCredits: "புகைப்பட credit",
+    navExploreTitle: "Explore",
+    navInformationTitle: "தகவல்",
     languageLabel: "மொழிகள்",
     disclosure:
       "செயல்விளக்கத் தரவு செயற்கையாக இருக்கலாம். அதிகாரப்பூர்வ அரசு அனுமதி/சான்றிதழ்/operational records இங்கு வெளியிடப்படவில்லை.",
