@@ -63,10 +63,10 @@ export function PublicSiteFooter({
   ];
 
   return (
-    <footer className="border-t border-border bg-surface">
+    <footer className="public-rescue-footer border-t border-border">
       <div className="container-dashboard gutter-page space-y-8 py-10">
         <div className="space-y-2">
-          <p className="inline-flex items-center gap-2 type-label text-text-primary">
+          <p className="inline-flex items-center gap-2 type-label text-inherit">
             <InfraosMark className="size-7" />
             {footer.identityTitle}
           </p>
@@ -100,6 +100,7 @@ export function PublicSiteFooter({
           locale={locale}
           label={footer.languageLabel}
           infoSlug={infoSlug ?? null}
+          className="[&_a]:text-slate-300 [&_a:hover]:text-white [&_span[aria-current]]:text-white"
         />
 
         <div className="space-y-3 border-t border-border pt-6">

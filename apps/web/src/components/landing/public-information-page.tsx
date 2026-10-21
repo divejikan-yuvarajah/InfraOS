@@ -61,7 +61,7 @@ export function PublicInformationPage({
   const page = copy.infoPages[slug];
 
   return (
-    <div className="public-site flex min-h-full flex-1 flex-col">
+    <div className="public-site public-visual-rescue flex min-h-full flex-1 flex-col">
       <PublicSiteHeader locale={locale} copy={copy} infoSlug={slug} />
       <main
         id={MAIN_CONTENT_ID}
