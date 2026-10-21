@@ -209,6 +209,11 @@ export type PublicLandingCopy = {
     eyebrow: string;
     title: string;
     intro: string;
+    topicDemonstration: string;
+    topicCoordination: string;
+    topicPublicAccess: string;
+    fullPagePrompt: string;
+    fullPageLink: string;
     items: readonly { id: string; question: string; answer: string }[];
   };
   nextSteps: {
@@ -216,9 +221,9 @@ export type PublicLandingCopy = {
     title: string;
     intro: string;
     primaryLabel: string;
-    primaryAnchor: "features" | "lifecycle" | "preview";
+    primaryAnchor: "features" | "lifecycle" | "preview" | "solution";
     secondaryLabel: string;
-    secondaryAnchor: "features" | "lifecycle" | "preview";
+    secondaryAnchor: "features" | "lifecycle" | "preview" | "solution";
     staffNote: string;
   };
   photography: {
@@ -239,9 +244,12 @@ export type PublicLandingCopy = {
     linkAbout: string;
     linkCoordination: string;
     linkFaq: string;
+    linkContact: string;
     linkAccessibility: string;
     linkPrivacy: string;
     linkPhotoCredits: string;
+    navExploreTitle: string;
+    navInformationTitle: string;
     languageLabel: string;
     disclosure: string;
     copyrightPrefix: string;
@@ -745,6 +753,11 @@ const en: PublicLandingCopy = {
     title: "Frequently asked questions",
     intro:
       "Short answers about what INFRAOS is today versus what the roadmap describes. If something is not built yet, we say so.",
+    topicDemonstration: "About this demonstration",
+    topicCoordination: "Coordination concepts",
+    topicPublicAccess: "Public site and access",
+    fullPagePrompt: "Need every answer on one page?",
+    fullPageLink: "Open the full FAQ page",
     items: [
       {
         id: "what-is-infraos",
@@ -804,13 +817,13 @@ const en: PublicLandingCopy = {
   },
   nextSteps: {
     eyebrow: "Next steps",
-    title: "Continue exploring the demonstration",
+    title: "See coordination in context",
     intro:
-      "Use the links below to read sections that already exist on this page. They stay on the same locale route—no registration required.",
-    primaryLabel: "Read the coordination lifecycle",
-    primaryAnchor: "lifecycle",
-    secondaryLabel: "See the illustrative preview",
-    secondaryAnchor: "preview",
+      "Two quick stops on this page: a synthetic RoadSync walkthrough, then the eight-stage lifecycle story. No sign-in or live project lookup.",
+    primaryLabel: "See the RoadSync example",
+    primaryAnchor: "solution",
+    secondaryLabel: "Review the coordination lifecycle",
+    secondaryAnchor: "lifecycle",
     staffNote:
       "Staff and agency access will be offered only when a real sign-in route is implemented and reviewed—not through this public marketing site.",
   },
@@ -841,9 +854,12 @@ const en: PublicLandingCopy = {
     linkAbout: "About INFRAOS",
     linkCoordination: "How coordination works",
     linkFaq: "FAQ",
+    linkContact: "Contact and project status",
     linkAccessibility: "Accessibility",
     linkPrivacy: "Privacy and data use",
     linkPhotoCredits: "Photo credits",
+    navExploreTitle: "Explore",
+    navInformationTitle: "Information",
     languageLabel: "Languages",
     disclosure:
       "Demonstration data may be synthetic. This site does not publish official government approvals, certifications, or operational project records.",
@@ -1465,6 +1481,11 @@ const si: PublicLandingCopy = {
     title: "නිතර අසන ප්‍රශ්න",
     intro:
       "INFRAOS අද කුමක්ද සහ roadmap කුමක්ද යන්න.short answers. තවම නිර්මාණය නොකළ දේ අපි පැහැදිලිව කියමු.",
+    topicDemonstration: "මෙම ආදර්ශනය ගැන",
+    topicCoordination: "සම්බන්ධීකරණ සංකල්ප",
+    topicPublicAccess: "මහජන අඩවිය සහ ප්‍රවේශය",
+    fullPagePrompt: "සියලු පිළිතුරු එක් පිටුවක?",
+    fullPageLink: "සම්පූර්ණ FAQ පිටුව",
     items: [
       {
         id: "what-is-infraos",
@@ -1524,13 +1545,13 @@ const si: PublicLandingCopy = {
   },
   nextSteps: {
     eyebrow: "ඊළඟ පියවර",
-    title: "ආදර්ශනය further explore කරන්න",
+    title: "සම්බන්ධීකරණය සන්දර්භයේ බලන්න",
     intro:
-      "පහත links මෙම පිටුවේ sections වෙත යයි. registration අවශ්‍ය නොවේ.",
-    primaryLabel: "සම්බන්ධීකරණ ජීවන චක්‍රය කියවන්න",
-    primaryAnchor: "lifecycle",
-    secondaryLabel: "ආදර්ශන පෙරදසුන බලන්න",
-    secondaryAnchor: "preview",
+      "RoadSync ආදර්ශන walkthrough එක සහ අට අදියර ජීවන චක්‍ර කතාව — sign-in හෝ live lookup නැත.",
+    primaryLabel: "RoadSync උදාහරණය බලන්න",
+    primaryAnchor: "solution",
+    secondaryLabel: "සම්බන්ධීකරණ ජීවන චක්‍රය සමාලෝචනය කරන්න",
+    secondaryAnchor: "lifecycle",
     staffNote:
       "real sign-in route implemented සහ reviewed වූ පසු staff access — මෙම marketing site හරහා නොව.",
   },
@@ -1562,9 +1583,12 @@ const si: PublicLandingCopy = {
     linkAbout: "INFRAOS ගැන",
     linkCoordination: "සම්බන්ධීකරණය ක්‍රියා කරන ආකාරය",
     linkFaq: "නිති අසන ප්‍රශ්න",
+    linkContact: "සම්බන්ධතාව සහ ව්‍යාපෘති තත්ත්වය",
     linkAccessibility: "ප්‍රවේශ්‍යතාව",
     linkPrivacy: "පෞද්ගලිකත්වය සහ දත්ත භාවිතය",
     linkPhotoCredits: "ඡායාරූප credit",
+    navExploreTitle: "Explore",
+    navInformationTitle: "තොරතුරු",
     languageLabel: "භාෂා",
     disclosure:
       "ආදර්ශන දත්ත synthetic විය හැක. මෙම site නිල රජයේ අනුමැතිය, සහතික හෝ operational project records පublish නොකරයි.",
@@ -2027,6 +2051,11 @@ const ta: PublicLandingCopy = {
     title: "அடிக்கடி கேட்கப்படும் கேள்விகள்",
     intro:
       "INFRAOS இன்று என்ன, roadmap என்ன — சுருக்கமான பதில்கள். இன்னும் கட்டப்படாதவற்றை வெளிப்படையாகக் கூறுகிறோம்.",
+    topicDemonstration: "இந்தச் செயல்விளக்கம் பற்றி",
+    topicCoordination: "ஒருங்கிணைப்புக் கருத்துகள்",
+    topicPublicAccess: "பொது தளம் மற்றும் அணுகல்",
+    fullPagePrompt: "அனைத்து பதில்களும் ஒரே பக்கத்தில்?",
+    fullPageLink: "முழு FAQ பக்கம்",
     items: [
       {
         id: "what-is-infraos",
@@ -2086,13 +2115,13 @@ const ta: PublicLandingCopy = {
   },
   nextSteps: {
     eyebrow: "அடுத்த படிகள்",
-    title: "செயல்விளக்கத்தைத் தொடர்ந்து பாருங்கள்",
+    title: "ஒருங்கிணைப்பை சூழலில் பாருங்கள்",
     intro:
-      "கீழுள்ள இணைப்புகள் இந்தப் பக்கத்திலுள்ள பகுதிகளுக்குச் செல்கின்றன. registration தேவையில்லை.",
-    primaryLabel: "ஒருங்கிணைப்பு வாழ்க்கைச் சுழற்சியைப் படிக்கவும்",
-    primaryAnchor: "lifecycle",
-    secondaryLabel: "எடுத்துக்காட்டு முன்னோட்டத்தைப் பார்க்கவும்",
-    secondaryAnchor: "preview",
+      "RoadSync எடுத்துக்காட்டு walkthrough மற்றும் எட்டு நிலை வாழ்க்கைச் சுழற்சி — sign-in அல்லது live lookup இல்லை.",
+    primaryLabel: "RoadSync எடுத்துக்காட்டைப் பார்க்கவும்",
+    primaryAnchor: "solution",
+    secondaryLabel: "ஒருங்கிணைப்பு வாழ்க்கைச் சுழற்சியை மதிப்பாய்வு செய்யவும்",
+    secondaryAnchor: "lifecycle",
     staffNote:
       "real sign-in route implemented மற்றும் reviewed ஆன பிறகே staff access — இந்த marketing site வழியாக அல்ல.",
   },
@@ -2124,9 +2153,12 @@ const ta: PublicLandingCopy = {
     linkAbout: "INFRAOS பற்றி",
     linkCoordination: "ஒருங்கிணைப்பு எவ்வாறு",
     linkFaq: "அடிக்கடி கேட்கப்படும் கேள்விகள்",
+    linkContact: "தொடர்பு மற்றும் திட்ட நிலை",
     linkAccessibility: "அணுகல்தன்மை",
     linkPrivacy: "தனியுரிமை மற்றும் தரவு பயன்பாடு",
     linkPhotoCredits: "புகைப்பட credit",
+    navExploreTitle: "Explore",
+    navInformationTitle: "தகவல்",
     languageLabel: "மொழிகள்",
     disclosure:
       "செயல்விளக்கத் தரவு செயற்கையாக இருக்கலாம். அதிகாரப்பூர்வ அரசு அனுமதி/சான்றிதழ்/operational records இங்கு வெளியிடப்படவில்லை.",

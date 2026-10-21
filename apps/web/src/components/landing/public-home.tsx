@@ -59,7 +59,7 @@ export function PublicHome({ locale }: { locale: PublicLocale }) {
         <ProductGisPreviewSection copy={copy} />
         <TrustInformationSection copy={copy} />
         <PlatformTransparencySection copy={copy} />
-        <LandingFaqSection copy={copy} />
+        <LandingFaqSection copy={copy} locale={locale} />
         <LandingNextStepsSection copy={copy} />
       </main>
       <PublicSiteFooter copy={copy} locale={locale} />
