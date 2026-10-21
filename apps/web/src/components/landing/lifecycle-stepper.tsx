@@ -132,7 +132,7 @@ export function LifecycleStepper({
             id={scrollTargetPrefix ? `${scrollTargetPrefix}-${stage.id}` : undefined}
             className="atlas-route-stop grid grid-cols-[auto_minmax(0,1fr)] gap-4"
           >
-            <span className="flex size-10 items-center justify-center rounded-full border border-border bg-surface text-link">
+            <span className="atlas-route-node flex size-10 items-center justify-center rounded-full border border-border bg-surface text-link">
               <LifecycleStageIcon stageId={stage.id} className="size-5" />
             </span>
             <div className="min-w-0 pb-8">

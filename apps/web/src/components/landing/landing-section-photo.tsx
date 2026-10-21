@@ -15,6 +15,7 @@ type LandingSectionPhotoProps = {
   /** Default 16/10 — suitable for infrastructure scenes */
   aspectClassName?: string;
   priority?: boolean;
+  editorial?: boolean;
 };
 
 const PHOTO_DIMENSIONS: Record<
@@ -33,6 +34,7 @@ export function LandingSectionPhoto({
   className,
   aspectClassName = "aspect-[4/3]",
   priority = false,
+  editorial = false,
 }: LandingSectionPhotoProps) {
   const src = LANDING_PHOTO_PATHS[photoId];
   const { width, height } = PHOTO_DIMENSIONS[photoId];
@@ -42,6 +44,7 @@ export function LandingSectionPhoto({
       <div
         className={cn(
           "relative overflow-hidden rounded-lg border border-border bg-muted/30 shadow-elevation-sm",
+          editorial && "public-photo-editorial",
           aspectClassName,
         )}
       >

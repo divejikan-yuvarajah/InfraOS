@@ -1,24 +1,25 @@
 /**
- * Visual rescue prototype — public landing only (Connected Landscape).
+ * Visual rescue — public site only (Connected Landscape). Scoped under .public-site.
  */
 
-.public-visual-rescue .public-rescue-header {
+.public-site .public-rescue-header {
   background: linear-gradient(180deg, #111827 0%, #0f172a 100%);
   border-bottom: 1px solid color-mix(in srgb, #ff5b00 35%, #334155);
 }
 
-.public-visual-rescue .public-rescue-header .public-rescue-wordmark {
+.public-site .public-rescue-header .public-rescue-wordmark {
   font-size: 1.125rem;
   letter-spacing: 0.06em;
   font-weight: 700;
 }
 
-.public-visual-rescue .public-rescue-header a.public-rescue-nav-active {
+.public-site .public-rescue-header a.public-rescue-nav-active {
   color: #f8fafc;
   box-shadow: inset 0 -2px 0 #ff5b00;
 }
 
 .public-visual-rescue .public-rescue-hero {
+  margin-top: 0;
   position: relative;
   min-height: clamp(28rem, 72vh, 40rem);
   display: grid;
@@ -59,7 +60,11 @@
   z-index: 3;
   width: 100%;
   padding-bottom: clamp(2.5rem, 6vw, 4.5rem);
-  padding-top: clamp(6rem, 14vw, 9rem);
+  padding-top: clamp(4.5rem, 12vw, 7rem);
+}
+
+.public-visual-rescue .public-rescue-hero__content .type-body {
+  color: #e2e8f0;
 }
 
 .public-visual-rescue .public-rescue-hero__panel {
@@ -97,6 +102,109 @@
   font-size: 0.75rem;
   line-height: 1.45;
   color: color-mix(in srgb, #f8fafc 75%, transparent);
+}
+
+.public-site .public-rescue-footer {
+  background: linear-gradient(180deg, #0f172a 0%, #111827 100%);
+  border-top: 3px solid #ff5b00;
+  color: #e2e8f0;
+}
+
+.public-site .public-rescue-footer .type-label,
+.public-site .public-rescue-footer .type-body-small,
+.public-site .public-rescue-footer .type-caption {
+  color: #cbd5e1;
+}
+
+.public-site .public-rescue-footer a {
+  color: #f8fafc;
+}
+
+.public-site .public-rescue-footer a:hover {
+  color: #feb600;
+}
+
+.public-site .public-problem-section {
+  background: #ffffff;
+}
+
+.public-site .public-problem-section__story {
+  border-inline-start: 3px solid #ff5b00;
+  padding-inline-start: 1.25rem;
+}
+
+.public-site .public-lifecycle-route {
+  background: #111827;
+  color: #f8fafc;
+}
+
+.public-site .public-lifecycle-route .type-body,
+.public-site .public-lifecycle-route .type-body-small,
+.public-site .public-lifecycle-route .type-caption {
+  color: #cbd5e1;
+}
+
+.public-site .public-lifecycle-route .type-section-title,
+.public-site .public-lifecycle-route .type-card-title,
+.public-site .public-lifecycle-route .type-label {
+  color: #f8fafc;
+}
+
+.public-site .public-lifecycle-route .type-card-title,
+.public-site .public-lifecycle-route button .type-card-title {
+  color: #f8fafc;
+}
+
+.public-site .public-lifecycle-route .border-border {
+  border-color: color-mix(in srgb, #ffffff 18%, #334155);
+}
+
+.public-site .public-lifecycle-route .bg-surface {
+  background: #1e293b;
+}
+
+.public-site .public-lifecycle-route .atlas-route-stop:not(:last-child) .atlas-route-node::after {
+  background: color-mix(in srgb, #ff5b00 55%, #475569);
+}
+
+.public-site .public-photo-editorial::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, #ff5b00 18%, transparent),
+    color-mix(in srgb, #111827 25%, transparent)
+  );
+  pointer-events: none;
+}
+
+.public-site .public-capabilities-spotlight {
+  display: grid;
+  gap: 1.5rem;
+}
+
+@media (min-width: 1024px) {
+  .public-site .public-capabilities-spotlight {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.public-site .public-capability-spotlight-panel {
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+  border-top: 3px solid #ff5b00;
+}
+
+.public-site .public-capability-spotlight-panel--roadsync {
+  border-top-color: #279541;
+}
+
+.public-site .public-capabilities-roadmap {
+  border-top: 1px solid #e2e8f0;
+  padding-top: 1.5rem;
 }
 
 .public-visual-rescue .public-roadsync-section {

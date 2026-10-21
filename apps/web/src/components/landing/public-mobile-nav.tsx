@@ -25,12 +25,16 @@ export function PublicMobileNav({
   locale,
   infoSlug = null,
   className,
+  darkHeader = false,
+  connectedFuture = false,
 }: {
   links: readonly PublicNavLink[];
   copy: PublicLandingCopy;
   locale: PublicLocale;
   infoSlug?: PublicInfoSlug | null;
   className?: string;
+  darkHeader?: boolean;
+  connectedFuture?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
@@ -49,8 +53,15 @@ export function PublicMobileNav({
       <Button
         ref={menuButtonRef}
         type="button"
-        variant="outline"
+        variant={darkHeader ? "ghost" : "outline"}
         size="icon"
+        className={
+          connectedFuture
+            ? "border border-slate-300 text-slate-800 hover:bg-slate-100"
+            : darkHeader
+              ? "border border-white/25 text-white hover:bg-white/10"
+              : undefined
+        }
         aria-expanded={open}
         aria-controls={MOBILE_NAV_ID}
         aria-label={open ? copy.closeMenu : copy.openMenu}
@@ -59,7 +70,11 @@ export function PublicMobileNav({
         <MenuIcon aria-hidden="true" />
       </Button>
       <Sheet open={open} onOpenChange={handleOpenChange}>
-        <SheetContent side="right" id={MOBILE_NAV_ID} className="w-72">
+        <SheetContent
+          side="right"
+          id={MOBILE_NAV_ID}
+          className={cn("w-72", connectedFuture && "border-s-[#8C1F28] bg-[#111827] text-slate-100")}
+        >
           <SheetHeader>
             <SheetTitle className="type-label text-left">{copy.menuTitle}</SheetTitle>
           </SheetHeader>
