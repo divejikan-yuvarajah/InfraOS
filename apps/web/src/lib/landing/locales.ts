@@ -4,8 +4,8 @@ export const PUBLIC_LOCALES = ["en", "si", "ta"] as const;
 
 export type PublicLocale = (typeof PUBLIC_LOCALES)[number];
 
-/** ICTA guideline display order: Sinhala, English, Tamil. */
-export const PUBLIC_LOCALE_NAV_ORDER: readonly PublicLocale[] = ["si", "en", "ta"];
+/** Public language switcher display order. */
+export const PUBLIC_LOCALE_NAV_ORDER: readonly PublicLocale[] = ["en", "si", "ta"];
 
 export const PUBLIC_LOCALE_LABELS: Record<PublicLocale, string> = {
   en: "English",

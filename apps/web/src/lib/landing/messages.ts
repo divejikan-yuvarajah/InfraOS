@@ -33,6 +33,7 @@ export type PublicLandingCopy = {
     modules: string;
     prototypeNote: string;
     ctaPrimaryLabel: string;
+    ctaSecondaryLabel: string;
   };
   illustration: {
     title: string;
@@ -214,6 +215,10 @@ export type PublicLandingCopy = {
     problemExpresswayCredit: string;
     lifecycleExpresswayAlt: string;
     lifecycleExpresswayCredit: string;
+    heroWilpattuAlt: string;
+    heroPrimaryCredit: string;
+    heroConstructionAlt: string;
+    heroConstructionCredit: string;
     manifestLinkLabel: string;
   };
   footer: {
@@ -278,14 +283,15 @@ const en: PublicLandingCopy = {
   },
   hero: {
     eyebrow: "Infrastructure coordination platform",
-    title: "Better infrastructure starts with better coordination.",
+    title: "Better infrastructure starts with connected plans.",
     lead:
-      "INFRAOS demonstrates how agencies could share where and when road and utility works are planned—before the same corridor is opened twice.",
+      "INFRAOS shows how agencies could align road and utility work schedules before the same corridor is opened twice—a university demonstration.",
     modules:
       "ProjectTrace supports delivery and progress accountability. RoadSync is designed to surface explainable geographic and schedule overlaps for agency review—not autonomous approvals.",
     prototypeNote:
       "University demonstration · Synthetic scenarios only · Not an official government service",
-    ctaPrimaryLabel: "See the RoadSync scenario",
+    ctaPrimaryLabel: "See RoadSync example",
+    ctaSecondaryLabel: "How it works",
   },
   roadsyncSignature: {
     eyebrow: "RoadSync · coordination logic",
@@ -296,7 +302,7 @@ const en: PublicLandingCopy = {
       "Illustrative scenario — synthetic geography and dates, not a live detected conflict or operational map record.",
     diagramTitle: "Synthetic corridor overlap — geography and schedule",
     diagramDescription:
-      "A road resurfacing window from 12 May to 28 May overlaps a water pipeline installation from 20 May to 8 June on the same illustrative corridor segment. Agencies would review sequencing before work starts.",
+      "A road resurfacing window from 12 May to 28 May overlaps a water pipeline installation from 20 May to 8 June on the same illustrative corridor segment. From 20 May through 28 May inclusive, both works are scheduled for nine calendar days. Agencies would review sequencing before work starts.",
     mapLabel: "Same corridor segment (illustrative map strip)",
     mobileMapSummary:
       "Road surface work and a crossing pipeline share one corridor segment. The shaded area marks where geography overlaps.",
@@ -306,9 +312,9 @@ const en: PublicLandingCopy = {
     roadDates: "12 May – 28 May",
     pipelineWorkLabel: "Water pipeline (agency B)",
     pipelineDates: "20 May – 8 Jun",
-    overlapGeoLabel: "Shared corridor",
-    overlapScheduleLabel: "8-day schedule overlap",
-    overlapCaption: "20 May – 28 May · both works active on the same segment",
+    overlapGeoLabel: "Shared corridor segment",
+    overlapScheduleLabel: "9 calendar days of schedule overlap",
+    overlapCaption: "20 May – 28 May inclusive · both teams scheduled on the same segment",
     reviewLabel: "Intended agency response",
     reviewBody:
       "Coordinators compare plans, adjust sequencing or methods, and document the decision. INFRAOS does not replace statutory approvals or field authority.",
@@ -318,18 +324,18 @@ const en: PublicLandingCopy = {
     callouts: [
       {
         id: "place",
-        title: "Same place",
-        body: "Both teams need access to the same paved corridor—not a spreadsheet typo.",
+        title: "Same location",
+        body: "Road resurfacing and a water pipeline both need the same paved corridor.",
       },
       {
         id: "time",
-        title: "Same season",
-        body: "Work windows intersect for more than a week in this illustrative example.",
+        title: "Overlapping work dates",
+        body: "Nine calendar days (20–28 May) when both schedules are active in this synthetic example.",
       },
       {
         id: "people",
-        title: "Human review",
-        body: "RoadSync flags candidates; agencies decide what to reschedule or combine.",
+        title: "Human coordination",
+        body: "RoadSync highlights the overlap for review—agencies decide sequencing; INFRAOS does not approve work.",
       },
     ],
   },
@@ -793,6 +799,14 @@ const en: PublicLandingCopy = {
       "Southern Expressway highway in Sri Lanka under clear skies. Illustrative public infrastructure photo—not linked to demonstration data in INFRAOS.",
     lifecycleExpresswayCredit:
       "Photo: Dinesh De Alwis, Wikimedia Commons (CC BY-SA 4.0). Context only; no government endorsement implied.",
+    heroWilpattuAlt:
+      "Road construction earthworks in Sri Lanka near Wilpattu. Illustrative photo only—not an INFRAOS project or official government record.",
+    heroPrimaryCredit:
+      "Photos: Dinesh De Alwis & Rehman Abubakr, Wikimedia Commons (CC BY-SA / CC BY-SA 4.0). Context only; no government endorsement implied.",
+    heroConstructionAlt:
+      "Earthworks and construction activity along a Sri Lankan expressway corridor near Seeduwa. Illustrative photo only—not an INFRAOS project or official government record.",
+    heroConstructionCredit:
+      "Photo: Rehman Abubakr, Wikimedia Commons (CC BY-SA). Context only; no government endorsement implied.",
     manifestLinkLabel: "Photo credits and licenses",
   },
   footer: {
@@ -1033,14 +1047,61 @@ const si: PublicLandingCopy = {
   },
   hero: {
     eyebrow: "යටිතල පහසුකම් සම්බන්ධීකරණ වේදිකාව",
-    title: "ප්‍රජාවන් සඳහා යටිතල පහසුකම් වැඩ සම්බන්ධීකරණය.",
+    title: "හොඳ යටිතල පහසුකම් සම්බන්ධිත සැලසුම්වලින් ආරම්භ වේ.",
     lead:
-      "මාර්ග සහ උපයෝගිතා වැඩ අතිච්ඡාදනය අඩු කිරීමට සහ පැහැදිලි මහජන තොරතුරු සඳහා ව්‍යාපෘති සැලසුම් කිරීම, සමාලෝචනය කිරීම සහ සම්බන්ධීකරණය කිරීම INFRAOS පෙන්වයි.",
+      "එකම මාර්ග කොටස දෙවරක් විවෘත කිරීමට පෙර මාර්ග සහ උපයෝගිතා කාලසටහන් බෙදා ගැනීමට නිර්මාණය කළ විශ්වවිද්‍යාල ආදර්ශනයකි.",
     modules:
       "ProjectTrace බෙදාහැරීම සහ ප්‍රගතිය වගකීම් සහිතව තබයි. RoadSync භූගෝලය සහ කාලසටහන් අතිච්ඡාදන පැහැදිලි කළ හැකි ලෙස පෙන්වීමට නිර්මාණය කර ඇත — ස්වයංක්‍රීය අනුමැතියක් නොවේ.",
     prototypeNote:
       "විශ්වවිද්‍යාල මූලාකෘතිය · ආදර්ශන දත්ත කෘත්‍රිමයි · නිල රජයේ වාර්තාවක් නොවේ",
-    ctaPrimaryLabel: "INFRAOS ක්‍රියා කරන ආකාරය",
+    ctaPrimaryLabel: "RoadSync සම්බන්ධීකරණ උදාහරණය",
+    ctaSecondaryLabel: "ක්‍රියාකාරීත්වය",
+  },
+  roadsyncSignature: {
+    eyebrow: "RoadSync · සම්බන්ධීකරණ තර්කනය",
+    title: "ව්‍යාපෘති දෙකක්. එක මාර්ග කොටස. බලා සිටිය නොහැකි තීරණයක්.",
+    intro:
+      "නැවත ඇල්ලීම සහ ජල නල කාලසටහන් එකම මාර්ග කොටසේ එකිනෙකට වැටෙන විට නැවත කැණීම් විය හැක. RoadSync එම අතිච්ඡාදනය මානව සමාලෝචනය සඳහා පෙන්වයි — ස්වයංක්‍රීය අනුමැතියක් නොවේ.",
+    disclaimer:
+      "ආදර්ශන දර්ශනය — කෘත්‍රිම භූගෝලය සහ දින; සජීවී හඳුනාගත් ගැටුමක් හෝ මෙහෙයුම් සිතියම් ව record නොවේ.",
+    diagramTitle: "කෘත්‍රිම මාර්ග අතිච්ඡාදනය — භූගෝලය සහ කාලසටහන",
+    diagramDescription:
+      "12 මැයි සිට 28 මැයි දක්වා මාර්ග නැවත ඇල්ලීම සහ 20 මැයි සිට 8 ජුනි දක්වා ජල නල මාර්ගය එකම ආදර්ශන කොටසේ එකිනෙකට වැටේ. 20–28 මැයි ඇතුළත දින නවයක් දෙපාර්ශ්වයටම කාලසටහන්ගතය. වැඩ ආරම්භ කිරීමට පෙර අනුපිළිවෙල සමාලෝචනය කරයි.",
+    mapLabel: "එකම මාර්ග කොටස (ආදර්ශන)",
+    mobileMapSummary:
+      "මාර්ග මතුපිට වැඩ සහ නල මාර්ගය එක කොටස share කරයි. Shaded zone භූගෝලීය overlap දක්වයි.",
+    timelineStart: "මැයි",
+    timelineEnd: "ජුනි",
+    roadWorkLabel: "මාර්ග නැවත ඇල්ලීම (නියෝජිත A)",
+    roadDates: "12 මැයි – 28 මැයි",
+    pipelineWorkLabel: "ජල නල මාර්ගය (නියෝජිත B)",
+    pipelineDates: "20 මැයි – 8 ජුනි",
+    overlapGeoLabel: "පොදු කොටස",
+    overlapScheduleLabel: "කාලසටහන් overlap දින නවයක්",
+    overlapCaption: "20–28 මැයි · දෙපාර්ශ්වයම එක කොටසේ",
+    reviewLabel: "අපේක්ෂිත නියෝජිත ප්‍රතිචාරය",
+    reviewBody:
+      "සම්බන්ධීකරණකරුවන් සැලසුම් සසඳා, අනුපිළිවෙල හෝ ක්‍රම වෙනස් කර, තීරණය ලියා දමයි. INFRAOS නීතිමය අනුමැති හෝ ක්‍ෂේත්‍ර අධිකාරිය replace නොකරයි.",
+    legendRoad: "මාර්ග මතුපිට වැඩ කවුළුව",
+    legendPipeline: "උපයෝගිතා නල කවුළුව",
+    legendOverlap: "භූගෝල + කාලසටහන් overlap (කෘත්‍රිම)",
+    callouts: [
+      {
+        id: "place",
+        title: "එකම ස්ථානය",
+        body: "නැවත ඇල්ලීම සහ ජල නල මාර්ගය එකම අස්ෆාල්ට් කොටසටම අවශ්‍ය වේ.",
+      },
+      {
+        id: "time",
+        title: "වැඩ දින overlap",
+        body: "මෙම කෘත්‍රිම උදාහරණයේ දින නවයක් (20–28 මැයි) දෙපාර්ශ්වයටම ක්‍රියාකාරී.",
+      },
+      {
+        id: "people",
+        title: "මානව සම්බන්ධීකරණය",
+        body: "RoadSync overlap පෙන්වයි — නියෝජිතයින් අනුපිළිවෙල තීරණය කරයි; INFRAOS වැඩ approve නොකරයි.",
+      },
+    ],
   },
   illustration: {
     ...en.illustration,
@@ -1433,6 +1494,7 @@ const si: PublicLandingCopy = {
       "real sign-in route implemented සහ reviewed වූ පසු staff access — මෙම marketing site හරහා නොව.",
   },
   photography: {
+    ...en.photography,
     problemExpresswayAlt:
       "ශ්‍රී ලංකාව, සීදුව අසල අධිවේගී මාර්ගයේ ඉඩම් වැඩ. ආදර්ශන ඡායාරූපය පමණි — INFRAOS ව්‍යාපෘතියක් හෝ නිල රජයේ වාර්තාවක් නොවේ.",
     problemExpresswayCredit:
@@ -1441,6 +1503,14 @@ const si: PublicLandingCopy = {
       "ශ්‍රී ලංකාවේ දකුණු අධිවේගී මාර්ගය. ආදර්ශන ඡායාරූපය — INFRAOS ආදර්ශන දත්ත සමඟ සම්බන්ධ නොවේ.",
     lifecycleExpresswayCredit:
       "ඡායාරූප: Dinesh De Alwis, Wikimedia Commons (CC BY-SA 4.0). සන්දර්භය පමණි.",
+    heroWilpattuAlt:
+      "විල්පත්තු අසල ශ්‍රී ලංකා මාර්ග නිර්මාණ ඉඩම් වැඩ. ආදර්ශන ඡායාරූපය පමණි.",
+    heroPrimaryCredit:
+      "ඡායාරූප: Dinesh De Alwis & Rehman Abubakr, Wikimedia Commons (CC BY-SA). සන්දර්භය පමණි.",
+    heroConstructionAlt:
+      "ශ්‍රී ලංකාව, සීදුව අසල අධිවේගී මාර්ගයේ ඉඩම් වැඩ. ආදර්ශන ඡායාරූපය පමණි — INFRAOS ව්‍යාපෘතියක් හෝ නිල රජයේ වාර්තාවක් නොවේ.",
+    heroConstructionCredit:
+      "ඡායාරූප: Rehman Abubakr, Wikimedia Commons (CC BY-SA). සන්දර්භය පමණි; රජයේ අනුමැතියක් අදහස් නොවේ.",
     manifestLinkLabel: "ඡායාරූප credit සහ බලපත්‍ර",
   },
   footer: {
@@ -1523,14 +1593,61 @@ const ta: PublicLandingCopy = {
   },
   hero: {
     eyebrow: "உள்கட்டமைப்பு ஒருங்கிணைப்பு தளம்",
-    title: "சமூகங்களுக்காக உள்கட்டமைப்பு பணிகளை ஒருங்கிணைத்தல்.",
+    title: "சிறந்த உள்கட்டமைப்பு இணைக்கப்பட்ட திட்டங்களில் தொடங்குகிறது.",
     lead:
-      "சாலை மற்றும் பயன்பாட்டுப் பணிகள் ஒன்றுடன் ஒன்று மோதாமல் திட்டங்களை திட்டமிட, மதிப்பாய்வு செய்ய மற்றும் ஒருங்கிணைக்க INFRAOS காட்டுகிறது.",
+      "ஒரே சாலைப் பகுதி இருமுறை திறக்கப்படுவதற்கு முன் சாலை மற்றும் பயன்பாட்டு அட்டவணைகளைப் பகிர்வதற்கான பல்கலைக்கழக செயல்விளக்கம்.",
     modules:
       "ProjectTrace விநியோகத்தையும் முன்னேற்றத்தையும் பொறுப்புடன் வைக்கிறது. RoadSync புவியியல் மற்றும் அட்டவணை ஒன்றுசேர்வுகளை விளக்கக்கூடிய முறையில் காட்ட வடிவமைக்கப்பட்டுள்ளது — தானியங்கி அனுமதி அல்ல.",
     prototypeNote:
       "பல்கலைக்கழக முன்மாதிரி · செயல்விளக்கத் தரவு செயற்கையானது · அதிகாரப்பூர்வ அரசு பதிவு அல்ல",
-    ctaPrimaryLabel: "INFRAOS எவ்வாறு செயல்படுகிறது",
+    ctaPrimaryLabel: "RoadSync ஒருங்கிணைப்பு எடுத்துக்காட்டு",
+    ctaSecondaryLabel: "எவ்வாறு செயல்படுகிறது",
+  },
+  roadsyncSignature: {
+    eyebrow: "RoadSync · ஒருங்கிணைப்பு தர்க்கம்",
+    title: "இரண்டு திட்டங்கள். ஒரு சாலைப் பகுதி. காத்திருக்க முடியாத முடிவு.",
+    intro:
+      "சாலை மறுபavement மற்றும் நீர் குழாய் அட்டவணைகள் ஒரே பகுதியில் ஒன்றுசேரும்போது மீண்டும் தோண்டல் ஏற்படலாம். RoadSync overlap-ஐ மனித மதிப்பாய்வுக்காகக் காட்டுகிறது — தானியங்கி அனுமதி அல்ல.",
+    disclaimer:
+      "எடுத்துக்காட்டு காட்சி — செயற்கை புவியியல் மற்றும் தேதிகள்; நேரடி கண்டறிந்த மோதல் அல்ல.",
+    diagramTitle: "செயற்கை சாலை overlap — புவியியல் மற்றும் அட்டவணை",
+    diagramDescription:
+      "12 May – 28 May மறுபavement மற்றும் 20 May – 8 Jun குழாய் பணி ஒரே segment-இல். 20–28 May inclusive ஒன்பது நாட்கள் இரு அட்டவணைகளும் செயலில். வேலை தொடங்கும் முன் அட்டவணை மதிப்பாய்வு.",
+    mapLabel: "ஒரே சாலைப் பகுதி (எடுத்துக்காட்டு)",
+    mobileMapSummary:
+      "மறுபavement மற்றும் குழாய் பணி ஒரே segment-ஐப் பகிர்கின்றன. நிழல் zone புவியியல் overlap-ஐக் குறிக்கிறது.",
+    timelineStart: "May",
+    timelineEnd: "June",
+    roadWorkLabel: "சாலை மறுபavement (நிறுவனம் A)",
+    roadDates: "12 May – 28 May",
+    pipelineWorkLabel: "நீர் குழாய் (நிறுவனம் B)",
+    pipelineDates: "20 May – 8 Jun",
+    overlapGeoLabel: "பொது பகுதி",
+    overlapScheduleLabel: "9 நாள் அட்டவணை overlap",
+    overlapCaption: "20–28 May inclusive · இரு குழுக்களும் ஒரே பகுதியில்",
+    reviewLabel: "எதிர்பார்க்கப்படும் நிறுவன பதில்",
+    reviewBody:
+      "ஒருங்கிணைப்பாளர்கள் திட்டங்களை ஒப்பிட்டு அட்டவணை/முறையை மாற்றி முடிவைப் பதிவு செய்கிறார்கள். INFRAOS சட்ட அனுமதிகளை மாற்றாது.",
+    legendRoad: "சாலை resurfacing window",
+    legendPipeline: "Utility pipeline window",
+    legendOverlap: "Geographic + schedule overlap (synthetic)",
+    callouts: [
+      {
+        id: "place",
+        title: "ஒரே இடம்",
+        body: "மறுபavement மற்றும் நீர் குழாய் ஒரே paved corridor-ஐப் பயன்படுத்துகின்றன.",
+      },
+      {
+        id: "time",
+        title: "ஒverlapping பணி தேதிகள்",
+        body: "இந்த எடுத்துக்காட்டில் ஒன்பது நாட்கள் (20–28 May) இரு அட்டவணைகளும் செயலில்.",
+      },
+      {
+        id: "people",
+        title: "மனித ஒருங்கிணைப்பு",
+        body: "RoadSync overlap-ஐ காட்டுகிறது — நிறுவனங்கள் அட்டவணை தீர்மானிக்கின்றன; INFRAOS வேலையை அனுமதிக்காது.",
+      },
+    ],
   },
   illustration: {
     ...en.illustration,
@@ -1923,6 +2040,7 @@ const ta: PublicLandingCopy = {
       "real sign-in route implemented மற்றும் reviewed ஆன பிறகே staff access — இந்த marketing site வழியாக அல்ல.",
   },
   photography: {
+    ...en.photography,
     problemExpresswayAlt:
       "சீதுவா அருகிலுள்ள இலங்கை அதிவேக நெடுஞ்சாலையில் நிலப்பணி. எடுத்துக்காட்டு புகைப்படம் மட்டும் — INFRAOS திட்டம் அல்ல.",
     problemExpresswayCredit:
@@ -1931,6 +2049,14 @@ const ta: PublicLandingCopy = {
       "இலங்கை தெற்கு அதிவேக நெடுஞ்சாலை. எடுத்துக்காட்டு புகைப்படம் — INFRAOS செயல்விளக்க தரவுடன் இணைக்கப்படவில்லை.",
     lifecycleExpresswayCredit:
       "புகைப்படம்: Dinesh De Alwis, Wikimedia Commons (CC BY-SA 4.0). சூழல் மட்டும்.",
+    heroWilpattuAlt:
+      "வில்பட்டு அருகிலுள்ள இலங்கை சாலை கட்டுமான நிலப்பணி. எடுத்துக்காட்டு புகைப்படம் மட்டும்.",
+    heroPrimaryCredit:
+      "புகைப்படங்கள்: Dinesh De Alwis & Rehman Abubakr, Wikimedia Commons (CC BY-SA). சூழல் மட்டும்.",
+    heroConstructionAlt:
+      "சீதுவா அருகிலுள்ள இலங்கை அதிவேக நெடுஞ்சாலையில் நிலப்பணி. எடுத்துக்காட்டு புகைப்படம் மட்டும் — INFRAOS திட்டம் அல்ல.",
+    heroConstructionCredit:
+      "புகைப்படம்: Rehman Abubakr, Wikimedia Commons (CC BY-SA). சூழல் மட்டும்; அரசு அங்கீகாரம் குறிக்கப்படவில்லை.",
     manifestLinkLabel: "புகைப்பட credit மற்றும் உரிமம்",
   },
   footer: {
