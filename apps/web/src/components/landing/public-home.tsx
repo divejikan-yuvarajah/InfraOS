@@ -42,15 +42,15 @@ export function PublicHome({ locale }: { locale: PublicLocale }) {
   const copy = getPublicCopy(locale);
 
   return (
-    <div className="public-site public-visual-rescue flex min-h-full flex-1 flex-col">
-      <PublicSiteHeader locale={locale} copy={copy} />
+    <div lang={locale} className="public-site public-connected-future flex min-h-full flex-1 flex-col">
+      <PublicSiteHeader locale={locale} copy={copy} connectedFuture />
       <main
         id={MAIN_CONTENT_ID}
         lang={locale}
         tabIndex={-1}
         className="flex min-w-0 flex-1 flex-col scroll-mt-28 outline-none"
       >
-        <LandingHero copy={copy} />
+        <LandingHero copy={copy} locale={locale} />
         <InfrastructureProblemSection copy={copy} />
         <RoadsyncSignatureSection copy={copy} />
         <PlatformFeaturesSection copy={copy} />

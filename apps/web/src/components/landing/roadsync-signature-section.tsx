@@ -1,4 +1,4 @@
-import { RoadsyncCorridorExplainer } from "@/components/landing/roadsync-corridor-explainer";
+import { RoadsyncInfographic } from "@/components/landing/roadsync-infographic";
 import type { PublicLandingCopy } from "@/lib/landing/messages";
 import { SOLUTION_SECTION_ANCHOR } from "@/lib/landing/navigation";
 
@@ -9,27 +9,18 @@ export function RoadsyncSignatureSection({ copy }: { copy: PublicLandingCopy }) 
     <section
       id={SOLUTION_SECTION_ANCHOR}
       aria-labelledby="roadsync-signature-heading"
-      className="public-roadsync-section scroll-mt-28"
+      className="cf-roadsync-section scroll-mt-28"
       tabIndex={-1}
     >
-      <div className="container-dashboard gutter-page public-section-pad public-roadsync-section__inner">
-        <header className="max-w-prose space-y-4">
-          <p className="type-label text-link">{rs.eyebrow}</p>
-          <h2 id="roadsync-signature-heading" className="type-section-title text-balance text-text-primary">
+      <div className="container-dashboard gutter-page cf-roadsync-section__inner">
+        <header className="cf-roadsync-section__header max-w-prose">
+          <p className="cf-roadsync-section__eyebrow">{rs.eyebrow}</p>
+          <h2 id="roadsync-signature-heading" className="cf-roadsync-section__title text-balance">
             {rs.title}
           </h2>
-          <p className="type-body text-text-secondary">{rs.intro}</p>
-          <ul className="space-y-2">
-            {rs.callouts.map((item) => (
-              <li key={item.id} className="border-s-2 border-link ps-3 type-body-small text-text-secondary">
-                <strong className="font-medium text-text-primary">{item.title}</strong>
-                {" — "}
-                {item.body}
-              </li>
-            ))}
-          </ul>
+          <p className="cf-roadsync-section__intro">{rs.intro}</p>
         </header>
-        <RoadsyncCorridorExplainer copy={copy} />
+        <RoadsyncInfographic copy={copy} />
       </div>
     </section>
   );

@@ -17,6 +17,8 @@ describe("public landing locales", () => {
     expect(getPublicCopy("ta").hero.title).not.toBe(english.hero.title);
     expect(getPublicCopy("si").nav.problem).not.toBe(english.nav.problem);
     expect(getPublicCopy("ta").nav.solution).not.toBe(english.nav.solution);
+    expect(getPublicCopy("si").roadsyncSignature.title).not.toBe(english.roadsyncSignature.title);
+    expect(getPublicCopy("ta").roadsyncSignature.title).not.toBe(english.roadsyncSignature.title);
   });
 
   it("keeps English at / and does not invent a login route", () => {
