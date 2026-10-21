@@ -103,7 +103,8 @@ export function PublicSiteHeader({
           copy={copy}
           locale={locale}
           infoSlug={infoSlug}
-          className="ml-auto text-slate-100 lg:hidden"
+          darkHeader
+          className="ml-auto lg:hidden"
         />
       </div>
     </header>

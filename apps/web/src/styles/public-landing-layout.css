@@ -27,14 +27,20 @@
   position: relative;
 }
 
-.atlas-route-stop:not(:last-child) > span::after {
+.atlas-route-stop:not(:last-child) > span::after,
+.atlas-route-stop:not(:last-child) .atlas-route-node::after {
   content: "";
   position: absolute;
   top: 2.5rem;
   left: 50%;
-  width: 1px;
+  width: 2px;
   height: calc(100% + 0.5rem);
+  transform: translateX(-50%);
   background: var(--border);
+}
+
+.atlas-route-node {
+  position: relative;
 }
 
 .public-site .public-demo-callout {
@@ -44,4 +50,28 @@
   background: color-mix(in srgb, var(--surface) 70%, var(--background));
   border-radius: var(--radius-md, 0.5rem);
   padding: 0.75rem 1rem;
+}
+
+/* Per-script type scale (Section 9.1) — public landing only */
+.public-site main[lang="si"] .type-body,
+.public-site main[lang="si"] .type-body-small {
+  line-height: 1.75;
+  font-size: 1.02em;
+}
+
+.public-site main[lang="ta"] .type-body,
+.public-site main[lang="ta"] .type-body-small {
+  line-height: 1.8;
+  font-size: 1.03em;
+}
+
+.public-site main[lang="si"] .type-section-title,
+.public-site main[lang="ta"] .type-section-title {
+  line-height: 1.35;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .public-site .public-motion-interactive {
+    transition: none;
+  }
 }

@@ -25,12 +25,14 @@ export function PublicMobileNav({
   locale,
   infoSlug = null,
   className,
+  darkHeader = false,
 }: {
   links: readonly PublicNavLink[];
   copy: PublicLandingCopy;
   locale: PublicLocale;
   infoSlug?: PublicInfoSlug | null;
   className?: string;
+  darkHeader?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
@@ -49,8 +51,9 @@ export function PublicMobileNav({
       <Button
         ref={menuButtonRef}
         type="button"
-        variant="outline"
+        variant={darkHeader ? "ghost" : "outline"}
         size="icon"
+        className={darkHeader ? "border border-white/25 text-white hover:bg-white/10" : undefined}
         aria-expanded={open}
         aria-controls={MOBILE_NAV_ID}
         aria-label={open ? copy.closeMenu : copy.openMenu}
