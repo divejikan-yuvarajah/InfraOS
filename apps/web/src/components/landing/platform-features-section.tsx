@@ -1,5 +1,21 @@
+import { ClipboardList, Map, Megaphone, Route, ShieldCheck, Layers } from "lucide-react";
+
 import type { PublicLandingCopy } from "@/lib/landing/messages";
 import { FEATURES_SECTION_ANCHOR } from "@/lib/landing/navigation";
+
+const SPOTLIGHT_META: Record<
+  string,
+  { icon: typeof Route; accent: "trace" | "roadsync" }
+> = {
+  projecttrace: { icon: ClipboardList, accent: "trace" },
+  roadsync: { icon: Route, accent: "roadsync" },
+};
+
+const PLANNED_ICONS: Record<string, typeof Map> = {
+  inframap: Map,
+  verification: ShieldCheck,
+  "public-info": Megaphone,
+};
 
 export function PlatformFeaturesSection({ copy }: { copy: PublicLandingCopy }) {
   const { features } = copy;
@@ -11,61 +27,94 @@ export function PlatformFeaturesSection({ copy }: { copy: PublicLandingCopy }) {
     <section
       id={FEATURES_SECTION_ANCHOR}
       aria-labelledby="features-heading"
-      className="scroll-mt-28 border-b border-border bg-[#f8fafc]"
+      className="cf-features-section scroll-mt-28"
       tabIndex={-1}
     >
-      <div className="container-dashboard gutter-page public-section-pad">
-        <header className="max-w-prose space-y-3">
-          <p className="type-label text-link">{features.eyebrow}</p>
-          <h2 id="features-heading" className="type-section-title text-balance text-text-primary">
+      <div className="container-dashboard gutter-page cf-features-section__inner">
+        <header className="cf-features-section__header">
+          <p className="cf-features-section__eyebrow">{features.eyebrow}</p>
+          <h2 id="features-heading" className="cf-features-section__title text-balance">
             {features.title}
           </h2>
-          <p className="type-body text-text-secondary">{features.intro}</p>
+          <p className="cf-features-section__intro">{features.intro}</p>
         </header>
 
-        <div className="public-capabilities-spotlight mt-12">
-          {spotlight.map((item) => (
-            <article
-              key={item.id}
-              className={
-                item.id === "roadsync"
-                  ? "public-capability-spotlight-panel public-capability-spotlight-panel--roadsync"
-                  : "public-capability-spotlight-panel"
-              }
-            >
-              <p className="type-label text-link" lang="en">
-                {item.moduleName}
-              </p>
-              <h3 className="type-card-title mt-2 text-text-primary">
-                {item.title}
-                <span className="type-caption ms-2 font-normal text-text-muted">
-                  {item.status === "demonstration"
-                    ? features.statusDemonstration
-                    : features.statusPlanned}
-                </span>
-              </h3>
-              <p className="type-body mt-3 text-text-secondary">{item.body}</p>
-            </article>
-          ))}
-        </div>
-
-        <div className="public-capabilities-roadmap mt-10">
-          <p className="type-label text-text-primary">{features.statusPlanned}</p>
-          <ul className="mt-4 space-y-4">
-            {roadmap.map((item) => (
-              <li key={item.id} className="grid gap-1 border-s border-border ps-4 sm:grid-cols-[10rem_minmax(0,1fr)] sm:gap-6">
-                <span className="type-label text-text-primary" lang="en">
-                  {item.moduleName}
-                </span>
-                <div>
-                  <p className="type-body-small text-text-secondary">{item.body}</p>
+        <div className="cf-features-spotlight">
+          {spotlight.map((item) => {
+            const meta = SPOTLIGHT_META[item.id];
+            const Icon = meta?.icon ?? Layers;
+            const statusLabel =
+              item.status === "demonstration"
+                ? features.statusDemonstration
+                : features.statusPlanned;
+            return (
+              <article
+                key={item.id}
+                className={`cf-features-spotlight__panel cf-features-spotlight__panel--${meta?.accent ?? "trace"}`}
+              >
+                <div className="cf-features-spotlight__visual" aria-hidden>
+                  <Icon className="cf-features-spotlight__glyph" strokeWidth={1.5} />
+                  {item.id === "roadsync" ? (
+                    <svg viewBox="0 0 120 48" className="cf-features-spotlight__mini-route">
+                      <path d="M8 32 H112" stroke="#94A3B8" strokeWidth="6" strokeLinecap="round" />
+                      <path d="M8 34 H112" stroke="#FF5B00" strokeWidth="2" strokeLinecap="round" />
+                      <path
+                        d="M24 20 H96"
+                        stroke="#279541"
+                        strokeWidth="3"
+                        strokeDasharray="5 4"
+                        strokeLinecap="round"
+                      />
+                    </svg>
+                  ) : (
+                    <svg viewBox="0 0 120 48" className="cf-features-spotlight__mini-route">
+                      <rect x="12" y="10" width="96" height="8" rx="2" fill="#E2E8F0" />
+                      <rect x="12" y="26" width="72" height="8" rx="2" fill="#FF5B00" fillOpacity="0.35" />
+                      <rect x="12" y="26" width="40" height="8" rx="2" fill="#FF5B00" fillOpacity="0.85" />
+                    </svg>
+                  )}
                 </div>
-              </li>
-            ))}
-          </ul>
+                <div className="cf-features-spotlight__copy">
+                  <p className="cf-features-spotlight__module" lang={item.moduleName.match(/^[A-Za-z]/) ? "en" : undefined}>
+                    {item.moduleName}
+                  </p>
+                  <h3 className="cf-features-spotlight__headline">
+                    {item.title}
+                    <span className="cf-features-spotlight__status">{statusLabel}</span>
+                  </h3>
+                  <p className="cf-features-spotlight__body">{item.body}</p>
+                </div>
+              </article>
+            );
+          })}
         </div>
 
-        <p className="type-body-small mt-8 max-w-prose text-text-secondary">{features.disclosure}</p>
+        <aside className="cf-features-roadmap" aria-labelledby="features-planned-heading">
+          <h3 id="features-planned-heading" className="cf-features-roadmap__title">
+            {features.plannedPanelTitle}
+          </h3>
+          <ul className="cf-features-roadmap__list">
+            {roadmap.map((item) => {
+              const Icon = PLANNED_ICONS[item.id] ?? Layers;
+              return (
+                <li key={item.id} className="cf-features-roadmap__item">
+                  <span className="cf-features-roadmap__icon" aria-hidden>
+                    <Icon strokeWidth={1.75} />
+                  </span>
+                  <div className="min-w-0">
+                    <p className="cf-features-roadmap__module" lang={item.moduleName.match(/^[A-Za-z]/) ? "en" : undefined}>
+                      {item.moduleName}
+                      <span className="cf-features-roadmap__pill">{features.statusPlanned}</span>
+                    </p>
+                    <p className="cf-features-roadmap__body">{item.body}</p>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        </aside>
+
+        <p className="cf-features-section__disclosure">{features.disclosure}</p>
       </div>
     </section>
   );

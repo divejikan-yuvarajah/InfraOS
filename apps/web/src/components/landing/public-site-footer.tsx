@@ -1,13 +1,11 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 
-import { InfraosMark } from "@/components/landing/infraos-mark";
-import { LifecycleStepper } from "@/components/landing/lifecycle-stepper";
+import { InfraosWordmark } from "@/components/landing/infraos-wordmark";
 import { PublicLanguageNav } from "@/components/landing/public-language-nav";
 import { footerLinkHref } from "@/lib/landing/public-info-pages";
 import type { PublicInfoSlug } from "@/lib/landing/locales";
 import type { PublicLocale } from "@/lib/landing/locales";
-import { lifecycleStagesForStepper } from "@/lib/landing/lifecycle-stepper-data";
 import type { PublicLandingCopy } from "@/lib/landing/messages";
 
 function FooterLink({
@@ -19,8 +17,7 @@ function FooterLink({
   children: ReactNode;
   external?: boolean;
 }) {
-  const className =
-    "public-motion-interactive inline-flex min-h-11 items-center type-body-small text-text-secondary underline-offset-4 hover:text-text-primary hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring";
+  const className = "public-motion-interactive";
 
   if (external) {
     return (
@@ -49,10 +46,14 @@ export function PublicSiteFooter({
   const year = new Date().getFullYear();
   const footer = copy.footer;
 
-  const quickLinks: { href: string; label: string; external?: boolean }[] = [
+  const exploreLinks = [
     { href: footerLinkHref(locale, "about"), label: footer.linkAbout },
     { href: footerLinkHref(locale, "coordination"), label: footer.linkCoordination },
     { href: footerLinkHref(locale, "faq"), label: footer.linkFaq },
+  ];
+
+  const informationLinks = [
+    { href: footerLinkHref(locale, "contact"), label: footer.linkContact },
     { href: footerLinkHref(locale, "accessibility"), label: footer.linkAccessibility },
     { href: footerLinkHref(locale, "privacy"), label: footer.linkPrivacy },
     {
@@ -63,19 +64,28 @@ export function PublicSiteFooter({
   ];
 
   return (
-    <footer className="public-rescue-footer border-t border-border">
-      <div className="container-dashboard gutter-page space-y-8 py-10">
-        <div className="space-y-2">
-          <p className="inline-flex items-center gap-2 type-label text-inherit">
-            <InfraosMark className="size-7" />
-            {footer.identityTitle}
-          </p>
-          <p className="type-body-small max-w-prose text-text-secondary">{footer.identityLine}</p>
+    <footer className="cf-footer">
+      <div className="container-dashboard gutter-page cf-footer__inner">
+        <div>
+          <InfraosWordmark tone="on-dark" markSize="size-9" />
+          <p className="cf-footer__mission">{footer.identityLine}</p>
         </div>
 
         <nav aria-label={footer.navLabel}>
-          <ul className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:gap-x-6 sm:gap-y-2">
-            {quickLinks.map((item) => (
+          <p className="cf-footer__col-title">{footer.navExploreTitle}</p>
+          <ul className="cf-footer__links">
+            {exploreLinks.map((item) => (
+              <li key={item.href}>
+                <FooterLink href={item.href}>{item.label}</FooterLink>
+              </li>
+            ))}
+          </ul>
+        </nav>
+
+        <nav aria-label={footer.navInformationTitle}>
+          <p className="cf-footer__col-title">{footer.navInformationTitle}</p>
+          <ul className="cf-footer__links">
+            {informationLinks.map((item) => (
               <li key={item.href}>
                 <FooterLink href={item.href} external={item.external}>
                   {item.label}
@@ -85,30 +95,18 @@ export function PublicSiteFooter({
           </ul>
         </nav>
 
-        <div className="space-y-2">
-          <p id="footer-lifecycle-label" className="type-caption text-text-muted">
-            {copy.lifecycle.eyebrow}
-          </p>
-          <LifecycleStepper
-            stages={lifecycleStagesForStepper(copy)}
-            variant="compact"
-            labelledBy="footer-lifecycle-label"
+        <div className="cf-footer__bottom">
+          <PublicLanguageNav
+            locale={locale}
+            label={footer.languageLabel}
+            infoSlug={infoSlug ?? null}
+            className="[&_a]:text-slate-300 [&_a:hover]:text-white [&_span[aria-current]]:text-white"
           />
-        </div>
-
-        <PublicLanguageNav
-          locale={locale}
-          label={footer.languageLabel}
-          infoSlug={infoSlug ?? null}
-          className="[&_a]:text-slate-300 [&_a:hover]:text-white [&_span[aria-current]]:text-white"
-        />
-
-        <div className="space-y-3 border-t border-border pt-6">
-          <p className="type-body-small max-w-prose text-text-secondary">{footer.disclosure}</p>
-          <p className="type-caption text-text-muted">
+          <p className="cf-footer__disclosure">{footer.disclosure}</p>
+          <p className="cf-footer__meta">
             © {year} {footer.copyrightPrefix}
           </p>
-          <p className="type-caption max-w-prose text-text-muted">{copy.translationDraftNote}</p>
+          <p className="cf-footer__meta">{copy.translationDraftNote}</p>
         </div>
       </div>
     </footer>

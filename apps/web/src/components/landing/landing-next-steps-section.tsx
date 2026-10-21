@@ -6,6 +6,7 @@ import type { PublicLandingCopy } from "@/lib/landing/messages";
 import {
   FEATURES_SECTION_ANCHOR,
   HOW_IT_WORKS_SECTION_ANCHOR,
+  SOLUTION_SECTION_ANCHOR,
 } from "@/lib/landing/navigation";
 import { PREVIEW_SECTION_ANCHOR } from "@/lib/landing/preview-data";
 
@@ -13,6 +14,7 @@ const STEP_HREF: Record<NextStepAnchor, string> = {
   features: `#${FEATURES_SECTION_ANCHOR}`,
   lifecycle: `#${HOW_IT_WORKS_SECTION_ANCHOR}`,
   preview: `#${PREVIEW_SECTION_ANCHOR}`,
+  solution: `#${SOLUTION_SECTION_ANCHOR}`,
 };
 
 export function LandingNextStepsSection({ copy }: { copy: PublicLandingCopy }) {
@@ -24,36 +26,50 @@ export function LandingNextStepsSection({ copy }: { copy: PublicLandingCopy }) {
     <section
       id={NEXT_STEPS_SECTION_ANCHOR}
       aria-labelledby="next-steps-heading"
-      className="scroll-mt-28 border-b border-border bg-surface"
+      className="cf-next-steps scroll-mt-28"
       tabIndex={-1}
     >
-      <div className="container-dashboard gutter-page public-section-pad">
-        <header className="mx-auto max-w-prose space-y-3 text-center md:text-start">
-          <p className="type-label text-link">{next.eyebrow}</p>
-          <h2 id="next-steps-heading" className="type-section-title text-balance text-text-primary">
+      <svg
+        className="cf-next-steps__route"
+        viewBox="0 0 800 200"
+        preserveAspectRatio="none"
+        aria-hidden
+      >
+        <path
+          d="M0 120 Q 200 80, 400 100 T 800 90"
+          fill="none"
+          stroke="#FF5B00"
+          strokeWidth="3"
+          strokeDasharray="12 8"
+          opacity="0.6"
+        />
+        <path
+          d="M0 140 H 800"
+          fill="none"
+          stroke="#279541"
+          strokeWidth="2"
+          opacity="0.35"
+        />
+      </svg>
+      <div className="container-dashboard gutter-page cf-next-steps__inner">
+        <header className="max-w-prose space-y-3">
+          <p className="cf-transparency-section__eyebrow cf-gis-section__eyebrow">{next.eyebrow}</p>
+          <h2 id="next-steps-heading" className="cf-next-steps__title text-balance">
             {next.title}
           </h2>
-          <p className="type-body text-text-secondary">{next.intro}</p>
+          <p className="cf-next-steps__intro">{next.intro}</p>
         </header>
 
-        <div className="mx-auto mt-8 flex max-w-prose flex-col gap-3 sm:flex-row sm:flex-wrap">
-          <Link
-            href={primaryHref}
-            className="public-motion-interactive inline-flex min-h-11 items-center justify-center rounded-md bg-primary px-4 py-2 text-primary-foreground type-body-small hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-          >
+        <div className="cf-next-steps__actions">
+          <Link href={primaryHref} className="cf-next-steps__primary">
             {next.primaryLabel}
           </Link>
-          <Link
-            href={secondaryHref}
-            className="public-motion-interactive inline-flex min-h-11 items-center justify-center rounded-md border border-border bg-background px-4 py-2 type-body-small text-text-primary hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-          >
+          <Link href={secondaryHref} className="cf-next-steps__secondary">
             {next.secondaryLabel}
           </Link>
         </div>
 
-        <p className="type-caption mx-auto mt-6 max-w-prose text-center text-text-muted md:text-start">
-          {next.staffNote}
-        </p>
+        <p className="cf-next-steps__note">{next.staffNote}</p>
       </div>
     </section>
   );

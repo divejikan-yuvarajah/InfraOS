@@ -18,8 +18,8 @@ export function PublicFaqPage({ locale }: { locale: PublicLocale }) {
   const page = copy.infoPages.faq;
 
   return (
-    <div className="public-site public-visual-rescue flex min-h-full flex-1 flex-col">
-      <PublicSiteHeader locale={locale} copy={copy} infoSlug="faq" />
+    <div lang={locale} className="public-site public-connected-future flex min-h-full flex-1 flex-col">
+      <PublicSiteHeader locale={locale} copy={copy} connectedFuture infoSlug="faq" />
       <main
         id={MAIN_CONTENT_ID}
         lang={locale}
@@ -27,7 +27,7 @@ export function PublicFaqPage({ locale }: { locale: PublicLocale }) {
         className="flex min-w-0 flex-1 flex-col scroll-mt-28 outline-none"
       >
         <div className="container-dashboard gutter-page pt-10">
-          <header className="mb-4 max-w-prose space-y-4">
+          <header className="mb-2 max-w-prose space-y-4">
             <p className="type-caption text-text-muted">
               <Link
                 href={publicHomePath(locale)}
@@ -36,16 +36,11 @@ export function PublicFaqPage({ locale }: { locale: PublicLocale }) {
                 {copy.nav.home}
               </Link>
             </p>
-            <h1 className="type-page-title text-text-primary">{page.title}</h1>
+            <h1 className="cf-info-page__title">{page.title}</h1>
             <p className="type-body text-text-secondary">{page.intro}</p>
-            {page.sections.map((section) => (
-              <p key={section.id} className="type-body-small text-text-muted">
-                {section.body}
-              </p>
-            ))}
           </header>
         </div>
-        <LandingFaqSection copy={copy} />
+        <LandingFaqSection copy={copy} locale={locale} showFullPageLink={false} />
       </main>
       <PublicSiteFooter copy={copy} locale={locale} infoSlug="faq" />
     </div>

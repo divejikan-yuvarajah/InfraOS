@@ -9,20 +9,27 @@ export function ProductGisPreviewSection({ copy }: { copy: PublicLandingCopy }) 
     <section
       id={PREVIEW_SECTION_ANCHOR}
       aria-labelledby="preview-heading"
-      className="scroll-mt-28 border-b border-border bg-background"
+      className="cf-gis-section scroll-mt-28"
       tabIndex={-1}
     >
-      <div className="container-dashboard gutter-page public-section-pad grid items-start gap-10 lg:grid-cols-2 lg:gap-14">
-        <header className="max-w-prose space-y-3">
-          <p className="type-label text-link">{preview.eyebrow}</p>
-          <h2 id="preview-heading" className="type-section-title text-balance text-text-primary">
+      <div className="container-dashboard gutter-page cf-gis-section__inner">
+        <header className="min-w-0 space-y-3">
+          <p className="cf-gis-section__eyebrow">{preview.eyebrow}</p>
+          <h2 id="preview-heading" className="cf-gis-section__title text-balance">
             {preview.title}
           </h2>
-          <p className="type-body text-text-secondary">{preview.intro}</p>
-          <p className="public-demo-callout type-body-small text-text-primary">{preview.disclaimer}</p>
+          <p className="cf-gis-section__intro">{preview.intro}</p>
+          <p className="cf-gis-badge">
+            <span className="cf-gis-badge__dot" aria-hidden />
+            {preview.syntheticBadge}
+          </p>
           <p className="type-body-small text-text-secondary">{preview.statusNote}</p>
         </header>
-        <CoordinationPreviewFigure copy={copy} />
+
+        <div className="min-w-0">
+          <CoordinationPreviewFigure copy={copy} />
+          <p className="mt-3 type-body-small text-text-muted">{preview.disclaimer}</p>
+        </div>
       </div>
     </section>
   );

@@ -21,16 +21,16 @@ export function PublicHowItWorksPage({ locale }: { locale: PublicLocale }) {
   const stages = lifecycleStagesForStepper(copy);
 
   return (
-    <div className="public-site public-visual-rescue flex min-h-full flex-1 flex-col">
-      <PublicSiteHeader locale={locale} copy={copy} infoSlug="how-it-works" />
+    <div lang={locale} className="public-site public-connected-future flex min-h-full flex-1 flex-col">
+      <PublicSiteHeader locale={locale} copy={copy} connectedFuture infoSlug="how-it-works" />
       <main
         id={MAIN_CONTENT_ID}
         lang={locale}
         tabIndex={-1}
-        className="flex min-w-0 flex-1 flex-col scroll-mt-28 outline-none"
+        className="cf-info-page flex min-w-0 flex-1 flex-col scroll-mt-28 outline-none"
       >
         <article className="container-dashboard gutter-page public-section-pad">
-          <header className="mb-8 max-w-prose space-y-4">
+          <header className="cf-info-page__banner mb-8 max-w-prose space-y-4">
             <p className="type-caption text-text-muted">
               <Link
                 href={publicHomePath(locale)}
@@ -39,7 +39,7 @@ export function PublicHowItWorksPage({ locale }: { locale: PublicLocale }) {
                 {copy.nav.home}
               </Link>
             </p>
-            <h1 className="type-page-title text-text-primary">{page.title}</h1>
+            <h1 className="cf-info-page__title">{page.title}</h1>
             <p className="type-body text-text-secondary">{page.intro}</p>
           </header>
 

@@ -1,0 +1,321 @@
+/**
+ * Batch 2B Part 3 — FAQ, next steps, footer, info pages.
+ */
+
+.public-connected-future .cf-faq-section {
+  background: #fff;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.public-connected-future .cf-faq-section__inner {
+  padding-block: clamp(2.5rem, 5vw, 4rem);
+}
+
+.public-connected-future .cf-faq-topic {
+  margin-top: 2rem;
+}
+
+.public-connected-future .cf-faq-topic__title {
+  font-family: var(--font-display, var(--font-sans));
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--cf-maroon, #8c1f28);
+  margin-bottom: 0.75rem;
+}
+
+.public-connected-future .cf-faq-list {
+  display: grid;
+  gap: 0.5rem;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.public-connected-future .cf-faq-item {
+  border-radius: 0.625rem;
+  border: 1px solid #e2e8f0;
+  background: var(--cf-surface, #f8fafc);
+}
+
+.public-connected-future .cf-faq-item[open] {
+  background: #fff;
+  box-shadow: 0 8px 24px rgb(17 24 39 / 0.06);
+}
+
+.public-connected-future .cf-faq-item__summary {
+  cursor: pointer;
+  list-style: none;
+  padding: 0.875rem 1rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  line-height: 1.4;
+  color: #111827;
+}
+
+.public-connected-future .cf-faq-item__summary::-webkit-details-marker {
+  display: none;
+}
+
+.public-connected-future .cf-faq-item__summary:focus-visible {
+  outline: 2px solid var(--cf-orange, #ff5b00);
+  outline-offset: 2px;
+  border-radius: 0.5rem;
+}
+
+.public-connected-future .cf-faq-item__chevron {
+  float: right;
+  margin-left: 0.75rem;
+  color: #64748b;
+  transition: transform 0.2s ease;
+}
+
+.public-connected-future .cf-faq-item[open] .cf-faq-item__chevron {
+  transform: rotate(180deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .public-connected-future .cf-faq-item__chevron {
+    transition: none;
+  }
+}
+
+.public-connected-future .cf-faq-item__answer {
+  padding: 0 1rem 1rem;
+  font-size: 0.875rem;
+  line-height: 1.55;
+  color: #475569;
+  border-top: 1px solid #e2e8f0;
+  margin-top: 0;
+  padding-top: 0.75rem;
+}
+
+.public-connected-future .cf-faq-full-page {
+  margin-top: 2rem;
+  padding: 1rem 1.25rem;
+  border-radius: 0.625rem;
+  border: 1px dashed #cbd5e1;
+  background: #f8fafc;
+  font-size: 0.875rem;
+  color: #475569;
+}
+
+.public-connected-future .cf-faq-full-page a {
+  font-weight: 600;
+  color: var(--cf-orange, #ff5b00);
+  text-underline-offset: 3px;
+}
+
+.public-connected-future .cf-next-steps {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, #111827 0%, #1e293b 55%, #0f172a 100%);
+  border-bottom: 1px solid #334155;
+  color: #f8fafc;
+}
+
+.public-connected-future .cf-next-steps__route {
+  position: absolute;
+  inset: 0;
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+.public-connected-future .cf-next-steps__inner {
+  position: relative;
+  padding-block: clamp(2.5rem, 5vw, 3.75rem);
+}
+
+.public-connected-future .cf-next-steps__title {
+  font-family: var(--font-display, var(--font-sans));
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 700;
+  color: #f8fafc;
+}
+
+.public-connected-future .cf-next-steps__intro {
+  color: #94a3b8;
+  max-width: 36rem;
+}
+
+.public-connected-future .cf-next-steps__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+@media (min-width: 640px) {
+  .public-connected-future .cf-next-steps__actions {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+}
+
+.public-connected-future .cf-next-steps__primary {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 1.25rem;
+  border-radius: 0.5rem;
+  background: var(--cf-orange, #ff5b00);
+  color: #fff;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.public-connected-future .cf-next-steps__primary:hover {
+  background: #e65300;
+}
+
+.public-connected-future .cf-next-steps__secondary {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 1.25rem;
+  border-radius: 0.5rem;
+  border: 1px solid #64748b;
+  color: #f8fafc;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.public-connected-future .cf-next-steps__primary:focus-visible,
+.public-connected-future .cf-next-steps__secondary:focus-visible {
+  outline: 2px solid var(--cf-yellow, #feb600);
+  outline-offset: 2px;
+}
+
+.public-connected-future .cf-next-steps__note {
+  margin-top: 1rem;
+  font-size: 0.75rem;
+  color: #64748b;
+  max-width: 40rem;
+}
+
+.public-connected-future .cf-footer {
+  background: #0f172a;
+  color: #e2e8f0;
+  border-top: 3px solid var(--cf-orange, #ff5b00);
+}
+
+.public-connected-future .cf-footer__inner {
+  padding-block: 2.5rem 2rem;
+  display: grid;
+  gap: 2rem;
+}
+
+@media (min-width: 768px) {
+  .public-connected-future .cf-footer__inner {
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr) minmax(0, 0.9fr);
+    gap: 2.5rem;
+  }
+}
+
+.public-connected-future .cf-footer__mission {
+  font-size: 0.8125rem;
+  line-height: 1.55;
+  color: #94a3b8;
+  margin-top: 0.75rem;
+  max-width: 22rem;
+}
+
+.public-connected-future .cf-footer__col-title {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--cf-yellow, #feb600);
+  margin-bottom: 0.75rem;
+}
+
+.public-connected-future .cf-footer__links {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.public-connected-future .cf-footer__links a {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  font-size: 0.8125rem;
+  color: #cbd5e1;
+  text-decoration: none;
+}
+
+.public-connected-future .cf-footer__links a:hover {
+  color: #fff;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.public-connected-future .cf-footer__links a:focus-visible {
+  outline: 2px solid var(--cf-yellow, #feb600);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+.public-connected-future .cf-footer__bottom {
+  grid-column: 1 / -1;
+  border-top: 1px solid #334155;
+  padding-top: 1.25rem;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.public-connected-future .cf-footer__disclosure {
+  font-size: 0.8125rem;
+  line-height: 1.55;
+  color: #94a3b8;
+  max-width: 48rem;
+}
+
+.public-connected-future .cf-footer__meta {
+  font-size: 0.6875rem;
+  color: #64748b;
+}
+
+.public-connected-future .cf-info-page {
+  background: linear-gradient(180deg, #f8fafc 0%, #fff 12rem);
+}
+
+.public-connected-future .cf-info-page__banner {
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.public-connected-future .cf-info-page__title {
+  font-family: var(--font-display, var(--font-sans));
+  font-size: clamp(1.75rem, 3.5vw, 2.25rem);
+  font-weight: 700;
+  color: #111827;
+}
+
+.public-connected-future .cf-info-page__section {
+  padding: 1.25rem 0;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.public-connected-future .cf-info-page__section h2 {
+  font-family: var(--font-display, var(--font-sans));
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.public-connected-future .cf-info-page__section p {
+  margin-top: 0.5rem;
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  color: #475569;
+  max-width: 42rem;
+}
