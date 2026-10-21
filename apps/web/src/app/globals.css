@@ -9,6 +9,7 @@
 @import "../styles/public-landing-visual-rescue.css";
 @import "../styles/public-connected-future.css";
 @import "../styles/public-batch-2b-part1.css";
+@import "../styles/public-batch-2b-part2.css";
 
 @custom-variant dark (&:is(.dark *));
 

@@ -8,31 +8,36 @@ export function TrustInformationSection({ copy }: { copy: PublicLandingCopy }) {
     <section
       id={TRUST_SECTION_ANCHOR}
       aria-labelledby="trust-heading"
-      className="scroll-mt-28 border-b border-border bg-surface"
+      className="cf-trust-section scroll-mt-28"
       tabIndex={-1}
     >
-      <div className="container-dashboard gutter-page public-section-pad">
-        <header className="mx-auto max-w-prose space-y-3">
-          <p className="type-label text-link">{trust.eyebrow}</p>
-          <h2 id="trust-heading" className="type-section-title text-balance text-text-primary">
+      <div className="container-dashboard gutter-page cf-trust-section__inner">
+        <div className="cf-trust-ribbon">
+          <span className="cf-trust-ribbon__mark">INFRAOS</span>
+          <span className="cf-trust-ribbon__tag">{trust.ribbonLabel}</span>
+        </div>
+
+        <header className="max-w-prose space-y-3">
+          <p className="cf-gis-section__eyebrow">{trust.eyebrow}</p>
+          <h2 id="trust-heading" className="cf-gis-section__title text-balance">
             {trust.title}
           </h2>
-          <p className="type-body text-text-secondary">{trust.intro}</p>
+          <p className="cf-gis-section__intro">{trust.intro}</p>
         </header>
 
-        <ol className="mt-10 max-w-3xl space-y-6 border-s border-border ps-6">
-          {trust.points.map((point, index) => (
+        <ul className="cf-trust-grid list-none p-0 m-0 mt-8">
+          {trust.points.map((point) => (
             <li key={point.id}>
-              <p className="type-caption text-text-muted">{String(index + 1).padStart(2, "0")}</p>
-              <h3 className="type-card-title mt-1 text-text-primary">{point.title}</h3>
-              <p className="type-body-small mt-2 text-text-secondary">{point.body}</p>
+              <article className="cf-trust-card">
+                <h3 className="cf-trust-card__title">{point.title}</h3>
+                <p className="cf-trust-card__body">{point.body}</p>
+              </article>
             </li>
           ))}
-        </ol>
+        </ul>
 
-        <p className="type-body-small mx-auto mt-8 max-w-prose rounded-md border border-border bg-muted/40 px-3 py-2 text-text-primary">
-          {trust.demoNotice}
-        </p>
+        <p className="cf-trust-notice">{trust.demoNotice}</p>
+        <p className="cf-audiences-staff-note mt-3">{trust.humanReviewNote}</p>
       </div>
     </section>
   );

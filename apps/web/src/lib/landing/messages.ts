@@ -160,6 +160,10 @@ export type PublicLandingCopy = {
     title: string;
     intro: string;
     disclaimer: string;
+    syntheticBadge: string;
+    agencyRoadLabel: string;
+    agencyWaterLabel: string;
+    sharedSegmentLabel: string;
     figureTitle: string;
     figureDescription: string;
     figureCaption: string;
@@ -177,13 +181,17 @@ export type PublicLandingCopy = {
     eyebrow: string;
     title: string;
     intro: string;
+    ribbonLabel: string;
     demoNotice: string;
+    humanReviewNote: string;
     points: readonly { id: string; title: string; body: string }[];
   };
   transparency: {
     eyebrow: string;
     title: string;
     intro: string;
+    exploreBandTitle: string;
+    plannedBandTitle: string;
     tableCaption: string;
     colModule: string;
     colStatus: string;
@@ -617,6 +625,10 @@ const en: PublicLandingCopy = {
       "This diagram shows a conceptual shared road section where resurfacing and water-pipeline work are both planned. It is not a live map, a computed conflict, or an official project.",
     disclaimer:
       "Illustrative prototype — not live government data. Conceptual diagram, not to scale.",
+    syntheticBadge: "Illustrative example · Synthetic data · Not a live map",
+    agencyRoadLabel: "Road agency · resurfacing plan",
+    agencyWaterLabel: "Water utility · pipeline plan",
+    sharedSegmentLabel: "Shared corridor segment",
     figureTitle: "Conceptual overlap of road resurfacing and water-pipeline work",
     figureDescription:
       "A solid orange line represents planned road resurfacing. A dashed grey line represents planned water-pipeline work on part of the same corridor. A dashed maroon box marks the shared section. The drawing is not a geographic map.",
@@ -638,8 +650,11 @@ const en: PublicLandingCopy = {
     title: "How this demonstration handles information and access",
     intro:
       "INFRAOS is a university GovTech prototype. This page explains coordination concepts in plain language—it is not an official government service or a certified security product.",
+    ribbonLabel: "University-developed demonstration",
     demoNotice:
       "About this demonstration: examples and diagrams use synthetic data. They do not represent live national infrastructure records or ministry approvals.",
+    humanReviewNote:
+      "Overlap hints are for human review. RoadSync does not approve work, certify safety, or replace agency decision-makers.",
     points: [
       {
         id: "coordination",
@@ -672,6 +687,8 @@ const en: PublicLandingCopy = {
     title: "What exists in this repository today",
     intro:
       "This table lists implementation status for major modules described on the public site. It replaces marketing statistics—nothing here is a live operational count.",
+    exploreBandTitle: "Available to explore on this public site",
+    plannedBandTitle: "Planned, internal, or not linked here",
     tableCaption: "INFRAOS module implementation status for the university demonstration",
     colModule: "Module",
     colStatus: "Status",
@@ -1381,6 +1398,10 @@ const si: PublicLandingCopy = {
       "මෙම රූප සටහන මාර්ග ප්‍රතිසංස්කරණය සහ ජල නල වැඩ දෙකම සැලසුම් කළ සංකල්පීය හවුල් කොටසක් පෙන්වයි. මෙය සජීවී සිතියමක්, ගණනය කළ ගැටුමක් හෝ නිල ව්‍යාපෘතියක් නොවේ.",
     disclaimer:
       "ආදර්ශන මූලාකෘතිය — සජීවී රජයේ දත්ත නොවේ. සංකල්පීය රූප සටහනකි; පරිමාණයට නොවේ.",
+    syntheticBadge: "ආදර්ශන උදාහරණ · කෘත්‍රිම දත්ත · සජීවී සිතියමක් නොවේ",
+    agencyRoadLabel: "මාර්ග ආයතන · ප්‍රතිසංස්කරණ සැලසුම",
+    agencyWaterLabel: "ජල උපයෝගිතාව · නල සැලසුම",
+    sharedSegmentLabel: "හවුල් කොරිඩෝ කොටස",
     figureTitle: "මාර්ග ප්‍රතිසංස්කරණය සහ ජල නල වැඩ අතිච්ඡාදනයේ සංකල්පය",
     figureDescription:
       "තැඹිලි ඝන රේඛාව සැලසුම් කළ මාර්ග ප්‍රතිසංස්කරණයයි. ඉරි ඇති අළු රේඛාව එම කොරිඩෝවේ කොටසක සැලසුම් කළ ජල නල වැඩයි. ඉරි ඇති මෙරූන් කොටුව හවුල් කොටස සලකුණු කරයි. මෙය භූගෝලීය සිතියමක් නොවේ.",
@@ -1402,8 +1423,11 @@ const si: PublicLandingCopy = {
     title: "මෙම ආදර්ශනය තොරතුරු සහ ප්‍රවේශය හසුරුවන ආකාරය",
     intro:
       "INFRAOS යනු විශ්වවිද්‍යාල GovTech මූලාකෘතියකි. මෙම පිටුව සම්බන්ධීකරණ සංකල්ප පැහැදිලි කරයි — නිල රජයේ සේවාවක් හෝ සහතික කළ ආරක්ෂණ නිෂ්පාදනයක් නොවේ.",
+    ribbonLabel: "විශ්වවිද්‍යාල ආදර්ශනය",
     demoNotice:
       "මෙම ආදර්ශනය ගැන: උදාහරණ සහ රූප සටහන් කෘත්‍රිම දත්ත භාවිතා කරයි. ඒවා සජීවී ජාතික යටිතල වාර්තා හෝ අමාත්‍යාංශ අනුමැතිය නොවේ.",
+    humanReviewNote:
+      "අතිච්ඡාදන ඉඟි මිනිස් සමාලෝචනය සඳහාය. RoadSync වැඩ අනුමත නොකරයි, ආරක්ෂාව සහතික නොකරයි, ආයතන තීරණකරුවන් replace නොකරයි.",
     points: [
       {
         id: "coordination",
@@ -1430,6 +1454,11 @@ const si: PublicLandingCopy = {
           "මෙම landing page databases විමසන්නේ නැත හෝ සැබෑ project coordinates ප්‍රකාශ නොකරයි. අනාගත මහජන-ආරක්ෂිත views සඳහා වෙනම සමාලෝචනය අවශ්‍ය.",
       },
     ],
+  },
+  transparency: {
+    ...en.transparency,
+    exploreBandTitle: "මෙම මහජන අඩවියේ explore කළ හැකි දේ",
+    plannedBandTitle: "සැලසුම්, අභ්‍යන්තර හෝ මෙහි link නොකළ දේ",
   },
   faq: {
     eyebrow: "නිතර අසන ප්‍රශ්න",
@@ -1931,6 +1960,10 @@ const ta: PublicLandingCopy = {
       "இந்த வரைபடம் சாலை புதுப்பிப்பும் நீர் குழாய் பணியும் திட்டமிடப்பட்ட ஒரு கருத்துப்பூர்வ பொது பகுதியைக் காட்டுகிறது. இது நேரடி வரைபடம், கணக்கிடப்பட்ட முரண்பாடு அல்லது அதிகாரப்பூர்வ திட்டம் அல்ல.",
     disclaimer:
       "எடுத்துக்காட்டு முன்மாதிரி — நேரடி அரசு தரவு அல்ல. கருத்து வரைபடம்; அளவுகோலுக்கு அல்ல.",
+    syntheticBadge: "எடுத்துக்காட்டு · செயற்கைத் தரவு · நேரடி வரைபடம் அல்ல",
+    agencyRoadLabel: "சாலை நிறுவனம் · புதுப்பிப்பு திட்டம்",
+    agencyWaterLabel: "நீர் பயன்பாடு · குழாய் திட்டம்",
+    sharedSegmentLabel: "பொது பாதைப் பகுதி",
     figureTitle: "சாலை புதுப்பிப்பு மற்றும் நீர் குழாய் பணியின் கருத்து ஒன்றுசேர்வு",
     figureDescription:
       "திட ஆரஞ்சு கோடு திட்டமிட்ட சாலை புதுப்பிப்பு. கோடுகள் கொண்ட சாம்பல் கோடு அதே பாதையின் ஒரு பகுதியில் திட்டமிட்ட நீர் குழாய் பணி. கோடுகள் கொண்ட மெரூன் பெட்டி பொது பகுதியைக் குறிக்கிறது. இது புவியியல் வரைபடம் அல்ல.",
@@ -1952,8 +1985,11 @@ const ta: PublicLandingCopy = {
     title: "இந்தச் செயல்விளக்கம் தகவலையும் அணுகலையும் எவ்வாறு கையாளுகிறது",
     intro:
       "INFRAOS ஒரு பல்கலைக்கழக GovTech முன்மாதிரி. இந்தப் பக்கம் ஒருங்கிணைப்புக் கருத்துகளை விளக்குகிறது — அதிகாரப்பூர்வ அரசு சேவை அல்ல, சான்றளிக்கப்பட்ட பாதுகாப்பு தயாரிப்பு அல்ல.",
+    ribbonLabel: "பல்கலைக்கழக செயல்விளக்கம்",
     demoNotice:
       "இந்தச் செயல்விளக்கம் பற்றி: எடுத்துக்காட்டுகள் மற்றும் வரைபடங்கள் செயற்கைத் தரவைப் பயன்படுத்துகின்றன. அவை நேரடி தேசிய உள்கட்டமைப்பு பதிவுகள் அல்ல.",
+    humanReviewNote:
+      "ஒன்றுசேர்வு குறிப்புகள் மனித மதிப்பாய்வுக்கானவை. RoadSync பணியை அனுமதிக்காது, பாதுகாப்பை சான்றளிக்காது, நிறுவன முடிவெடுப்பாளர்களை மாற்றாது.",
     points: [
       {
         id: "coordination",
@@ -1980,6 +2016,11 @@ const ta: PublicLandingCopy = {
           "இந்த landing page databases வினவாது, real project coordinates வெளியிடாது. எதிர்கால public-safe views தனி review தேவை.",
       },
     ],
+  },
+  transparency: {
+    ...en.transparency,
+    exploreBandTitle: "இந்தப் பொது தளத்தில் ஆராயலாம்",
+    plannedBandTitle: "திட்டம், உள்ளகம் அல்லது இங்கு இணைக்கப்படவில்லை",
   },
   faq: {
     eyebrow: "அடிக்கடி கேட்கப்படும் கேள்விகள்",

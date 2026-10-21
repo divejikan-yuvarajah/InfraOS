@@ -1,0 +1,584 @@
+/**
+ * Batch 2B Part 2 — GIS preview, audiences, trust, transparency.
+ */
+
+/* —— GIS preview —— */
+.public-connected-future .cf-gis-section {
+  background: linear-gradient(180deg, #f8fafc 0%, #fff 55%);
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.public-connected-future .cf-gis-section__inner {
+  padding-block: clamp(2.5rem, 5vw, 4rem);
+  display: grid;
+  gap: 2rem;
+}
+
+@media (min-width: 1024px) {
+  .public-connected-future .cf-gis-section__inner {
+    grid-template-columns: minmax(0, 0.42fr) minmax(0, 0.58fr);
+    gap: 2.5rem;
+    align-items: start;
+  }
+}
+
+.public-connected-future .cf-gis-section__eyebrow {
+  font-family: var(--font-display, var(--font-sans));
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--cf-maroon, #8c1f28);
+}
+
+.public-connected-future .cf-gis-section__title {
+  font-family: var(--font-display, var(--font-sans));
+  font-size: clamp(1.625rem, 3vw, 2.125rem);
+  font-weight: 700;
+  line-height: 1.15;
+  color: #111827;
+}
+
+.public-connected-future .cf-gis-section__intro {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: #475569;
+  max-width: 38rem;
+}
+
+.public-connected-future .cf-gis-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  padding: 0.4rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid rgb(255 91 0 / 0.35);
+  background: rgb(255 91 0 / 0.08);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #9a3412;
+}
+
+.public-connected-future .cf-gis-badge__dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 999px;
+  background: var(--cf-orange, #ff5b00);
+}
+
+.public-connected-future .cf-gis-canvas {
+  border-radius: 0.875rem;
+  border: 1px solid #e2e8f0;
+  background: #111827;
+  padding: clamp(1rem, 2.5vw, 1.5rem);
+  box-shadow: 0 20px 48px rgb(17 24 39 / 0.12);
+}
+
+.public-connected-future .cf-gis-canvas__grid {
+  display: grid;
+  gap: 1rem;
+}
+
+@media (min-width: 640px) {
+  .public-connected-future .cf-gis-canvas__grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 11rem);
+  }
+}
+
+.public-connected-future .cf-gis-map {
+  position: relative;
+  min-height: 11rem;
+  border-radius: 0.5rem;
+  background: linear-gradient(145deg, #1e293b 0%, #0f172a 100%);
+  overflow: hidden;
+}
+
+.public-connected-future .cf-gis-map__svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.public-connected-future .cf-gis-map__labels {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.public-connected-future .cf-gis-map__chip {
+  position: absolute;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  line-height: 1.2;
+  padding: 0.2rem 0.45rem;
+  border-radius: 0.25rem;
+  background: rgb(248 250 252 / 0.95);
+  color: #111827;
+  max-width: 7.5rem;
+}
+
+.public-connected-future .cf-gis-map__chip--road {
+  top: 12%;
+  left: 4%;
+  border-left: 3px solid var(--cf-orange, #ff5b00);
+}
+
+.public-connected-future .cf-gis-map__chip--water {
+  top: 58%;
+  right: 6%;
+  border-left: 3px solid #64748b;
+}
+
+.public-connected-future .cf-gis-map__chip--shared {
+  bottom: 10%;
+  left: 38%;
+  border-left: 3px solid var(--cf-maroon, #8c1f28);
+}
+
+.public-connected-future .cf-gis-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  justify-content: center;
+}
+
+.public-connected-future .cf-gis-timeline__row {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.public-connected-future .cf-gis-timeline__label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: #cbd5e1;
+}
+
+.public-connected-future .cf-gis-timeline__bar {
+  height: 0.5rem;
+  border-radius: 999px;
+  background: #334155;
+  position: relative;
+  overflow: hidden;
+}
+
+.public-connected-future .cf-gis-timeline__fill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-radius: 999px;
+}
+
+.public-connected-future .cf-gis-timeline__fill--road {
+  left: 8%;
+  width: 72%;
+  background: var(--cf-orange, #ff5b00);
+}
+
+.public-connected-future .cf-gis-timeline__fill--water {
+  left: 28%;
+  width: 58%;
+  background: repeating-linear-gradient(
+    90deg,
+    #94a3b8 0,
+    #94a3b8 6px,
+    transparent 6px,
+    transparent 10px
+  );
+}
+
+.public-connected-future .cf-gis-timeline__fill--overlap {
+  left: 28%;
+  width: 38%;
+  background: rgb(254 182 0 / 0.85);
+  outline: 1px dashed var(--cf-maroon, #8c1f28);
+}
+
+.public-connected-future .cf-gis-legend {
+  margin-top: 1rem;
+  display: grid;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  color: #cbd5e1;
+}
+
+@media (min-width: 480px) {
+  .public-connected-future .cf-gis-legend {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.public-connected-future .cf-gis-legend__item {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.public-connected-future .cf-gis-footnote {
+  margin-top: 0.75rem;
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: #94a3b8;
+}
+
+/* —— Audiences pathways —— */
+.public-connected-future .cf-audiences-section {
+  background: #fff;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.public-connected-future .cf-audiences-section__inner {
+  padding-block: clamp(2.5rem, 5vw, 4rem);
+}
+
+.public-connected-future .cf-audiences-section__header {
+  max-width: 40rem;
+  margin-bottom: 2rem;
+}
+
+.public-connected-future .cf-audiences-pathways {
+  display: grid;
+  gap: 1rem;
+}
+
+@media (min-width: 768px) {
+  .public-connected-future .cf-audiences-pathways {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.public-connected-future .cf-audience-path {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 1rem;
+  padding: 1.25rem 1.25rem 1.25rem 1rem;
+  border-radius: 0.75rem;
+  border: 1px solid #e2e8f0;
+  background: var(--cf-surface, #f8fafc);
+  min-height: 100%;
+}
+
+.public-connected-future .cf-audience-path--citizens {
+  border-top: 3px solid var(--cf-green, #279541);
+}
+
+.public-connected-future .cf-audience-path--agency-teams {
+  border-top: 3px solid var(--cf-orange, #ff5b00);
+}
+
+.public-connected-future .cf-audience-path--field-teams {
+  border-top: 3px solid var(--cf-yellow, #feb600);
+}
+
+.public-connected-future .cf-audience-path--visitors {
+  border-top: 3px solid var(--cf-maroon, #8c1f28);
+}
+
+.public-connected-future .cf-audience-path__icon {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 0.5rem;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  color: #111827;
+}
+
+.public-connected-future .cf-audience-path__icon svg {
+  width: 1.35rem;
+  height: 1.35rem;
+  margin-top: 0.65rem;
+}
+
+.public-connected-future .cf-audience-path__title {
+  font-family: var(--font-display, var(--font-sans));
+  font-size: 1.0625rem;
+  font-weight: 700;
+  color: #111827;
+  line-height: 1.25;
+}
+
+.public-connected-future .cf-audience-path__body {
+  margin-top: 0.35rem;
+  font-size: 0.875rem;
+  line-height: 1.55;
+  color: #475569;
+}
+
+.public-connected-future .cf-audience-path__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-top: 0.75rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--cf-orange, #ff5b00);
+  text-decoration: none;
+}
+
+.public-connected-future .cf-audience-path__link:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.public-connected-future .cf-audience-path__link:focus-visible {
+  outline: 2px solid var(--cf-orange, #ff5b00);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+.public-connected-future .cf-audiences-aside {
+  margin-top: 2rem;
+  padding: 1.25rem 1.5rem;
+  border-radius: 0.75rem;
+  background: linear-gradient(90deg, rgb(39 149 65 / 0.06), rgb(255 91 0 / 0.04));
+  border: 1px solid #e2e8f0;
+}
+
+.public-connected-future .cf-audiences-aside__title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+.public-connected-future .cf-audiences-aside__list {
+  margin-top: 0.75rem;
+  display: grid;
+  gap: 0.5rem;
+  list-style: none;
+  padding: 0;
+}
+
+.public-connected-future .cf-audiences-aside__list li {
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: #475569;
+  padding-left: 1rem;
+  border-left: 2px solid var(--cf-green, #279541);
+}
+
+.public-connected-future .cf-audiences-staff-note {
+  margin-top: 1.25rem;
+  font-size: 0.8125rem;
+  line-height: 1.55;
+  color: #64748b;
+  max-width: 42rem;
+}
+
+/* —— Trust —— */
+.public-connected-future .cf-trust-section {
+  background: var(--cf-warm, #fffbeb);
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.public-connected-future .cf-trust-section__inner {
+  padding-block: clamp(2.25rem, 4vw, 3.5rem);
+}
+
+.public-connected-future .cf-trust-ribbon {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 1.25rem;
+  padding: 1rem 1.25rem;
+  border-radius: 0.75rem;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  margin-bottom: 1.75rem;
+}
+
+.public-connected-future .cf-trust-ribbon__mark {
+  font-family: var(--font-display, var(--font-sans));
+  font-weight: 800;
+  font-size: 0.875rem;
+  color: #111827;
+}
+
+.public-connected-future .cf-trust-ribbon__tag {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  background: rgb(140 31 40 / 0.1);
+  color: var(--cf-maroon, #8c1f28);
+}
+
+.public-connected-future .cf-trust-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+@media (min-width: 768px) {
+  .public-connected-future .cf-trust-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.public-connected-future .cf-trust-card {
+  padding: 1.125rem 1.25rem;
+  border-radius: 0.625rem;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+}
+
+.public-connected-future .cf-trust-card__title {
+  font-family: var(--font-display, var(--font-sans));
+  font-size: 1rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.public-connected-future .cf-trust-card__body {
+  margin-top: 0.35rem;
+  font-size: 0.8125rem;
+  line-height: 1.55;
+  color: #475569;
+}
+
+.public-connected-future .cf-trust-notice {
+  margin-top: 1.25rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  border-left: 4px solid var(--cf-orange, #ff5b00);
+  background: #fff;
+  font-size: 0.8125rem;
+  line-height: 1.55;
+  color: #334155;
+}
+
+/* —— Transparency —— */
+.public-connected-future .cf-transparency-section {
+  background: #111827;
+  color: #f8fafc;
+  border-bottom: 1px solid #1e293b;
+}
+
+.public-connected-future .cf-transparency-section__inner {
+  padding-block: clamp(2.5rem, 5vw, 3.75rem);
+}
+
+.public-connected-future .cf-transparency-section__eyebrow {
+  color: var(--cf-yellow, #feb600);
+}
+
+.public-connected-future .cf-transparency-section__title {
+  font-family: var(--font-display, var(--font-sans));
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 700;
+  color: #f8fafc;
+}
+
+.public-connected-future .cf-transparency-section__intro {
+  color: #94a3b8;
+  max-width: 40rem;
+}
+
+.public-connected-future .cf-transparency-bands {
+  margin-top: 2rem;
+  display: grid;
+  gap: 1.25rem;
+}
+
+@media (min-width: 1024px) {
+  .public-connected-future .cf-transparency-bands {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.public-connected-future .cf-transparency-band {
+  border-radius: 0.75rem;
+  padding: 1.25rem;
+  border: 1px solid #334155;
+  background: #1e293b;
+}
+
+.public-connected-future .cf-transparency-band--explore {
+  border-top: 3px solid var(--cf-orange, #ff5b00);
+}
+
+.public-connected-future .cf-transparency-band--planned {
+  border-top: 3px solid #64748b;
+  border-style: dashed;
+}
+
+.public-connected-future .cf-transparency-band__title {
+  font-family: var(--font-display, var(--font-sans));
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: #f8fafc;
+}
+
+.public-connected-future .cf-transparency-module {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #334155;
+}
+
+.public-connected-future .cf-transparency-module:first-of-type {
+  margin-top: 1rem;
+  padding-top: 0;
+  border-top: none;
+}
+
+.public-connected-future .cf-transparency-module__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.public-connected-future .cf-transparency-module__name {
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: #f8fafc;
+}
+
+.public-connected-future .cf-transparency-module__status {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  padding: 0.15rem 0.45rem;
+  border-radius: 999px;
+}
+
+.public-connected-future .cf-transparency-module__status--demo {
+  background: rgb(255 91 0 / 0.2);
+  color: #fdba74;
+}
+
+.public-connected-future .cf-transparency-module__status--planned {
+  border: 1px dashed #64748b;
+  color: #94a3b8;
+}
+
+.public-connected-future .cf-transparency-module__status--internal {
+  background: rgb(140 31 40 / 0.25);
+  color: #fca5a5;
+}
+
+.public-connected-future .cf-transparency-module__note {
+  margin-top: 0.35rem;
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: #94a3b8;
+}
+
+.public-connected-future .cf-transparency-footer {
+  margin-top: 1.5rem;
+  font-size: 0.8125rem;
+  line-height: 1.55;
+  color: #64748b;
+  max-width: 44rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .public-connected-future .cf-gis-section,
+  .public-connected-future .cf-audiences-section,
+  .public-connected-future .cf-trust-section,
+  .public-connected-future .cf-transparency-section {
+    scroll-behavior: auto;
+  }
+}
