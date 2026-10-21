@@ -100,40 +100,99 @@
   height: auto;
 }
 
-.public-connected-future .cf-gis-map__labels {
-  position: absolute;
-  inset: 0;
+.public-connected-future .cf-gis-callouts {
+  list-style: none;
+  margin: 0;
+  padding: 0;
   pointer-events: none;
 }
 
-.public-connected-future .cf-gis-map__chip {
-  position: absolute;
-  font-size: 0.6875rem;
+.public-connected-future .cf-gis-callouts__item {
+  font-size: 0.75rem;
   font-weight: 600;
-  line-height: 1.2;
-  padding: 0.2rem 0.45rem;
+  line-height: 1.35;
+  padding: 0.35rem 0.5rem;
   border-radius: 0.25rem;
-  background: rgb(248 250 252 / 0.95);
+  background: rgb(248 250 252 / 0.96);
   color: #111827;
-  max-width: 7.5rem;
 }
 
-.public-connected-future .cf-gis-map__chip--road {
-  top: 12%;
-  left: 4%;
-  border-left: 3px solid var(--cf-orange, #ff5b00);
+@media (max-width: 639px) {
+  .public-connected-future .cf-gis-map {
+    min-height: auto;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .public-connected-future .cf-gis-callouts {
+    display: grid;
+    gap: 0.35rem;
+    padding: 0.5rem 0.65rem 0.65rem;
+    background: linear-gradient(180deg, transparent, rgb(15 23 42 / 0.35));
+  }
+
+  .public-connected-future .cf-gis-callouts__item {
+    max-width: none;
+  }
+
+  .public-connected-future .cf-gis-callouts__item--road {
+    border-left: 3px solid var(--cf-orange, #ff5b00);
+  }
+
+  .public-connected-future .cf-gis-callouts__item--water {
+    border-left: 3px solid #64748b;
+  }
+
+  .public-connected-future .cf-gis-callouts__item--shared {
+    border-left: 3px solid var(--cf-maroon, #8c1f28);
+  }
 }
 
-.public-connected-future .cf-gis-map__chip--water {
-  top: 58%;
-  right: 6%;
-  border-left: 3px solid #64748b;
+@media (min-width: 640px) {
+  .public-connected-future .cf-gis-callouts {
+    position: absolute;
+    inset: 0;
+  }
+
+  .public-connected-future .cf-gis-callouts__item {
+    position: absolute;
+    font-size: 0.6875rem;
+    line-height: 1.2;
+    padding: 0.2rem 0.45rem;
+    max-width: 8.5rem;
+  }
+
+  .public-connected-future .cf-gis-callouts__item--road {
+    top: 10%;
+    left: 4%;
+    border-left: 3px solid var(--cf-orange, #ff5b00);
+  }
+
+  .public-connected-future .cf-gis-callouts__item--water {
+    top: 54%;
+    right: 4%;
+    left: auto;
+    max-width: 7.5rem;
+    border-left: 3px solid #64748b;
+  }
+
+  .public-connected-future .cf-gis-callouts__item--shared {
+    bottom: 8%;
+    left: 32%;
+    max-width: 9rem;
+    border-left: 3px solid var(--cf-maroon, #8c1f28);
+  }
 }
 
-.public-connected-future .cf-gis-map__chip--shared {
-  bottom: 10%;
-  left: 38%;
-  border-left: 3px solid var(--cf-maroon, #8c1f28);
+@media (min-width: 640px) and (max-width: 1023px) {
+  .public-connected-future .cf-gis-callouts__item--shared {
+    left: 24%;
+    bottom: 6%;
+  }
+
+  .public-connected-future .cf-gis-callouts__item--water {
+    top: 48%;
+  }
 }
 
 .public-connected-future .cf-gis-timeline {

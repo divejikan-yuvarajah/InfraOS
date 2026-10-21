@@ -1,9 +1,10 @@
 # Batch 2B — Part 1 review (Infrastructure Problem, Platform Features, Lifecycle)
 
 **Branch:** `feature/infraos-connected-future-ui`  
-**Base commit (Batch 2A):** `da4aea1` — *style(landing): Batch 2A hero and RoadSync visual corrections*  
-**Date:** 2026-10-21  
-**Scope:** Part 1 only — **STOP** before GIS/audiences/trust (Part 2) and FAQ/footer (Part 3).
+**Commit:** `bad548e` — *style(landing): Batch 2B Part 1 problem, features, and lifecycle sections*  
+**Base (Batch 2A):** `da4aea1` (on `development` via PR #45)  
+**Date:** 2026-10-21 (doc updated 2026-10-22)  
+**Scope:** Part 1 — delivered; Parts 2–3 follow in `db89d5e`, `caf9ea1`.
 
 ## Summary
 
@@ -128,10 +129,10 @@ cd docs/reviews/connected-future
 node capture-batch-2b-part1.mjs --base=http://localhost:3000 --prefix=batch-2b-after
 ```
 
-## Git status (Part 1 — not committed)
+## Git status (updated 2026-10-22)
 
-Expected modified/untracked: Part 1 components, CSS, `messages.ts`, `globals.css`, review doc + screenshots, capture script, `.gitignore` under `docs/reviews/connected-future/`. **No commit, push, or merge** per instruction.
+Part 1 **committed** as `bad548e`. Integration to `development` pending a single PR with Parts 1–3.
 
-## STOP
+## Follow-on
 
-Batch 2B **Part 1 complete**. Do **not** start Part 2 (GIS/audiences/trust), Part 3 (FAQ/footer), Phase 3, or Step 35 until authorized.
+Parts 2–3 and final corrections documented in sibling review files. Phase 3 internal UI and Step 35 **not started**.

@@ -8,9 +8,10 @@
 
 | Dimension | Status | Notes |
 | --- | --- | --- |
-| **Implementation completeness** | **COMPLETE** | Batch 2A + 2B Parts 1–3 implemented on feature branch |
-| **Engineering PR readiness** | **READY** | Automated gates green; 96 unit tests; build OK |
+| **Implementation completeness** | **COMPLETE** | Batch 2A + 2B Parts 1–3 on feature branch; GIS/anchor **corrections uncommitted** |
+| **Engineering PR readiness** | **READY** | Automated gates green (96 tests at `caf9ea1` + corrections re-run); build OK |
 | **Public launch readiness** | **PARTIAL / BLOCKED** | Pending native si/ta review, manual a11y/perf, owner/legal sign-off |
+| **Final integration approval** | **PENDING** | Owner approved design + Part 3; merge to `development` not yet approved |
 
 ## Batch summary (2A → 2B-3)
 
@@ -35,7 +36,7 @@ git diff --check        → PASS
 
 | Check | 320–1920 | en/si/ta | Result |
 | --- | --- | --- | --- |
-| Section anchors (#problem … #next-steps) | Spot (375/1440) | en + si samples | **PASS** (Playwright captures) |
+| Section anchors (#problem … #next-steps) | 320–1920 spot on GIS/lifecycle/FAQ/footer | en + si/ta samples | **PASS** (correction captures; sticky offset via `--cf-anchor-scroll-margin`) |
 | Supporting routes (/about, /faq, …) | About + /si/faq captured | si sample | **PARTIAL** (not every slug × locale) |
 | Keyboard tab order | — | — | **NOT RUN** |
 | Screen reader | — | — | **NOT RUN** |
@@ -77,19 +78,20 @@ Unchanged manifest: `docs/design/public-landing-photography-manifest.md` — Wik
 
 ## Suggested checkpoint commits (do not run automatically)
 
-Already on branch:
+On branch (newest first):
 
-1. `da4aea1` — Batch 2A hero and RoadSync  
-2. `bad548e` — Batch 2B Part 1  
-3. `db89d5e` — Batch 2B Part 2  
+1. `caf9ea1` — Batch 2B Part 3  
+2. `db89d5e` — Batch 2B Part 2  
+3. `bad548e` — Batch 2B Part 1  
+4. `da4aea1` — Batch 2A hero and RoadSync (**already on `development` via PR #45**)
 
-**Suggested next commit (Part 3 only):**
+**Suggested next commit (corrections only — not created automatically):**
 
 ```text
-style(landing): Batch 2B Part 3 FAQ, CTAs, footer, and info pages
+fix(landing): GIS mobile callouts and anchor scroll offset for sticky header
 ```
 
-**Optional squash / release commit after owner approval:**
+**Optional squash / release commit after integration approval:**
 
 ```text
 style(landing): complete trilingual Connected Future public-site redesign
@@ -103,12 +105,16 @@ style(landing): complete trilingual Connected Future public-site redesign
 - **Exclude:** `Prompts/` unless team wants them in repo  
 - **`development` → `main`:** separate release approval only  
 
-## Git state at review
+## Git state at review (2026-10-22, after `git fetch origin`)
 
-- **Branch:** `feature/infraos-connected-future-ui` tracking `origin/feature/infraos-connected-future-ui`  
-- **Uncommitted:** Part 3 files (~13 paths, +268/−139 lines)  
-- **Untracked:** Prompts, glossary, capture scripts, Part 3 screenshots  
+- **Branch:** `feature/infraos-connected-future-ui` → `origin/feature/infraos-connected-future-ui`  
+- **Merge-base with `origin/development`:** `da4aea1`  
+- **Ahead of `development`:** 3 commits (2B Parts 1–3)  
+- **`development` ahead of feature:** 5 commits (main sync merges — **no 2B Part code**)  
+- **Safest integration:** PR `feature/infraos-connected-future-ui` → `development` (no force-push/rebase without explicit approval)  
+- **Uncommitted:** GIS callouts + anchor scroll CSS (3 files under `apps/web`)  
+- **Untracked review assets:** `BATCH-2B-FINAL-CORRECTIONS-AND-INTEGRATION-READINESS.md`, `capture-batch-2b-corrections.mjs`, `batch-2b-corrected-*.png`  
 
 ## HARD STOP
 
-Phase 2 public-site Batch 2B is **complete pending your visual approval**. Phase 3 internal UI and Step 35 **not started**.
+Phase 2 public-site Batch 2B **implementation complete**; **integration approval pending**. Phase 3 internal UI and Step 35 **not started**.

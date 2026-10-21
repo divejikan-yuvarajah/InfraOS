@@ -64,11 +64,17 @@ export function CoordinationPreviewFigure({ copy }: { copy: PublicLandingCopy })
             <circle cx={PREVIEW_CORRIDOR.water.x1} cy={PREVIEW_CORRIDOR.y} r="6" fill="#279541" />
             <circle cx={PREVIEW_CORRIDOR.water.x2} cy={PREVIEW_CORRIDOR.y} r="6" fill="#279541" />
           </svg>
-          <div className="cf-gis-map__labels" aria-hidden>
-            <span className="cf-gis-map__chip cf-gis-map__chip--road">{preview.agencyRoadLabel}</span>
-            <span className="cf-gis-map__chip cf-gis-map__chip--water">{preview.agencyWaterLabel}</span>
-            <span className="cf-gis-map__chip cf-gis-map__chip--shared">{preview.sharedSegmentLabel}</span>
-          </div>
+          <ul className="cf-gis-callouts" aria-hidden>
+            <li className="cf-gis-callouts__item cf-gis-callouts__item--road">
+              {preview.agencyRoadLabel}
+            </li>
+            <li className="cf-gis-callouts__item cf-gis-callouts__item--water">
+              {preview.agencyWaterLabel}
+            </li>
+            <li className="cf-gis-callouts__item cf-gis-callouts__item--shared">
+              {preview.sharedSegmentLabel}
+            </li>
+          </ul>
         </div>
 
         <div className="cf-gis-timeline" aria-hidden={false}>

@@ -1,10 +1,10 @@
 # Batch 2B — Part 3 review (FAQ, CTAs, footer, supporting pages)
 
 **Branch:** `feature/infraos-connected-future-ui`  
-**HEAD (committed):** `db89d5e` — Part 2; Part 3 **uncommitted** at review time  
+**Commit:** `caf9ea1` — *style(landing): Batch 2B Part 3 FAQ, CTAs, footer, and info pages*  
 **Date:** 2026-10-22  
-**Prerequisites:** Parts 1–2 committed; owner authorized Part 3 in chat  
-**Status:** **READY FOR OWNER VISUAL APPROVAL**
+**Prerequisites:** Parts 1–2 committed (`bad548e`, `db89d5e`); owner authorized Part 3 in chat  
+**Status:** **DELIVERED** — owner approved Part 3 in chat; **final integration approval still pending** (merge to `development`).
 
 ## Summary
 
@@ -58,6 +58,10 @@ Part 3 completes the public support layer: **grouped FAQ** (`<details>`), **char
 - Footer: 44px-ish link targets, language nav preserved  
 - **NOT RUN:** axe, full SR walkthrough, 200%/400% zoom matrix
 
-## STOP
+## Integration
 
-Part 3 complete. See `PHASE-2-PUBLIC-SITE-FINAL-QA.md` for full Phase 2 gate. No commit/push/PR performed.
+- **Not merged to `development`:** open PR from `feature/infraos-connected-future-ui` (3 commits ahead of merge-base `da4aea1`).
+- **Engineering PR readiness:** yes (tests/build green at `caf9ea1` + corrections pass).
+- **Public launch readiness:** no — native si/ta and manual a11y still pending.
+
+See `PHASE-2-PUBLIC-SITE-FINAL-QA.md` and `BATCH-2B-FINAL-CORRECTIONS-AND-INTEGRATION-READINESS.md`. No PR created in this pass.

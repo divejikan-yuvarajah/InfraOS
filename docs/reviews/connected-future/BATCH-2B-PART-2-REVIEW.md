@@ -2,8 +2,9 @@
 
 **Branch:** `feature/infraos-connected-future-ui`  
 **Date:** 2026-10-22  
-**Part 1 approval evidence:** Owner authorized Part 2 in chat after Part 1 delivery; Part 1 merged via PR #45 (`f93abda`).  
-**Status:** **READY FOR OWNER VISUAL APPROVAL** — Part 2 only; Part 3 not started.
+**Commit:** `db89d5e` — *style(landing): Batch 2B Part 2 GIS, audiences, trust, and transparency*  
+**Integration note:** [PR #45](https://github.com/divejikan-yuvarajah/InfraOS/pull/45) merged **Batch 2A only** (`da4aea1`) into `development`. Parts 1–2 remain on this feature branch until a follow-up PR.  
+**Status:** **DELIVERED** — owner approved direction; post-delivery GIS mobile callout fix documented in `BATCH-2B-FINAL-CORRECTIONS-AND-INTEGRATION-READINESS.md`.
 
 ## Summary
 
@@ -84,16 +85,17 @@ cd docs/reviews/connected-future
 node capture-batch-2b-part2.mjs --base=http://localhost:3000 --prefix=batch-2b-part2-after
 ```
 
-## Git status
+## Git status (updated 2026-10-22)
 
-Part 1 (staged) + Part 2 (uncommitted) on `feature/infraos-connected-future-ui`. **No commit, push, or merge** per instruction.
+- Part 2 **committed** as `db89d5e` on `feature/infraos-connected-future-ui`.
+- **Post-review correction (uncommitted):** responsive GIS callouts in `coordination-preview-figure.tsx` + `public-batch-2b-part2.css` — see final corrections report.
 
 ## Open items (P2/P3)
 
 - P1: Native-speaker review of new si/ta GIS/trust strings.
-- P2: Manual keyboard tab order through transparency bands and GIS figure on 320px.
+- P2: Manual keyboard tab order through transparency bands and GIS figure on 320px — **partially addressed** by stacked callouts ≤639px.
 - P3: Optional axe scan on `#preview` dark canvas contrast for caption text.
 
-## STOP
+## Follow-on
 
-Do **not** start Batch 2B Part 3 (FAQ/footer polish), Phase 3, or Step 35 until authorized.
+Part 3 completed in commit `caf9ea1`. Phase 3 internal UI and Step 35 **not started**.
