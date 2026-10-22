@@ -58,9 +58,17 @@ snapshots, and descriptions remain unindexed.
 | auditLogs | `{ resourceType: 1, resourceId: 1, timestamp: -1 }` | governed resource audit history | Append-only, write-heavy collection |
 | auditLogs | `{ userId: 1, timestamp: -1 }` | governed actor audit history | Audit snapshots and request metadata remain unindexed |
 
-Existing identity/session support indexes remain in their Step 12 schemas. The
-refresh-session expiry TTL is an explicit session security requirement; no TTL
-was added to notifications, audit logs, or domain history.
+Existing identity/session support indexes remain in their Step 12 schemas, with
+one Step 35 addition on `refresh_sessions`:
+
+| Collection | Index | Purpose | Integrity / trade-off |
+|---|---|---|---|
+| refresh_sessions | `{ tokenHash: 1 }` | future refresh lookup | Unique. Hash only; raw cookie is never stored. |
+| refresh_sessions | `{ userId: 1 }` | sessions for one user | Path index from the Step 12 schema. |
+| refresh_sessions | `{ familyId: 1 }` | family revoke on replay | Path index from the Step 12 schema. |
+| refresh_sessions | `{ expiresAt: 1 }` TTL `expireAfterSeconds: 0` | delayed deletion after expiry | Not an authorization check. The API must still reject `expiresAt <= now`. |
+
+No TTL was added to notifications, audit logs, or domain history.
 
 ## Active conflict pair constraint
 
