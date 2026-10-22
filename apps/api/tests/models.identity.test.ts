@@ -112,6 +112,12 @@ describe("identity models", { timeout: 60_000 }, () => {
 
     const withHash = await User.findById(created._id).select("+passwordHash");
     expect(withHash?.passwordHash).toBe(HASH);
+    expect(withHash?.toObject()).not.toHaveProperty("passwordHash");
+
+    const leanDefault = await User.findById(created._id).lean();
+    expect(leanDefault).not.toHaveProperty("passwordHash");
+    const leanSelected = await User.findById(created._id).select("+passwordHash").lean();
+    expect(leanSelected).toHaveProperty("passwordHash", HASH);
   });
 
   it("enforces unique normalized emails", async () => {
@@ -226,5 +232,21 @@ describe("identity models", { timeout: 60_000 }, () => {
     const indexes = await RefreshSession.collection.indexes();
     const ttl = indexes.find((index) => index.expireAfterSeconds === 0);
     expect(ttl?.key).toMatchObject({ expiresAt: 1 });
+    const hashIndex = indexes.find(
+      (index) => index.key && "tokenHash" in index.key && index.unique === true,
+    );
+    expect(hashIndex).toBeDefined();
+
+    const loaded = await RefreshSession.findById(session._id).select("+tokenHash");
+    expect(loaded?.toObject()).not.toHaveProperty("tokenHash");
+
+    await expect(
+      RefreshSession.create({
+        userId: user._id,
+        tokenHash: HASH,
+        familyId: new Types.ObjectId().toString(),
+        expiresAt: new Date(Date.now() + 60_000),
+      }),
+    ).rejects.toThrow();
   });
 });

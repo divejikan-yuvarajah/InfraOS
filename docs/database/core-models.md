@@ -102,7 +102,7 @@ Architecture (ADR-006) stores **hashed** rotating refresh tokens. The model exis
 | Field | Required | Notes |
 |-------|----------|--------|
 | `userId` | yes | Ref `User` |
-| `tokenHash` | yes | `select: false`. Never store the raw cookie value. |
+| `tokenHash` | yes | `select: false`. Unique index for Step 39 lookup. Never store the raw cookie value. `toJSON` and `toObject` strip the hash. |
 | `familyId` | yes | Rotation family; reuse later revokes the family |
 | `expiresAt` | yes | TTL index (`expireAfterSeconds: 0`). TTL is **not** an authorization check. |
 | `revokedAt` / `replacedBySessionId` / `lastUsedAt` | no | |

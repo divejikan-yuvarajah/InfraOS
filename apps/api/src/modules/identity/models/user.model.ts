@@ -88,6 +88,11 @@ const userSchema = new Schema(
     },
     toObject: {
       virtuals: true,
+      transform(_doc, ret: Record<string, unknown>) {
+        delete ret.passwordHash;
+        delete ret.__v;
+        return ret;
+      },
     },
   },
 );

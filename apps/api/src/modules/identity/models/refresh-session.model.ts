@@ -61,9 +61,17 @@ const refreshSessionSchema = new Schema(
         return ret;
       },
     },
+    toObject: {
+      transform(_doc, ret: Record<string, unknown>) {
+        delete ret.tokenHash;
+        delete ret.__v;
+        return ret;
+      },
+    },
   },
 );
 
+refreshSessionSchema.index({ tokenHash: 1 }, { unique: true });
 refreshSessionSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
 export const RefreshSession =
