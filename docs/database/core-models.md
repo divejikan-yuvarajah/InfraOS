@@ -16,6 +16,7 @@ Connection lifecycle: [connection.md](./connection.md). Atlas: [../setup/mongodb
 | `Role` | `roles` | Identity |
 | `User` | `users` | Identity |
 | `RefreshSession` | `refresh_sessions` | Identity |
+| `EmailVerificationChallenge` | `email_verification_challenges` | Identity |
 | `Agency` | `agencies` | Agencies |
 
 Permissions are **strings on roles**, not a separate collection (Step 4). Role keys use the locked catalog (`GOV_ADMIN`, not `GOVERNMENT_ADMIN`).
