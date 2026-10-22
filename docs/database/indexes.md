@@ -68,6 +68,15 @@ one Step 35 addition on `refresh_sessions`:
 | refresh_sessions | `{ familyId: 1 }` | family revoke on replay | Path index from the Step 12 schema. |
 | refresh_sessions | `{ expiresAt: 1 }` TTL `expireAfterSeconds: 0` | delayed deletion after expiry | Not an authorization check. The API must still reject `expiresAt <= now`. |
 
+Step 37 adds a separate `email_verification_challenges` collection. It is not a session store.
+
+| Collection | Index | Purpose | Integrity / trade-off |
+|---|---|---|---|
+| email_verification_challenges | `{ tokenHash: 1 }` | consume lookup | Unique. SHA-256 hex only; the raw token is never stored. |
+| email_verification_challenges | `{ userId: 1, purpose: 1, createdAt: -1 }` | latest challenge and resend cooldown | Does not authorize the account. |
+| email_verification_challenges | `{ userId: 1, purpose: 1 }` partial unique while `usedAt` and `revokedAt` are null | one outstanding challenge | Concurrent issue/resend cannot leave two live tokens. |
+| email_verification_challenges | `{ expiresAt: 1 }` TTL `expireAfterSeconds: 0` | delayed deletion | Not authorization. Consume still requires `expiresAt > now`. |
+
 No TTL was added to notifications, audit logs, or domain history.
 
 ## Active conflict pair constraint
