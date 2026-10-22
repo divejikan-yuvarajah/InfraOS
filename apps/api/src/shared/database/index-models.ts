@@ -6,6 +6,7 @@ import { Contractor } from "../../modules/contractors/models/contractor.model.js
 import { DocumentChunk } from "../../modules/documents/models/document-chunk.model.js";
 import { Document } from "../../modules/documents/models/document.model.js";
 import { ProjectPayment } from "../../modules/finance/models/project-payment.model.js";
+import { EmailVerificationChallenge } from "../../modules/identity/models/email-verification-challenge.model.js";
 import { RefreshSession } from "../../modules/identity/models/refresh-session.model.js";
 import { Role } from "../../modules/identity/models/role.model.js";
 import { User } from "../../modules/identity/models/user.model.js";
@@ -25,6 +26,7 @@ export const INDEX_MODELS = [
   Role,
   Agency,
   RefreshSession,
+  EmailVerificationChallenge,
   Project,
   Milestone,
   WorkRequest,
