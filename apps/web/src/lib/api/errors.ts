@@ -29,6 +29,19 @@ export function parseApiError(
   body: unknown,
 ): ApiError {
   if (body && typeof body === "object") {
+    const record = body as Record<string, unknown>;
+    if (record.success === false && record.error && typeof record.error === "object") {
+      const nested = record.error as EnvelopeError;
+      const message =
+        typeof nested.message === "string" && nested.message.length > 0
+          ? nested.message
+          : statusText || "Request failed";
+      const code = typeof nested.code === "string" ? nested.code : undefined;
+      return new ApiError(message, status, {
+        code,
+        details: nested.details,
+      });
+    }
     const envelope = body as EnvelopeError;
     const messageCandidate = envelope.message ?? envelope.error;
     const message =
