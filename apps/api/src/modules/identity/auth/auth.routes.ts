@@ -3,6 +3,7 @@ import { Router } from "express";
 import { failure, success } from "../../../shared/http/envelope.js";
 import { logger } from "../../../shared/logger.js";
 import { AuthDependencyError } from "./auth.errors.js";
+import { assertAuthInfrastructure } from "./jwt.js";
 import {
   isJsonContentType,
   loginRateLimit,
@@ -32,6 +33,7 @@ authRouter.post("/login", loginRateLimit, async (req, res, next) => {
         .json(failure("UNSUPPORTED_MEDIA", "JSON body is required", req.requestId));
       return;
     }
+    assertAuthInfrastructure();
     const parsed = loginBodySchema.safeParse(req.body);
     if (!parsed.success) {
       res
@@ -74,6 +76,7 @@ authRouter.post("/refresh", refreshRateLimit, async (req, res, next) => {
         .json(failure("UNSUPPORTED_MEDIA", "JSON body is required", req.requestId));
       return;
     }
+    assertAuthInfrastructure();
     const refreshToken = readRefreshCookie(req);
     if (!refreshToken) {
       clearRefreshCookie(res);
