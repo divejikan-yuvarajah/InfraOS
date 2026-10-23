@@ -21,7 +21,11 @@ export type ApiRequestInit = Omit<RequestInit, "body"> & {
  * Auth refresh and Bearer attachment are added in the identity step.
  */
 function isAuthCookiePath(path: string): boolean {
-  return path.includes("/auth/login") || path.includes("/auth/refresh");
+  return (
+    path.includes("/auth/login") ||
+    path.includes("/auth/refresh") ||
+    path.includes("/auth/logout")
+  );
 }
 
 function isSafeRetry(method: string | undefined): boolean {

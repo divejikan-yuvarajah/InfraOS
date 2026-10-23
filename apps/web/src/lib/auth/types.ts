@@ -46,9 +46,12 @@ export type AuthFailureCode =
   | "UNAVAILABLE"
   | "NETWORK";
 
+export type LogoutOutcome = "confirmed" | "unconfirmed";
+
 export type AuthTransport = {
   login(input: LoginRequest): Promise<AuthLoginResult>;
   refresh?: () => Promise<AuthLoginResult>;
+  logout?: () => Promise<LogoutOutcome>;
 };
 
 export type AuthAvailability = "preview" | "fixture" | "live";
