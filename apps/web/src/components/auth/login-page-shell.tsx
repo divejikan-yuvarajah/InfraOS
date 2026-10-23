@@ -2,13 +2,35 @@ import Link from "next/link";
 
 import "@/styles/auth-login.css";
 
-import { InfraAppBrandMark } from "@/components/layout/infra-app-brand-mark";
 import { getAuthLoginCopy } from "@/lib/auth/messages";
 import { loginPathForLocale } from "@/lib/auth/redirect";
 import type { AuthLocale } from "@/lib/auth/types";
 import { PUBLIC_LOCALE_NAV_ORDER, PUBLIC_LOCALE_LABELS } from "@/lib/landing/locales";
 
 import { LoginForm } from "./login-form";
+
+function AuthLoginBrandMark() {
+  return (
+    <svg
+      width="36"
+      height="36"
+      viewBox="0 0 36 36"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden="true"
+    >
+      <rect x="4" y="4" width="28" height="28" rx="8" fill="#1f2937" />
+      <path
+        d="M10 18h8M18 18h8"
+        stroke="var(--infra-orange, #ff5b00)"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+      <circle cx="18" cy="18" r="4" fill="var(--infra-orange, #ff5b00)" />
+      <circle cx="18" cy="18" r="6" stroke="rgb(255 91 0 / 35%)" strokeWidth="1" />
+    </svg>
+  );
+}
 
 type LoginPageShellProps = {
   locale: AuthLocale;
@@ -21,8 +43,13 @@ export function LoginPageShell({ locale, nextParam }: LoginPageShellProps) {
   return (
     <div data-infra-app className="auth-login-root min-h-dvh">
     <div className="auth-login-grid">
-      <aside className="auth-login-corridor" aria-hidden={false}>
-        <svg viewBox="0 0 800 800" preserveAspectRatio="xMidYMid slice">
+      <aside className="auth-login-corridor" aria-label="INFRAOS infrastructure coordination">
+        <svg
+          className="auth-login-corridor__schematic"
+          viewBox="0 0 800 800"
+          preserveAspectRatio="xMidYMid slice"
+          aria-hidden="true"
+        >
           <defs>
             <linearGradient id="auth-grid-fade" x1="0" y1="0" x2="1" y2="1">
               <stop offset="0%" stopColor="#FF5B00" stopOpacity="0.15" />
@@ -63,7 +90,7 @@ export function LoginPageShell({ locale, nextParam }: LoginPageShellProps) {
         </svg>
         <div className="relative z-10 max-w-md space-y-4">
           <div className="flex items-center gap-3">
-            <InfraAppBrandMark />
+            <AuthLoginBrandMark />
             <span className="text-xl font-semibold tracking-tight">INFRAOS</span>
           </div>
           <p className="text-sm uppercase tracking-[0.18em] text-slate-400">

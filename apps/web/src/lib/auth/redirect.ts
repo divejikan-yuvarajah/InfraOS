@@ -36,10 +36,16 @@ export function sanitizeNextParam(raw: string | null | undefined): string | null
     return null;
   }
   const pathOnly = decoded.split(/[?#]/)[0] ?? decoded;
-  const allowed = SAFE_INTERNAL_PREFIXES.some(
-    (prefix) => pathOnly === prefix || pathOnly.startsWith(`${prefix}/`),
-  );
-  return allowed ? decoded : null;
+  if (pathOnly.includes("..")) {
+    return null;
+  }
+  const allowed = SAFE_INTERNAL_PREFIXES.some((prefix) => {
+    if (prefix === "/") {
+      return pathOnly === "/";
+    }
+    return pathOnly === prefix || pathOnly.startsWith(`${prefix}/`);
+  });
+  return allowed ? pathOnly : null;
 }
 
 export function loginPathForLocale(locale: "en" | "si" | "ta"): string {

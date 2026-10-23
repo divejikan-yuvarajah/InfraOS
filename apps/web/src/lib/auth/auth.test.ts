@@ -24,6 +24,17 @@ describe("auth redirect safety", () => {
     expect(sanitizeNextParam("//evil.example")).toBeNull();
     expect(sanitizeNextParam("/\\evil")).toBeNull();
     expect(sanitizeNextParam("/login?next=https://evil")).toBeNull();
+    expect(sanitizeNextParam("/si/../../etc/passwd")).toBeNull();
+    expect(sanitizeNextParam("/not-allowed")).toBeNull();
+  });
+});
+
+describe("auth availability in production", () => {
+  it("never exposes live mode in production builds", () => {
+    vi.stubEnv("NODE_ENV", "production");
+    vi.stubEnv("NEXT_PUBLIC_AUTH_LOGIN_ENABLED", "1");
+    expect(getAuthAvailability()).toBe("preview");
+    vi.unstubAllEnvs();
   });
 });
 

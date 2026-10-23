@@ -65,9 +65,10 @@ export function LoginForm({ locale, nextParam }: LoginFormProps) {
         className="space-y-5"
         noValidate
         onSubmit={form.handleSubmit(onSubmit)}
-        aria-describedby={formError ? statusId : undefined}
+        aria-describedby={`${statusId}-banner${formError ? ` ${statusId}` : ""}`}
       >
         <div
+          id={`${statusId}-banner`}
           className="auth-login-banner"
           role="status"
           aria-live="polite"

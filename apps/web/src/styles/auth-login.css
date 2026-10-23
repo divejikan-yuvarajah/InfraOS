@@ -1,4 +1,23 @@
-@import "./internal-app-tokens.css";
+/**
+ * Step 38 login shell tokens — self-contained (no internal-app-tokens import).
+ * Scoped to [data-infra-app] on login routes only.
+ */
+
+[data-infra-app].auth-login-root {
+  --infra-orange: #ff5b00;
+  --infra-yellow: #feb600;
+  --infra-maroon: #8c1f28;
+  --infra-green: #279541;
+  --infra-text: #101827;
+  --app-canvas: #f6f8fb;
+  --app-text: #101827;
+  --app-subtle: #475569;
+  --app-muted: #64748b;
+  --app-action-bg: var(--infra-orange);
+  --app-action-fg: var(--infra-text);
+  --font-infra-display: var(--font-display, system-ui);
+  font-family: var(--font-infra-ui, var(--font-sans, system-ui)), system-ui, sans-serif;
+}
 
 .auth-login-root {
   min-height: 100dvh;
@@ -34,12 +53,13 @@
   }
 }
 
-.auth-login-corridor svg {
+.auth-login-corridor__schematic {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   opacity: 0.35;
+  pointer-events: none;
 }
 
 .auth-login-panel {
@@ -103,4 +123,11 @@
   right: 0.35rem;
   top: 50%;
   transform: translateY(-50%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .auth-login-root * {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
 }
