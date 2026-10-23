@@ -6,6 +6,7 @@ import { getAuthAvailability } from "./availability";
 import { loginWithAuthClient } from "./client";
 import { loginFormSchema } from "./login-schema";
 import { sanitizeNextParam } from "./redirect";
+import { refreshAuthSessionSingleFlight, resetAuthRefreshForTests } from "./refresh-flight";
 import {
   clearAuthSession,
   getMemoryAccessToken,
@@ -105,6 +106,46 @@ describe("api envelope parsing", () => {
     });
     expect(error.code).toBe("AUTH_REQUIRED");
     expect(error.message).toBe("Sign-in required");
+  });
+});
+
+describe("refresh single flight", () => {
+  it("shares one in-flight refresh across callers", async () => {
+    resetAuthMemoryForTests();
+    resetAuthRefreshForTests();
+    let calls = 0;
+    const transport = createFixtureAuthTransport(async () => ({
+      ok: false,
+      code: "NOT_LIVE",
+      message: "unused",
+    }));
+    transport.refresh = async () => {
+      calls += 1;
+      await new Promise((resolve) => setTimeout(resolve, 20));
+      return {
+        ok: true,
+        session: {
+          accessToken: "rotated-token",
+          user: {
+            id: "u1",
+            firstName: "A",
+            lastName: "B",
+            displayName: "A B",
+            email: "a@example.com",
+            roleKey: "AGENCY_OFFICER",
+            agencyId: null,
+            status: "ACTIVE",
+          },
+        },
+      };
+    };
+    const [first, second] = await Promise.all([
+      refreshAuthSessionSingleFlight(transport),
+      refreshAuthSessionSingleFlight(transport),
+    ]);
+    expect(calls).toBe(1);
+    expect(first.ok && second.ok).toBe(true);
+    expect(getMemoryAccessToken()).toBe("rotated-token");
   });
 });
 
