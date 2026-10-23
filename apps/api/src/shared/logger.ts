@@ -11,6 +11,7 @@ export const LOG_REDACT_PATHS = [
   "passwordHash",
   "token",
   "tokenHash",
+  "activeTokenHash",
   "accessToken",
   "refreshToken",
   "*.password",

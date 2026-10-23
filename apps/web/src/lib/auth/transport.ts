@@ -2,10 +2,17 @@ import { apiClient } from "@/lib/api/client";
 import { ApiError } from "@/lib/api/errors";
 
 import { getAuthAvailability } from "./availability";
-import type { AuthLoginResult, AuthSessionResponse, AuthTransport, LoginRequest } from "./types";
+import type {
+  AuthLoginResult,
+  AuthSessionResponse,
+  AuthTransport,
+  LoginRequest,
+  LogoutOutcome,
+} from "./types";
 
 const LOGIN_PATH = "/api/v1/auth/login";
 const REFRESH_PATH = "/api/v1/auth/refresh";
+const LOGOUT_PATH = "/api/v1/auth/logout";
 
 function mapApiFailure(status: number, code: string | undefined): AuthLoginResult {
   if (status === 401 && code === "SESSION_EXPIRED") {
@@ -131,6 +138,17 @@ export function createLiveAuthTransport(): AuthTransport {
           code: "NETWORK",
           message: "Network error. Check your connection and try again.",
         };
+      }
+    },
+    async logout(): Promise<LogoutOutcome> {
+      try {
+        await apiClient<unknown>(LOGOUT_PATH, {
+          method: "POST",
+          credentials: "include",
+        });
+        return "confirmed";
+      } catch {
+        return "unconfirmed";
       }
     },
   };

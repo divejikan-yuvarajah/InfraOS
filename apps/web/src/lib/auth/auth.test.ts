@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import { parseApiError } from "@/lib/api/errors";
 
 import { getAuthAvailability } from "./availability";
-import { loginWithAuthClient } from "./client";
+import { loginWithAuthClient, logoutWithAuthClient } from "./client";
 import { loginFormSchema } from "./login-schema";
 import { sanitizeNextParam } from "./redirect";
 import { refreshAuthSessionSingleFlight, resetAuthRefreshForTests } from "./refresh-flight";
@@ -146,6 +146,81 @@ describe("refresh single flight", () => {
     expect(calls).toBe(1);
     expect(first.ok && second.ok).toBe(true);
     expect(getMemoryAccessToken()).toBe("rotated-token");
+  });
+});
+
+const session = {
+  accessToken: "memory-token",
+  user: {
+    id: "user-1",
+    firstName: "Nila",
+    lastName: "Perera",
+    displayName: "Nila Perera",
+    email: "nila@example.com",
+    roleKey: "AGENCY_OFFICER",
+    agencyId: "agency-1",
+    status: "ACTIVE",
+  },
+};
+
+describe("logout epoch", () => {
+  it("drops the memory token and ignores a late refresh", async () => {
+    resetAuthMemoryForTests();
+    resetAuthRefreshForTests();
+    let release: (value: void) => void = () => {};
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    let started: (value: void) => void = () => {};
+    const startedGate = new Promise<void>((resolve) => {
+      started = resolve;
+    });
+    const transport = createFixtureAuthTransport(async () => ({
+      ok: true,
+      session,
+    }));
+    transport.refresh = async () => {
+      started();
+      await gate;
+      return { ok: true, session: { ...session, accessToken: "late-token" } };
+    };
+    transport.logout = async () => "confirmed";
+    const pending = refreshAuthSessionSingleFlight(transport);
+    await startedGate;
+    const outcome = await logoutWithAuthClient(transport);
+    release();
+    await pending;
+    expect(outcome).toBe("confirmed");
+    expect(getMemoryAccessToken()).toBeNull();
+  });
+
+  it("does not apply a login that finishes after logout", async () => {
+    resetAuthMemoryForTests();
+    let release: (value: void) => void = () => {};
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    const transport = createFixtureAuthTransport(async () => {
+      await gate;
+      return { ok: true, session };
+    });
+    transport.logout = async () => "confirmed";
+    const pending = loginWithAuthClient({ email: "nila@example.com", password: "secret" }, transport);
+    await logoutWithAuthClient(transport);
+    release();
+    const result = await pending;
+    expect(result.ok).toBe(false);
+    expect(getMemoryAccessToken()).toBeNull();
+  });
+
+  it("reports unconfirmed when the server cannot revoke", async () => {
+    resetAuthMemoryForTests();
+    const transport = createFixtureAuthTransport(async () => ({ ok: true, session }));
+    transport.logout = async () => "unconfirmed";
+    await loginWithAuthClient({ email: "nila@example.com", password: "secret" }, transport);
+    const outcome = await logoutWithAuthClient(transport);
+    expect(outcome).toBe("unconfirmed");
+    expect(getMemoryAccessToken()).toBeNull();
   });
 });
 

@@ -46,6 +46,10 @@ export const refreshRateLimit = createCredentialRateLimit(
   env.NODE_ENV === "test" ? 80 : 30,
 );
 
+export const logoutRateLimit = createCredentialRateLimit(
+  env.NODE_ENV === "test" ? 80 : 30,
+);
+
 export function rejectDisallowedOrigin(req: Request, res: Response): boolean {
   if (isAllowedAuthOrigin(req)) return false;
   res.setHeader("Cache-Control", "no-store");

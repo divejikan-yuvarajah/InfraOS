@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 
 import { Agency } from "../../agencies/models/agency.model.js";
+import { RefreshFamily } from "../models/refresh-family.model.js";
 import { RefreshSession } from "../models/refresh-session.model.js";
 import { Role } from "../models/role.model.js";
 import { User, type UserDocument } from "../models/user.model.js";
@@ -12,6 +13,21 @@ import { generateRefreshToken, hashRefreshToken } from "./refresh-token.js";
 import type { AuthSessionDto, AuthUserDto, IssuedRefreshSession } from "./auth.types.js";
 
 export type RefreshFailure = "unauthorized" | "unavailable";
+export type LogoutResult = "revoked" | "absent" | "unavailable";
+
+/** Test barriers. Production leaves these as no-ops. */
+export const refreshRotationHooks: {
+  afterClaim: () => Promise<void>;
+  afterAuthoritySwap: () => Promise<void>;
+} = {
+  afterClaim: async () => {},
+  afterAuthoritySwap: async () => {},
+};
+
+export function resetRefreshRotationHooks(): void {
+  refreshRotationHooks.afterClaim = async () => {};
+  refreshRotationHooks.afterAuthoritySwap = async () => {};
+}
 
 function summarizeUserAgent(value: string | undefined): string | null {
   if (!value) return null;
@@ -72,17 +88,28 @@ export async function persistInitialRefreshSession(input: {
   const now = authNow();
   if (!(await accountCanSignIn(input.user))) return null;
   const refreshToken = generateRefreshToken();
+  const tokenHash = hashRefreshToken(refreshToken);
+  const familyId = randomUUID();
   const expiresAt = new Date(now.getTime() + refreshAbsoluteTtlSeconds() * 1000);
   let createdId: string | null = null;
+  let familyCreated = false;
   try {
     const created = await RefreshSession.create({
       userId: input.user._id,
-      tokenHash: hashRefreshToken(refreshToken),
-      familyId: randomUUID(),
+      tokenHash,
+      familyId,
       expiresAt,
       userAgentSummary: summarizeUserAgent(input.userAgent),
     });
     createdId = created._id.toString();
+    await RefreshFamily.create({
+      familyId,
+      userId: input.user._id,
+      expiresAt,
+      closedAt: null,
+      activeTokenHash: tokenHash,
+    });
+    familyCreated = true;
     const sessionBody = await issueAccessSession(input.user);
     if (!sessionBody) {
       await RefreshSession.updateOne(
@@ -103,16 +130,43 @@ export async function persistInitialRefreshSession(input: {
         { $set: { revokedAt: now } },
       );
     }
+    if (familyCreated) {
+      await RefreshFamily.updateOne(
+        { familyId, closedAt: null },
+        { $set: { closedAt: now, activeTokenHash: null } },
+      );
+    }
     if (error instanceof AuthDependencyError) throw error;
     throw new AuthDependencyError();
   }
 }
 
-async function revokeFamily(familyId: string, now: Date): Promise<void> {
+async function closeFamily(familyId: string, now: Date): Promise<boolean> {
+  const closed = await RefreshFamily.findOneAndUpdate(
+    { familyId, closedAt: null },
+    { $set: { closedAt: now, activeTokenHash: null } },
+  );
+  if (!closed) {
+    const existing = await RefreshFamily.findOne({ familyId });
+    if (!existing?.closedAt) return false;
+  }
   await RefreshSession.updateMany(
     { familyId, revokedAt: null },
     { $set: { revokedAt: now } },
   );
+  return true;
+}
+
+async function restoreHashIfStillOpen(
+  familyId: string,
+  nextHash: string,
+  previousHash: string,
+): Promise<boolean> {
+  const restored = await RefreshFamily.findOneAndUpdate(
+    { familyId, closedAt: null, activeTokenHash: nextHash },
+    { $set: { activeTokenHash: previousHash } },
+  );
+  return Boolean(restored);
 }
 
 export async function rotateRefreshSession(input: {
@@ -150,16 +204,33 @@ export async function rotateRefreshSession(input: {
 
   const user = await User.findById(claimed.userId);
   if (!user || !(await accountCanSignIn(user))) {
-    await revokeFamily(claimed.familyId, now);
+    const closed = await closeFamily(claimed.familyId, now);
+    return { ok: false, reason: closed ? "unauthorized" : "unavailable" };
+  }
+
+  await refreshRotationHooks.afterClaim();
+
+  const refreshToken = generateRefreshToken();
+  const nextHash = hashRefreshToken(refreshToken);
+  const swapped = await RefreshFamily.findOneAndUpdate(
+    {
+      familyId: claimed.familyId,
+      closedAt: null,
+      activeTokenHash: tokenHash,
+    },
+    { $set: { activeTokenHash: nextHash } },
+  );
+  if (!swapped) {
     return { ok: false, reason: "unauthorized" };
   }
 
-  const refreshToken = generateRefreshToken();
+  await refreshRotationHooks.afterAuthoritySwap();
+
   let successorId: string | null = null;
   try {
     const successor = await RefreshSession.create({
       userId: claimed.userId,
-      tokenHash: hashRefreshToken(refreshToken),
+      tokenHash: nextHash,
       familyId: claimed.familyId,
       expiresAt: claimed.expiresAt,
       userAgentSummary: summarizeUserAgent(input.userAgent),
@@ -172,24 +243,46 @@ export async function rotateRefreshSession(input: {
     if (linked.modifiedCount !== 1) {
       throw new AuthDependencyError();
     }
-  } catch {
+    const stillCurrent = await RefreshFamily.findOne({
+      familyId: claimed.familyId,
+      closedAt: null,
+      activeTokenHash: nextHash,
+    }).select("+activeTokenHash");
+    if (!stillCurrent) {
+      await RefreshSession.updateOne(
+        { _id: successor._id },
+        { $set: { revokedAt: now } },
+      );
+      return { ok: false, reason: "unauthorized" };
+    }
+  } catch (error) {
     if (successorId) {
       await RefreshSession.updateOne(
         { _id: successorId },
         { $set: { revokedAt: now } },
       );
     }
-    await RefreshSession.updateOne(
-      { _id: claimed._id, replacedBySessionId: null },
-      { $set: { revokedAt: null, lastUsedAt: null } },
+    const restored = await restoreHashIfStillOpen(
+      claimed.familyId,
+      nextHash,
+      tokenHash,
     );
-    return { ok: false, reason: "unavailable" };
+    if (restored) {
+      await RefreshSession.updateOne(
+        { _id: claimed._id, replacedBySessionId: null },
+        { $set: { revokedAt: null, lastUsedAt: null } },
+      );
+    }
+    if (error instanceof AuthDependencyError && !restored) {
+      return { ok: false, reason: "unauthorized" };
+    }
+    return { ok: false, reason: restored ? "unavailable" : "unauthorized" };
   }
 
   try {
     const session = await issueAccessSession(user);
     if (!session) {
-      await revokeFamily(claimed.familyId, now);
+      await closeFamily(claimed.familyId, now);
       return { ok: false, reason: "unauthorized" };
     }
     return {
@@ -201,8 +294,29 @@ export async function rotateRefreshSession(input: {
       },
     };
   } catch {
-    await revokeFamily(claimed.familyId, now);
+    await closeFamily(claimed.familyId, now);
     return { ok: false, reason: "unavailable" };
+  }
+}
+
+export async function logoutRefreshFamily(
+  refreshToken: string | null,
+): Promise<LogoutResult> {
+  if (!refreshToken) return "absent";
+  let tokenHash: string;
+  try {
+    tokenHash = hashRefreshToken(refreshToken);
+  } catch (error) {
+    if (error instanceof AuthDependencyError) return "unavailable";
+    return "absent";
+  }
+  const existing = await RefreshSession.findOne({ tokenHash }).select("+tokenHash");
+  if (!existing) return "absent";
+  try {
+    const closed = await closeFamily(existing.familyId, authNow());
+    return closed ? "revoked" : "unavailable";
+  } catch {
+    return "unavailable";
   }
 }
 
@@ -215,6 +329,10 @@ async function classifyRejectedRefresh(
   if (existing.expiresAt.getTime() <= now.getTime()) {
     return { ok: false, reason: "unauthorized" };
   }
+  const family = await RefreshFamily.findOne({ familyId: existing.familyId });
+  if (family?.closedAt) {
+    return { ok: false, reason: "unauthorized" };
+  }
   const revokedAt = existing.revokedAt?.getTime() ?? null;
   const withinGrace =
     revokedAt !== null && now.getTime() - revokedAt <= REFRESH_REUSE_GRACE_MS;
@@ -223,7 +341,8 @@ async function classifyRejectedRefresh(
   }
   if (existing.revokedAt || existing.replacedBySessionId) {
     try {
-      await revokeFamily(existing.familyId, now);
+      const closed = await closeFamily(existing.familyId, now);
+      if (!closed) return { ok: false, reason: "unavailable" };
     } catch {
       return { ok: false, reason: "unavailable" };
     }

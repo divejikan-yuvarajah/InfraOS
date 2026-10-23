@@ -7,6 +7,7 @@ import { assertAuthInfrastructure } from "./jwt.js";
 import {
   isJsonContentType,
   loginRateLimit,
+  logoutRateLimit,
   refreshRateLimit,
   rejectDisallowedOrigin,
 } from "./auth.security.js";
@@ -14,7 +15,7 @@ import { loginWithPassword } from "./auth.service.js";
 import { authNow } from "./auth.clock.js";
 import { clearRefreshCookie, readRefreshCookie, setRefreshCookie } from "./cookies.js";
 import { loginBodySchema } from "./login.schema.js";
-import { rotateRefreshSession } from "./refresh-session.service.js";
+import { logoutRefreshFamily, rotateRefreshSession } from "./refresh-session.service.js";
 
 function noStore(res: { setHeader: (name: string, value: string) => void }): void {
   res.setHeader("Cache-Control", "no-store");
@@ -55,6 +56,37 @@ authRouter.post("/login", loginRateLimit, async (req, res, next) => {
     }
     setRefreshCookie(res, issued.refreshToken, issued.refreshExpiresAt, authNow());
     res.status(200).json(success(issued.session, req.requestId));
+  } catch (error) {
+    if (error instanceof AuthDependencyError) {
+      res.status(503).json(failure(error.code, error.message, req.requestId));
+      return;
+    }
+    next(error);
+  }
+});
+
+authRouter.post("/logout", logoutRateLimit, async (req, res, next) => {
+  try {
+    noStore(res);
+    if (rejectDisallowedOrigin(req, res)) return;
+    const contentType = req.header("content-type");
+    if (contentType && !isJsonContentType(req)) {
+      res
+        .status(415)
+        .json(failure("UNSUPPORTED_MEDIA", "JSON body is required", req.requestId));
+      return;
+    }
+    assertAuthInfrastructure();
+    const result = await logoutRefreshFamily(readRefreshCookie(req));
+    if (result === "unavailable") {
+      res
+        .status(503)
+        .json(failure("SERVICE_UNAVAILABLE", "sign-in is temporarily unavailable", req.requestId));
+      return;
+    }
+    clearRefreshCookie(res);
+    logger.info({ requestId: req.requestId, outcome: result }, "logout accepted");
+    res.status(204).end();
   } catch (error) {
     if (error instanceof AuthDependencyError) {
       res.status(503).json(failure(error.code, error.message, req.requestId));
