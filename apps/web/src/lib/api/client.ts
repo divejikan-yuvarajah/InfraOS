@@ -8,6 +8,11 @@ export type ApiRequestInit = Omit<RequestInit, "body"> & {
   body?: unknown;
   /** Default `omit`. Pass `include` only for cookie-backed auth routes (Step 39+). */
   credentials?: RequestCredentials;
+  /**
+   * Attach the in-memory access token. On a safe GET/HEAD 401, try one refresh
+   * and retry once. This does not authorize routes; Steps 43–46 own that.
+   */
+  authenticated?: boolean;
 };
 
 /**
@@ -15,9 +20,19 @@ export type ApiRequestInit = Omit<RequestInit, "body"> & {
  * Feature modules should import this instead of calling fetch directly.
  * Auth refresh and Bearer attachment are added in the identity step.
  */
+function isAuthCookiePath(path: string): boolean {
+  return path.includes("/auth/login") || path.includes("/auth/refresh");
+}
+
+function isSafeRetry(method: string | undefined): boolean {
+  const normalized = (method ?? "GET").toUpperCase();
+  return normalized === "GET" || normalized === "HEAD";
+}
+
 export async function apiClient<T>(
   path: string,
   init: ApiRequestInit = {},
+  allowRefresh = true,
 ): Promise<T> {
   const baseUrl = getPublicApiBaseUrl();
   if (!baseUrl) {
@@ -28,7 +43,11 @@ export async function apiClient<T>(
     );
   }
 
-  const { body, headers, credentials, ...rest } = init;
+  const { body, headers, credentials, authenticated, ...rest } = init;
+  const memoryToken =
+    authenticated
+      ? (await import("@/lib/auth/state")).getMemoryAccessToken()
+      : null;
   const hasJsonBody = body !== undefined && body !== null;
   const response = await fetch(
     `${baseUrl}${path.startsWith("/") ? path : `/${path}`}`,
@@ -38,6 +57,7 @@ export async function apiClient<T>(
       headers: {
         Accept: "application/json",
         ...(hasJsonBody ? { "Content-Type": "application/json" } : {}),
+        ...(memoryToken ? { Authorization: `Bearer ${memoryToken}` } : {}),
         ...headers,
       },
       body: hasJsonBody
@@ -58,7 +78,23 @@ export async function apiClient<T>(
     : await response.text();
 
   if (!response.ok) {
-    throw parseApiError(response.status, response.statusText, payload);
+    const error = parseApiError(response.status, response.statusText, payload);
+    if (
+      allowRefresh &&
+      authenticated &&
+      error.status === 401 &&
+      isSafeRetry(init.method) &&
+      !isAuthCookiePath(path)
+    ) {
+      const { refreshAuthSessionSingleFlight } = await import(
+        "@/lib/auth/refresh-flight"
+      );
+      const refreshed = await refreshAuthSessionSingleFlight();
+      if (refreshed.ok) {
+        return apiClient<T>(path, init, false);
+      }
+    }
+    throw error;
   }
 
   return payload as T;

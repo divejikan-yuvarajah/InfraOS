@@ -29,6 +29,18 @@ export function errorHandler(
     return;
   }
 
+  if (
+    typeof error === "object" &&
+    error !== null &&
+    "type" in error &&
+    (error as { type?: string }).type === "entity.too.large"
+  ) {
+    res
+      .status(413)
+      .json(failure("PAYLOAD_TOO_LARGE", "Request body is too large", requestId));
+    return;
+  }
+
   if (isAppError(error)) {
     if (error.code === "VALIDATION_ERROR" && error.details instanceof ZodError) {
       res.status(400).json(

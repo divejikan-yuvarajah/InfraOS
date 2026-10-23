@@ -5,8 +5,16 @@ import { getAuthAvailability } from "./availability";
 import type { AuthLoginResult, AuthSessionResponse, AuthTransport, LoginRequest } from "./types";
 
 const LOGIN_PATH = "/api/v1/auth/login";
+const REFRESH_PATH = "/api/v1/auth/refresh";
 
 function mapApiFailure(status: number, code: string | undefined): AuthLoginResult {
+  if (status === 401 && code === "SESSION_EXPIRED") {
+    return {
+      ok: false,
+      code: "SESSION_EXPIRED",
+      message: "Your session has ended. Sign in again.",
+    };
+  }
   if (status === 401) {
     return {
       ok: false,
@@ -77,6 +85,32 @@ export function createLiveAuthTransport(): AuthTransport {
         const response = await apiClient<unknown>(LOGIN_PATH, {
           method: "POST",
           body: input,
+          credentials: "include",
+        });
+        const session = parseLoginEnvelope(response);
+        if (!session) {
+          return {
+            ok: false,
+            code: "UNAVAILABLE",
+            message: "Sign-in is temporarily unavailable. Try again later.",
+          };
+        }
+        return { ok: true, session };
+      } catch (error) {
+        if (error instanceof ApiError) {
+          return mapApiFailure(error.status, error.code);
+        }
+        return {
+          ok: false,
+          code: "NETWORK",
+          message: "Network error. Check your connection and try again.",
+        };
+      }
+    },
+    async refresh() {
+      try {
+        const response = await apiClient<unknown>(REFRESH_PATH, {
+          method: "POST",
           credentials: "include",
         });
         const session = parseLoginEnvelope(response);

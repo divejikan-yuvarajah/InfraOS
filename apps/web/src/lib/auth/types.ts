@@ -41,12 +41,14 @@ export type AuthFailureCode =
   | "NOT_LIVE"
   | "VALIDATION"
   | "INVALID_CREDENTIALS"
+  | "SESSION_EXPIRED"
   | "RATE_LIMITED"
   | "UNAVAILABLE"
   | "NETWORK";
 
 export type AuthTransport = {
   login(input: LoginRequest): Promise<AuthLoginResult>;
+  refresh?: () => Promise<AuthLoginResult>;
 };
 
 export type AuthAvailability = "preview" | "fixture" | "live";
