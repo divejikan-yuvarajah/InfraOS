@@ -26,8 +26,16 @@ This is still an author check. A second person has not signed it.
 - Production web login remains preview-only.
 - Browser refresh-cookie proof is blocked by the Atlas connection. `Secure` was left on.
 
+## Final approval gate — 2026-10-23
+
+Author check only. Atlas connected; `/ready` 200; synthetic dev user exercised; HTTP and browser login succeeded; refresh rotated with correct cookie flags; refresh token never appeared in JSON. Full API (228), web (107), type-check, lint, and build passed.
+
+Security posture unchanged from Step 39 design: origin allowlist on login/refresh, rate limits, bcrypt cost 12, HMAC refresh storage, rotation with grace and family revoke on reuse, generic 401s, secret redaction, no logout yet, no per-route JWT enforcement yet.
+
 ## What is still open
 
-- Atlas connectivity from this machine, then an owner-approved synthetic user, then a browser login that returns 200 and a `Secure` `SameSite=None` cookie.
-- The email-verification race assertion failed once under the full API suite and passed when rerun alone.
-- Logout and per-request status checks are still future steps. An access JWT issued before a user is disabled keeps verifying until it expires, unless the caller hits `/auth/refresh`.
+- Step 40 logout and family revoke; Steps 43–46 for route protection and RBAC.
+- Optional: harden Step 37 email resend race under vitest parallel load.
+- Optional: chase dev-only hydration overlay on login (login still functional).
+- Remove synthetic dev user from `infraos_dev` when finished demoing.
+- `git pull origin main` if local checkout is behind `14f17c0`.
