@@ -26,6 +26,10 @@ export function setAuthenticating(): void {
   memory.phase = "authenticating";
 }
 
+export function setRefreshing(): void {
+  memory.phase = "refreshing";
+}
+
 export function setAuthenticated(session: AuthSessionResponse): void {
   memory.session = session;
   memory.phase = "authenticated";
