@@ -1,6 +1,7 @@
 import { createHash, randomUUID, timingSafeEqual } from "node:crypto";
 
 import { jwtVerify, SignJWT } from "jose";
+import mongoose from "mongoose";
 
 import { env } from "../../../config/env.js";
 import {
@@ -61,6 +62,13 @@ export function secretBytes(
     throw new AuthDependencyError();
   }
   return new TextEncoder().encode(value);
+}
+
+export function assertAuthInfrastructure(): void {
+  assertAuthSecretsReady();
+  if (mongoose.connection.readyState !== 1) {
+    throw new AuthDependencyError();
+  }
 }
 
 export function assertAuthSecretsReady(): void {

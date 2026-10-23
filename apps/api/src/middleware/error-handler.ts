@@ -29,6 +29,13 @@ export function errorHandler(
     return;
   }
 
+  if (error instanceof SyntaxError && "status" in error && error.status === 400) {
+    res
+      .status(400)
+      .json(failure("VALIDATION_ERROR", "Request body is not valid JSON", requestId));
+    return;
+  }
+
   if (
     typeof error === "object" &&
     error !== null &&
