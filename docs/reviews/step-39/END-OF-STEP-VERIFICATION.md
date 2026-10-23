@@ -73,3 +73,24 @@ Environment, values not recorded: `MONGODB_URI` is set (`mongodb+srv`), `MONGODB
 | Live malformed JSON `{` | PASS — `400 VALIDATION_ERROR`. Response body does not contain `password` |
 
 Recommendation for this pass: **BLOCKED**. The fail-closed fixes are in the working tree and covered by tests. Live sign-in cannot be accepted until Atlas accepts this machine and the synthetic account is approved and created.
+
+## Final approval gate — 2026-10-23 22:40 IST
+
+| Check | Result |
+|---|---|
+| Local checkout includes `6c3d9a8` fail-closed fixes | **PASS** — `git merge-base --is-ancestor 6c3d9a8 HEAD` |
+| Local `main` vs `origin/main` | **REVISE (sync)** — local `6c3d9a8`, remote `14f17c0` (PR #70 merge). Run `git pull origin main` to align |
+| `npm run db:check` | **PASS** — development environment |
+| `GET /ready` | **PASS** — 200, database connected |
+| Auth indexes (`User`, `Role`, `Agency`, `RefreshSession`) | **PASS** — no missing or mismatch in `db:indexes:check` output |
+| Full `db:indexes:check` exit code | **FAIL (pre-existing)** — empty domain collections report missing indexes; not introduced by Step 39 |
+| Synthetic user `step39.synthetic@infraos-dev.invalid` | **PASS** — created in `infraos_dev` (dev-only; password matches `auth-session.test.ts` constant) |
+| Live HTTP login + refresh | **PASS** — login 200, access token in JSON only, refresh not in JSON; cookie HttpOnly + Secure + SameSite=None + Path=/api/v1/auth, no Domain; refresh 200 with rotation |
+| Browser login at `/login` | **PASS** — redirect to `/` after sign-in (public landing unchanged) |
+| `npm run test:api` | **PASS** — 18 files, 228 tests |
+| `npm run test:web` | **PASS** — 25 files, 107 tests |
+| `npm run type-check` / `lint` / `build` | **PASS** — lint: one existing data-table warning |
+| Email verification race test | **PASS** in full suite; 10 isolated reruns passed. Earlier single failure under parallel load treated as **flaky (Step 37)**, not Step 39 |
+| Next.js hydration overlay on `/login` | **OBSERVED** in dev (blames `login-page-shell.tsx` line 96). Login still succeeded. Likely dev tooling and/or extension noise; not fixed in this gate |
+
+**Recommendation:** **APPROVE** Step 39 for closure and **Step 40** may begin. Residual items are documented below; they do not block logout work.

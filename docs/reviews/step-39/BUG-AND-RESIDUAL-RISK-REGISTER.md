@@ -10,5 +10,7 @@
 | R-39-6 | Login rate limit is per IP, 10 / 15 min outside tests. A shared NAT can lock out a lab. | Low | Step 40+ tuning |
 | R-39-7 | **Fixed locally 2026-10-23, not committed.** Login with Mongo disconnected waited on Mongoose buffering and returned `500`. It now returns `503 SERVICE_UNAVAILABLE` before querying. | Was high | Owner commit |
 | R-39-8 | **Fixed locally 2026-10-23, not committed.** Invalid JSON on login returned `500` and the error logger included a body fragment. It now returns `400 VALIDATION_ERROR` without logging the body. | Was medium | Owner commit |
-| R-39-9 | Successful browser cookie acceptance is unproven. Secrets and `infraos_dev` are configured, but Atlas did not connect (`certificate is not yet valid` plus SRV lookup failure). No synthetic user has been written. Do not weaken `Secure` for plain HTTP. | High for the demo | Owner setup |
-| R-39-10 | Full `npm run test:api` failed once on `email verification > sends one message when two requests race` (2 messages instead of 1) while other files ran in parallel. The same test passed alone. It is outside Step 39 and was not changed. | Low, flaky | Identity owner |
+| R-39-9 | Browser cookie acceptance | **Closed 2026-10-23** — live and browser login verified with synthetic dev user. | — |
+| R-39-10 | Email verification race flake under full parallel suite | **Open, low** — passed in the latest full run (228/228) and 10 isolated reruns. Treat as Step 37 concurrency hardening if it returns. | Step 37 owner |
+| R-39-11 | Dev hydration overlay on login (`login-page-shell.tsx` ~96) | **Open, low** — observed during browser sign-in; auth still works. | Web owner |
+| R-39-12 | Synthetic dev user in Atlas | **Open** — delete `step39.synthetic@infraos-dev.invalid`, its refresh sessions, and agency `AUTH_STEP39_SYNTH` when the demo is finished. | Owner cleanup |
