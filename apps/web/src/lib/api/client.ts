@@ -6,6 +6,8 @@ export { ApiError } from "./errors";
 
 export type ApiRequestInit = Omit<RequestInit, "body"> & {
   body?: unknown;
+  /** Default `omit`. Pass `include` only for cookie-backed auth routes (Step 39+). */
+  credentials?: RequestCredentials;
 };
 
 /**
@@ -26,13 +28,13 @@ export async function apiClient<T>(
     );
   }
 
-  const { body, headers, ...rest } = init;
+  const { body, headers, credentials, ...rest } = init;
   const hasJsonBody = body !== undefined && body !== null;
   const response = await fetch(
     `${baseUrl}${path.startsWith("/") ? path : `/${path}`}`,
     {
       ...rest,
-      credentials: "include",
+      credentials: credentials ?? "omit",
       headers: {
         Accept: "application/json",
         ...(hasJsonBody ? { "Content-Type": "application/json" } : {}),
