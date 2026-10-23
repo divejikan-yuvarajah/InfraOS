@@ -1,0 +1,106 @@
+@import "./internal-app-tokens.css";
+
+.auth-login-root {
+  min-height: 100dvh;
+  background: var(--app-canvas, #f6f8fb);
+  color: var(--app-text, #101827);
+}
+
+.auth-login-grid {
+  display: grid;
+  min-height: 100dvh;
+}
+
+@media (min-width: 1024px) {
+  .auth-login-grid {
+    grid-template-columns: minmax(0, 1.05fr) minmax(420px, 0.95fr);
+  }
+}
+
+.auth-login-corridor {
+  position: relative;
+  display: none;
+  overflow: hidden;
+  background: linear-gradient(165deg, #0b1220 0%, #111827 55%, #1f2937 100%);
+  color: #e2e8f0;
+}
+
+@media (min-width: 1024px) {
+  .auth-login-corridor {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 3rem;
+  }
+}
+
+.auth-login-corridor svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.35;
+}
+
+.auth-login-panel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem 1.25rem 2.5rem;
+}
+
+.auth-login-form-wrap {
+  width: 100%;
+  max-width: 28rem;
+}
+
+.auth-login-banner {
+  border: 1px solid color-mix(in oklab, var(--infra-yellow) 45%, transparent);
+  background: color-mix(in oklab, var(--infra-yellow) 12%, white);
+  color: #5c4a00;
+  border-radius: 0.75rem;
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  line-height: 1.45;
+}
+
+.auth-login-error {
+  border: 1px solid color-mix(in oklab, var(--infra-maroon) 35%, transparent);
+  background: color-mix(in oklab, var(--infra-maroon) 8%, white);
+  color: #5c1a22;
+  border-radius: 0.75rem;
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+}
+
+.auth-login-title {
+  font-family: var(--font-infra-display, var(--font-display)), system-ui, sans-serif;
+  font-size: clamp(1.75rem, 4vw, 2.25rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.auth-login-subtitle {
+  margin-top: 0.5rem;
+  color: var(--app-subtle, #475569);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.auth-login-field label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-bottom: 0.35rem;
+}
+
+.auth-login-password-row {
+  position: relative;
+}
+
+.auth-login-password-toggle {
+  position: absolute;
+  right: 0.35rem;
+  top: 50%;
+  transform: translateY(-50%);
+}
