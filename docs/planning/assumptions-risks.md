@@ -69,7 +69,7 @@ These need answers in later steps or from the team leader. They do **not** block
 | ID | Question | Suggested owner | Target step |
 |----|----------|-----------------|-------------|
 | Q-001 | ~~Staff signup?~~ **Closed:** staff are **admin-provisioned**; no public staff `/register`. | — | Done Step 4 |
-| Q-002 | Is email verification mandatory before any staff login? (Mechanism is P1; **P0 demo seeded staff may log in unverified**.) | Team leader | Identity implementation |
+| Q-002 | **Open product question, with an owner blocking rule for Step 39 (2026-10-23).** Sign-in and refresh require `status === ACTIVE`, an active role, and an active agency. Email verification never changes status and never auto-activates `PENDING`. `ACTIVE` accounts that are not email-verified stay blocked until a later owner decision closes Q-002. No non-production seeded exception is approved. | Team leader | Step 39 login |
 | Q-003 | Which conflicts are **blocking** vs informational? | Team leader + RoadSync | RoadSync rules step |
 | Q-004 | Are inspections mandatory before COMPLETED for all projects or only flagged projects? | Team leader | Inspection + ProjectTrace |
 | Q-005 | Citizen auth: anonymous + tracking secret vs mandatory account? | Citizen module owner | Citizen implementation |
