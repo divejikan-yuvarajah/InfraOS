@@ -205,3 +205,35 @@ export function getAuthResetCopy(locale: AuthLocale): AuthResetCopy {
   if (locale === "ta") return RESET_TA;
   return RESET_EN;
 }
+
+export type AuthAccessCopy = {
+  checking: string;
+  workspaceTitle: string;
+  workspaceBody: string;
+  previewTitle: string;
+  previewBody: string;
+  retryTitle: string;
+  retryBody: string;
+  retry: string;
+  signOut: string;
+  publicSite: string;
+  nativeReview: string;
+};
+
+const ACCESS_EN: AuthAccessCopy = {
+  checking: "Checking your session.",
+  workspaceTitle: "Workspace shell",
+  workspaceBody: "Operational modules are not available yet. This page only confirms an authenticated session.",
+  previewTitle: "Sign-in is not live in this build",
+  previewBody: "This workspace stays hidden until a non-production live session is available. No private records are shown.",
+  retryTitle: "The workspace could not be checked",
+  retryBody: "The authentication service did not respond. Your session was not signed out. Try again.",
+  retry: "Try again",
+  signOut: "Sign out",
+  publicSite: "Public site",
+  nativeReview: "Staff workspace copy is English. Sinhala and Tamil staff pages are not available yet.",
+};
+
+export function getAuthAccessCopy(): AuthAccessCopy {
+  return ACCESS_EN;
+}

@@ -10,7 +10,7 @@ export type ApiRequestInit = Omit<RequestInit, "body"> & {
   credentials?: RequestCredentials;
   /**
    * Attach the in-memory access token. On a safe GET/HEAD 401, try one refresh
-   * and retry once. This does not authorize routes; Steps 43–46 own that.
+   * and retry once. GET /auth/me uses this. It does not replay mutations.
    */
   authenticated?: boolean;
 };

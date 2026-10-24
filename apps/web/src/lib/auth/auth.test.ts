@@ -9,11 +9,18 @@ import { forgotPasswordFormSchema } from "./forgot-password-schema";
 import { loginFormSchema } from "./login-schema";
 import { getAuthForgotCopy } from "./messages";
 import { forgotPasswordPathForLocale, sanitizeNextParam } from "./redirect";
+import { confirmSessionWithMe } from "./confirm-identity";
 import { refreshAuthSessionSingleFlight, resetAuthRefreshForTests } from "./refresh-flight";
+import { clearPrivateQueryCache, registerPrivateQueryCache } from "./query-cache";
 import {
+  applyAuthenticated,
+  beginLogoutEpoch,
   clearAuthSession,
+  getAuthSnapshot,
   getMemoryAccessToken,
+  getServerAuthSnapshot,
   resetAuthMemoryForTests,
+  setAuthenticated,
 } from "./state";
 import { createFixtureAuthTransport } from "./transport";
 
@@ -318,6 +325,188 @@ describe("reset password client", () => {
     await expect(resetPasswordWithAuthClient({ token: "fixture", password: "long-enough" })).resolves.toBe("unavailable");
     vi.unstubAllGlobals();
     vi.unstubAllEnvs();
+  });
+});
+
+describe("session snapshot and refresh failures", () => {
+  it("keeps the access token out of the reactive snapshot", () => {
+    resetAuthMemoryForTests();
+    expect(getServerAuthSnapshot()).toBe(getServerAuthSnapshot());
+    expect(getServerAuthSnapshot().authenticated).toBe(false);
+    setAuthenticated(session);
+    expect(JSON.stringify(getAuthSnapshot())).not.toContain("memory-token");
+    expect(getAuthSnapshot().authenticated).toBe(true);
+    expect(Object.keys(getAuthSnapshot()).sort()).toEqual([
+      "authenticated",
+      "bootSettled",
+      "identityConfirmed",
+      "phase",
+    ]);
+  });
+
+  it("keeps a memory session when refresh is unavailable", async () => {
+    resetAuthMemoryForTests();
+    resetAuthRefreshForTests();
+    setAuthenticated(session);
+    const transport = createFixtureAuthTransport(async () => ({
+      ok: false,
+      code: "NOT_LIVE",
+      message: "unused",
+    }));
+    transport.refresh = async () => ({
+      ok: false,
+      code: "UNAVAILABLE",
+      message: "down",
+    });
+    const result = await refreshAuthSessionSingleFlight(transport);
+    expect(result.ok).toBe(false);
+    expect(getMemoryAccessToken()).toBe("memory-token");
+    expect(getAuthSnapshot().phase).toBe("error");
+  });
+
+  it("clears the memory session and private cache on expiry", async () => {
+    resetAuthMemoryForTests();
+    resetAuthRefreshForTests();
+    setAuthenticated(session);
+    let cleared = 0;
+    registerPrivateQueryCache({
+      clear() {
+        cleared += 1;
+      },
+    });
+    const transport = createFixtureAuthTransport(async () => ({
+      ok: false,
+      code: "NOT_LIVE",
+      message: "unused",
+    }));
+    transport.refresh = async () => ({
+      ok: false,
+      code: "SESSION_EXPIRED",
+      message: "ended",
+    });
+    await refreshAuthSessionSingleFlight(transport);
+    expect(getMemoryAccessToken()).toBeNull();
+    expect(cleared).toBe(1);
+    registerPrivateQueryCache({ clear() {} });
+  });
+
+  it("does not let an in-flight refresh replace a newer sign-in", async () => {
+    resetAuthMemoryForTests();
+    resetAuthRefreshForTests();
+    let release: (value: void) => void = () => {};
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    let started: (value: void) => void = () => {};
+    const startedGate = new Promise<void>((resolve) => {
+      started = resolve;
+    });
+    const transport = createFixtureAuthTransport(async () => ({ ok: true, session }));
+    transport.refresh = async () => {
+      started();
+      await gate;
+      return {
+        ok: true,
+        session: { ...session, accessToken: "stale-refresh" },
+      };
+    };
+    const pending = refreshAuthSessionSingleFlight(transport);
+    await startedGate;
+    setAuthenticated(session);
+    release();
+    await pending;
+    expect(getMemoryAccessToken()).toBe("memory-token");
+  });
+
+  it("does not treat a newer sign-in as failed when an older identity check loses", async () => {
+    resetAuthMemoryForTests();
+    resetAuthRefreshForTests();
+    vi.stubEnv("NEXT_PUBLIC_API_BASE_URL", "http://localhost:4000");
+    vi.stubEnv("NEXT_PUBLIC_AUTH_LOGIN_ENABLED", "1");
+    setAuthenticated(session);
+    let releaseMe: () => void = () => {};
+    const meGate = new Promise<void>((resolve) => {
+      releaseMe = resolve;
+    });
+    let releaseRefresh: () => void = () => {};
+    const refreshGate = new Promise<void>((resolve) => {
+      releaseRefresh = resolve;
+    });
+    let meCalls = 0;
+    const fetchMock = vi.fn(async (url: string) => {
+      if (String(url).includes("/auth/me")) {
+        meCalls += 1;
+        if (meCalls === 1) {
+          await meGate;
+          return new Response(
+            JSON.stringify({
+              success: false,
+              error: { code: "AUTH_REQUIRED", message: "sign-in is required" },
+            }),
+            { status: 401, headers: { "content-type": "application/json" } },
+          );
+        }
+        return new Response(
+          JSON.stringify({
+            success: true,
+            data: { user: { id: "user-1" } },
+            meta: { requestId: "r" },
+          }),
+          { status: 200, headers: { "content-type": "application/json" } },
+        );
+      }
+      await refreshGate;
+      return new Response(
+        JSON.stringify({
+          success: true,
+          data: {
+            accessToken: "stale-refresh",
+            accessTokenExpiresInSeconds: 900,
+            user: session.user,
+          },
+          meta: { requestId: "r" },
+        }),
+        { status: 200, headers: { "content-type": "application/json" } },
+      );
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    const pending = confirmSessionWithMe();
+    await vi.waitFor(() => expect(meCalls).toBe(1));
+    releaseMe();
+    await vi.waitFor(() =>
+      expect(fetchMock.mock.calls.some((call) => String(call[0]).includes("/auth/refresh"))).toBe(true),
+    );
+    setAuthenticated({ ...session, accessToken: "newer-token" });
+    releaseRefresh();
+    await pending;
+    expect(getMemoryAccessToken()).toBe("newer-token");
+    expect(getAuthSnapshot().phase).toBe("authenticated");
+    expect(getAuthSnapshot().identityConfirmed).toBe(true);
+    vi.unstubAllGlobals();
+    vi.unstubAllEnvs();
+  });
+
+  it("ignores a late authenticated apply after logout", () => {
+    resetAuthMemoryForTests();
+    const atEpoch = beginLogoutEpoch();
+    expect(applyAuthenticated(session, atEpoch - 1)).toBe(false);
+    expect(getMemoryAccessToken()).toBeNull();
+  });
+
+  it("clears the registered query cache on logout", async () => {
+    resetAuthMemoryForTests();
+    let cleared = 0;
+    const unregister = registerPrivateQueryCache({
+      clear() {
+        cleared += 1;
+      },
+    });
+    const transport = createFixtureAuthTransport(async () => ({ ok: true, session }));
+    transport.logout = async () => "confirmed";
+    await logoutWithAuthClient(transport);
+    expect(cleared).toBe(1);
+    unregister();
+    clearPrivateQueryCache();
   });
 });
 
