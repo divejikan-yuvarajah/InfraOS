@@ -1,0 +1,115 @@
+/**
+ * Step 43 staff access shell. Scoped to [data-infra-app].
+ * Does not style the public landing page.
+ */
+
+[data-infra-app].auth-access-root {
+  --infra-orange: #ff5b00;
+  --infra-yellow: #feb600;
+  --infra-maroon: #8c1f28;
+  --infra-green: #279541;
+  --app-canvas: #f4f7fb;
+  --app-text: #101827;
+  --app-subtle: #334155;
+  --app-muted: #475569;
+  --app-card: #ffffff;
+  --app-line: #d7dee8;
+  min-height: 100dvh;
+  background: var(--app-canvas);
+  color: var(--app-text);
+  font-family: var(--font-infra-ui, var(--font-sans, system-ui)), system-ui, sans-serif;
+}
+
+.auth-access-main {
+  width: min(40rem, calc(100% - 2rem));
+  margin: 0 auto;
+  padding: 2.5rem 0 3rem;
+}
+
+.auth-access-kicker {
+  margin: 0 0 0.75rem;
+  color: var(--infra-maroon);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.auth-access-title {
+  margin: 0;
+  font-family: var(--font-infra-display, var(--font-display, system-ui)), system-ui, sans-serif;
+  font-size: clamp(1.75rem, 4vw, 2.25rem);
+  line-height: 1.15;
+}
+
+.auth-access-copy {
+  margin: 1rem 0 0;
+  max-width: 38rem;
+  color: var(--app-subtle);
+  line-height: 1.5;
+}
+
+.auth-access-card {
+  margin-top: 1.5rem;
+  border: 1px solid var(--app-line);
+  border-left: 4px solid var(--infra-orange);
+  border-radius: 0.75rem;
+  background: var(--app-card);
+  padding: 1rem 1.1rem;
+}
+
+.auth-access-status {
+  margin: 0;
+  color: var(--app-text);
+}
+
+.auth-access-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.auth-access-button,
+.auth-access-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.5rem;
+  border-radius: 0.5rem;
+  padding: 0.4rem 0.9rem;
+  font: inherit;
+  text-decoration: underline;
+  text-underline-offset: 0.2rem;
+}
+
+.auth-access-button {
+  border: 0;
+  background: var(--infra-orange);
+  color: #101827;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.auth-access-button:focus-visible,
+.auth-access-link:focus-visible {
+  outline: 2px solid var(--infra-maroon);
+  outline-offset: 2px;
+}
+
+.auth-access-link {
+  color: var(--infra-maroon);
+}
+
+@media (max-width: 320px) {
+  .auth-access-main {
+    width: calc(100% - 1.5rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-infra-app].auth-access-root * {
+    animation: none !important;
+    transition: none !important;
+  }
+}

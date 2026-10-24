@@ -20,6 +20,7 @@ import { getAuthAvailability } from "@/lib/auth/availability";
 import { loginFormSchema, type LoginFormValues } from "@/lib/auth/login-schema";
 import { getAuthLoginCopy } from "@/lib/auth/messages";
 import { forgotPasswordPathForLocale, sanitizeNextParam } from "@/lib/auth/redirect";
+import { DASHBOARD_PATH } from "@/lib/auth/route-access";
 import type { AuthLocale } from "@/lib/auth/types";
 import { publicHomePath, publicInfoPath } from "@/lib/landing/locales";
 
@@ -56,7 +57,7 @@ export function LoginForm({ locale, nextParam }: LoginFormProps) {
       return;
     }
     const safeNext = sanitizeNextParam(nextParam);
-    router.push(safeNext ?? publicHomePath(locale));
+    router.push(safeNext ?? DASHBOARD_PATH);
   }
 
   return (
