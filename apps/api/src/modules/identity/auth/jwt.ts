@@ -1,6 +1,6 @@
 import { createHash, randomUUID, timingSafeEqual } from "node:crypto";
 
-import { jwtVerify, SignJWT } from "jose";
+import { errors as joseErrors, jwtVerify, SignJWT } from "jose";
 import mongoose from "mongoose";
 
 import { env } from "../../../config/env.js";
@@ -16,6 +16,8 @@ export type AccessTokenClaims = {
   sub: string;
   jti: string;
   exp: number;
+  /** Signed credential epoch (`ce`). Never a role or permission claim. */
+  credentialEpoch: number;
 };
 
 function durationSeconds(
@@ -84,14 +86,20 @@ export function assertAuthSecretsReady(): void {
   }
 }
 
-export async function signAccessToken(userId: string): Promise<{
+export async function signAccessToken(
+  userId: string,
+  credentialEpoch: number,
+): Promise<{
   token: string;
   expiresInSeconds: number;
 }> {
   assertAuthSecretsReady();
+  if (!Number.isInteger(credentialEpoch) || credentialEpoch < 0) {
+    throw new Error("invalid credential epoch");
+  }
   const ttl = accessTokenTtlSeconds();
   const now = authNow();
-  const token = await new SignJWT({ typ: "access" })
+  const token = await new SignJWT({ typ: "access", ce: credentialEpoch })
     .setProtectedHeader({ alg: "HS256" })
     .setIssuer(ACCESS_TOKEN_ISSUER)
     .setAudience(ACCESS_TOKEN_AUDIENCE)
@@ -135,5 +143,23 @@ export async function verifyAccessToken(token: string): Promise<AccessTokenClaim
   if (payload.iat > nowSeconds + 60) {
     throw new Error("jwt issued in the future");
   }
-  return { sub: payload.sub, jti: payload.jti, exp: payload.exp };
+  if (
+    typeof payload.ce !== "number" ||
+    !Number.isInteger(payload.ce) ||
+    payload.ce < 0
+  ) {
+    throw new Error("missing credential epoch");
+  }
+  return {
+    sub: payload.sub,
+    jti: payload.jti,
+    exp: payload.exp,
+    credentialEpoch: payload.ce,
+  };
+}
+
+export function accessTokenFailureCode(error: unknown): "SESSION_EXPIRED" | "AUTH_REQUIRED" {
+  if (error instanceof joseErrors.JWTExpired) return "SESSION_EXPIRED";
+  if (error instanceof Error && /expired/i.test(error.message)) return "SESSION_EXPIRED";
+  return "AUTH_REQUIRED";
 }

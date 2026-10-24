@@ -111,6 +111,7 @@ describe("step 39 login and refresh", { timeout: 60_000 }, () => {
     expect(response.headers["cache-control"]).toContain("no-store");
     const claims = await verifyAccessToken(response.body.data.accessToken);
     expect(claims.sub).toBe(response.body.data.user.id);
+    expect(claims.credentialEpoch).toBe(0);
     const stored = await RefreshSession.findOne({ userId: response.body.data.user.id }).select(
       "+tokenHash",
     );
