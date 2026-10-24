@@ -52,3 +52,8 @@ export function loginPathForLocale(locale: "en" | "si" | "ta"): string {
   if (locale === "en") return "/login";
   return `/${locale}/login`;
 }
+
+export function forgotPasswordPathForLocale(locale: "en" | "si" | "ta"): string {
+  if (locale === "en") return "/forgot-password";
+  return `/${locale}/forgot-password`;
+}

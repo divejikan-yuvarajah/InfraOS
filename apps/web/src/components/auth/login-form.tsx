@@ -19,7 +19,7 @@ import { loginWithAuthClient } from "@/lib/auth/client";
 import { getAuthAvailability } from "@/lib/auth/availability";
 import { loginFormSchema, type LoginFormValues } from "@/lib/auth/login-schema";
 import { getAuthLoginCopy } from "@/lib/auth/messages";
-import { sanitizeNextParam } from "@/lib/auth/redirect";
+import { forgotPasswordPathForLocale, sanitizeNextParam } from "@/lib/auth/redirect";
 import type { AuthLocale } from "@/lib/auth/types";
 import { publicHomePath, publicInfoPath } from "@/lib/landing/locales";
 
@@ -141,6 +141,15 @@ export function LoginForm({ locale, nextParam }: LoginFormProps) {
             </FormItem>
           )}
         />
+
+        <p className="text-sm">
+          <Link
+            href={forgotPasswordPathForLocale(locale)}
+            className="text-[var(--infra-orange)] underline-offset-4 hover:underline"
+          >
+            {copy.forgotPassword}
+          </Link>
+        </p>
 
         <Button
           type="submit"

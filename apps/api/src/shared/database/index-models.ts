@@ -7,6 +7,7 @@ import { DocumentChunk } from "../../modules/documents/models/document-chunk.mod
 import { Document } from "../../modules/documents/models/document.model.js";
 import { ProjectPayment } from "../../modules/finance/models/project-payment.model.js";
 import { EmailVerificationChallenge } from "../../modules/identity/models/email-verification-challenge.model.js";
+import { PasswordResetChallenge } from "../../modules/identity/models/password-reset-challenge.model.js";
 import { RefreshFamily } from "../../modules/identity/models/refresh-family.model.js";
 import { RefreshSession } from "../../modules/identity/models/refresh-session.model.js";
 import { Role } from "../../modules/identity/models/role.model.js";
@@ -29,6 +30,7 @@ export const INDEX_MODELS = [
   RefreshSession,
   RefreshFamily,
   EmailVerificationChallenge,
+  PasswordResetChallenge,
   Project,
   Milestone,
   WorkRequest,

@@ -5,6 +5,7 @@ import {
 import { assertSafeTestDatabaseName } from "../../src/config/env.js";
 import { Agency } from "../../src/modules/agencies/models/agency.model.js";
 import { EmailVerificationChallenge } from "../../src/modules/identity/models/email-verification-challenge.model.js";
+import { PasswordResetChallenge } from "../../src/modules/identity/models/password-reset-challenge.model.js";
 import { RefreshFamily } from "../../src/modules/identity/models/refresh-family.model.js";
 import { RefreshSession } from "../../src/modules/identity/models/refresh-session.model.js";
 import { Role } from "../../src/modules/identity/models/role.model.js";
@@ -44,6 +45,7 @@ export async function clearCoreCollections(): Promise<void> {
     RefreshSession.deleteMany({}),
     RefreshFamily.deleteMany({}),
     EmailVerificationChallenge.deleteMany({}),
+    PasswordResetChallenge.deleteMany({}),
   ]);
 }
 

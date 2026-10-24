@@ -1,3 +1,5 @@
+import { ApiError, apiClient } from "@/lib/api/client";
+
 import {
   beginLogoutEpoch,
   clearAuthSession,
@@ -42,5 +44,25 @@ export async function logoutWithAuthClient(
     return await logout();
   } catch {
     return "unconfirmed";
+  }
+}
+
+export type ForgotPasswordOutcome = "accepted" | "unavailable" | "rejected";
+
+/** Generic request. Does not reveal whether the address exists. */
+export async function requestForgotPassword(email: string): Promise<ForgotPasswordOutcome> {
+  try {
+    const payload = await apiClient<{ data?: { status?: string } }>(
+      "/api/v1/auth/forgot-password",
+      {
+        method: "POST",
+        credentials: "include",
+        body: { email },
+      },
+    );
+    return payload.data?.status === "ACCEPTED" ? "accepted" : "rejected";
+  } catch (error) {
+    if (error instanceof ApiError && error.status >= 500) return "unavailable";
+    return "rejected";
   }
 }

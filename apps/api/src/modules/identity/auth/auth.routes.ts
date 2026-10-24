@@ -4,7 +4,12 @@ import { failure, success } from "../../../shared/http/envelope.js";
 import { logger } from "../../../shared/logger.js";
 import { AuthDependencyError } from "./auth.errors.js";
 import { assertAuthInfrastructure } from "./jwt.js";
+import { env } from "../../../config/env.js";
+import { requestPasswordReset, PasswordResetDependencyError } from "../password-reset-request.service.js";
+import { forgotPasswordBodySchema } from "../password-reset-request.schema.js";
+import { createPasswordResetSender } from "../password-reset-mail.js";
 import {
+  forgotPasswordRateLimit,
   isJsonContentType,
   loginRateLimit,
   logoutRateLimit,
@@ -22,7 +27,50 @@ function noStore(res: { setHeader: (name: string, value: string) => void }): voi
   res.setHeader("Pragma", "no-cache");
 }
 
+const passwordResetSender = createPasswordResetSender(env.NODE_ENV);
+
 export const authRouter = Router();
+
+authRouter.post("/forgot-password", forgotPasswordRateLimit, async (req, res, next) => {
+  try {
+    noStore(res);
+    res.setHeader("Referrer-Policy", "no-referrer");
+    if (rejectDisallowedOrigin(req, res)) return;
+    if (!isJsonContentType(req)) {
+      res
+        .status(415)
+        .json(failure("UNSUPPORTED_MEDIA", "JSON body is required", req.requestId));
+      return;
+    }
+    const body = req.body ?? {};
+    if (typeof body === "object" && body !== null && ("returnTo" in body || "next" in body)) {
+      res
+        .status(400)
+        .json(failure("VALIDATION_ERROR", "request could not be completed", req.requestId));
+      return;
+    }
+    const parsed = forgotPasswordBodySchema.safeParse(body);
+    if (!parsed.success) {
+      res
+        .status(400)
+        .json(failure("VALIDATION_ERROR", "request could not be completed", req.requestId));
+      return;
+    }
+    await requestPasswordReset({
+      email: parsed.data.email,
+      sender: passwordResetSender,
+      allowlistedOrigin: env.FRONTEND_ORIGIN,
+      requestId: req.requestId,
+    });
+    res.status(200).json(success({ status: "ACCEPTED" }, req.requestId));
+  } catch (error) {
+    if (error instanceof PasswordResetDependencyError) {
+      res.status(503).json(failure(error.code, error.message, req.requestId));
+      return;
+    }
+    next(error);
+  }
+});
 
 authRouter.post("/login", loginRateLimit, async (req, res, next) => {
   try {

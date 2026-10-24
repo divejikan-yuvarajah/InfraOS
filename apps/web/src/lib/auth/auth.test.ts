@@ -3,9 +3,11 @@ import { describe, expect, it, vi } from "vitest";
 import { parseApiError } from "@/lib/api/errors";
 
 import { getAuthAvailability } from "./availability";
-import { loginWithAuthClient, logoutWithAuthClient } from "./client";
+import { loginWithAuthClient, logoutWithAuthClient, requestForgotPassword } from "./client";
+import { forgotPasswordFormSchema } from "./forgot-password-schema";
 import { loginFormSchema } from "./login-schema";
-import { sanitizeNextParam } from "./redirect";
+import { getAuthForgotCopy } from "./messages";
+import { forgotPasswordPathForLocale, sanitizeNextParam } from "./redirect";
 import { refreshAuthSessionSingleFlight, resetAuthRefreshForTests } from "./refresh-flight";
 import {
   clearAuthSession,
@@ -236,6 +238,33 @@ describe("preview transport", () => {
       expect(result.code).toBe("NOT_LIVE");
     }
     expect(getMemoryAccessToken()).toBeNull();
+  });
+});
+
+describe("forgot password request", () => {
+  it("keeps locale paths and rejects a bad email locally", () => {
+    expect(forgotPasswordPathForLocale("en")).toBe("/forgot-password");
+    expect(forgotPasswordPathForLocale("si")).toBe("/si/forgot-password");
+    expect(forgotPasswordPathForLocale("ta")).toBe("/ta/forgot-password");
+    expect(forgotPasswordFormSchema.safeParse({ email: "not-email" }).success).toBe(false);
+    expect(getAuthForgotCopy("si").nativeReview.length).toBeGreaterThan(0);
+    expect(getAuthForgotCopy("en").accepted).not.toMatch(/registered as/i);
+  });
+
+  it("treats the generic accepted envelope as accepted", async () => {
+    vi.stubEnv("NEXT_PUBLIC_API_BASE_URL", "http://localhost:4000");
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () =>
+        new Response(JSON.stringify({ success: true, data: { status: "ACCEPTED" }, meta: { requestId: "r" } }), {
+          status: 200,
+          headers: { "content-type": "application/json" },
+        }),
+      ),
+    );
+    await expect(requestForgotPassword("officer@example.com")).resolves.toBe("accepted");
+    vi.unstubAllGlobals();
+    vi.unstubAllEnvs();
   });
 });
 
