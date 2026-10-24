@@ -24,6 +24,7 @@ import { authNow } from "./auth.clock.js";
 import { clearRefreshCookie, readRefreshCookie, setRefreshCookie } from "./cookies.js";
 import { loginBodySchema } from "./login.schema.js";
 import { logoutRefreshFamily, rotateRefreshSession } from "./refresh-session.service.js";
+import { requireAuthenticated } from "./require-authenticated.js";
 
 function noStore(res: { setHeader: (name: string, value: string) => void }): void {
   res.setHeader("Cache-Control", "no-store");
@@ -33,6 +34,11 @@ function noStore(res: { setHeader: (name: string, value: string) => void }): voi
 const passwordResetSender = createPasswordResetSender(env.NODE_ENV);
 
 export const authRouter = Router();
+
+authRouter.get("/me", requireAuthenticated, (req, res) => {
+  noStore(res);
+  res.status(200).json(success({ user: req.authUser }, req.requestId));
+});
 
 authRouter.post("/forgot-password", forgotPasswordRateLimit, async (req, res, next) => {
   try {

@@ -18,8 +18,11 @@ describe("access token verification", () => {
   it("accepts an HS256 access token and rejects tampering, none, and the wrong audience", async () => {
     env.ACCESS_TOKEN_SECRET = ACCESS;
     env.REFRESH_TOKEN_SECRET = REFRESH;
-    const { token } = await signAccessToken("user-1");
-    await expect(verifyAccessToken(token)).resolves.toMatchObject({ sub: "user-1" });
+    const { token } = await signAccessToken("user-1", 0);
+    await expect(verifyAccessToken(token)).resolves.toMatchObject({
+      sub: "user-1",
+      credentialEpoch: 0,
+    });
 
     const tampered = `${token.slice(0, -2)}aa`;
     await expect(verifyAccessToken(tampered)).rejects.toThrow();
@@ -61,14 +64,26 @@ describe("access token verification", () => {
 
     setAuthNowForTests(() => new Date(Date.now() + 20 * 60 * 1000));
     await expect(verifyAccessToken(token)).rejects.toThrow();
+    resetAuthNowForTests();
+
+    const legacy = await new SignJWT({ typ: "access" })
+      .setProtectedHeader({ alg: "HS256" })
+      .setIssuer("infraos-api")
+      .setAudience("infraos-web")
+      .setSubject("user-1")
+      .setJti("jti-legacy")
+      .setIssuedAt()
+      .setExpirationTime("15m")
+      .sign(new TextEncoder().encode(ACCESS));
+    await expect(verifyAccessToken(legacy)).rejects.toThrow(/credential epoch/);
   });
 
   it("fails closed when the access and refresh secrets are missing or identical", async () => {
     env.ACCESS_TOKEN_SECRET = undefined;
     env.REFRESH_TOKEN_SECRET = REFRESH;
-    await expect(signAccessToken("user-1")).rejects.toThrow();
+    await expect(signAccessToken("user-1", 0)).rejects.toThrow();
     env.ACCESS_TOKEN_SECRET = ACCESS;
     env.REFRESH_TOKEN_SECRET = ACCESS;
-    await expect(signAccessToken("user-1")).rejects.toThrow();
+    await expect(signAccessToken("user-1", 0)).rejects.toThrow();
   });
 });

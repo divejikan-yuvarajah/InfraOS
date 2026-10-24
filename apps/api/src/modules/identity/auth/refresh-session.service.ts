@@ -82,10 +82,16 @@ async function toUserDto(user: UserDocument): Promise<AuthUserDto | null> {
   };
 }
 
-async function issueAccessSession(user: UserDocument): Promise<AuthSessionDto | null> {
-  const dto = await toUserDto(user);
+async function issueAccessSession(
+  user: UserDocument,
+  authorizedEpoch: number,
+): Promise<AuthSessionDto | null> {
+  const fresh = await User.findById(user._id);
+  const freshEpoch = fresh?.credentialEpoch ?? 0;
+  if (!fresh || freshEpoch !== authorizedEpoch) return null;
+  const dto = await toUserDto(fresh);
   if (!dto) return null;
-  const access = await signAccessToken(dto.id);
+  const access = await signAccessToken(dto.id, authorizedEpoch);
   return {
     user: dto,
     accessToken: access.token,
@@ -149,7 +155,10 @@ export async function persistInitialRefreshSession(input: {
         ],
         { session: mongoSession },
       );
-      const sessionBody = await issueAccessSession(current);
+      const sessionBody = await issueAccessSession(
+        current,
+        current.credentialEpoch ?? 0,
+      );
       if (!sessionBody) {
         throw new AuthDependencyError();
       }
@@ -263,6 +272,7 @@ export async function rotateRefreshSession(input: {
   await refreshRotationHooks.afterAuthoritySwap();
 
   let successorId: string | null = null;
+  let authorizedEpoch: number | null = null;
   try {
     const successor = await RefreshSession.create({
       userId: claimed.userId,
@@ -301,6 +311,7 @@ export async function rotateRefreshSession(input: {
       }
       return { ok: false, reason: "unauthorized" };
     }
+    authorizedEpoch = userEpoch;
   } catch (error) {
     if (successorId) {
       await RefreshSession.updateOne(
@@ -331,7 +342,11 @@ export async function rotateRefreshSession(input: {
   }
 
   try {
-    const session = await issueAccessSession(user);
+    if (authorizedEpoch === null) {
+      await closeFamily(claimed.familyId, now);
+      return { ok: false, reason: "unavailable" };
+    }
+    const session = await issueAccessSession(user, authorizedEpoch);
     if (!session) {
       await closeFamily(claimed.familyId, now);
       return { ok: false, reason: "unauthorized" };

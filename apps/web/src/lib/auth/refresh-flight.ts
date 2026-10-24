@@ -1,10 +1,23 @@
 import { getAuthAvailability } from "./availability";
-import { applyAuthenticated, clearAuthSession, getAuthEpoch, setRefreshing } from "./state";
+import {
+  applyAuthenticated,
+  clearAuthSession,
+  getAuthEpoch,
+  getMemoryAccessToken,
+  markAuthBootSettled,
+  setAuthError,
+  setRefreshing,
+} from "./state";
 import { resolveAuthTransport } from "./transport";
-import type { AuthLoginResult, AuthTransport } from "./types";
+import type { AuthFailureCode, AuthLoginResult, AuthTransport } from "./types";
 
 let inflight: Promise<AuthLoginResult> | null = null;
 let bootStarted = false;
+let bootPromise: Promise<AuthLoginResult | null> | null = null;
+
+function keepsSession(code: AuthFailureCode): boolean {
+  return code === "UNAVAILABLE" || code === "NETWORK" || code === "RATE_LIMITED" || code === "NOT_LIVE";
+}
 
 const NOT_LIVE: AuthLoginResult = {
   ok: false,
@@ -28,9 +41,10 @@ async function performRefresh(transport?: AuthTransport): Promise<AuthLoginResul
   const refresh = resolveAuthTransport(transport).refresh;
   if (!refresh) return NOT_LIVE;
   const atEpoch = getAuthEpoch();
+  const tokenAtStart = getMemoryAccessToken();
   setRefreshing();
   const result = await refresh();
-  if (getAuthEpoch() !== atEpoch) {
+  if (getAuthEpoch() !== atEpoch || getMemoryAccessToken() !== tokenAtStart) {
     return {
       ok: false,
       code: "SESSION_EXPIRED",
@@ -41,19 +55,31 @@ async function performRefresh(transport?: AuthTransport): Promise<AuthLoginResul
     applyAuthenticated(result.session, atEpoch);
     return result;
   }
+  if (keepsSession(result.code)) {
+    setAuthError();
+    return result;
+  }
   clearAuthSession();
   return result;
 }
 
 /** One refresh attempt when the app boots. No-op unless live mode is enabled. */
 export function bootstrapAuthFromRefresh(): Promise<AuthLoginResult | null> {
-  if (bootStarted) return Promise.resolve(null);
+  if (bootStarted && bootPromise) return bootPromise;
   bootStarted = true;
-  if (getAuthAvailability() !== "live") return Promise.resolve(null);
-  return refreshAuthSessionSingleFlight();
+  if (getAuthAvailability() !== "live") {
+    markAuthBootSettled();
+    bootPromise = Promise.resolve(null);
+    return bootPromise;
+  }
+  bootPromise = refreshAuthSessionSingleFlight().finally(() => {
+    markAuthBootSettled();
+  });
+  return bootPromise;
 }
 
 export function resetAuthRefreshForTests(): void {
   inflight = null;
   bootStarted = false;
+  bootPromise = null;
 }
