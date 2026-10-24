@@ -27,8 +27,8 @@ export function testMongoEnv(uri: string): AppEnv {
 }
 
 export async function startIsolatedMongo(): Promise<AppEnv> {
-  const { MongoMemoryServer } = await import("mongodb-memory-server");
-  mongod = await MongoMemoryServer.create();
+  const { MongoMemoryReplSet } = await import("mongodb-memory-server");
+  mongod = await MongoMemoryReplSet.create({ replSet: { count: 1 } });
   const uri = mongod.getUri();
   const source = testMongoEnv(uri);
   assertSafeTestDatabaseName(source.NODE_ENV, source.MONGODB_DB_NAME);

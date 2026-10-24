@@ -54,6 +54,10 @@ export const forgotPasswordRateLimit = createCredentialRateLimit(
   env.NODE_ENV === "test" ? 40 : 10,
 );
 
+export const resetPasswordRateLimit = createCredentialRateLimit(
+  env.NODE_ENV === "test" ? 40 : 10,
+);
+
 export function rejectDisallowedOrigin(req: Request, res: Response): boolean {
   if (isAllowedAuthOrigin(req)) return false;
   res.setHeader("Cache-Control", "no-store");

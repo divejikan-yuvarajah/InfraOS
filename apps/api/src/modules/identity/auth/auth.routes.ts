@@ -7,9 +7,12 @@ import { assertAuthInfrastructure } from "./jwt.js";
 import { env } from "../../../config/env.js";
 import { requestPasswordReset, PasswordResetDependencyError } from "../password-reset-request.service.js";
 import { forgotPasswordBodySchema } from "../password-reset-request.schema.js";
+import { consumePasswordReset } from "../password-reset-consume.service.js";
+import { resetPasswordBodySchema } from "../password-reset-consume.schema.js";
 import { createPasswordResetSender } from "../password-reset-mail.js";
 import {
   forgotPasswordRateLimit,
+  resetPasswordRateLimit,
   isJsonContentType,
   loginRateLimit,
   logoutRateLimit,
@@ -68,6 +71,49 @@ authRouter.post("/forgot-password", forgotPasswordRateLimit, async (req, res, ne
       res.status(503).json(failure(error.code, error.message, req.requestId));
       return;
     }
+    next(error);
+  }
+});
+
+authRouter.post("/reset-password", resetPasswordRateLimit, async (req, res, next) => {
+  try {
+    noStore(res);
+    res.setHeader("Referrer-Policy", "no-referrer");
+    if (rejectDisallowedOrigin(req, res)) return;
+    if (!isJsonContentType(req)) {
+      res
+        .status(415)
+        .json(failure("UNSUPPORTED_MEDIA", "JSON body is required", req.requestId));
+      return;
+    }
+    const body = req.body ?? {};
+    if (typeof body === "object" && body !== null && ("returnTo" in body || "next" in body)) {
+      res
+        .status(400)
+        .json(failure("VALIDATION_ERROR", "password reset could not be completed", req.requestId));
+      return;
+    }
+    const parsed = resetPasswordBodySchema.safeParse(body);
+    if (!parsed.success) {
+      res
+        .status(400)
+        .json(failure("VALIDATION_ERROR", "password reset could not be completed", req.requestId));
+      return;
+    }
+    const result = await consumePasswordReset({
+      token: parsed.data.token,
+      password: parsed.data.password,
+    });
+    if (!result.ok) {
+      const status = result.reason === "unavailable" ? 503 : 400;
+      const code = result.reason === "unavailable" ? "SERVICE_UNAVAILABLE" : "VALIDATION_ERROR";
+      res
+        .status(status)
+        .json(failure(code, "password reset could not be completed", req.requestId));
+      return;
+    }
+    res.status(200).json(success({ status: "RESET" }, req.requestId));
+  } catch (error) {
     next(error);
   }
 });

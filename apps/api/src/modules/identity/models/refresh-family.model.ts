@@ -13,6 +13,7 @@ const refreshFamilySchema = new Schema(
     userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
     expiresAt: { type: Date, required: true },
     closedAt: { type: Date, default: null },
+    credentialEpoch: { type: Number, required: true, default: 0, min: 0 },
     activeTokenHash: { type: String, default: null, select: false },
   },
   {
@@ -23,6 +24,7 @@ const refreshFamilySchema = new Schema(
 );
 
 refreshFamilySchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
+refreshFamilySchema.index({ userId: 1, closedAt: 1 });
 
 export type RefreshFamilyDocument = mongoose.InferSchemaType<typeof refreshFamilySchema> & {
   _id: mongoose.Types.ObjectId;

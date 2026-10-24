@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import mongoose from "mongoose";
 
 import { Agency } from "../../agencies/models/agency.model.js";
 import { RefreshFamily } from "../models/refresh-family.model.js";
@@ -27,6 +28,17 @@ export const refreshRotationHooks: {
 export function resetRefreshRotationHooks(): void {
   refreshRotationHooks.afterClaim = async () => {};
   refreshRotationHooks.afterAuthoritySwap = async () => {};
+}
+
+/** Lets a test commit a reset after bcrypt and before the family insert. */
+export const loginIssuanceHooks: {
+  beforeFamilyInsert: () => Promise<void>;
+} = {
+  beforeFamilyInsert: async () => {},
+};
+
+export function resetLoginIssuanceHooks(): void {
+  loginIssuanceHooks.beforeFamilyInsert = async () => {};
 }
 
 function summarizeUserAgent(value: string | undefined): string | null {
@@ -84,60 +96,75 @@ async function issueAccessSession(user: UserDocument): Promise<AuthSessionDto | 
 export async function persistInitialRefreshSession(input: {
   user: UserDocument;
   userAgent?: string;
+  verifiedPasswordHash: string;
 }): Promise<IssuedRefreshSession | null> {
   const now = authNow();
   if (!(await accountCanSignIn(input.user))) return null;
-  const refreshToken = generateRefreshToken();
-  const tokenHash = hashRefreshToken(refreshToken);
-  const familyId = randomUUID();
-  const expiresAt = new Date(now.getTime() + refreshAbsoluteTtlSeconds() * 1000);
-  let createdId: string | null = null;
-  let familyCreated = false;
+  const expectedEpoch = input.user.credentialEpoch ?? 0;
+  const expectedHash = input.verifiedPasswordHash;
+  await loginIssuanceHooks.beforeFamilyInsert();
+
+  const mongoSession = await mongoose.startSession();
+  let issued: IssuedRefreshSession | null = null;
   try {
-    const created = await RefreshSession.create({
-      userId: input.user._id,
-      tokenHash,
-      familyId,
-      expiresAt,
-      userAgentSummary: summarizeUserAgent(input.userAgent),
-    });
-    createdId = created._id.toString();
-    await RefreshFamily.create({
-      familyId,
-      userId: input.user._id,
-      expiresAt,
-      closedAt: null,
-      activeTokenHash: tokenHash,
-    });
-    familyCreated = true;
-    const sessionBody = await issueAccessSession(input.user);
-    if (!sessionBody) {
-      await RefreshSession.updateOne(
-        { _id: created._id },
-        { $set: { revokedAt: now } },
+    await mongoSession.withTransaction(async () => {
+      issued = null;
+      const current = await User.findById(input.user._id)
+        .select("+passwordHash")
+        .session(mongoSession);
+      if (
+        !current ||
+        current.passwordHash !== expectedHash ||
+        (current.credentialEpoch ?? 0) !== expectedEpoch ||
+        !(await accountCanSignIn(current))
+      ) {
+        return;
+      }
+      const refreshToken = generateRefreshToken();
+      const tokenHash = hashRefreshToken(refreshToken);
+      const familyId = randomUUID();
+      const expiresAt = new Date(now.getTime() + refreshAbsoluteTtlSeconds() * 1000);
+      await RefreshSession.create(
+        [
+          {
+            userId: current._id,
+            tokenHash,
+            familyId,
+            expiresAt,
+            userAgentSummary: summarizeUserAgent(input.userAgent),
+          },
+        ],
+        { session: mongoSession },
       );
-      return null;
-    }
-    return {
-      session: sessionBody,
-      refreshToken,
-      refreshExpiresAt: expiresAt,
-    };
+      await RefreshFamily.create(
+        [
+          {
+            familyId,
+            userId: current._id,
+            expiresAt,
+            closedAt: null,
+            activeTokenHash: tokenHash,
+            credentialEpoch: expectedEpoch,
+          },
+        ],
+        { session: mongoSession },
+      );
+      const sessionBody = await issueAccessSession(current);
+      if (!sessionBody) {
+        throw new AuthDependencyError();
+      }
+      issued = {
+        session: sessionBody,
+        refreshToken,
+        refreshExpiresAt: expiresAt,
+      };
+    });
+    return issued;
   } catch (error) {
-    if (createdId) {
-      await RefreshSession.updateOne(
-        { _id: createdId },
-        { $set: { revokedAt: now } },
-      );
-    }
-    if (familyCreated) {
-      await RefreshFamily.updateOne(
-        { familyId, closedAt: null },
-        { $set: { closedAt: now, activeTokenHash: null } },
-      );
-    }
-    if (error instanceof AuthDependencyError) throw error;
+    if (error instanceof AuthDependencyError) return null;
     throw new AuthDependencyError();
+  } finally {
+    await mongoSession.endSession();
   }
 }
 
@@ -157,13 +184,19 @@ async function closeFamily(familyId: string, now: Date): Promise<boolean> {
   return true;
 }
 
+function epochEquals(epoch: number): Record<string, unknown> {
+  if (epoch !== 0) return { credentialEpoch: epoch };
+  return { $or: [{ credentialEpoch: 0 }, { credentialEpoch: { $exists: false } }] };
+}
+
 async function restoreHashIfStillOpen(
   familyId: string,
   nextHash: string,
   previousHash: string,
+  credentialEpoch: number,
 ): Promise<boolean> {
   const restored = await RefreshFamily.findOneAndUpdate(
-    { familyId, closedAt: null, activeTokenHash: nextHash },
+    { familyId, closedAt: null, activeTokenHash: nextHash, ...epochEquals(credentialEpoch) },
     { $set: { activeTokenHash: previousHash } },
   );
   return Boolean(restored);
@@ -210,6 +243,7 @@ export async function rotateRefreshSession(input: {
 
   await refreshRotationHooks.afterClaim();
 
+  const epochNow = (await User.findById(claimed.userId))?.credentialEpoch ?? 0;
   const refreshToken = generateRefreshToken();
   const nextHash = hashRefreshToken(refreshToken);
   const swapped = await RefreshFamily.findOneAndUpdate(
@@ -217,12 +251,14 @@ export async function rotateRefreshSession(input: {
       familyId: claimed.familyId,
       closedAt: null,
       activeTokenHash: tokenHash,
+      ...epochEquals(epochNow),
     },
     { $set: { activeTokenHash: nextHash } },
   );
   if (!swapped) {
     return { ok: false, reason: "unauthorized" };
   }
+  const swappedEpoch = swapped.credentialEpoch ?? 0;
 
   await refreshRotationHooks.afterAuthoritySwap();
 
@@ -243,16 +279,26 @@ export async function rotateRefreshSession(input: {
     if (linked.modifiedCount !== 1) {
       throw new AuthDependencyError();
     }
+    const userEpoch = (await User.findById(claimed.userId))?.credentialEpoch ?? 0;
     const stillCurrent = await RefreshFamily.findOne({
       familyId: claimed.familyId,
       closedAt: null,
       activeTokenHash: nextHash,
+      ...epochEquals(userEpoch),
     }).select("+activeTokenHash");
     if (!stillCurrent) {
       await RefreshSession.updateOne(
         { _id: successor._id },
         { $set: { revokedAt: now } },
       );
+      if (userEpoch === swappedEpoch) {
+        await restoreHashIfStillOpen(
+          claimed.familyId,
+          nextHash,
+          tokenHash,
+          swappedEpoch,
+        );
+      }
       return { ok: false, reason: "unauthorized" };
     }
   } catch (error) {
@@ -262,11 +308,16 @@ export async function rotateRefreshSession(input: {
         { $set: { revokedAt: now } },
       );
     }
-    const restored = await restoreHashIfStillOpen(
-      claimed.familyId,
-      nextHash,
-      tokenHash,
-    );
+    const epochAfterFailure = (await User.findById(claimed.userId))?.credentialEpoch ?? 0;
+    const restored =
+      epochAfterFailure === swappedEpoch
+        ? await restoreHashIfStillOpen(
+            claimed.familyId,
+            nextHash,
+            tokenHash,
+            swappedEpoch,
+          )
+        : false;
     if (restored) {
       await RefreshSession.updateOne(
         { _id: claimed._id, replacedBySessionId: null },

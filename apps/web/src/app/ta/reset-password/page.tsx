@@ -1,0 +1,13 @@
+import type { Metadata } from "next";
+
+import { ResetPasswordPageShell } from "@/components/auth/reset-password-page-shell";
+
+export const metadata: Metadata = {
+  title: "கடவுச்சொல் · INFRAOS",
+  robots: { index: false, follow: false },
+  referrer: "no-referrer",
+};
+
+export default function TamilResetPasswordPage() {
+  return <ResetPasswordPageShell locale="ta" />;
+}

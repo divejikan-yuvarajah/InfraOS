@@ -48,6 +48,27 @@ export async function logoutWithAuthClient(
 }
 
 export type ForgotPasswordOutcome = "accepted" | "unavailable" | "rejected";
+export type ResetPasswordOutcome = "reset" | "unavailable" | "rejected";
+
+export async function resetPasswordWithAuthClient(input: {
+  token: string;
+  password: string;
+}): Promise<ResetPasswordOutcome> {
+  try {
+    const payload = await apiClient<{ data?: { status?: string } }>(
+      "/api/v1/auth/reset-password",
+      {
+        method: "POST",
+        credentials: "include",
+        body: { token: input.token, password: input.password },
+      },
+    );
+    return payload.data?.status === "RESET" ? "reset" : "rejected";
+  } catch (error) {
+    if (error instanceof ApiError && error.status >= 500) return "unavailable";
+    return "rejected";
+  }
+}
 
 /** Generic request. Does not reveal whether the address exists. */
 export async function requestForgotPassword(email: string): Promise<ForgotPasswordOutcome> {

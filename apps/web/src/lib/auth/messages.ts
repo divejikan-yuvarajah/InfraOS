@@ -1,5 +1,22 @@
 import type { AuthLocale } from "./types";
 
+export type AuthResetCopy = {
+  title: string;
+  subtitle: string;
+  passwordLabel: string;
+  submit: string;
+  submitting: string;
+  reset: string;
+  rejected: string;
+  unavailable: string;
+  missing: string;
+  tooShort: string;
+  tooLong: string;
+  privacy: string;
+  backToLogin: string;
+  nativeReview: string;
+};
+
 export type AuthForgotCopy = {
   title: string;
   subtitle: string;
@@ -142,8 +159,49 @@ export function getAuthLoginCopy(locale: AuthLocale): AuthLoginCopy {
   return EN;
 }
 
+const RESET_EN: AuthResetCopy = {
+  title: "Choose a new password",
+  subtitle: "University GovTech demonstration workspace. Not an official government portal.",
+  passwordLabel: "New password",
+  submit: "Update password",
+  submitting: "Updating…",
+  reset: "Your password was updated. Sign in with the new password. This does not sign you in.",
+  rejected: "This reset link could not be used. Request a new one.",
+  unavailable: "Password reset is temporarily unavailable. You can try again.",
+  missing: "This page needs a reset link. Request a new one from sign in.",
+  tooShort: "Use at least 8 characters.",
+  tooLong: "Use at most 72 bytes.",
+  privacy: "The reset link is removed from the address bar. It is not stored in this browser.",
+  backToLogin: "Back to sign in",
+  nativeReview: "Sinhala and Tamil copy is draft until native review.",
+};
+
+const RESET_SI: AuthResetCopy = {
+  ...RESET_EN,
+  title: "නව මුරපදයක් තෝරන්න",
+  passwordLabel: "නව මුරපදය",
+  submit: "මුරපදය යාවත්කාලීන කරන්න",
+  backToLogin: "පිවිසීමට ආපසු",
+  nativeReview: "සිංහල/දෙමළ පිටපත් native review සඳහා draft.",
+};
+
+const RESET_TA: AuthResetCopy = {
+  ...RESET_EN,
+  title: "புதிய கடவுச்சொல்",
+  passwordLabel: "புதிய கடவுச்சொல்",
+  submit: "கடவுச்சொல்லை புதுப்பி",
+  backToLogin: "உள்நுழைவுக்குத் திரும்பு",
+  nativeReview: "Sinhala/Tamil copy native review pending.",
+};
+
 export function getAuthForgotCopy(locale: AuthLocale): AuthForgotCopy {
   if (locale === "si") return FORGOT_SI;
   if (locale === "ta") return FORGOT_TA;
   return FORGOT_EN;
+}
+
+export function getAuthResetCopy(locale: AuthLocale): AuthResetCopy {
+  if (locale === "si") return RESET_SI;
+  if (locale === "ta") return RESET_TA;
+  return RESET_EN;
 }

@@ -3,7 +3,8 @@ import { describe, expect, it, vi } from "vitest";
 import { parseApiError } from "@/lib/api/errors";
 
 import { getAuthAvailability } from "./availability";
-import { loginWithAuthClient, logoutWithAuthClient, requestForgotPassword } from "./client";
+import { loginWithAuthClient, logoutWithAuthClient, requestForgotPassword, resetPasswordWithAuthClient } from "./client";
+import { readResetTokenFromHash, retainResetToken } from "./reset-fragment";
 import { forgotPasswordFormSchema } from "./forgot-password-schema";
 import { loginFormSchema } from "./login-schema";
 import { getAuthForgotCopy } from "./messages";
@@ -263,6 +264,58 @@ describe("forgot password request", () => {
       ),
     );
     await expect(requestForgotPassword("officer@example.com")).resolves.toBe("accepted");
+    vi.unstubAllGlobals();
+    vi.unstubAllEnvs();
+  });
+});
+
+describe("reset fragment retention", () => {
+  it("keeps a hash token after the fragment is cleared", () => {
+    const first = retainResetToken(readResetTokenFromHash("#token=fixture"), null);
+    const second = retainResetToken(readResetTokenFromHash(""), first);
+    expect(first).toBe("fixture");
+    expect(second).toBe("fixture");
+    expect(readResetTokenFromHash("")).toBeNull();
+    expect(readResetTokenFromHash("#token=")).toBeNull();
+  });
+
+  it("lets a newer fragment replace the held token", () => {
+    expect(retainResetToken(readResetTokenFromHash("#token=next"), "fixture")).toBe("next");
+  });
+});
+
+describe("reset password client", () => {
+  it("maps RESET and failure statuses without returning the token", async () => {
+    vi.stubEnv("NEXT_PUBLIC_API_BASE_URL", "http://localhost:4000");
+    const fetchMock = vi.fn(async (_url: string, init?: RequestInit) => {
+      const body = JSON.parse(String(init?.body)) as { token?: string; password?: string };
+      expect(body.token).toBe("fixture");
+      expect(body.password).toBe("long-enough");
+      return new Response(JSON.stringify({ success: true, data: { status: "RESET" }, meta: { requestId: "r" } }), {
+        status: 200,
+        headers: { "content-type": "application/json" },
+      });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    const reset = await resetPasswordWithAuthClient({ token: "fixture", password: "long-enough" });
+    expect(reset).toBe("reset");
+    expect(JSON.stringify(reset)).not.toContain("fixture");
+
+    fetchMock.mockResolvedValueOnce(
+      new Response(JSON.stringify({ success: false, error: { code: "REJECTED" } }), {
+        status: 400,
+        headers: { "content-type": "application/json" },
+      }),
+    );
+    await expect(resetPasswordWithAuthClient({ token: "fixture", password: "long-enough" })).resolves.toBe("rejected");
+
+    fetchMock.mockResolvedValueOnce(
+      new Response(JSON.stringify({ success: false, error: { code: "UNAVAILABLE" } }), {
+        status: 503,
+        headers: { "content-type": "application/json" },
+      }),
+    );
+    await expect(resetPasswordWithAuthClient({ token: "fixture", password: "long-enough" })).resolves.toBe("unavailable");
     vi.unstubAllGlobals();
     vi.unstubAllEnvs();
   });

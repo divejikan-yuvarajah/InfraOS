@@ -44,6 +44,7 @@ export async function loginWithPassword(input: {
     issued = await persistInitialRefreshSession({
       user: fresh,
       userAgent: input.userAgent,
+      verifiedPasswordHash: user.passwordHash,
     });
   } catch (error) {
     if (error instanceof AuthDependencyError) throw error;

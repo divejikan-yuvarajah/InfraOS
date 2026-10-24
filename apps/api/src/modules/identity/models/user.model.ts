@@ -59,6 +59,12 @@ const userSchema = new Schema(
       required: true,
       default: false,
     },
+    credentialEpoch: {
+      type: Number,
+      required: true,
+      default: 0,
+      min: 0,
+    },
     lastLoginAt: {
       type: Date,
       default: null,

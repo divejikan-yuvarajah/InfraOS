@@ -57,3 +57,8 @@ export function forgotPasswordPathForLocale(locale: "en" | "si" | "ta"): string 
   if (locale === "en") return "/forgot-password";
   return `/${locale}/forgot-password`;
 }
+
+export function resetPasswordPathForLocale(locale: "en" | "si" | "ta"): string {
+  if (locale === "en") return "/reset-password";
+  return `/${locale}/reset-password`;
+}
