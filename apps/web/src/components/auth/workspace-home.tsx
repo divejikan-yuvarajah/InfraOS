@@ -39,6 +39,9 @@ export function WorkspaceHome() {
         <Link className="auth-access-link" href="/admin/agencies">
           Agencies
         </Link>
+        <Link className="auth-access-link" href="/admin/roles">
+          Roles
+        </Link>
         <button type="button" className="auth-access-button" disabled={leaving} onClick={() => void signOut()}>
           {copy.signOut}
         </button>

@@ -10,6 +10,7 @@ const NAV = [
   { href: "/settings", label: "Settings" },
   { href: "/admin/users", label: "Staff" },
   { href: "/admin/agencies", label: "Agencies" },
+  { href: "/admin/roles", label: "Roles" },
 ] as const;
 
 export function StaffWorkspaceShell({

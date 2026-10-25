@@ -275,7 +275,28 @@
   font-weight: 700;
 }
 
+.admin-roles-layout {
+  display: grid;
+  grid-template-columns: minmax(12rem, 16rem) minmax(0, 1fr);
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.admin-roles-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.admin-roles-list li + li {
+  margin-top: 0.35rem;
+}
+
 @media (max-width: 40rem) {
+  .admin-roles-layout {
+    grid-template-columns: 1fr;
+  }
+
   .auth-access-main,
   .auth-access-main.is-wide {
     width: min(100% - 1.25rem, 72rem);

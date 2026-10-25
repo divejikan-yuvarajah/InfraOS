@@ -4,6 +4,7 @@ import { healthRouter, readyRouter } from "../modules/health/health.routes.js";
 import { authRouter } from "../modules/identity/auth/auth.routes.js";
 import { emailVerificationRouter } from "../modules/identity/email-verification.routes.js";
 import { agencyManagementRouter } from "../modules/agencies/management/agency-management.routes.js";
+import { adminPermissionRouter, adminRoleRouter } from "../modules/identity/admin-roles/admin-role.routes.js";
 import { adminUserRouter } from "../modules/identity/admin-users/admin-user.routes.js";
 import { profileRouter } from "../modules/identity/profile/profile.routes.js";
 
@@ -16,5 +17,7 @@ export function createV1Router(): Router {
   router.use("/profile", profileRouter);
   router.use("/admin/users", adminUserRouter);
   router.use("/admin/agencies", agencyManagementRouter);
+  router.use("/admin/roles", adminRoleRouter);
+  router.use("/admin/permissions", adminPermissionRouter);
   return router;
 }
