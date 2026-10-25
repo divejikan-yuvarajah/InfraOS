@@ -107,6 +107,123 @@
   }
 }
 
+.auth-access-header {
+  padding-bottom: 0;
+}
+
+.auth-access-nav {
+  margin: 0 0 1.25rem;
+}
+
+.auth-access-nav-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.auth-access-nav-link {
+  color: var(--infra-maroon);
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.auth-access-nav-link.is-active {
+  color: var(--infra-orange);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.auth-access-section-title {
+  margin: 0 0 0.75rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.auth-access-dl {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0;
+}
+
+.auth-access-dl dt {
+  margin: 0;
+  color: var(--app-muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.auth-access-dl dd {
+  margin: 0.15rem 0 0;
+  color: var(--app-text);
+  word-break: break-word;
+}
+
+.auth-access-form {
+  display: grid;
+  gap: 1rem;
+}
+
+.auth-access-field-label {
+  margin: 0 0 0.5rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.auth-access-hint {
+  margin: 0.75rem 0 0;
+  color: var(--app-muted);
+  font-size: 0.85rem;
+  line-height: 1.45;
+}
+
+.auth-access-locale-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.auth-access-chip {
+  min-height: 2rem;
+  border: 1px solid var(--app-line);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--app-text);
+  padding: 0.2rem 0.75rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.auth-access-chip.is-active {
+  border-color: var(--infra-orange);
+  background: color-mix(in srgb, var(--infra-orange) 12%, white);
+}
+
+.auth-access-banner {
+  margin-top: 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+}
+
+.auth-access-banner.ok {
+  border: 1px solid color-mix(in srgb, var(--infra-green) 40%, white);
+  background: color-mix(in srgb, var(--infra-green) 10%, white);
+  color: #14532d;
+}
+
+.auth-access-banner.error {
+  border: 1px solid color-mix(in srgb, var(--infra-maroon) 35%, white);
+  background: color-mix(in srgb, var(--infra-maroon) 8%, white);
+  color: var(--infra-maroon);
+}
+
 @media (prefers-reduced-motion: reduce) {
   [data-infra-app].auth-access-root * {
     animation: none !important;
