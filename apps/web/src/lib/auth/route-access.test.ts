@@ -37,6 +37,9 @@ describe("route classification", () => {
     expect(classifyAppPath("/projects/42/edit")).toBe("private");
     expect(classifyAppPath("/map")).toBe("private");
     expect(classifyAppPath("/admin/users")).toBe("private");
+    expect(classifyAppPath("/admin/roles")).toBe("private");
+    expect(classifyAppPath("/si/admin/roles")).toBe("public");
+    expect(classifyAppPath("/ta/admin/roles")).toBe("public");
     expect(classifyAppPath("/roadsync")).toBe("private");
     expect(classifyAppPath("/si/dashboard")).toBe("public");
     expect(classifyAppPath("/dashboarding")).toBe("public");
