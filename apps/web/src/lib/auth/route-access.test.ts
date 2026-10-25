@@ -31,6 +31,8 @@ describe("route classification", () => {
   });
 
   it("matches staff prefixes by segment, including nested paths", () => {
+    expect(classifyAppPath("/profile")).toBe("private");
+    expect(classifyAppPath("/settings")).toBe("private");
     expect(classifyAppPath("/dashboard")).toBe("private");
     expect(classifyAppPath("/projects/42/edit")).toBe("private");
     expect(classifyAppPath("/map")).toBe("private");
