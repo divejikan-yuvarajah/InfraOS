@@ -7,6 +7,7 @@ import { agencyManagementRouter } from "../modules/agencies/management/agency-ma
 import { adminPermissionRouter, adminRoleRouter } from "../modules/identity/admin-roles/admin-role.routes.js";
 import { adminUserRouter } from "../modules/identity/admin-users/admin-user.routes.js";
 import { profileRouter } from "../modules/identity/profile/profile.routes.js";
+import { projectRouter } from "../modules/projects/projects.routes.js";
 
 export function createV1Router(): Router {
   const router = Router();
@@ -19,5 +20,6 @@ export function createV1Router(): Router {
   router.use("/admin/agencies", agencyManagementRouter);
   router.use("/admin/roles", adminRoleRouter);
   router.use("/admin/permissions", adminPermissionRouter);
+  router.use("/projects", projectRouter);
   return router;
 }
