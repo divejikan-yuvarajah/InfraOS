@@ -8,17 +8,21 @@ const NAV = [
   { href: "/dashboard", label: "Workspace" },
   { href: "/profile", label: "Profile" },
   { href: "/settings", label: "Settings" },
+  { href: "/admin/users", label: "Staff" },
+  { href: "/admin/agencies", label: "Agencies" },
 ] as const;
 
 export function StaffWorkspaceShell({
   kicker = "INFRAOS",
   title,
   description,
+  wide = false,
   children,
 }: {
   kicker?: string;
   title: string;
   description?: string;
+  wide?: boolean;
   children: ReactNode;
 }) {
   const pathname = usePathname();
@@ -46,7 +50,7 @@ export function StaffWorkspaceShell({
         <h1 className="auth-access-title">{title}</h1>
         {description ? <p className="auth-access-copy">{description}</p> : null}
       </header>
-      <div className="auth-access-main">{children}</div>
+      <div className={wide ? "auth-access-main is-wide" : "auth-access-main"}>{children}</div>
     </div>
   );
 }

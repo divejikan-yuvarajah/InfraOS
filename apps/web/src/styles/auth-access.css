@@ -230,3 +230,54 @@
     transition: none !important;
   }
 }
+
+.auth-access-main.is-wide {
+  width: min(72rem, calc(100% - 2rem));
+}
+
+.auth-access-input,
+[data-infra-app] select.auth-access-input {
+  width: 100%;
+  min-height: 2.75rem;
+  border: 1px solid var(--app-line);
+  border-radius: 0.5rem;
+  background: white;
+  color: var(--app-text);
+  padding: 0.4rem 0.7rem;
+}
+
+.admin-users-table-wrap {
+  overflow-x: auto;
+  margin-top: 1rem;
+}
+
+.admin-users-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.admin-users-table th,
+.admin-users-table td {
+  text-align: left;
+  padding: 0.55rem 0.4rem;
+  border-bottom: 1px solid var(--app-line);
+  vertical-align: top;
+}
+
+.admin-users-badge {
+  display: inline-block;
+  border-radius: 999px;
+  padding: 0.1rem 0.55rem;
+  background: color-mix(in srgb, var(--infra-yellow) 35%, white);
+  color: #3f2a00;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+@media (max-width: 40rem) {
+  .auth-access-main,
+  .auth-access-main.is-wide {
+    width: min(100% - 1.25rem, 72rem);
+  }
+}

@@ -1,5 +1,5 @@
 import { hash } from "bcryptjs";
-import type { Types } from "mongoose";
+import mongoose, { type ClientSession, type Types } from "mongoose";
 
 import { Agency } from "../agencies/models/agency.model.js";
 import { RefreshSession } from "./models/refresh-session.model.js";
@@ -87,6 +87,7 @@ function toDto(
 export async function provisionStaff(
   rawInput: StaffProvisionInput,
   actor: TrustedProvisioningActor,
+  session?: ClientSession,
 ): Promise<StaffProvisionResult> {
   assertTrustedActor(actor);
   const parsed = staffProvisionSchema.safeParse(rawInput);
@@ -99,7 +100,9 @@ export async function provisionStaff(
   }
 
   try {
-    const role = await Role.findOne({ key: input.roleKey, isActive: true });
+    const roleQuery = Role.findOne({ key: input.roleKey, isActive: true });
+    if (session) roleQuery.session(session);
+    const role = await roleQuery;
     if (!role) {
       throw new RegistrationInputError("role is not available");
     }
@@ -112,10 +115,12 @@ export async function provisionStaff(
     } else if (!input.agencyCode) {
       throw new RegistrationInputError("agency is required for this role");
     } else {
-      const agency = await Agency.findOne({
+      const agencyQuery = Agency.findOne({
         code: input.agencyCode,
         status: "ACTIVE",
       });
+      if (session) agencyQuery.session(session);
+      const agency = await agencyQuery;
       if (!agency) {
         throw new RegistrationInputError("agency is not available");
       }
@@ -123,19 +128,29 @@ export async function provisionStaff(
     }
 
     const passwordHash = await hash(input.password, BCRYPT_COST);
-    const created = await User.create({
+    const createdBy =
+      actor.actorUserId && mongoose.isValidObjectId(actor.actorUserId)
+        ? new mongoose.Types.ObjectId(actor.actorUserId)
+        : null;
+    const doc = {
       firstName: input.firstName,
       lastName: input.lastName,
       email: input.email,
       passwordHash,
       roleId: role._id,
       agencyId,
-      status: "PENDING",
+      status: "PENDING" as const,
       emailVerified: false,
-      createdBy: null,
-      updatedBy: null,
-    });
-    const sessions = await RefreshSession.countDocuments({ userId: created._id });
+      createdBy,
+      updatedBy: createdBy,
+    };
+    const created = session
+      ? (await User.create([doc], { session }))[0]
+      : await User.create(doc);
+    if (!created) throw new RegistrationDependencyError();
+    const sessionCount = RefreshSession.countDocuments({ userId: created._id });
+    if (session) sessionCount.session(session);
+    const sessions = await sessionCount;
     if (sessions !== 0) {
       throw new RegistrationDependencyError();
     }
