@@ -302,4 +302,35 @@ describe("step 51 project foundation", { timeout: 120_000 }, () => {
     const removed = await request(app).get("/api/v1/projects").set("Authorization", `Bearer ${data.officer.token}`);
     expect(removed.status).toBe(403);
   });
+
+  it("creates a minimal draft and denies a removed create grant", async () => {
+    const data = await world();
+    const minimal = {
+      projectCode: "INF-ROAD-5201",
+      title: "Synthetic corridor",
+      projectType: "ROAD",
+      budget: { amountMinor: 0, currency: "LKR" },
+    };
+    const created = await request(app).post("/api/v1/projects").set("Authorization", `Bearer ${data.officer.token}`).send(minimal);
+    expect(created.status).toBe(201);
+    expect(created.body.data.project.status).toBe("DRAFT");
+    expect(created.body.data.project.startDate).toBeNull();
+    expect(created.body.data.project.agencyId).toBe(data.child._id.toString());
+    await Role.updateOne({ key: "AGENCY_OFFICER" }, { $pull: { permissions: "project.create" } });
+    const revoked = await request(app)
+      .post("/api/v1/projects")
+      .set("Authorization", `Bearer ${data.officer.token}`)
+      .send({ ...minimal, projectCode: "INF-ROAD-5202" });
+    expect(revoked.status).toBe(403);
+    expect(await Project.countDocuments({ projectCode: "INF-ROAD-5202" })).toBe(0);
+    for (const token of [data.contractor.token, data.inspector.token, data.citizen.token]) {
+      const denied = await request(app)
+        .post("/api/v1/projects")
+        .set("Authorization", `Bearer ${token}`)
+        .send({ ...minimal, projectCode: "INF-ROAD-5203" });
+      expect(denied.status).toBe(403);
+    }
+    expect(await Project.countDocuments({ projectCode: "INF-ROAD-5203" })).toBe(0);
+    expect(await AuditLog.countDocuments({ action: "project.created", resourceId: created.body.data.project.id })).toBe(1);
+  });
 });
