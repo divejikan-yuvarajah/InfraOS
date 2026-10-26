@@ -177,15 +177,19 @@ describe("project create transform", () => {
       startedToken: "a",
       currentEpoch: 2,
       currentToken: "a",
+      userId: "user-a",
+      roleKey: "AGENCY_OFFICER",
       projectId: "abc",
-    })).toEqual({ invalidate: true, href: "/projects/abc/overview" });
+    })).toEqual({ invalidate: true, href: "/projects/abc/overview", queryKey: ["project", "core", "2", "user-a", "AGENCY_OFFICER", "abc"] });
     expect(projectCreateCachePlan({
       startedEpoch: 2,
       startedToken: "a",
       currentEpoch: 3,
       currentToken: "b",
+      userId: "user-b",
+      roleKey: "AGENCY_OFFICER",
       projectId: "abc",
-    })).toEqual({ invalidate: false, href: null });
+    })).toEqual({ invalidate: false, href: null, queryKey: null });
     expect(shouldConfirmDiscard(true, false)).toBe(true);
     expect(shouldConfirmDiscard(true, true)).toBe(false);
   });

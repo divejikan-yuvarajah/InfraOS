@@ -10,7 +10,7 @@ import { createProject } from "@/lib/projects/api";
 import { classifyCreateError, type CreateFailure } from "@/lib/projects/create-outcome";
 import { projectCreateCachePlan, type ProjectCreateRequest } from "@/lib/projects/create-transform";
 import { getProjectCopy } from "@/lib/projects/messages";
-import { getAuthEpoch, getMemoryAccessToken } from "@/lib/auth/state";
+import { getAuthEpoch, getMemoryAccessToken, getMemorySession } from "@/lib/auth/state";
 import type { AuthLocale } from "@/lib/auth/types";
 
 import { ProjectCreateForm } from "./project-create-form";
@@ -31,13 +31,15 @@ export function ProjectCreatePageClient() {
         startedToken: result.token,
         currentEpoch: getAuthEpoch(),
         currentToken: getMemoryAccessToken(),
+        userId: getMemorySession()?.user.id ?? "",
+        roleKey: getMemorySession()?.user.roleKey ?? "",
         projectId: result.project.id,
       });
-      if (!plan.invalidate || !plan.href) {
+      if (!plan.invalidate || !plan.href || !plan.queryKey) {
         setFailure("stale");
         return;
       }
-      queryClient.setQueryData(["projects", "detail", result.project.id], result.project);
+      queryClient.setQueryData(plan.queryKey, result.project);
       void queryClient.invalidateQueries({ queryKey: ["projects"] });
       router.push(plan.href);
     },

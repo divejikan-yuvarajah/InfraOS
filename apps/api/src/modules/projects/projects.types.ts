@@ -24,7 +24,15 @@ export type ProjectDetailDto = ProjectSummaryDto & {
     description?: string;
   } | null;
   geometry: { type: string; coordinates: unknown } | null;
+  actualEndDate: string | null;
+  physicalProgress: number | null;
+  managerName: string | null;
   budget?: { amountMinor: number; currency: "LKR" };
+};
+
+export type ProjectListAgencyDto = {
+  id: string;
+  code: string | null;
 };
 
 export type ProjectListDto = {
@@ -32,6 +40,7 @@ export type ProjectListDto = {
   page: number;
   limit: number;
   total: number;
+  agencies: ProjectListAgencyDto[];
 };
 
 export type ProjectFailure = {

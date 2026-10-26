@@ -71,6 +71,17 @@ export const projectPatchSchema = z
 
 const queryText = z.string().trim().max(80).refine((value) => !value.includes("$") && !hasControlChar(value));
 
+export const PROJECT_LIST_SORT_FIELDS = [
+  "createdAt",
+  "updatedAt",
+  "projectCode",
+  "title",
+  "projectType",
+  "status",
+  "startDate",
+  "plannedEndDate",
+] as const;
+
 export const projectListQuerySchema = z
   .object({
     page: z.coerce.number().int().min(1).max(1_000).default(1),
@@ -78,6 +89,9 @@ export const projectListQuerySchema = z
     status: z.enum(PROJECT_STATUSES).optional(),
     type: z.enum(PROJECT_TYPES).optional(),
     q: queryText.optional(),
+    agencyId: z.string().regex(/^[a-fA-F0-9]{24}$/).optional(),
+    sortBy: z.enum(PROJECT_LIST_SORT_FIELDS).default("createdAt"),
+    sortDir: z.enum(["asc", "desc"]).default("desc"),
   })
   .strict();
 
