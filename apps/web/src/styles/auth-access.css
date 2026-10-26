@@ -246,6 +246,40 @@
   padding: 0.4rem 0.7rem;
 }
 
+.auth-access-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.project-create-grid {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.project-create-fields,
+.project-create-pair {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.project-create-error {
+  margin: 0.35rem 0 0;
+  color: var(--infra-maroon);
+  font-size: 0.85rem;
+}
+
+@media (min-width: 768px) {
+  .project-create-grid {
+    grid-template-columns: minmax(0, 1.6fr) minmax(16rem, 0.7fr);
+    align-items: start;
+  }
+
+  .project-create-pair {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
 .admin-users-table-wrap {
   overflow-x: auto;
   margin-top: 1rem;

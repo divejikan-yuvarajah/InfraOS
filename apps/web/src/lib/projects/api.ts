@@ -1,7 +1,8 @@
 import { ApiError, apiClient } from "@/lib/api/client";
 import { getAuthEpoch, getMemoryAccessToken } from "@/lib/auth/state";
 
-import type { ProjectDetailPayload, ProjectListPayload, ProjectSummary } from "./types";
+import type { ProjectCreateRequest } from "./create-transform";
+import type { ProjectDetail, ProjectDetailPayload, ProjectListPayload, ProjectSummary } from "./types";
 
 function guard() {
   const atEpoch = getAuthEpoch();
@@ -33,6 +34,17 @@ export async function fetchProject(id: string) {
   const payload = await apiClient<ProjectDetailPayload>(`/api/v1/projects/${id}`, { method: "GET", authenticated: true });
   moved(atEpoch, tokenAtStart);
   return payload.data.project;
+}
+
+export async function createProject(body: ProjectCreateRequest): Promise<{ project: ProjectDetail; epoch: number; token: string }> {
+  const { atEpoch, tokenAtStart } = guard();
+  const payload = await apiClient<ProjectDetailPayload>("/api/v1/projects", {
+    method: "POST",
+    authenticated: true,
+    body,
+  });
+  moved(atEpoch, tokenAtStart);
+  return { project: payload.data.project, epoch: atEpoch, token: tokenAtStart };
 }
 
 export type { ProjectSummary };
