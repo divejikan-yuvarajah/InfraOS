@@ -14,9 +14,17 @@ export type ProjectSummary = {
   revision: number;
 };
 
+export type ProjectListAgency = { id: string; code: string | null };
+
 export type ProjectListPayload = {
   success: true;
-  data: { projects: ProjectSummary[]; page: number; limit: number; total: number };
+  data: {
+    projects: ProjectSummary[];
+    page: number;
+    limit: number;
+    total: number;
+    agencies?: ProjectListAgency[];
+  };
 };
 
 export type ProjectLocation = {
@@ -31,6 +39,9 @@ export type ProjectDetail = ProjectSummary & {
   description: string | null;
   location?: ProjectLocation | null;
   geometry?: { type: string; coordinates: unknown } | null;
+  actualEndDate?: string | null;
+  physicalProgress?: number | null;
+  managerName?: string | null;
   budget?: { amountMinor: number; currency: "LKR" };
 };
 

@@ -41,8 +41,9 @@ projectRouter.get("/", requireAuthenticated, requirePermission("project.read"), 
     noStore(res);
     const actor = req.actor;
     if (!actor) return;
-    const unknown = Object.keys(req.query).filter((key) => !["page", "limit", "status", "type", "q"].includes(key));
-    if (unknown.length > 0) {
+    const unknown = Object.keys(req.query).filter((key) => !["page", "limit", "status", "type", "q", "agencyId", "sortBy", "sortDir"].includes(key));
+    const repeated = Object.values(req.query).some((value) => Array.isArray(value));
+    if (unknown.length > 0 || repeated) {
       res.status(400).json(failure("VALIDATION_ERROR", "request could not be completed", req.requestId));
       return;
     }

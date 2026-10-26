@@ -17,10 +17,24 @@ function moved(atEpoch: number, tokenAtStart: string) {
   }
 }
 
-export async function fetchProjects(query: { page: number; limit: number; q?: string }): Promise<ProjectListPayload["data"]> {
+export async function fetchProjects(query: {
+  page: number;
+  limit: number;
+  q?: string;
+  status?: string;
+  type?: string;
+  agencyId?: string;
+  sortBy?: string;
+  sortDir?: "asc" | "desc";
+}): Promise<ProjectListPayload["data"]> {
   const { atEpoch, tokenAtStart } = guard();
   const params = new URLSearchParams({ page: String(query.page), limit: String(query.limit) });
   if (query.q) params.set("q", query.q);
+  if (query.status) params.set("status", query.status);
+  if (query.type) params.set("type", query.type);
+  if (query.agencyId) params.set("agencyId", query.agencyId);
+  if (query.sortBy) params.set("sortBy", query.sortBy);
+  if (query.sortDir) params.set("sortDir", query.sortDir);
   const payload = await apiClient<ProjectListPayload>(`/api/v1/projects?${params.toString()}`, {
     method: "GET",
     authenticated: true,

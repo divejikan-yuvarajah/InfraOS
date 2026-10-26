@@ -104,9 +104,11 @@ export function setRefreshing(): void {
 }
 
 export function setAuthenticated(session: AuthSessionResponse): void {
+  const previousUserId = memory.session?.user.id;
   memory.session = session;
   memory.phase = "authenticated";
   identityConfirmed = false;
+  if (previousUserId && previousUserId !== session.user.id) clearPrivateQueryCache();
   publish();
 }
 

@@ -7,6 +7,7 @@ import { Inspection } from "../inspections/models/inspection.model.js";
 import type { AuthenticatedActor } from "../identity/auth/require-authenticated.js";
 import { hasPermission } from "../identity/authorization/require-permission.js";
 import { projectReadFilter, projectWriteFilter, resolveResourceScope } from "../identity/authorization/resource-scope.js";
+import { PROJECT_LIST_SORT_FIELDS } from "./projects.schema.js";
 import { AdminLifecycleLock, AGENCY_HIERARCHY_LOCK } from "../identity/admin-users/admin-lifecycle-lock.model.js";
 import { Role } from "../identity/models/role.model.js";
 import { User } from "../identity/models/user.model.js";
@@ -47,6 +48,8 @@ type Loaded = {
   managerId?: mongoose.Types.ObjectId | null;
   startDate?: Date | null;
   plannedEndDate?: Date | null;
+  actualEndDate?: Date | null;
+  physicalProgress?: number | null;
   location?: ProjectDetailDto["location"];
   geometry?: { type: string; coordinates: unknown } | null;
   budget?: { amountMinor: number; currency: "LKR" };
@@ -164,12 +167,23 @@ function summary(project: Loaded, codes: Map<string, string>): ProjectSummaryDto
   };
 }
 
-function detail(project: Loaded, codes: Map<string, string>, includeBudget: boolean): ProjectDetailDto {
+async function managerName(project: Loaded): Promise<string | null> {
+  if (!project.managerId) return null;
+  const user = await User.findById(project.managerId).select("firstName lastName agencyId");
+  if (!user || !user.agencyId || user.agencyId.toString() !== project.agencyId.toString()) return null;
+  const name = `${user.firstName} ${user.lastName}`.replace(/\s+/g, " ").trim();
+  return name || null;
+}
+
+function detail(project: Loaded, codes: Map<string, string>, includeBudget: boolean, manager: string | null): ProjectDetailDto {
   return {
     ...summary(project, codes),
     description: project.description ?? null,
     location: project.location ?? null,
     geometry: project.geometry ?? null,
+    actualEndDate: iso(project.actualEndDate),
+    physicalProgress: typeof project.physicalProgress === "number" ? project.physicalProgress : null,
+    managerName: manager,
     ...(includeBudget && project.budget ? { budget: { amountMinor: project.budget.amountMinor, currency: "LKR" as const } } : {}),
   };
 }
@@ -200,13 +214,22 @@ export async function listProjectCatalog(
       const pattern = escapeRegex(query.q);
       parts.push({ $or: [{ title: { $regex: pattern, $options: "i" } }, { projectCode: { $regex: pattern, $options: "i" } }] });
     }
-    const filter = { $and: parts };
+    const catalogFilter = { $and: parts };
+    const filter = query.agencyId
+      ? { $and: [...parts, { agencyId: new mongoose.Types.ObjectId(query.agencyId) }] }
+      : catalogFilter;
+    const sortField = PROJECT_LIST_SORT_FIELDS.find((field) => field === query.sortBy) ?? "createdAt";
+    const sort = { [sortField]: query.sortDir === "asc" ? 1 : -1, _id: 1 } as Record<string, 1 | -1>;
     const skip = (query.page - 1) * query.limit;
-    const [rows, total] = await Promise.all([
-      Project.find(filter).sort({ createdAt: -1, _id: -1 }).skip(skip).limit(query.limit),
+    const [rows, total, agencyIds] = await Promise.all([
+      Project.find(filter).sort(sort).skip(skip).limit(query.limit),
       Project.countDocuments(filter),
+      Project.distinct("agencyId", catalogFilter),
     ]);
-    const codes = await agencyCodes(rows.map((row) => row.agencyId));
+    const codes = await agencyCodes([...rows.map((row) => row.agencyId), ...agencyIds]);
+    const agencies = agencyIds
+      .map((id) => ({ id: id.toString(), code: codes.get(id.toString()) ?? null }))
+      .sort((left, right) => (left.code ?? left.id).localeCompare(right.code ?? right.id));
     return {
       ok: true,
       list: {
@@ -214,6 +237,7 @@ export async function listProjectCatalog(
         page: query.page,
         limit: query.limit,
         total,
+        agencies,
       },
     };
   } catch (error) {
@@ -234,7 +258,8 @@ export async function getProject(
     const project = await Project.findOne({ $and: [scoped.filter, { _id: rawId }] });
     if (!project) return fail(404, "NOT_FOUND");
     const codes = await agencyCodes([project.agencyId]);
-    return { ok: true, project: detail(project as Loaded, codes, await canReadBudget(actor)) };
+    const manager = await managerName(project as Loaded);
+    return { ok: true, project: detail(project as Loaded, codes, await canReadBudget(actor), manager) };
   } catch (error) {
     if (error instanceof FlowControl) return fail(error.status, error.code);
     throw new ProjectDependencyError();

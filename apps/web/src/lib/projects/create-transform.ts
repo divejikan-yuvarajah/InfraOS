@@ -1,3 +1,5 @@
+import { projectCoreQueryKey } from "./overview-format";
+
 export const PROJECT_TYPE_VALUES = [
   "ROAD",
   "WATER",
@@ -206,10 +208,16 @@ export function projectCreateCachePlan(input: {
   startedToken: string;
   currentEpoch: number;
   currentToken: string | null;
+  userId: string;
+  roleKey: string;
   projectId: string;
-}): { invalidate: boolean; href: string | null } {
+}): { invalidate: boolean; href: string | null; queryKey: readonly ["project", "core", string, string, string, string] | null } {
   if (!input.projectId || input.currentEpoch !== input.startedEpoch || input.currentToken !== input.startedToken) {
-    return { invalidate: false, href: null };
+    return { invalidate: false, href: null, queryKey: null };
   }
-  return { invalidate: true, href: `/projects/${input.projectId}/overview` };
+  return {
+    invalidate: true,
+    href: `/projects/${input.projectId}/overview`,
+    queryKey: projectCoreQueryKey(String(input.currentEpoch), input.userId, input.roleKey, input.projectId),
+  };
 }

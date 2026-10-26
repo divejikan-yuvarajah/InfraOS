@@ -292,7 +292,14 @@ describe("step 51 project foundation", { timeout: 120_000 }, () => {
       .get("/api/v1/projects")
       .query({ agencyId: data.other._id.toString() })
       .set("Authorization", `Bearer ${data.officer.token}`);
-    expect(injected.status).toBe(400);
+    expect(injected.status).toBe(200);
+    expect(injected.body.data.total).toBe(0);
+    expect(injected.body.data.projects).toEqual([]);
+    const operator = await request(app)
+      .get("/api/v1/projects")
+      .query({ roleKey: "SUPER_ADMIN" })
+      .set("Authorization", `Bearer ${data.officer.token}`);
+    expect(operator.status).toBe(400);
     const badBudget = await request(app)
       .post("/api/v1/projects")
       .set("Authorization", `Bearer ${data.officer.token}`)
@@ -332,5 +339,135 @@ describe("step 51 project foundation", { timeout: 120_000 }, () => {
     }
     expect(await Project.countDocuments({ projectCode: "INF-ROAD-5203" })).toBe(0);
     expect(await AuditLog.countDocuments({ action: "project.created", resourceId: created.body.data.project.id })).toBe(1);
+  });
+
+  it("sorts and filters the scoped list without widening agency access", async () => {
+    const data = await world();
+    const otherOfficer = await actor("otheroff53@example.com", "AGENCY_OFFICER", data.other._id);
+    for (const code of ["INF-ROAD-3", "INF-ROAD-1", "INF-ROAD-2"]) {
+      const created = await request(app)
+        .post("/api/v1/projects")
+        .set("Authorization", `Bearer ${data.officer.token}`)
+        .send({ ...draftBody, projectCode: code, title: code === "INF-ROAD-2" ? "ජල මාර්ගය" : "Alpha road" });
+      expect(created.status).toBe(201);
+    }
+    const outside = await request(app)
+      .post("/api/v1/projects")
+      .set("Authorization", `Bearer ${otherOfficer.token}`)
+      .send({ ...draftBody, projectCode: "INF-WATER-9", title: "Other ministry" });
+    expect(outside.status).toBe(201);
+
+    const first = await request(app)
+      .get("/api/v1/projects")
+      .query({ sortBy: "projectCode", sortDir: "asc", limit: 1, page: 1 })
+      .set("Authorization", `Bearer ${data.officer.token}`);
+    expect(first.status).toBe(200);
+    expect(first.body.data.total).toBe(3);
+    expect(first.body.data.projects.map((row: { projectCode: string }) => row.projectCode)).toEqual(["INF-ROAD-1"]);
+    expect(JSON.stringify(first.body.data.projects)).not.toContain("amountMinor");
+    const second = await request(app)
+      .get("/api/v1/projects")
+      .query({ sortBy: "projectCode", sortDir: "asc", limit: 1, page: 2 })
+      .set("Authorization", `Bearer ${data.officer.token}`);
+    expect(second.body.data.projects[0].projectCode).toBe("INF-ROAD-2");
+    expect(second.body.data.agencies.map((row: { code: string }) => row.code)).toEqual(["DEPT_WEST"]);
+
+    const unicode = await request(app).get("/api/v1/projects").query({ q: "ජල" }).set("Authorization", `Bearer ${data.officer.token}`);
+    expect(unicode.body.data.total).toBe(1);
+    const none = await request(app).get("/api/v1/projects").query({ status: "ACTIVE" }).set("Authorization", `Bearer ${data.officer.token}`);
+    expect(none.body.data.total).toBe(0);
+    expect((await request(app).get("/api/v1/projects").query({ sortBy: "$where" }).set("Authorization", `Bearer ${data.officer.token}`)).status).toBe(400);
+    expect((await request(app).get("/api/v1/projects").query({ q: "$gt" }).set("Authorization", `Bearer ${data.officer.token}`)).status).toBe(400);
+    expect((await request(app).get("/api/v1/projects").query({ sortBy: ["createdAt", "title"] }).set("Authorization", `Bearer ${data.officer.token}`)).status).toBe(400);
+
+    const hidden = await request(app)
+      .get("/api/v1/projects")
+      .query({ agencyId: data.other._id.toString() })
+      .set("Authorization", `Bearer ${data.officer.token}`);
+    expect(hidden.status).toBe(200);
+    expect(hidden.body.data.total).toBe(0);
+    expect(hidden.body.data.projects).toEqual([]);
+    expect(JSON.stringify(hidden.body)).not.toContain("INF-WATER-9");
+
+    await Agency.updateOne({ _id: data.child._id }, { $set: { status: "INACTIVE" } });
+    const inactive = await request(app).get("/api/v1/projects").query({ q: "INF-ROAD-1" }).set("Authorization", `Bearer ${data.gov.token}`);
+    expect(inactive.body.data.total).toBe(0);
+    await Agency.updateOne({ _id: data.child._id }, { $set: { status: "ACTIVE", parentAgencyId: data.other._id } });
+    const lost = await request(app).get("/api/v1/projects").query({ q: "INF-ROAD-1" }).set("Authorization", `Bearer ${data.gov.token}`);
+    expect(lost.body.data.total).toBe(0);
+    const otherGov = await actor("othergov53@example.com", "GOV_ADMIN", data.other._id);
+    const gained = await request(app).get("/api/v1/projects").query({ q: "INF-ROAD-1" }).set("Authorization", `Bearer ${otherGov.token}`);
+    expect(gained.body.data.total).toBe(1);
+    expect((await request(app).get("/api/v1/projects").set("Authorization", `Bearer ${data.contractor.token}`)).status).toBe(403);
+  });
+
+  it("returns one scoped overview without a budget when finance.budget.read is absent", async () => {
+    const data = await world();
+    const created = await request(app)
+      .post("/api/v1/projects")
+      .set("Authorization", `Bearer ${data.manager.token}`)
+      .send(draftBody);
+    expect(created.status).toBe(201);
+    const id = created.body.data.project.id as string;
+    await Project.updateOne(
+      { _id: id },
+      {
+        $set: {
+          startDate: new Date("2026-10-26T00:00:00.000Z"),
+          geometry: { type: "Point", coordinates: [79.8612, 6.9271] },
+          physicalProgress: 12,
+          financialProgress: 40,
+        },
+      },
+    );
+    await Inspection.create({
+      projectId: id,
+      inspectorId: data.inspector.user._id,
+      inspectionDate: new Date("2027-02-01T00:00:00.000Z"),
+      status: "SCHEDULED",
+    });
+
+    const owned = await request(app).get(`/api/v1/projects/${id}`).set("Authorization", `Bearer ${data.manager.token}`);
+    expect(owned.status).toBe(200);
+    expect(owned.headers["cache-control"]).toBe("no-store");
+    expect(owned.body.data.project.managerName).toBe("Nimal Perera");
+    expect(owned.body.data.project.description).toBe("Academic demonstration proposal");
+    expect(owned.body.data.project.startDate).toBe("2026-10-26T00:00:00.000Z");
+    expect(owned.body.data.project.actualEndDate).toBeNull();
+    expect(owned.body.data.project.physicalProgress).toBe(12);
+    expect(owned.body.data.project.geometry.type).toBe("Point");
+    expect(owned.body.data.project.budget.amountMinor).toBe(2500000000);
+    const serialized = JSON.stringify(owned.body);
+    expect(serialized).not.toContain("financialProgress");
+    expect(serialized).not.toContain("contractor");
+    expect(serialized).not.toContain("@");
+
+    await Role.updateOne({ key: "AGENCY_OFFICER" }, { $pull: { permissions: "finance.budget.read" } });
+    const noBudget = await request(app).get(`/api/v1/projects/${id}`).set("Authorization", `Bearer ${data.officer.token}`);
+    expect(noBudget.status).toBe(200);
+    expect(noBudget.body.data.project.budget).toBeUndefined();
+    expect(JSON.stringify(noBudget.body)).not.toContain("amountMinor");
+
+    const assigned = await request(app).get(`/api/v1/projects/${id}`).set("Authorization", `Bearer ${data.inspector.token}`);
+    expect(assigned.status).toBe(200);
+    expect(assigned.body.data.project.budget).toBeUndefined();
+
+    const stranger = await actor("inspector54b@example.com", "INSPECTOR", data.child._id);
+    expect((await request(app).get(`/api/v1/projects/${id}`).set("Authorization", `Bearer ${stranger.token}`)).status).toBe(404);
+
+    const other = await actor("other54@example.com", "AGENCY_OFFICER", data.other._id);
+    const hidden = await request(app).get(`/api/v1/projects/${id}`).set("Authorization", `Bearer ${other.token}`);
+    expect(hidden.status).toBe(404);
+    expect(JSON.stringify(hidden.body)).not.toContain("INF-ROAD-101");
+
+    expect((await request(app).get(`/api/v1/projects/${id}`).set("Authorization", `Bearer ${data.contractor.token}`)).status).toBe(403);
+    expect((await request(app).get("/api/v1/projects/not-an-id").set("Authorization", `Bearer ${data.manager.token}`)).status).toBe(400);
+
+    await Role.updateOne({ key: "PROJECT_MANAGER" }, { $pull: { permissions: "project.read" } });
+    expect((await request(app).get(`/api/v1/projects/${id}`).set("Authorization", `Bearer ${data.manager.token}`)).status).toBe(403);
+
+    vi.spyOn(Project, "findOne").mockRejectedValueOnce(new Error("db down"));
+    const down = await request(app).get(`/api/v1/projects/${id}`).set("Authorization", `Bearer ${data.officer.token}`);
+    expect(down.status).toBe(503);
   });
 });
