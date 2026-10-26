@@ -70,6 +70,9 @@ export function ProjectsPageClient() {
         </div>
         <p className="auth-access-status" role="status">{copy.nativeReview}</p>
       </section>
+      <p>
+        <Link className="auth-access-button" href="/projects/new">{copy.createProject}</Link>
+      </p>
       <div className="admin-users-table-wrap">
         <DataTable
           columns={columns}

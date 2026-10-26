@@ -5,7 +5,7 @@ import Link from "next/link";
 
 import { StaffWorkspaceShell } from "@/components/auth/staff-workspace-shell";
 import { fetchProject } from "@/lib/projects/api";
-import { getProjectCopy, projectListMessage } from "@/lib/projects/messages";
+import { getProjectCopy, projectReadMessage } from "@/lib/projects/messages";
 import { ApiError } from "@/lib/api/client";
 
 export function ProjectOverviewClient({ id }: { id: string }) {
@@ -15,7 +15,7 @@ export function ProjectOverviewClient({ id }: { id: string }) {
     queryFn: () => fetchProject(id),
     retry: false,
   });
-  const error = project.error instanceof ApiError ? projectListMessage(project.error.status, copy) : project.error ? copy.unavailable : null;
+  const error = project.error instanceof ApiError ? projectReadMessage(project.error.status, copy) : project.error ? copy.unavailable : null;
 
   return (
     <StaffWorkspaceShell title={copy.overview} description={project.data?.title} wide>
@@ -25,8 +25,10 @@ export function ProjectOverviewClient({ id }: { id: string }) {
       {project.data ? (
         <section className="auth-access-card" aria-labelledby="project-overview">
           <h2 id="project-overview">{project.data.projectCode}</h2>
-          <p>{project.data.description ?? "No description yet."}</p>
+          <p>{project.data.description ?? copy.noDescription}</p>
           <p>Status {project.data.status}. Type {project.data.projectType}. Agency {project.data.agencyCode ?? project.data.agencyId}.</p>
+          {project.data.budget ? <p>LKR cents {project.data.budget.amountMinor}</p> : null}
+          {project.data.status === "DRAFT" ? <p role="status">{copy.draftOverview}</p> : null}
           <p>This overview is read-only. Submission, approval, and milestones are later steps.</p>
         </section>
       ) : null}
