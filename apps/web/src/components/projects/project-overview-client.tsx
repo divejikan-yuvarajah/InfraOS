@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { PROJECT_STATUSES, type ProjectStatus } from "@/lib/projects/list-query";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -9,9 +9,10 @@ import { useState, useSyncExternalStore } from "react";
 import { StaffWorkspaceShell } from "@/components/auth/staff-workspace-shell";
 import { ProjectStatusBadge } from "@/components/common/status-badge";
 import { ApiError } from "@/lib/api/client";
-import { getAuthEpoch, getMemorySession, subscribeAuth } from "@/lib/auth/state";
+import { getAuthEpoch, getMemoryAccessToken, getMemorySession, subscribeAuth } from "@/lib/auth/state";
 import type { AuthLocale } from "@/lib/auth/types";
-import { fetchProject } from "@/lib/projects/api";
+import { fetchProject, transitionProject } from "@/lib/projects/api";
+import { classifyEditError } from "@/lib/projects/edit-outcome";
 import { getProjectCopy, projectReadMessage } from "@/lib/projects/messages";
 import { geometrySummary, lkrBudgetLabel, projectCoreQueryKey, safeListReturn, utcDateLabel, utcStampLabel } from "@/lib/projects/overview-format";
 import type { ProjectDetail, ProjectLocation } from "@/lib/projects/types";
@@ -34,7 +35,23 @@ function Fact({ label, value }: { label: string; value: string }) {
   );
 }
 
-function OverviewBody({ project, copy }: { project: ProjectDetail; copy: ReturnType<typeof getProjectCopy> }) {
+function OverviewBody({
+  project,
+  copy,
+  listQuery,
+  pending,
+  notice,
+  onTransition,
+}: {
+  project: ProjectDetail;
+  copy: ReturnType<typeof getProjectCopy>;
+  listQuery: string | null;
+  pending: boolean;
+  notice: string | null;
+  onTransition: (action: "SUBMIT" | "HOLD" | "RESUME", reason?: string) => void;
+}) {
+  const [reason, setReason] = useState("");
+  const needsReason = Boolean(project.availableActions?.includes("HOLD") || project.availableActions?.includes("RESUME"));
   const status = PROJECT_STATUSES.find((item) => item === project.status);
   const placeNote = project.location?.description?.trim() ? project.location.description : copy.notProvided;
   const description = project.description?.trim() ? project.description : copy.notProvided;
@@ -54,6 +71,58 @@ function OverviewBody({ project, copy }: { project: ProjectDetail; copy: ReturnT
       <p role="note">{copy.overviewOnly}</p>
       <p role="note">{copy.readOnly}</p>
       {project.status === "DRAFT" ? <p role="status">{copy.draftOverview}</p> : null}
+      {project.status === "SUBMITTED" || project.status === "UNDER_REVIEW" ? <p role="note">{copy.waitingReview}</p> : null}
+      <section className="auth-access-card project-overview-mark" aria-labelledby="project-lifecycle">
+        <h3 id="project-lifecycle">{copy.lifecycleTitle}</h3>
+        <p>{copy.lifecycleNote}</p>
+        {project.submissionGaps && project.submissionGaps.length > 0 ? (
+          <div role="status">
+            <p>{copy.submissionNeeds}</p>
+            <ul>
+              {project.submissionGaps.map((gap) => (
+                <li key={gap}>{gap === "dates" ? copy.gapDates : gap === "geometry" ? copy.gapGeometry : gap === "location" ? copy.gapLocation : gap === "budget" ? copy.gapBudget : copy.gapIdentity}</li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
+        {notice ? <p role="alert">{notice}</p> : null}
+        <div className="auth-access-locale-row">
+          {project.availableActions?.includes("SUBMIT") && !(project.submissionGaps && project.submissionGaps.length > 0) ? (
+            <button type="button" className="auth-access-button" disabled={pending} onClick={() => onTransition("SUBMIT")}>
+              {pending ? copy.lifecycleWorking : copy.submitForReview}
+            </button>
+          ) : null}
+          {needsReason ? (
+            <div>
+              <label className="auth-access-field-label" htmlFor="project-lifecycle-reason">{copy.reasonLabel}</label>
+              <input
+                id="project-lifecycle-reason"
+                className="auth-access-input"
+                value={reason}
+                maxLength={500}
+                onChange={(event) => setReason(event.target.value)}
+              />
+            </div>
+          ) : null}
+          {project.availableActions?.includes("HOLD") ? (
+            <button type="button" className="auth-access-button" disabled={pending || reason.trim().length === 0} onClick={() => onTransition("HOLD", reason.trim())}>
+              {copy.holdProject}
+            </button>
+          ) : null}
+          {project.availableActions?.includes("RESUME") ? (
+            <button type="button" className="auth-access-button" disabled={pending || reason.trim().length === 0} onClick={() => onTransition("RESUME", reason.trim())}>
+              {copy.resumeProject}
+            </button>
+          ) : null}
+        </div>
+      </section>
+      {project.canEditDraft ? (
+        <p>
+          <Link className="auth-access-button" href={`/projects/${project.id}/edit${listQuery ? `?list=${encodeURIComponent(listQuery)}` : ""}`}>
+            {copy.editDraft}
+          </Link>
+        </p>
+      ) : null}
       <div className="project-overview-grid">
         <section className="auth-access-card project-overview-mark" aria-labelledby="project-description">
           <h3 id="project-description">{copy.sectionDescription}</h3>
@@ -95,11 +164,36 @@ export function ProjectOverviewClient({ id }: { id: string }) {
   const roleKey = useAuthPart(() => getMemorySession()?.user.roleKey ?? "", "");
   const [locale, setLocale] = useState<AuthLocale>("en");
   const copy = getProjectCopy(locale);
-  const back = safeListReturn(searchParams.get("list"));
+  const listQuery = searchParams.get("list");
+  const back = safeListReturn(listQuery);
+  const queryClient = useQueryClient();
+  const [notice, setNotice] = useState<string | null>(null);
   const project = useQuery({
     queryKey: projectCoreQueryKey(epoch, userId, roleKey, id),
     queryFn: () => fetchProject(id),
     retry: false,
+  });
+  const transition = useMutation({
+    mutationFn: (input: { action: "SUBMIT" | "HOLD" | "RESUME"; reason?: string }) => {
+      const revision = project.data?.revision;
+      if (typeof revision !== "number") throw new ApiError("missing revision", 409, { code: "CONFLICT" });
+      return transitionProject(id, { action: input.action, revision, reason: input.reason });
+    },
+    retry: false,
+    onSuccess: (result) => {
+      if (result.epoch !== getAuthEpoch() || result.token !== getMemoryAccessToken()) {
+        setNotice(copy.lifecycleConflict);
+        return;
+      }
+      const session = getMemorySession();
+      queryClient.setQueryData(projectCoreQueryKey(String(result.epoch), session?.user.id ?? "", session?.user.roleKey ?? "", id), result.project);
+      void queryClient.invalidateQueries({ queryKey: ["projects"] });
+      setNotice(copy.lifecycleSaved);
+    },
+    onError: (error) => {
+      const kind = classifyEditError(error);
+      setNotice(kind === "conflict" ? copy.lifecycleConflict : kind === "invalid" ? copy.lifecycleBlocked : projectReadMessage(error instanceof ApiError ? error.status : 503, copy));
+    },
   });
   const offline = typeof navigator !== "undefined" && navigator.onLine === false;
   const error = project.error instanceof ApiError
@@ -134,7 +228,19 @@ export function ProjectOverviewClient({ id }: { id: string }) {
           <button type="button" className="auth-access-button" onClick={() => void project.refetch()}>{copy.retry}</button>
         </div>
       ) : null}
-      {project.data ? <OverviewBody project={project.data} copy={copy} /> : null}
+      {project.data ? (
+        <OverviewBody
+          project={project.data}
+          copy={copy}
+          listQuery={listQuery}
+          pending={transition.isPending}
+          notice={notice}
+          onTransition={(action, reason) => {
+            setNotice(null);
+            transition.mutate({ action, reason });
+          }}
+        />
+      ) : null}
     </StaffWorkspaceShell>
   );
 }
