@@ -14,7 +14,7 @@ vi.mock("@/lib/auth/state", () => ({
 
 import { apiClient } from "@/lib/api/client";
 import { getAuthEpoch, getMemoryAccessToken } from "@/lib/auth/state";
-import { createProject } from "./api";
+import { createProject, patchProject } from "./api";
 
 const body = {
   projectCode: "INF-ROAD-52",
@@ -61,5 +61,29 @@ describe("create project transport", () => {
     vi.mocked(apiClient).mockRejectedValue(new ApiError("duplicate", 409, { code: "CONFLICT" }));
     await expect(createProject(body)).rejects.toMatchObject({ status: 409 });
     expect(apiClient).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("patch project transport", () => {
+  beforeEach(() => {
+    vi.mocked(apiClient).mockReset();
+    vi.mocked(getAuthEpoch).mockReturnValue(4);
+    vi.mocked(getMemoryAccessToken).mockReturnValue("token-a");
+  });
+
+  it("patches once with revision and changed fields only", async () => {
+    vi.mocked(apiClient).mockResolvedValue({
+      success: true,
+      data: { project: { id: "p1", title: "Edited", revision: 3 } },
+    });
+    const patch = { revision: 2, title: "Edited" };
+    const result = await patchProject("p1", patch);
+    expect(result.project.title).toBe("Edited");
+    expect(apiClient).toHaveBeenCalledWith("/api/v1/projects/p1", {
+      method: "PATCH",
+      authenticated: true,
+      body: patch,
+    });
+    expect(JSON.stringify(patch)).not.toMatch(/projectCode|status|agencyId/);
   });
 });

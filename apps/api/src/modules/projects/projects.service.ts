@@ -8,11 +8,12 @@ import type { AuthenticatedActor } from "../identity/auth/require-authenticated.
 import { hasPermission } from "../identity/authorization/require-permission.js";
 import { projectReadFilter, projectWriteFilter, resolveResourceScope } from "../identity/authorization/resource-scope.js";
 import { PROJECT_LIST_SORT_FIELDS } from "./projects.schema.js";
+import { actionBlock, actionPermission, hintActions, submitGaps, transitionTarget, type LifecycleAction } from "./lifecycle.policy.js";
 import { AdminLifecycleLock, AGENCY_HIERARCHY_LOCK } from "../identity/admin-users/admin-lifecycle-lock.model.js";
 import { Role } from "../identity/models/role.model.js";
 import { User } from "../identity/models/user.model.js";
 import { Project } from "./models/project.model.js";
-import type { ProjectCreateInput, ProjectListQuery, ProjectPatchInput } from "./projects.schema.js";
+import type { ProjectCreateInput, ProjectListQuery, ProjectPatchInput, ProjectTransitionInput } from "./projects.schema.js";
 import type { ProjectDetailDto, ProjectFailure, ProjectListDto, ProjectSummaryDto } from "./projects.types.js";
 
 const WRITE_ROLES = new Set(["GOV_ADMIN", "AGENCY_OFFICER", "PROJECT_MANAGER"]);
@@ -175,7 +176,15 @@ async function managerName(project: Loaded): Promise<string | null> {
   return name || null;
 }
 
-function detail(project: Loaded, codes: Map<string, string>, includeBudget: boolean, manager: string | null): ProjectDetailDto {
+function detail(
+  project: Loaded,
+  codes: Map<string, string>,
+  includeBudget: boolean,
+  manager: string | null,
+  canEditDraft: boolean,
+  availableActions: ("SUBMIT" | "HOLD" | "RESUME")[],
+  submissionGaps: string[],
+): ProjectDetailDto {
   return {
     ...summary(project, codes),
     description: project.description ?? null,
@@ -184,8 +193,40 @@ function detail(project: Loaded, codes: Map<string, string>, includeBudget: bool
     actualEndDate: iso(project.actualEndDate),
     physicalProgress: typeof project.physicalProgress === "number" ? project.physicalProgress : null,
     managerName: manager,
+    canEditDraft,
+    availableActions,
+    submissionGaps,
     ...(includeBudget && project.budget ? { budget: { amountMinor: project.budget.amountMinor, currency: "LKR" as const } } : {}),
   };
+}
+
+async function canEditProjectDraft(actor: AuthenticatedActor, project: Loaded): Promise<boolean> {
+  if (project.status !== "DRAFT" || !WRITE_ROLES.has(actor.roleKey)) return false;
+  try {
+    const user = await User.findById(actor.userId).select("roleId status emailVerified credentialEpoch agencyId");
+    if (
+      !user ||
+      user.status !== "ACTIVE" ||
+      user.emailVerified !== true ||
+      !user.agencyId ||
+      user.credentialEpoch !== actor.credentialEpoch ||
+      !user.roleId ||
+      user.roleId.toString() !== actor.roleId
+    ) {
+      return false;
+    }
+    const role = await Role.findById(actor.roleId).select("key isActive permissions");
+    const granted = Array.isArray(role?.permissions) ? role.permissions : [];
+    if (!(role?.isActive && role.key === actor.roleKey && hasPermission(granted, "project.update"))) return false;
+    const agency = await Agency.findById(actor.agencyId).select("status");
+    if (!agency || agency.status !== "ACTIVE") return false;
+    const scope = await resolveResourceScope(actor);
+    const filter = projectWriteFilter(actor, scope);
+    const match = await Project.findOne({ $and: [filter, { _id: project._id }] }).select("_id");
+    return Boolean(match);
+  } catch {
+    return false;
+  }
 }
 
 async function canReadBudget(actor: AuthenticatedActor): Promise<boolean> {
@@ -258,8 +299,11 @@ export async function getProject(
     const project = await Project.findOne({ $and: [scoped.filter, { _id: rawId }] });
     if (!project) return fail(404, "NOT_FOUND");
     const codes = await agencyCodes([project.agencyId]);
-    const manager = await managerName(project as Loaded);
-    return { ok: true, project: detail(project as Loaded, codes, await canReadBudget(actor), manager) };
+    const loaded = project as Loaded;
+    const manager = await managerName(loaded);
+    const editable = await canEditProjectDraft(actor, loaded);
+    const hints = await lifecycleHints(actor, loaded);
+    return { ok: true, project: detail(loaded, codes, await canReadBudget(actor), manager, editable, hints.actions, hints.gaps) };
   } catch (error) {
     if (error instanceof FlowControl) return fail(error.status, error.code);
     throw new ProjectDependencyError();
@@ -439,6 +483,83 @@ export async function updateProjectDraft(
         "project.updated",
         requestId,
         { status: "DRAFT", agencyId: current.agencyId },
+        mongo,
+        { status: current.status, agencyId: current.agencyId },
+      );
+    });
+    return getProject(actor, rawId);
+  } catch (error) {
+    if (error instanceof FlowControl) return fail(error.status, error.code);
+    throw new ProjectDependencyError();
+  } finally {
+    await mongo.endSession();
+  }
+}
+
+async function lifecycleHints(
+  actor: AuthenticatedActor,
+  project: Loaded,
+): Promise<{ actions: ("SUBMIT" | "HOLD" | "RESUME")[]; gaps: string[] }> {
+  try {
+    if (!WRITE_ROLES.has(actor.roleKey)) return { actions: [], gaps: [] };
+    const role = await Role.findById(actor.roleId).select("key isActive permissions");
+    const granted = Array.isArray(role?.permissions) ? role.permissions : [];
+    if (!(role?.isActive && role.key === actor.roleKey)) return { actions: [], gaps: [] };
+    const scope = await resolveResourceScope(actor);
+    const match = await Project.findOne({ $and: [projectWriteFilter(actor, scope), { _id: project._id }] }).select("_id");
+    if (!match) return { actions: [], gaps: [] };
+    const actions = hintActions(project.status, granted).filter(
+      (action): action is "SUBMIT" | "HOLD" | "RESUME" => action === "SUBMIT" || action === "HOLD" || action === "RESUME",
+    );
+    const gaps = project.status === "DRAFT" && granted.includes("project.submit") ? submitGaps(project) : [];
+    return { actions, gaps };
+  } catch {
+    return { actions: [], gaps: [] };
+  }
+}
+
+export async function transitionProject(
+  actor: AuthenticatedActor,
+  rawId: string,
+  input: ProjectTransitionInput,
+  requestId: string,
+): Promise<{ ok: true; project: ProjectDetailDto } | ProjectFailure> {
+  if (!/^[a-f0-9]{24}$/i.test(rawId)) return fail(400, "VALIDATION_ERROR");
+  if (!WRITE_ROLES.has(actor.roleKey)) return fail(403, "FORBIDDEN");
+  const action = input.action as LifecycleAction;
+  const permission = actionPermission(action);
+  if (!permission) return fail(403, "FORBIDDEN");
+  if ((action === "HOLD" || action === "RESUME") && !input.reason) return fail(400, "VALIDATION_ERROR");
+  const mongo = await mongoose.startSession();
+  try {
+    await seedHierarchyLock();
+    await mongo.withTransaction(async () => {
+      await holdHierarchyLock(mongo);
+      await assertLive(actor, [permission], mongo);
+      const agency = await Agency.findById(actor.agencyId).session(mongo).select("status");
+      if (!agency || agency.status !== "ACTIVE") throw new FlowControl(409, "CONFLICT");
+      const scope = await resolveResourceScope(actor);
+      const filter = projectWriteFilter(actor, scope);
+      const current = await Project.findOne({ $and: [filter, { _id: rawId }] }).session(mongo);
+      if (!current) throw new FlowControl(404, "NOT_FOUND");
+      if (revisionOf(current) !== input.revision) throw new FlowControl(409, "CONFLICT");
+      const block = actionBlock(action);
+      if (block) throw new FlowControl(409, "CONFLICT");
+      const target = transitionTarget(current.status, action);
+      if (!target) throw new FlowControl(409, "CONFLICT");
+      if (action === "SUBMIT" && submitGaps(current).length > 0) throw new FlowControl(400, "VALIDATION_ERROR");
+      const updated = await Project.findOneAndUpdate(
+        { $and: [filter, { _id: current._id, status: current.status, __v: input.revision }] },
+        { $set: { status: target }, $inc: { __v: 1 } },
+        { session: mongo, new: true, runValidators: true },
+      );
+      if (!updated) throw new FlowControl(409, "CONFLICT");
+      await writeAudit(
+        actor,
+        current._id,
+        action === "SUBMIT" ? "project.submitted" : "project.status_changed",
+        requestId,
+        { status: target, agencyId: current.agencyId },
         mongo,
         { status: current.status, agencyId: current.agencyId },
       );

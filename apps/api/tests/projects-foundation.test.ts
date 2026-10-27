@@ -6,6 +6,7 @@ import { createApp } from "../src/app.js";
 import { env } from "../src/config/env.js";
 import { Agency } from "../src/modules/agencies/models/agency.model.js";
 import { AuditLog } from "../src/modules/audit/models/audit-log.model.js";
+import { resetAuthNowForTests, setAuthNowForTests } from "../src/modules/identity/auth/auth.clock.js";
 import { signAccessToken } from "../src/modules/identity/auth/jwt.js";
 import { Role } from "../src/modules/identity/models/role.model.js";
 import { User } from "../src/modules/identity/models/user.model.js";
@@ -65,6 +66,7 @@ describe("step 51 project foundation", { timeout: 120_000 }, () => {
   }, 300_000);
 
   afterEach(async () => {
+    resetAuthNowForTests();
     projectHooks.beforeAudit = async () => {};
     vi.restoreAllMocks();
     await Project.deleteMany({});
@@ -189,6 +191,15 @@ describe("step 51 project foundation", { timeout: 120_000 }, () => {
       .set("Authorization", `Bearer ${data.officer.token}`)
       .send({ title: "Bridge draft", revision: 0 });
     expect(saved.status).toBe(200);
+    expect(saved.body.data.project.canEditDraft).toBe(true);
+    const detailOfficer = await request(app)
+      .get(`/api/v1/projects/${owned.body.data.project.id}`)
+      .set("Authorization", `Bearer ${data.officer.token}`);
+    expect(detailOfficer.body.data.project.canEditDraft).toBe(true);
+    const detailManager = await request(app)
+      .get(`/api/v1/projects/${owned.body.data.project.id}`)
+      .set("Authorization", `Bearer ${data.manager.token}`);
+    expect(detailManager.body.data.project.canEditDraft).toBe(false);
     const pmOwned = await request(app).post("/api/v1/projects").set("Authorization", `Bearer ${data.manager.token}`).send({
       ...draftBody,
       projectCode: "INF-ROAD-77",
@@ -201,6 +212,17 @@ describe("step 51 project foundation", { timeout: 120_000 }, () => {
       .set("Authorization", `Bearer ${data.manager.token}`)
       .send({ title: "Assigned draft", revision: 0 });
     expect(pmEdit.status).toBe(200);
+    expect(pmEdit.body.data.project.canEditDraft).toBe(true);
+    const lineDetail = await request(app)
+      .get(`/api/v1/projects/${pmOwned.body.data.project.id}`)
+      .set("Authorization", `Bearer ${data.manager.token}`);
+    expect(lineDetail.body.data.project.geometry.type).toBe("LineString");
+    const lineSaved = await request(app)
+      .patch(`/api/v1/projects/${pmOwned.body.data.project.id}`)
+      .set("Authorization", `Bearer ${data.manager.token}`)
+      .send({ title: "Line preserved", revision: lineDetail.body.data.project.revision });
+    expect(lineSaved.status).toBe(200);
+    expect(lineSaved.body.data.project.geometry.type).toBe("LineString");
 
     const polygon = await request(app)
       .patch(`/api/v1/projects/${owned.body.data.project.id}`)
@@ -462,6 +484,15 @@ describe("step 51 project foundation", { timeout: 120_000 }, () => {
 
     expect((await request(app).get(`/api/v1/projects/${id}`).set("Authorization", `Bearer ${data.contractor.token}`)).status).toBe(403);
     expect((await request(app).get("/api/v1/projects/not-an-id").set("Authorization", `Bearer ${data.manager.token}`)).status).toBe(400);
+    const missing = await request(app).get(`/api/v1/projects/${id}`);
+    expect(missing.status).toBe(401);
+    expect(JSON.stringify(missing.body)).not.toContain("INF-ROAD-101");
+    setAuthNowForTests(() => new Date(Date.now() + 20 * 60 * 1000));
+    const expired = await request(app).get(`/api/v1/projects/${id}`).set("Authorization", `Bearer ${data.officer.token}`);
+    expect(expired.status).toBe(401);
+    expect(expired.body.error.code).toBe("SESSION_EXPIRED");
+    expect(JSON.stringify(expired.body)).not.toContain("INF-ROAD-101");
+    resetAuthNowForTests();
 
     await Role.updateOne({ key: "PROJECT_MANAGER" }, { $pull: { permissions: "project.read" } });
     expect((await request(app).get(`/api/v1/projects/${id}`).set("Authorization", `Bearer ${data.manager.token}`)).status).toBe(403);
@@ -469,5 +500,93 @@ describe("step 51 project foundation", { timeout: 120_000 }, () => {
     vi.spyOn(Project, "findOne").mockRejectedValueOnce(new Error("db down"));
     const down = await request(app).get(`/api/v1/projects/${id}`).set("Authorization", `Bearer ${data.officer.token}`);
     expect(down.status).toBe(503);
+  });
+
+  it("submits a complete draft and blocks completion, cancellation, and forged status", async () => {
+    const data = await world();
+    const created = await request(app).post("/api/v1/projects").set("Authorization", `Bearer ${data.officer.token}`).send(draftBody);
+    expect(created.status).toBe(201);
+    const id = created.body.data.project.id as string;
+    const early = await request(app)
+      .post(`/api/v1/projects/${id}/transition`)
+      .set("Authorization", `Bearer ${data.officer.token}`)
+      .send({ action: "SUBMIT", revision: created.body.data.project.revision });
+    expect(early.status).toBe(400);
+    expect((await Project.findById(id))?.status).toBe("DRAFT");
+
+    const filled = await request(app)
+      .patch(`/api/v1/projects/${id}`)
+      .set("Authorization", `Bearer ${data.officer.token}`)
+      .send({
+        startDate: "2027-01-01T00:00:00.000Z",
+        plannedEndDate: "2027-06-01T00:00:00.000Z",
+        location: { district: "Colombo" },
+        geometry: { type: "Point", coordinates: [79.86, 6.93] },
+        revision: created.body.data.project.revision,
+      });
+    expect(filled.status).toBe(200);
+    expect(filled.body.data.project.submissionGaps).toEqual([]);
+    expect(filled.body.data.project.availableActions).toContain("SUBMIT");
+
+    const forged = await request(app)
+      .post(`/api/v1/projects/${id}/transition`)
+      .set("Authorization", `Bearer ${data.officer.token}`)
+      .send({ action: "SUBMIT", revision: filled.body.data.project.revision, submittedBy: data.manager.user._id.toString(), status: "ACTIVE" });
+    expect(forged.status).toBe(400);
+
+    const plain = await request(app)
+      .post(`/api/v1/projects/${id}/transition`)
+      .set("Authorization", `Bearer ${data.officer.token}`)
+      .set("Content-Type", "text/plain")
+      .send("nope");
+    expect(plain.status).toBe(415);
+
+    const submitted = await request(app)
+      .post(`/api/v1/projects/${id}/transition`)
+      .set("Authorization", `Bearer ${data.officer.token}`)
+      .send({ action: "SUBMIT", revision: filled.body.data.project.revision });
+    expect(submitted.status).toBe(200);
+    expect(submitted.headers["cache-control"]).toContain("no-store");
+    expect(submitted.body.data.project.status).toBe("SUBMITTED");
+    expect(submitted.body.data.project.canEditDraft).toBe(false);
+    expect(JSON.stringify(submitted.body)).not.toContain("submittedBy");
+    const audit = await AuditLog.findOne({ resourceId: id, action: "project.submitted" }).select("+newValue +oldValue");
+    expect(audit?.userId?.toString()).toBe(data.officer.user._id.toString());
+    expect(audit?.newValue).toMatchObject({ status: "SUBMITTED" });
+
+    const again = await request(app)
+      .post(`/api/v1/projects/${id}/transition`)
+      .set("Authorization", `Bearer ${data.officer.token}`)
+      .send({ action: "SUBMIT", revision: filled.body.data.project.revision });
+    expect(again.status).toBe(409);
+
+    expect((await request(app).post(`/api/v1/projects/${id}/transition`).set("Authorization", `Bearer ${data.superUser.token}`).send({ action: "SUBMIT", revision: submitted.body.data.project.revision })).status).toBe(403);
+    const other = await actor("other56@example.com", "AGENCY_OFFICER", data.other._id);
+    const hidden = await request(app)
+      .post(`/api/v1/projects/${id}/transition`)
+      .set("Authorization", `Bearer ${other.token}`)
+      .send({ action: "SUBMIT", revision: submitted.body.data.project.revision });
+    expect(hidden.status).toBe(404);
+    expect(JSON.stringify(hidden.body)).not.toContain("INF-ROAD-101");
+
+    await Project.updateOne({ _id: id }, { $set: { status: "ACTIVE", physicalProgress: 100 } });
+    const active = await Project.findById(id);
+    const completed = await request(app)
+      .post(`/api/v1/projects/${id}/transition`)
+      .set("Authorization", `Bearer ${data.officer.token}`)
+      .send({ action: "COMPLETE", revision: active?.__v ?? 0 });
+    expect(completed.status).toBe(409);
+    expect((await Project.findById(id))?.status).toBe("ACTIVE");
+    const cancelled = await request(app)
+      .post(`/api/v1/projects/${id}/transition`)
+      .set("Authorization", `Bearer ${data.officer.token}`)
+      .send({ action: "CANCEL", revision: active?.__v ?? 0, reason: "Stop work" });
+    expect(cancelled.status).toBe(409);
+    expect((await Project.findById(id))?.status).toBe("ACTIVE");
+    const started = await request(app)
+      .post(`/api/v1/projects/${id}/transition`)
+      .set("Authorization", `Bearer ${data.officer.token}`)
+      .send({ action: "START", revision: active?.__v ?? 0 });
+    expect(started.status).toBe(403);
   });
 });

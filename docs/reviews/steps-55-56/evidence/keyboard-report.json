@@ -1,0 +1,269 @@
+{
+  "loginTab": [
+    {
+      "tag": "INPUT",
+      "label": "Work email",
+      "outline": "none 1.6px oklab(0.68256 0.162272 0.137728 / 0.5)",
+      "shadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px"
+    },
+    {
+      "tag": "INPUT",
+      "label": "Password",
+      "outline": "none 1.6px oklab(0.68256 0.162272 0.137728 / 0.5)",
+      "shadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px"
+    },
+    {
+      "tag": "BUTTON",
+      "label": "Show password",
+      "outline": "none 2.4px oklab(0.68256 0.162272 0.137728 / 0.5)",
+      "shadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px"
+    },
+    {
+      "tag": "A",
+      "label": "Forgot password?",
+      "outline": "solid 1.6px rgb(255, 91, 0)",
+      "shadow": "none"
+    },
+    {
+      "tag": "BUTTON",
+      "label": "Sign in",
+      "outline": "none 2.4px oklab(0.68256 0.162272 0.137728 / 0.5)",
+      "shadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px"
+    },
+    {
+      "tag": "A",
+      "label": "How it works",
+      "outline": "solid 1.6px rgb(255, 91, 0)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "label": "Public site",
+      "outline": "solid 1.6px rgb(255, 91, 0)",
+      "shadow": "none"
+    },
+    {
+      "tag": "NEXTJS-PORTAL",
+      "label": "",
+      "outline": "none 2.4px oklab(0.68256 0.162272 0.137728 / 0.5)",
+      "shadow": "none"
+    }
+  ],
+  "loginShiftTab": {
+    "tag": "A",
+    "label": "Public site",
+    "outline": "solid 1.6px rgb(255, 91, 0)",
+    "shadow": "none"
+  },
+  "afterLogin": "/dashboard",
+  "list": {
+    "path": "/projects",
+    "codes": [
+      "INF-ROAD-556",
+      "INF-ROAD-555"
+    ]
+  },
+  "editTab": [
+    {
+      "tag": "INPUT",
+      "label": "Project title",
+      "outline": "solid 1.6px rgb(255, 91, 0)",
+      "shadow": "none"
+    },
+    {
+      "tag": "TEXTAREA",
+      "label": "Description",
+      "outline": "solid 1.6px rgb(255, 91, 0)",
+      "shadow": "none"
+    },
+    {
+      "tag": "INPUT",
+      "label": "Planned start",
+      "outline": "solid 1.6px rgb(255, 91, 0)",
+      "shadow": "none"
+    },
+    {
+      "tag": "INPUT",
+      "label": "Planned start",
+      "outline": "solid 1.6px rgb(255, 91, 0)",
+      "shadow": "none"
+    },
+    {
+      "tag": "INPUT",
+      "label": "Planned start",
+      "outline": "solid 1.6px rgb(255, 91, 0)",
+      "shadow": "none"
+    },
+    {
+      "tag": "INPUT",
+      "label": "Planned start",
+      "outline": "none 2.4px oklab(0.68256 0.162272 0.137728 / 0.5)",
+      "shadow": "none"
+    },
+    {
+      "tag": "INPUT",
+      "label": "Planned end",
+      "outline": "solid 1.6px rgb(255, 91, 0)",
+      "shadow": "none"
+    },
+    {
+      "tag": "INPUT",
+      "label": "Planned end",
+      "outline": "solid 1.6px rgb(255, 91, 0)",
+      "shadow": "none"
+    },
+    {
+      "tag": "INPUT",
+      "label": "Planned end",
+      "outline": "solid 1.6px rgb(255, 91, 0)",
+      "shadow": "none"
+    },
+    {
+      "tag": "INPUT",
+      "label": "Planned end",
+      "outline": "none 2.4px oklab(0.68256 0.162272 0.137728 / 0.5)",
+      "shadow": "none"
+    },
+    {
+      "tag": "INPUT",
+      "label": "Province (descriptive)",
+      "outline": "solid 1.6px rgb(255, 91, 0)",
+      "shadow": "none"
+    },
+    {
+      "tag": "INPUT",
+      "label": "District (descriptive)",
+      "outline": "solid 1.6px rgb(255, 91, 0)",
+      "shadow": "none"
+    },
+    {
+      "tag": "INPUT",
+      "label": "Locality",
+      "outline": "solid 1.6px rgb(255, 91, 0)",
+      "shadow": "none"
+    }
+  ],
+  "editShiftTab": {
+    "tag": "INPUT",
+    "label": "District (descriptive)",
+    "outline": "solid 1.6px rgb(255, 91, 0)",
+    "shadow": "none"
+  },
+  "titleClear": "set",
+  "saveFocus": {
+    "tag": "BUTTON",
+    "label": "Save changes",
+    "outline": "solid 1.6px rgb(140, 31, 40)",
+    "shadow": "none"
+  },
+  "validation": {
+    "alerts": [
+      "This field is required."
+    ],
+    "invalid": "true",
+    "describedBy": "project-edit-title-error"
+  },
+  "editUrl": "http://localhost:3001/projects/6ae01256da30188b785878e2/edit?list=page%3D1%26limit%3D10%26sortBy%3DcreatedAt%26sortDir%3Ddesc",
+  "secondTab": "/projects/6ae01256da30188b785878e2/edit|form",
+  "secondSave": "/projects/6ae01256da30188b785878e2/overview",
+  "conflict": {
+    "path": "/projects/6ae01256da30188b785878e2/edit",
+    "alerts": [
+      "Another save changed this draft. Review the latest version before saving again."
+    ]
+  },
+  "conflictShot": "timeout Page.captureScreenshot",
+  "reducedMotion": {
+    "matches": true,
+    "buttonTransition": "0s",
+    "buttonAnimation": "0s",
+    "rootTransition": "1e-05s"
+  },
+  "contrast": [
+    {
+      "selector": ".auth-access-nav-link",
+      "color": "rgb(140, 31, 40)",
+      "background": "rgba(0, 0, 0, 0)",
+      "size": "15.2px",
+      "weight": "600",
+      "ratio": 2.34
+    },
+    {
+      "selector": ".auth-access-button",
+      "color": "rgb(16, 24, 39)",
+      "background": "rgb(255, 91, 0)",
+      "size": "16px",
+      "weight": "400",
+      "ratio": 5.71
+    },
+    {
+      "selector": ".auth-access-banner.error",
+      "color": "rgb(140, 31, 40)",
+      "background": "color(srgb 0.963922 0.929726 0.932549)",
+      "size": "16px",
+      "weight": "600",
+      "ratio": 2.33
+    },
+    {
+      "selector": ".auth-access-field-label",
+      "color": "rgb(16, 24, 39)",
+      "background": "rgb(255, 255, 255)",
+      "size": "13.6px",
+      "weight": "600",
+      "ratio": 17.77
+    },
+    {
+      "selector": "[data-infra-app]",
+      "color": "rgb(16, 24, 39)",
+      "background": "rgb(244, 247, 251)",
+      "size": "16px",
+      "weight": "400",
+      "ratio": 16.53
+    }
+  ],
+  "roles": {
+    "project-manager": {
+      "path": "/projects",
+      "codes": [
+        "INF-ROAD-556",
+        "INF-ROAD-555"
+      ],
+      "note": "",
+      "editLink": false,
+      "hold": false,
+      "overview": "/projects/6ae01256da30188b785878e2/overview",
+      "signedIn": "/dashboard"
+    },
+    "contractor": {
+      "path": "/projects",
+      "codes": [],
+      "note": "do not have access to these projects.",
+      "signedIn": "/dashboard"
+    },
+    "citizen": {
+      "path": "/projects",
+      "codes": [],
+      "note": "do not have access to these projects.",
+      "signedIn": "/dashboard"
+    },
+    "inspector": {
+      "path": "/projects",
+      "codes": [],
+      "note": "No rows",
+      "signedIn": "/dashboard"
+    },
+    "super-admin": {
+      "path": "/projects",
+      "codes": [
+        "INF-ROAD-556",
+        "INF-ROAD-555"
+      ],
+      "note": "",
+      "editLink": false,
+      "hold": false,
+      "overview": "/projects/6ae01256da30188b785878e2/overview",
+      "signedIn": "/dashboard"
+    }
+  },
+  "contractorShot": "saved"
+}

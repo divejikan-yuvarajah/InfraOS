@@ -57,6 +57,14 @@ export const projectCreateSchema = z
   })
   .strict();
 
+export const projectTransitionSchema = z
+  .object({
+    action: z.enum(["SUBMIT", "HOLD", "RESUME", "START", "MARK_DELAYED", "COMPLETE", "CANCEL"]),
+    revision: z.number().int().min(0).max(1_000_000),
+    reason: z.union([safeText(500), z.null()]).optional(),
+  })
+  .strict();
+
 export const projectPatchSchema = z
   .object({
     title: safeText(200).optional(),
@@ -97,4 +105,5 @@ export const projectListQuerySchema = z
 
 export type ProjectCreateInput = z.infer<typeof projectCreateSchema>;
 export type ProjectPatchInput = z.infer<typeof projectPatchSchema>;
+export type ProjectTransitionInput = z.infer<typeof projectTransitionSchema>;
 export type ProjectListQuery = z.infer<typeof projectListQuerySchema>;
