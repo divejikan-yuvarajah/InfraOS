@@ -28,7 +28,7 @@ describe("project list query", () => {
   });
 
   it("drops operator-like and unsupported sort values", () => {
-    const state = parseProjectListParams(new URLSearchParams("sortBy=$where&sortDir=sideways&status=REJECTED&limit=50&agencyId=not-an-id"));
+    const state = parseProjectListParams(new URLSearchParams("sortBy=$where&sortDir=sideways&status=NOT_A_STATUS&limit=50&agencyId=not-an-id"));
     expect(state.sortBy).toBe("createdAt");
     expect(state.sortDir).toBe("desc");
     expect(state.status).toBe("");

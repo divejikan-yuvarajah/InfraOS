@@ -12,7 +12,13 @@ const NAV = [
   { href: "/admin/agencies", label: "Agencies" },
   { href: "/admin/roles", label: "Roles" },
   { href: "/projects", label: "Projects" },
+  { href: "/projects/reviews", label: "Reviews" },
 ] as const;
+
+function navCurrent(pathname: string, href: string): boolean {
+  if (href === "/projects/reviews") return pathname === href || pathname.endsWith("/review");
+  return pathname === href;
+}
 
 export function StaffWorkspaceShell({
   kicker = "INFRAOS",
@@ -39,9 +45,9 @@ export function StaffWorkspaceShell({
                 <Link
                   href={item.href}
                   className={
-                    pathname === item.href ? "auth-access-nav-link is-active" : "auth-access-nav-link"
+                    navCurrent(pathname, item.href) ? "auth-access-nav-link is-active" : "auth-access-nav-link"
                   }
-                  aria-current={pathname === item.href ? "page" : undefined}
+                  aria-current={navCurrent(pathname, item.href) ? "page" : undefined}
                 >
                   {item.label}
                 </Link>

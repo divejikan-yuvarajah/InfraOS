@@ -15,6 +15,7 @@ export const PROJECT_STATUSES = [
   "DRAFT",
   "SUBMITTED",
   "UNDER_REVIEW",
+  "REJECTED",
   "APPROVED",
   "ACTIVE",
   "ON_HOLD",

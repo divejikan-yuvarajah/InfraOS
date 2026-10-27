@@ -30,15 +30,38 @@ export type ProjectDetailDto = ProjectSummaryDto & {
   /** Scope-checked draft edit capability for the current actor. PATCH remains authoritative. */
   canEditDraft?: boolean;
   /** Executable lifecycle actions for this actor and status. Hints only. */
-  availableActions?: ("SUBMIT" | "HOLD" | "RESUME")[];
+  availableActions?: ("SUBMIT" | "HOLD" | "RESUME" | "REOPEN")[];
   /** Missing DRAFT submission requirements. Present only when the actor may submit. */
   submissionGaps?: string[];
+  /** Reviewer hints. The review endpoint reauthorizes every write. */
+  availableReviewActions?: ("BEGIN_REVIEW" | "APPROVE" | "REJECT" | "RETURN_FOR_CHANGES")[];
+  /** Latest reject or return reason visible to a reader who can already see this project. */
+  reviewDecision?: { status: string; reason: string; at: string } | null;
   budget?: { amountMinor: number; currency: "LKR" };
 };
 
 export type ProjectListAgencyDto = {
   id: string;
   code: string | null;
+};
+
+export type ReviewQueueDto = ProjectListDto & {
+  counts: { submitted: number; underReview: number };
+};
+
+export type ReviewHistoryDto = {
+  action: "project.review_started" | "project.approved" | "project.rejected" | "project.returned" | "project.reopened";
+  status: string;
+  reason: string | null;
+  userId: string;
+  at: string;
+  requestId: string | null;
+};
+
+export type ReviewDetailDto = {
+  project: ProjectDetailDto;
+  submission: { found: true; userId: string; at: string } | { found: false };
+  decisions: ReviewHistoryDto[];
 };
 
 export type ProjectListDto = {

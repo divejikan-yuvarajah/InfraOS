@@ -59,7 +59,7 @@ export const projectCreateSchema = z
 
 export const projectTransitionSchema = z
   .object({
-    action: z.enum(["SUBMIT", "HOLD", "RESUME", "START", "MARK_DELAYED", "COMPLETE", "CANCEL"]),
+    action: z.enum(["SUBMIT", "HOLD", "RESUME", "REOPEN", "START", "MARK_DELAYED", "COMPLETE", "CANCEL"]),
     revision: z.number().int().min(0).max(1_000_000),
     reason: z.union([safeText(500), z.null()]).optional(),
   })
@@ -103,7 +103,38 @@ export const projectListQuerySchema = z
   })
   .strict();
 
+export const projectReviewSchema = z
+  .object({
+    action: z.enum(["BEGIN_REVIEW", "APPROVE", "REJECT", "RETURN_FOR_CHANGES"]),
+    revision: z.number().int().min(0).max(1_000_000),
+    reason: safeText(500).optional(),
+  })
+  .strict()
+  .superRefine((value, context) => {
+    const needsReason = value.action === "REJECT" || value.action === "RETURN_FOR_CHANGES";
+    if (needsReason && !value.reason) {
+      context.addIssue({ code: "custom", path: ["reason"], message: "reason is required" });
+    }
+    if (!needsReason && value.reason) {
+      context.addIssue({ code: "custom", path: ["reason"], message: "reason is not accepted" });
+    }
+  });
+
+export const projectReviewQueueQuerySchema = z
+  .object({
+    page: z.coerce.number().int().min(1).max(1_000).default(1),
+    limit: z.coerce.number().int().min(1).max(25).default(10),
+    status: z.enum(["SUBMITTED", "UNDER_REVIEW"]).optional(),
+    q: queryText.optional(),
+    agencyId: z.string().regex(/^[a-fA-F0-9]{24}$/).optional(),
+    sortBy: z.enum(PROJECT_LIST_SORT_FIELDS).default("updatedAt"),
+    sortDir: z.enum(["asc", "desc"]).default("desc"),
+  })
+  .strict();
+
 export type ProjectCreateInput = z.infer<typeof projectCreateSchema>;
 export type ProjectPatchInput = z.infer<typeof projectPatchSchema>;
 export type ProjectTransitionInput = z.infer<typeof projectTransitionSchema>;
 export type ProjectListQuery = z.infer<typeof projectListQuerySchema>;
+export type ProjectReviewInput = z.infer<typeof projectReviewSchema>;
+export type ProjectReviewQueueQuery = z.infer<typeof projectReviewQueueQuerySchema>;

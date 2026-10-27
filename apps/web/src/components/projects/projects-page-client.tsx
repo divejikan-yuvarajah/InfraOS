@@ -149,6 +149,11 @@ export function ProjectsPageClient() {
           <Link className="auth-access-button" href="/projects/new">{copy.createProject}</Link>
         </p>
       ) : null}
+      {roleKey === "GOV_ADMIN" ? (
+        <p>
+          <Link className="auth-access-button" href="/projects/reviews">Reviews</Link>
+        </p>
+      ) : null}
       <form className="project-list-filters" aria-label={copy.title} onSubmit={(event) => event.preventDefault()}>
         <div>
           <label className="auth-access-field-label" htmlFor="project-search">{copy.searchLabel}</label>

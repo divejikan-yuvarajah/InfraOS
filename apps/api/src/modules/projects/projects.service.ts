@@ -13,8 +13,9 @@ import { AdminLifecycleLock, AGENCY_HIERARCHY_LOCK } from "../identity/admin-use
 import { Role } from "../identity/models/role.model.js";
 import { User } from "../identity/models/user.model.js";
 import { Project } from "./models/project.model.js";
-import type { ProjectCreateInput, ProjectListQuery, ProjectPatchInput, ProjectTransitionInput } from "./projects.schema.js";
-import type { ProjectDetailDto, ProjectFailure, ProjectListDto, ProjectSummaryDto } from "./projects.types.js";
+import type { ProjectCreateInput, ProjectListQuery, ProjectPatchInput, ProjectReviewInput, ProjectReviewQueueQuery, ProjectTransitionInput } from "./projects.schema.js";
+import { reviewNeedsReason, reviewSeparatesDuties, reviewTarget, type ReviewAction } from "./review.policy.js";
+import type { ProjectDetailDto, ProjectFailure, ProjectListDto, ProjectSummaryDto, ReviewDetailDto, ReviewQueueDto } from "./projects.types.js";
 
 const WRITE_ROLES = new Set(["GOV_ADMIN", "AGENCY_OFFICER", "PROJECT_MANAGER"]);
 const PRIVATE_DENY = new Set(["CONTRACTOR", "CITIZEN"]);
@@ -182,8 +183,10 @@ function detail(
   includeBudget: boolean,
   manager: string | null,
   canEditDraft: boolean,
-  availableActions: ("SUBMIT" | "HOLD" | "RESUME")[],
+  availableActions: ("SUBMIT" | "HOLD" | "RESUME" | "REOPEN")[],
   submissionGaps: string[],
+  availableReviewActions: ("BEGIN_REVIEW" | "APPROVE" | "REJECT" | "RETURN_FOR_CHANGES")[] = [],
+  reviewDecision: { status: string; reason: string; at: string } | null = null,
 ): ProjectDetailDto {
   return {
     ...summary(project, codes),
@@ -196,6 +199,8 @@ function detail(
     canEditDraft,
     availableActions,
     submissionGaps,
+    availableReviewActions,
+    reviewDecision,
     ...(includeBudget && project.budget ? { budget: { amountMinor: project.budget.amountMinor, currency: "LKR" as const } } : {}),
   };
 }
@@ -303,7 +308,9 @@ export async function getProject(
     const manager = await managerName(loaded);
     const editable = await canEditProjectDraft(actor, loaded);
     const hints = await lifecycleHints(actor, loaded);
-    return { ok: true, project: detail(loaded, codes, await canReadBudget(actor), manager, editable, hints.actions, hints.gaps) };
+    const reviewHints = await reviewActionHints(actor, loaded);
+    const reviewDecision = await latestReviewReason(loaded);
+    return { ok: true, project: detail(loaded, codes, await canReadBudget(actor), manager, editable, hints.actions, hints.gaps, reviewHints, reviewDecision) };
   } catch (error) {
     if (error instanceof FlowControl) return fail(error.status, error.code);
     throw new ProjectDependencyError();
@@ -315,7 +322,7 @@ async function writeAudit(
   projectId: mongoose.Types.ObjectId,
   action: string,
   requestId: string,
-  snapshot: { status: string; agencyId: mongoose.Types.ObjectId; budget?: { amountMinor: number; currency: "LKR" } },
+  snapshot: { status: string; agencyId: mongoose.Types.ObjectId; budget?: { amountMinor: number; currency: "LKR" }; reason?: string },
   session: ClientSession,
   previous?: { status: string; agencyId: mongoose.Types.ObjectId },
 ): Promise<void> {
@@ -499,7 +506,7 @@ export async function updateProjectDraft(
 async function lifecycleHints(
   actor: AuthenticatedActor,
   project: Loaded,
-): Promise<{ actions: ("SUBMIT" | "HOLD" | "RESUME")[]; gaps: string[] }> {
+): Promise<{ actions: ("SUBMIT" | "HOLD" | "RESUME" | "REOPEN")[]; gaps: string[] }> {
   try {
     if (!WRITE_ROLES.has(actor.roleKey)) return { actions: [], gaps: [] };
     const role = await Role.findById(actor.roleId).select("key isActive permissions");
@@ -509,7 +516,7 @@ async function lifecycleHints(
     const match = await Project.findOne({ $and: [projectWriteFilter(actor, scope), { _id: project._id }] }).select("_id");
     if (!match) return { actions: [], gaps: [] };
     const actions = hintActions(project.status, granted).filter(
-      (action): action is "SUBMIT" | "HOLD" | "RESUME" => action === "SUBMIT" || action === "HOLD" || action === "RESUME",
+      (action): action is "SUBMIT" | "HOLD" | "RESUME" | "REOPEN" => action === "SUBMIT" || action === "HOLD" || action === "RESUME" || action === "REOPEN",
     );
     const gaps = project.status === "DRAFT" && granted.includes("project.submit") ? submitGaps(project) : [];
     return { actions, gaps };
@@ -557,9 +564,272 @@ export async function transitionProject(
       await writeAudit(
         actor,
         current._id,
-        action === "SUBMIT" ? "project.submitted" : "project.status_changed",
+        action === "SUBMIT" ? "project.submitted" : action === "REOPEN" ? "project.reopened" : "project.status_changed",
         requestId,
         { status: target, agencyId: current.agencyId },
+        mongo,
+        { status: current.status, agencyId: current.agencyId },
+      );
+    });
+    return getProject(actor, rawId);
+  } catch (error) {
+    if (error instanceof FlowControl) return fail(error.status, error.code);
+    throw new ProjectDependencyError();
+  } finally {
+    await mongo.endSession();
+  }
+}
+
+const REVIEW_QUEUE_STATUSES = ["SUBMITTED", "UNDER_REVIEW"] as const;
+
+function approvalFilter(scope: Awaited<ReturnType<typeof resolveResourceScope>>): Record<string, unknown> {
+  if (scope.kind !== "agencies") return { _id: { $in: [] } };
+  return { agencyId: { $in: scope.agencyIds } };
+}
+
+function auditTime(value: unknown): number {
+  return value instanceof Date ? value.getTime() : 0;
+}
+
+async function trustedSubmission(
+  projectId: mongoose.Types.ObjectId,
+  session?: ClientSession,
+): Promise<{ ok: true; userId: string; at: string } | { ok: false }> {
+  const submitsQuery = AuditLog.find({
+    action: "project.submitted",
+    resourceType: "PROJECT",
+    resourceId: projectId,
+    "oldValue.status": "DRAFT",
+    "newValue.status": "SUBMITTED",
+  }).select("+oldValue +newValue userId timestamp");
+  const returnsQuery = AuditLog.find({
+    action: { $in: ["project.returned", "project.reopened"] },
+    resourceType: "PROJECT",
+    resourceId: projectId,
+    "newValue.status": "DRAFT",
+  }).select("+newValue timestamp");
+  if (session) {
+    submitsQuery.session(session);
+    returnsQuery.session(session);
+  }
+  const [submits, returns] = await Promise.all([submitsQuery, returnsQuery]);
+  const cutoff = returns.reduce((latest, event) => Math.max(latest, auditTime(event.timestamp)), 0);
+  const current = submits.filter((event) => auditTime(event.timestamp) > cutoff);
+  if (current.length !== 1 || !current[0]?.userId) return { ok: false };
+  const stamp = current[0].timestamp;
+  const at = stamp instanceof Date ? stamp.toISOString() : new Date(0).toISOString();
+  return { ok: true, userId: current[0].userId.toString(), at };
+}
+
+const REVIEW_AUDIT_ACTIONS = ["project.review_started", "project.approved", "project.rejected", "project.returned", "project.reopened"] as const;
+
+async function latestNamedAudit(projectId: mongoose.Types.ObjectId, action: string) {
+  return AuditLog.findOne({
+    action,
+    resourceType: "PROJECT",
+    resourceId: projectId,
+  }).sort({ timestamp: -1 }).select("+newValue timestamp");
+}
+
+function storedReason(event: { newValue?: unknown; timestamp?: unknown } | null): { reason: string; at: string } | null {
+  const reason = snapshotText(event?.newValue, "reason");
+  if (!event || !reason) return null;
+  const stamp = event.timestamp;
+  return { reason, at: stamp instanceof Date ? stamp.toISOString() : new Date(0).toISOString() };
+}
+
+async function latestReviewReason(project: Loaded): Promise<{ status: string; reason: string; at: string } | null> {
+  if (project.status === "REJECTED") {
+    const found = storedReason(await latestNamedAudit(project._id, "project.rejected"));
+    return found ? { status: "REJECTED", ...found } : null;
+  }
+  if (project.status !== "DRAFT") return null;
+  const [returned, reopened, rejected] = await Promise.all([
+    latestNamedAudit(project._id, "project.returned"),
+    latestNamedAudit(project._id, "project.reopened"),
+    latestNamedAudit(project._id, "project.rejected"),
+  ]);
+  if (auditTime(reopened?.timestamp) > auditTime(returned?.timestamp)) {
+    const found = storedReason(rejected);
+    return found ? { status: "REJECTED", ...found } : null;
+  }
+  const found = storedReason(returned);
+  return found ? { status: "DRAFT", ...found } : null;
+}
+
+function snapshotText(value: unknown, key: "status" | "reason"): string | null {
+  if (!value || typeof value !== "object") return null;
+  const readable = value as { get?: (path: string) => unknown };
+  const raw = typeof readable.get === "function" ? readable.get(key) : (value as Record<string, unknown>)[key];
+  return typeof raw === "string" && raw.length > 0 ? raw : null;
+}
+
+async function reviewHistory(projectId: mongoose.Types.ObjectId) {
+  const events = await AuditLog.find({
+    action: { $in: [...REVIEW_AUDIT_ACTIONS] },
+    resourceType: "PROJECT",
+    resourceId: projectId,
+  }).sort({ timestamp: -1 }).limit(20).select("+newValue");
+  return events.flatMap((event) => {
+    const status = snapshotText(event.newValue, "status");
+    if (!status || !event.userId) return [];
+    const reason = snapshotText(event.newValue, "reason");
+    const stamp = event.timestamp;
+    const action = REVIEW_AUDIT_ACTIONS.find((item) => item === event.action);
+    if (!action) return [];
+    return [{
+      action,
+      status,
+      reason,
+      userId: event.userId.toString(),
+      at: stamp instanceof Date ? stamp.toISOString() : new Date(0).toISOString(),
+      requestId: typeof event.requestId === "string" ? event.requestId : null,
+    }];
+  });
+}
+
+async function reviewActionHints(actor: AuthenticatedActor, project: Loaded): Promise<("BEGIN_REVIEW" | "APPROVE" | "REJECT" | "RETURN_FOR_CHANGES")[]> {
+  try {
+    if (actor.roleKey !== "GOV_ADMIN") return [];
+    await assertLive(actor, ["project.approve"]);
+    const scope = await resolveResourceScope(actor);
+    const match = await Project.findOne({ $and: [approvalFilter(scope), { _id: project._id }] }).select("_id");
+    if (!match) return [];
+    const submission = await trustedSubmission(project._id);
+    if (!submission.ok) return [];
+    const own = submission.userId === actor.userId;
+    if (project.status === "SUBMITTED") return own ? ["BEGIN_REVIEW"] : ["BEGIN_REVIEW", "REJECT"];
+    if (project.status === "UNDER_REVIEW" && !own) return ["APPROVE", "REJECT", "RETURN_FOR_CHANGES"];
+    return [];
+  } catch {
+    return [];
+  }
+}
+
+export async function listReviewQueue(
+  actor: AuthenticatedActor,
+  query: ProjectReviewQueueQuery,
+): Promise<{ ok: true; list: ReviewQueueDto } | ProjectFailure> {
+  if (actor.roleKey !== "GOV_ADMIN") return fail(403, "FORBIDDEN");
+  try {
+    await assertLive(actor, ["project.approve"]);
+    const scope = await resolveResourceScope(actor);
+    const scoped = approvalFilter(scope);
+    const queue = { $and: [scoped, { status: { $in: [...REVIEW_QUEUE_STATUSES] } }] };
+    const parts: Record<string, unknown>[] = [scoped, { status: query.status ?? { $in: [...REVIEW_QUEUE_STATUSES] } }];
+    if (query.q) {
+      const pattern = escapeRegex(query.q);
+      parts.push({ $or: [{ title: { $regex: pattern, $options: "i" } }, { projectCode: { $regex: pattern, $options: "i" } }] });
+    }
+    if (query.agencyId) parts.push({ agencyId: new mongoose.Types.ObjectId(query.agencyId) });
+    const filter = { $and: parts };
+    const sortField = PROJECT_LIST_SORT_FIELDS.find((field) => field === query.sortBy) ?? "updatedAt";
+    const sort = { [sortField]: query.sortDir === "asc" ? 1 : -1, _id: 1 } as Record<string, 1 | -1>;
+    const skip = (query.page - 1) * query.limit;
+    const [rows, total, submitted, underReview, agencyIds] = await Promise.all([
+      Project.find(filter).sort(sort).skip(skip).limit(query.limit),
+      Project.countDocuments(filter),
+      Project.countDocuments({ $and: [scoped, { status: "SUBMITTED" }] }),
+      Project.countDocuments({ $and: [scoped, { status: "UNDER_REVIEW" }] }),
+      Project.distinct("agencyId", queue),
+    ]);
+    const codes = await agencyCodes([...rows.map((row) => row.agencyId), ...agencyIds]);
+    return {
+      ok: true,
+      list: {
+        projects: rows.map((row) => summary(row as Loaded, codes)),
+        page: query.page,
+        limit: query.limit,
+        total,
+        agencies: agencyIds
+          .map((id) => ({ id: id.toString(), code: codes.get(id.toString()) ?? null }))
+          .sort((left, right) => (left.code ?? left.id).localeCompare(right.code ?? right.id)),
+        counts: { submitted, underReview },
+      },
+    };
+  } catch (error) {
+    if (error instanceof FlowControl) return fail(error.status, error.code);
+    throw new ProjectDependencyError();
+  }
+}
+
+export async function getReview(
+  actor: AuthenticatedActor,
+  rawId: string,
+): Promise<{ ok: true; review: ReviewDetailDto } | ProjectFailure> {
+  if (!/^[a-f0-9]{24}$/i.test(rawId)) return fail(400, "VALIDATION_ERROR");
+  if (actor.roleKey !== "GOV_ADMIN") return fail(403, "FORBIDDEN");
+  try {
+    await assertLive(actor, ["project.approve"]);
+    const scope = await resolveResourceScope(actor);
+    const project = await Project.findOne({ $and: [approvalFilter(scope), { _id: rawId }] });
+    if (!project) return fail(404, "NOT_FOUND");
+    const loaded = project as Loaded;
+    const codes = await agencyCodes([loaded.agencyId]);
+    const manager = await managerName(loaded);
+    const hints = await reviewActionHints(actor, loaded);
+    const submission = await trustedSubmission(loaded._id);
+    return {
+      ok: true,
+      review: {
+        project: detail(loaded, codes, await canReadBudget(actor), manager, false, [], [], hints, await latestReviewReason(loaded)),
+        submission: submission.ok ? { found: true, userId: submission.userId, at: submission.at } : { found: false },
+        decisions: await reviewHistory(loaded._id),
+      },
+    };
+  } catch (error) {
+    if (error instanceof FlowControl) return fail(error.status, error.code);
+    throw new ProjectDependencyError();
+  }
+}
+
+export async function reviewProject(
+  actor: AuthenticatedActor,
+  rawId: string,
+  input: ProjectReviewInput,
+  requestId: string,
+): Promise<{ ok: true; project: ProjectDetailDto } | ProjectFailure> {
+  if (!/^[a-f0-9]{24}$/i.test(rawId)) return fail(400, "VALIDATION_ERROR");
+  if (actor.roleKey !== "GOV_ADMIN") return fail(403, "FORBIDDEN");
+  const action = input.action as ReviewAction;
+  const mongo = await mongoose.startSession();
+  try {
+    await seedHierarchyLock();
+    await mongo.withTransaction(async () => {
+      await holdHierarchyLock(mongo);
+      await assertLive(actor, ["project.approve"], mongo);
+      const agency = await Agency.findById(actor.agencyId).session(mongo).select("status");
+      if (!agency || agency.status !== "ACTIVE") throw new FlowControl(409, "CONFLICT");
+      const scope = await resolveResourceScope(actor);
+      const filter = approvalFilter(scope);
+      const current = await Project.findOne({ $and: [filter, { _id: rawId }] }).session(mongo);
+      if (!current) throw new FlowControl(404, "NOT_FOUND");
+      if (revisionOf(current) !== input.revision) throw new FlowControl(409, "CONFLICT");
+      const target = reviewTarget(current.status, action);
+      if (!target) throw new FlowControl(409, "CONFLICT");
+      const submission = await trustedSubmission(current._id, mongo);
+      if (!submission.ok) throw new FlowControl(409, "CONFLICT");
+      if (reviewSeparatesDuties(action) && submission.userId === actor.userId) throw new FlowControl(409, "CONFLICT");
+      if (reviewNeedsReason(action) !== Boolean(input.reason)) throw new FlowControl(400, "VALIDATION_ERROR");
+      const updated = await Project.findOneAndUpdate(
+        { $and: [filter, { _id: current._id, status: current.status, __v: input.revision }] },
+        { $set: { status: target }, $inc: { __v: 1 } },
+        { session: mongo, new: true, runValidators: true },
+      );
+      if (!updated) throw new FlowControl(409, "CONFLICT");
+      const auditAction = action === "BEGIN_REVIEW"
+        ? "project.review_started"
+        : action === "APPROVE"
+          ? "project.approved"
+          : action === "REJECT"
+            ? "project.rejected"
+            : "project.returned";
+      await writeAudit(
+        actor,
+        current._id,
+        auditAction,
+        requestId,
+        { status: target, agencyId: current.agencyId, ...(input.reason ? { reason: input.reason } : {}) },
         mongo,
         { status: current.status, agencyId: current.agencyId },
       );
