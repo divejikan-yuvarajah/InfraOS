@@ -14,6 +14,7 @@ import type { AuthLocale } from "@/lib/auth/types";
 import { fetchProject, transitionProject } from "@/lib/projects/api";
 import { classifyEditError } from "@/lib/projects/edit-outcome";
 import { getProjectCopy, projectReadMessage } from "@/lib/projects/messages";
+import { getReviewCopy } from "@/lib/projects/review-messages";
 import { geometrySummary, lkrBudgetLabel, projectCoreQueryKey, safeListReturn, utcDateLabel, utcStampLabel } from "@/lib/projects/overview-format";
 import type { ProjectDetail, ProjectLocation } from "@/lib/projects/types";
 
@@ -41,6 +42,7 @@ function OverviewBody({
   listQuery,
   pending,
   notice,
+  reviewLabel,
   onTransition,
 }: {
   project: ProjectDetail;
@@ -48,7 +50,8 @@ function OverviewBody({
   listQuery: string | null;
   pending: boolean;
   notice: string | null;
-  onTransition: (action: "SUBMIT" | "HOLD" | "RESUME", reason?: string) => void;
+  reviewLabel: string;
+  onTransition: (action: "SUBMIT" | "HOLD" | "RESUME" | "REOPEN", reason?: string) => void;
 }) {
   const [reason, setReason] = useState("");
   const needsReason = Boolean(project.availableActions?.includes("HOLD") || project.availableActions?.includes("RESUME"));
@@ -72,6 +75,10 @@ function OverviewBody({
       <p role="note">{copy.readOnly}</p>
       {project.status === "DRAFT" ? <p role="status">{copy.draftOverview}</p> : null}
       {project.status === "SUBMITTED" || project.status === "UNDER_REVIEW" ? <p role="note">{copy.waitingReview}</p> : null}
+      {project.status === "REJECTED" ? <p role="note">{copy.rejectedNote}</p> : null}
+      {project.reviewDecision?.reason ? (
+        <p role="status">{copy.decisionReason}: {project.reviewDecision.reason}</p>
+      ) : null}
       <section className="auth-access-card project-overview-mark" aria-labelledby="project-lifecycle">
         <h3 id="project-lifecycle">{copy.lifecycleTitle}</h3>
         <p>{copy.lifecycleNote}</p>
@@ -114,6 +121,11 @@ function OverviewBody({
               {copy.resumeProject}
             </button>
           ) : null}
+          {project.availableActions?.includes("REOPEN") ? (
+            <button type="button" className="auth-access-button" disabled={pending} onClick={() => onTransition("REOPEN")}>
+              {pending ? copy.lifecycleWorking : copy.reopenDraft}
+            </button>
+          ) : null}
         </div>
       </section>
       {project.canEditDraft ? (
@@ -121,6 +133,11 @@ function OverviewBody({
           <Link className="auth-access-button" href={`/projects/${project.id}/edit${listQuery ? `?list=${encodeURIComponent(listQuery)}` : ""}`}>
             {copy.editDraft}
           </Link>
+        </p>
+      ) : null}
+      {project.availableReviewActions && project.availableReviewActions.length > 0 ? (
+        <p>
+          <Link className="auth-access-button" href={`/projects/${project.id}/review`}>{reviewLabel}</Link>
         </p>
       ) : null}
       <div className="project-overview-grid">
@@ -174,7 +191,7 @@ export function ProjectOverviewClient({ id }: { id: string }) {
     retry: false,
   });
   const transition = useMutation({
-    mutationFn: (input: { action: "SUBMIT" | "HOLD" | "RESUME"; reason?: string }) => {
+    mutationFn: (input: { action: "SUBMIT" | "HOLD" | "RESUME" | "REOPEN"; reason?: string }) => {
       const revision = project.data?.revision;
       if (typeof revision !== "number") throw new ApiError("missing revision", 409, { code: "CONFLICT" });
       return transitionProject(id, { action: input.action, revision, reason: input.reason });
@@ -235,6 +252,7 @@ export function ProjectOverviewClient({ id }: { id: string }) {
           listQuery={listQuery}
           pending={transition.isPending}
           notice={notice}
+          reviewLabel={getReviewCopy(locale).openReview}
           onTransition={(action, reason) => {
             setNotice(null);
             transition.mutate({ action, reason });

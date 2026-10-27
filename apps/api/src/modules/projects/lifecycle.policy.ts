@@ -6,6 +6,7 @@ export const LIFECYCLE_ACTIONS = [
   "SUBMIT",
   "HOLD",
   "RESUME",
+  "REOPEN",
   "START",
   "MARK_DELAYED",
   "COMPLETE",
@@ -16,12 +17,13 @@ export type LifecycleAction = (typeof LIFECYCLE_ACTIONS)[number];
 export type ProjectStatus = (typeof PROJECT_STATUSES)[number];
 
 /** Actions this step will commit. START/MARK_DELAYED have no confirmed grant. COMPLETE/CANCEL lack a safe dependency adapter. */
-const EXECUTABLE = new Set<LifecycleAction>(["SUBMIT", "HOLD", "RESUME"]);
+const EXECUTABLE = new Set<LifecycleAction>(["SUBMIT", "HOLD", "RESUME", "REOPEN"]);
 
 const PERMISSION: Record<LifecycleAction, Permission | null> = {
   SUBMIT: "project.submit",
   HOLD: "project.hold",
   RESUME: "project.hold",
+  REOPEN: "project.update",
   START: null,
   MARK_DELAYED: null,
   COMPLETE: "project.complete",
@@ -30,6 +32,7 @@ const PERMISSION: Record<LifecycleAction, Permission | null> = {
 
 const EDGES: Record<LifecycleAction, Partial<Record<ProjectStatus, ProjectStatus>>> = {
   SUBMIT: { DRAFT: "SUBMITTED" },
+  REOPEN: { REJECTED: "DRAFT" },
   HOLD: { ACTIVE: "ON_HOLD" },
   RESUME: { ON_HOLD: "ACTIVE" },
   START: { APPROVED: "ACTIVE" },

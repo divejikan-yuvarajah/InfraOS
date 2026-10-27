@@ -10,11 +10,14 @@ import {
   type LifecycleAction,
 } from "../src/modules/projects/lifecycle.policy.js";
 
-const ACTIONS: LifecycleAction[] = ["SUBMIT", "HOLD", "RESUME", "START", "MARK_DELAYED", "COMPLETE", "CANCEL"];
+const ACTIONS: LifecycleAction[] = ["SUBMIT", "HOLD", "RESUME", "REOPEN", "START", "MARK_DELAYED", "COMPLETE", "CANCEL"];
 
 describe("project lifecycle policy", () => {
-  it("covers the nine implemented statuses and rejects illegal edges", () => {
-    expect(PROJECT_STATUSES).not.toContain("REJECTED");
+  it("covers the project statuses and rejects illegal edges", () => {
+    expect(PROJECT_STATUSES).toContain("REJECTED");
+    expect(transitionTarget("REJECTED", "SUBMIT")).toBeNull();
+    expect(transitionTarget("REJECTED", "REOPEN")).toBe("DRAFT");
+    expect(transitionTarget("SUBMITTED", "REOPEN")).toBeNull();
     expect(transitionTarget("DRAFT", "SUBMIT")).toBe("SUBMITTED");
     expect(transitionTarget("ACTIVE", "HOLD")).toBe("ON_HOLD");
     expect(transitionTarget("ON_HOLD", "RESUME")).toBe("ACTIVE");
@@ -36,6 +39,7 @@ describe("project lifecycle policy", () => {
     expect(actionBlock("COMPLETE")).toBe("dependency_unavailable");
     expect(actionBlock("CANCEL")).toBe("dependency_unavailable");
     expect(actionBlock("SUBMIT")).toBeNull();
+    expect(actionBlock("REOPEN")).toBeNull();
   });
 
   it("requires dates, geometry, location, and budget before submit", () => {
@@ -60,6 +64,8 @@ describe("project lifecycle policy", () => {
 
   it("hints only executable grants", () => {
     expect(hintActions("DRAFT", ["project.submit"])).toEqual(["SUBMIT"]);
+    expect(hintActions("REJECTED", ["project.update"])).toEqual(["REOPEN"]);
+    expect(hintActions("REJECTED", ["project.submit"])).toEqual([]);
     expect(hintActions("ACTIVE", ["project.complete", "project.cancel"])).toEqual([]);
     expect(hintActions("ACTIVE", ["project.hold"])).toEqual(["HOLD"]);
   });

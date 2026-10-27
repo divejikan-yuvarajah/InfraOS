@@ -6,6 +6,19 @@ import { AUDIT_RESOURCES } from "../audit.constants.js";
 /** Explicit safe snapshot shape. Never pass a request body or full document here. */
 const snapshotSchema = new Schema({
   status: { ...textField(40), match: /^[A-Z_]+$/ },
+  reason: {
+    ...textField(500),
+    validate: {
+      validator(value: string) {
+        if (value.includes("$")) return false;
+        for (const char of value) {
+          const code = char.charCodeAt(0);
+          if (code <= 31 || code === 127) return false;
+        }
+        return true;
+      },
+    },
+  },
   roleId: reference("Role", false),
   agencyId: reference("Agency", false),
   managerId: reference("User", false),
