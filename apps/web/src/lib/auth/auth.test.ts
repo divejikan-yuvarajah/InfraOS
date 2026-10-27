@@ -41,9 +41,38 @@ describe("auth redirect safety", () => {
 });
 
 describe("auth availability in production", () => {
-  it("never exposes live mode in production builds", () => {
+  it("defaults to preview even if an API URL is configured", () => {
+    vi.stubEnv("NODE_ENV", "production");
+    vi.stubEnv("NEXT_PUBLIC_AUTH_LOGIN_ENABLED", "0");
+    vi.stubEnv("NEXT_PUBLIC_API_BASE_URL", "https://api.example.org");
+    expect(getAuthAvailability()).toBe("preview");
+    vi.unstubAllEnvs();
+  });
+
+  it("requires explicit opt-in and an HTTPS API origin", () => {
     vi.stubEnv("NODE_ENV", "production");
     vi.stubEnv("NEXT_PUBLIC_AUTH_LOGIN_ENABLED", "1");
+    for (const url of [
+      "",
+      "http://api.example.org",
+      "http://localhost:4000",
+      "https://api.example.org/api/v1",
+      "https://user:pass@api.example.org",
+      "https://api.example.org/?token=x",
+      "not-a-url",
+    ]) {
+      vi.stubEnv("NEXT_PUBLIC_API_BASE_URL", url);
+      expect(getAuthAvailability()).toBe("preview");
+    }
+    vi.stubEnv("NEXT_PUBLIC_API_BASE_URL", "https://api.example.org");
+    expect(getAuthAvailability()).toBe("live");
+    vi.unstubAllEnvs();
+  });
+
+  it("ignores fixture mode in production", () => {
+    vi.stubEnv("NODE_ENV", "production");
+    vi.stubEnv("NEXT_PUBLIC_AUTH_FIXTURE", "1");
+    vi.stubEnv("NEXT_PUBLIC_AUTH_LOGIN_ENABLED", "0");
     expect(getAuthAvailability()).toBe("preview");
     vi.unstubAllEnvs();
   });

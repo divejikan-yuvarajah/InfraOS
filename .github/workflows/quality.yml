@@ -1,0 +1,51 @@
+name: INFRAOS quality gates
+
+on:
+  pull_request:
+    branches: [development, main]
+  push:
+    branches: [development, main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: quality-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: API, web, types, lint, build
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      NEXT_PUBLIC_AUTH_LOGIN_ENABLED: "0"
+      NEXT_PUBLIC_AUTH_FIXTURE: "0"
+      NEXT_PUBLIC_API_BASE_URL: "http://localhost:4000"
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Refuse a configured database connection
+        run: |
+          if [ -n "${MONGODB_URI:-}" ] || [ -n "${MONGODB_URL:-}" ] || [ -n "${DATABASE_URL:-}" ]; then
+            echo "CI must use the in-process disposable MongoDB only. Do not inject a database URI."
+            exit 1
+          fi
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci
+      - name: Frontend tests
+        run: npm run test:web
+      - name: API tests (disposable MongoDB fixtures only)
+        run: npm run test:api
+      - name: TypeScript checks
+        run: npm run type-check
+      - name: ESLint
+        run: npm run lint
+      - name: Production builds (login still preview-only)
+        run: npm run build
