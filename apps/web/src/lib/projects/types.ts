@@ -42,6 +42,9 @@ export type ProjectDetail = ProjectSummary & {
   actualEndDate?: string | null;
   physicalProgress?: number | null;
   managerName?: string | null;
+  canEditDraft?: boolean;
+  availableActions?: ("SUBMIT" | "HOLD" | "RESUME")[];
+  submissionGaps?: string[];
   budget?: { amountMinor: number; currency: "LKR" };
 };
 

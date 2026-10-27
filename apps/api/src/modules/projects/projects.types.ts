@@ -27,6 +27,12 @@ export type ProjectDetailDto = ProjectSummaryDto & {
   actualEndDate: string | null;
   physicalProgress: number | null;
   managerName: string | null;
+  /** Scope-checked draft edit capability for the current actor. PATCH remains authoritative. */
+  canEditDraft?: boolean;
+  /** Executable lifecycle actions for this actor and status. Hints only. */
+  availableActions?: ("SUBMIT" | "HOLD" | "RESUME")[];
+  /** Missing DRAFT submission requirements. Present only when the actor may submit. */
+  submissionGaps?: string[];
   budget?: { amountMinor: number; currency: "LKR" };
 };
 

@@ -54,13 +54,15 @@ export type CreateField = keyof ProjectCreateFormValues;
 export type CreateIssue = "required" | "format" | "length" | "unsafe" | "date" | "order" | "money" | "overflow" | "range" | "pair";
 
 const MAX_SAFE = BigInt(Number.MAX_SAFE_INTEGER);
-const LOCATION_LIMITS = {
+export const DRAFT_LOCATION_LIMITS = {
   province: 100,
   district: 100,
   locality: 160,
   roadName: 160,
   locationDescription: 500,
 } as const;
+
+const LOCATION_LIMITS = DRAFT_LOCATION_LIMITS;
 
 function hasControl(value: string): boolean {
   for (const char of value) {
@@ -101,7 +103,7 @@ export function rupeesToMinor(raw: string): { ok: true; amountMinor: number } | 
   return { ok: true, amountMinor: Number(minor) };
 }
 
-function optionalText(value: string, max: number): { ok: true; value?: string } | { ok: false; issue: "length" | "unsafe" } {
+export function optionalText(value: string, max: number): { ok: true; value?: string } | { ok: false; issue: "length" | "unsafe" } {
   const trimmed = value.trim();
   if (!trimmed) return { ok: true };
   if (trimmed.length > max) return { ok: false, issue: "length" };
@@ -109,7 +111,7 @@ function optionalText(value: string, max: number): { ok: true; value?: string } 
   return { ok: true, value: trimmed };
 }
 
-function coordinate(raw: string, limit: number): { ok: true; value: number } | { ok: false; issue: "range" | "pair" } {
+export function coordinate(raw: string, limit: number): { ok: true; value: number } | { ok: false; issue: "range" | "pair" } {
   const trimmed = raw.trim();
   if (!trimmed) return { ok: false, issue: "pair" };
   if (!/^-?\d+(\.\d+)?$/.test(trimmed)) return { ok: false, issue: "range" };

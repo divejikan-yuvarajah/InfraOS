@@ -2,6 +2,7 @@ import { ApiError, apiClient } from "@/lib/api/client";
 import { getAuthEpoch, getMemoryAccessToken } from "@/lib/auth/state";
 
 import type { ProjectCreateRequest } from "./create-transform";
+import type { ProjectPatchRequest } from "./edit-transform";
 import type { ProjectDetail, ProjectDetailPayload, ProjectListPayload, ProjectSummary } from "./types";
 
 function guard() {
@@ -53,6 +54,34 @@ export async function fetchProject(id: string) {
 export async function createProject(body: ProjectCreateRequest): Promise<{ project: ProjectDetail; epoch: number; token: string }> {
   const { atEpoch, tokenAtStart } = guard();
   const payload = await apiClient<ProjectDetailPayload>("/api/v1/projects", {
+    method: "POST",
+    authenticated: true,
+    body,
+  });
+  moved(atEpoch, tokenAtStart);
+  return { project: payload.data.project, epoch: atEpoch, token: tokenAtStart };
+}
+
+export async function patchProject(
+  id: string,
+  body: ProjectPatchRequest,
+): Promise<{ project: ProjectDetail; epoch: number; token: string }> {
+  const { atEpoch, tokenAtStart } = guard();
+  const payload = await apiClient<ProjectDetailPayload>(`/api/v1/projects/${id}`, {
+    method: "PATCH",
+    authenticated: true,
+    body,
+  });
+  moved(atEpoch, tokenAtStart);
+  return { project: payload.data.project, epoch: atEpoch, token: tokenAtStart };
+}
+
+export async function transitionProject(
+  id: string,
+  body: { action: "SUBMIT" | "HOLD" | "RESUME"; revision: number; reason?: string },
+): Promise<{ project: ProjectDetail; epoch: number; token: string }> {
+  const { atEpoch, tokenAtStart } = guard();
+  const payload = await apiClient<ProjectDetailPayload>(`/api/v1/projects/${id}/transition`, {
     method: "POST",
     authenticated: true,
     body,

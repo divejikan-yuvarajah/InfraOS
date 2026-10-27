@@ -4,8 +4,8 @@ import { failure, success } from "../../shared/http/envelope.js";
 import { isJsonContentType } from "../identity/auth/auth.security.js";
 import { requireAuthenticated } from "../identity/auth/require-authenticated.js";
 import { requirePermission } from "../identity/authorization/require-permission.js";
-import { projectCreateSchema, projectListQuerySchema, projectPatchSchema } from "./projects.schema.js";
-import { ProjectDependencyError, createProject, getProject, listProjectCatalog, updateProjectDraft } from "./projects.service.js";
+import { projectCreateSchema, projectListQuerySchema, projectPatchSchema, projectTransitionSchema } from "./projects.schema.js";
+import { ProjectDependencyError, createProject, getProject, listProjectCatalog, transitionProject, updateProjectDraft } from "./projects.service.js";
 import type { ProjectFailure } from "./projects.types.js";
 
 function routeId(value: string | string[] | undefined): string {
@@ -107,6 +107,35 @@ projectRouter.post("/", requireAuthenticated, requirePermission("project.create"
       return;
     }
     res.status(201).json(success({ project: result.project }, req.requestId));
+  } catch (error) {
+    if (error instanceof ProjectDependencyError) {
+      res.status(503).json(failure("SERVICE_UNAVAILABLE", "sign-in is temporarily unavailable", req.requestId));
+      return;
+    }
+    throw error;
+  }
+});
+
+projectRouter.post("/:id/transition", requireAuthenticated, async (req, res) => {
+  try {
+    noStore(res);
+    const actor = req.actor;
+    if (!actor) return;
+    if (!isJsonContentType(req)) {
+      res.status(415).json(failure("UNSUPPORTED_MEDIA", "JSON body is required", req.requestId));
+      return;
+    }
+    const parsed = projectTransitionSchema.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json(failure("VALIDATION_ERROR", "request could not be completed", req.requestId));
+      return;
+    }
+    const result = await transitionProject(actor, routeId(req.params.id), parsed.data, req.requestId);
+    if (!result.ok) {
+      sendFailure(res, req, result);
+      return;
+    }
+    res.status(200).json(success({ project: result.project }, req.requestId));
   } catch (error) {
     if (error instanceof ProjectDependencyError) {
       res.status(503).json(failure("SERVICE_UNAVAILABLE", "sign-in is temporarily unavailable", req.requestId));
