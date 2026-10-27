@@ -97,6 +97,19 @@
   outline-offset: 2px;
 }
 
+/* Staff surfaces only. The public landing keeps --focus-ring. */
+[data-infra-app].auth-access-root :focus-visible {
+  outline: 2px solid #b63d00;
+  outline-offset: 2px;
+}
+
+[data-infra-app].auth-access-root .auth-access-button:focus-visible,
+[data-infra-app].auth-access-root .auth-access-link:focus-visible,
+[data-infra-app].auth-access-root .auth-access-nav-link:focus-visible {
+  outline: 2px solid var(--infra-maroon);
+  outline-offset: 2px;
+}
+
 .auth-access-link {
   color: var(--infra-maroon);
 }

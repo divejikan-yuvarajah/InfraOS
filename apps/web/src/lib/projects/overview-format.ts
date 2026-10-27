@@ -9,6 +9,24 @@ export function projectCoreQueryKey(
   return ["project", "core", epoch, userId, roleKey, id];
 }
 
+export function reviewQueueQueryKey(
+  epoch: string,
+  userId: string,
+  roleKey: string,
+  query: string,
+): readonly ["review-queue", string, string, string, string] {
+  return ["review-queue", epoch, userId, roleKey, query];
+}
+
+export function reviewDetailQueryKey(
+  epoch: string,
+  userId: string,
+  roleKey: string,
+  id: string,
+): readonly ["review", string, string, string, string] {
+  return ["review", epoch, userId, roleKey, id];
+}
+
 export function projectListQueryKey(
   epoch: string,
   userId: string,

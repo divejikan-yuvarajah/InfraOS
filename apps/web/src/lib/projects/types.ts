@@ -43,10 +43,34 @@ export type ProjectDetail = ProjectSummary & {
   physicalProgress?: number | null;
   managerName?: string | null;
   canEditDraft?: boolean;
-  availableActions?: ("SUBMIT" | "HOLD" | "RESUME")[];
+  availableActions?: ("SUBMIT" | "HOLD" | "RESUME" | "REOPEN")[];
   submissionGaps?: string[];
+  availableReviewActions?: ("BEGIN_REVIEW" | "APPROVE" | "REJECT" | "RETURN_FOR_CHANGES")[];
+  reviewDecision?: { status: string; reason: string; at: string } | null;
   budget?: { amountMinor: number; currency: "LKR" };
 };
+
+export type ReviewQueuePayload = {
+  success: true;
+  data: ProjectListPayload["data"] & { counts: { submitted: number; underReview: number } };
+};
+
+export type ReviewHistoryItem = {
+  action: "project.review_started" | "project.approved" | "project.rejected" | "project.returned" | "project.reopened";
+  status: string;
+  reason: string | null;
+  userId: string;
+  at: string;
+  requestId: string | null;
+};
+
+export type ReviewDetail = {
+  project: ProjectDetail;
+  submission: { found: true; userId: string; at: string } | { found: false };
+  decisions: ReviewHistoryItem[];
+};
+
+export type ReviewDetailPayload = { success: true; data: ReviewDetail };
 
 export type ProjectDetailPayload = {
   success: true;
