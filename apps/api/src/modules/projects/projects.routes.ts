@@ -4,6 +4,8 @@ import { failure, success } from "../../shared/http/envelope.js";
 import { isJsonContentType } from "../identity/auth/auth.security.js";
 import { requireAuthenticated } from "../identity/auth/require-authenticated.js";
 import { requirePermission } from "../identity/authorization/require-permission.js";
+import { milestoneCreateSchema, milestoneListQuerySchema, milestonePatchSchema, milestoneTransitionSchema } from "./milestones.schema.js";
+import { MilestoneDependencyError, createMilestone, getMilestone, listMilestones, transitionMilestone, updateMilestone } from "./milestones.service.js";
 import { projectCreateSchema, projectListQuerySchema, projectPatchSchema, projectReviewQueueQuerySchema, projectReviewSchema, projectTransitionSchema } from "./projects.schema.js";
 import { ProjectDependencyError, createProject, getProject, getReview, listProjectCatalog, listReviewQueue, reviewProject, transitionProject, updateProjectDraft } from "./projects.service.js";
 import type { ProjectFailure } from "./projects.types.js";
@@ -247,6 +249,144 @@ projectRouter.patch("/:id", requireAuthenticated, requirePermission("project.upd
     res.status(200).json(success({ project: result.project }, req.requestId));
   } catch (error) {
     if (error instanceof ProjectDependencyError) {
+      res.status(503).json(failure("SERVICE_UNAVAILABLE", "sign-in is temporarily unavailable", req.requestId));
+      return;
+    }
+    throw error;
+  }
+});
+
+projectRouter.get("/:id/milestones", requireAuthenticated, requirePermission("milestone.read"), async (req, res) => {
+  try {
+    noStore(res);
+    const actor = req.actor;
+    if (!actor) return;
+    const unknown = Object.keys(req.query).filter((key) => !["page", "limit", "sortBy", "sortDir"].includes(key));
+    const repeated = Object.values(req.query).some((value) => Array.isArray(value));
+    if (unknown.length > 0 || repeated) {
+      res.status(400).json(failure("VALIDATION_ERROR", "request could not be completed", req.requestId));
+      return;
+    }
+    const parsed = milestoneListQuerySchema.safeParse(req.query);
+    if (!parsed.success) {
+      res.status(400).json(failure("VALIDATION_ERROR", "request could not be completed", req.requestId));
+      return;
+    }
+    const result = await listMilestones(actor, routeId(req.params.id), parsed.data);
+    if (!result.ok) {
+      sendFailure(res, req, result);
+      return;
+    }
+    res.status(200).json(success(result.list, req.requestId));
+  } catch (error) {
+    if (error instanceof MilestoneDependencyError) {
+      res.status(503).json(failure("SERVICE_UNAVAILABLE", "sign-in is temporarily unavailable", req.requestId));
+      return;
+    }
+    throw error;
+  }
+});
+
+projectRouter.get("/:id/milestones/:milestoneId", requireAuthenticated, requirePermission("milestone.read"), async (req, res) => {
+  try {
+    noStore(res);
+    const actor = req.actor;
+    if (!actor) return;
+    const result = await getMilestone(actor, routeId(req.params.id), routeId(req.params.milestoneId));
+    if (!result.ok) {
+      sendFailure(res, req, result);
+      return;
+    }
+    res.status(200).json(success({ milestone: result.milestone }, req.requestId));
+  } catch (error) {
+    if (error instanceof MilestoneDependencyError) {
+      res.status(503).json(failure("SERVICE_UNAVAILABLE", "sign-in is temporarily unavailable", req.requestId));
+      return;
+    }
+    throw error;
+  }
+});
+
+projectRouter.post("/:id/milestones", requireAuthenticated, requirePermission("milestone.create"), async (req, res) => {
+  try {
+    noStore(res);
+    const actor = req.actor;
+    if (!actor) return;
+    if (!isJsonContentType(req)) {
+      res.status(415).json(failure("UNSUPPORTED_MEDIA", "JSON body is required", req.requestId));
+      return;
+    }
+    const parsed = milestoneCreateSchema.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json(failure("VALIDATION_ERROR", "request could not be completed", req.requestId));
+      return;
+    }
+    const result = await createMilestone(actor, routeId(req.params.id), parsed.data, req.requestId);
+    if (!result.ok) {
+      sendFailure(res, req, result);
+      return;
+    }
+    res.status(201).json(success({ milestone: result.milestone }, req.requestId));
+  } catch (error) {
+    if (error instanceof MilestoneDependencyError) {
+      res.status(503).json(failure("SERVICE_UNAVAILABLE", "sign-in is temporarily unavailable", req.requestId));
+      return;
+    }
+    throw error;
+  }
+});
+
+projectRouter.patch("/:id/milestones/:milestoneId", requireAuthenticated, requirePermission("milestone.update"), async (req, res) => {
+  try {
+    noStore(res);
+    const actor = req.actor;
+    if (!actor) return;
+    if (!isJsonContentType(req)) {
+      res.status(415).json(failure("UNSUPPORTED_MEDIA", "JSON body is required", req.requestId));
+      return;
+    }
+    const parsed = milestonePatchSchema.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json(failure("VALIDATION_ERROR", "request could not be completed", req.requestId));
+      return;
+    }
+    const result = await updateMilestone(actor, routeId(req.params.id), routeId(req.params.milestoneId), parsed.data, req.requestId);
+    if (!result.ok) {
+      sendFailure(res, req, result);
+      return;
+    }
+    res.status(200).json(success({ milestone: result.milestone }, req.requestId));
+  } catch (error) {
+    if (error instanceof MilestoneDependencyError) {
+      res.status(503).json(failure("SERVICE_UNAVAILABLE", "sign-in is temporarily unavailable", req.requestId));
+      return;
+    }
+    throw error;
+  }
+});
+
+projectRouter.post("/:id/milestones/:milestoneId/transition", requireAuthenticated, requirePermission("milestone.update"), async (req, res) => {
+  try {
+    noStore(res);
+    const actor = req.actor;
+    if (!actor) return;
+    if (!isJsonContentType(req)) {
+      res.status(415).json(failure("UNSUPPORTED_MEDIA", "JSON body is required", req.requestId));
+      return;
+    }
+    const parsed = milestoneTransitionSchema.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json(failure("VALIDATION_ERROR", "request could not be completed", req.requestId));
+      return;
+    }
+    const result = await transitionMilestone(actor, routeId(req.params.id), routeId(req.params.milestoneId), parsed.data, req.requestId);
+    if (!result.ok) {
+      sendFailure(res, req, result);
+      return;
+    }
+    res.status(200).json(success({ milestone: result.milestone }, req.requestId));
+  } catch (error) {
+    if (error instanceof MilestoneDependencyError) {
       res.status(503).json(failure("SERVICE_UNAVAILABLE", "sign-in is temporarily unavailable", req.requestId));
       return;
     }
