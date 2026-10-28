@@ -58,6 +58,28 @@
   padding: 1rem 1.1rem;
 }
 
+.project-milestone-form label,
+.project-milestone-form input,
+.project-milestone-form textarea {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.project-milestone-form input,
+.project-milestone-form textarea {
+  margin: 0.25rem 0 0.75rem;
+}
+
+.project-milestone-list {
+  overflow-wrap: anywhere;
+}
+
+.project-milestone-list button {
+  margin: 0.25rem 0.35rem 0.25rem 0;
+}
+
 .auth-access-status {
   margin: 0;
   color: var(--app-text);
