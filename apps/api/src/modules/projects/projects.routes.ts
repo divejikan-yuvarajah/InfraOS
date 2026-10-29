@@ -6,6 +6,9 @@ import { requireAuthenticated } from "../identity/auth/require-authenticated.js"
 import { requirePermission } from "../identity/authorization/require-permission.js";
 import { milestoneCreateSchema, milestoneListQuerySchema, milestonePatchSchema, milestoneTransitionSchema } from "./milestones.schema.js";
 import { MilestoneDependencyError, createMilestone, getMilestone, listMilestones, transitionMilestone, updateMilestone } from "./milestones.service.js";
+import { progressHistoryQuerySchema, progressSubmitSchema } from "./progress.schema.js";
+import { ProgressDependencyError, getProgress, listProgressHistory, submitProgress } from "./progress.service.js";
+import { FinancialProgressDependencyError, getFinancialProgress } from "./financial-progress.service.js";
 import { projectCreateSchema, projectListQuerySchema, projectPatchSchema, projectReviewQueueQuerySchema, projectReviewSchema, projectTransitionSchema } from "./projects.schema.js";
 import { ProjectDependencyError, createProject, getProject, getReview, listProjectCatalog, listReviewQueue, reviewProject, transitionProject, updateProjectDraft } from "./projects.service.js";
 import type { ProjectFailure } from "./projects.types.js";
@@ -358,6 +361,118 @@ projectRouter.patch("/:id/milestones/:milestoneId", requireAuthenticated, requir
     res.status(200).json(success({ milestone: result.milestone }, req.requestId));
   } catch (error) {
     if (error instanceof MilestoneDependencyError) {
+      res.status(503).json(failure("SERVICE_UNAVAILABLE", "sign-in is temporarily unavailable", req.requestId));
+      return;
+    }
+    throw error;
+  }
+});
+
+projectRouter.get("/:id/progress", requireAuthenticated, requirePermission("progress.read"), async (req, res) => {
+  try {
+    noStore(res);
+    const actor = req.actor;
+    if (!actor) return;
+    const result = await getProgress(actor, routeId(req.params.id));
+    if (!result.ok) {
+      sendFailure(res, req, result);
+      return;
+    }
+    res.status(200).json(success({ progress: result.progress }, req.requestId));
+  } catch (error) {
+    if (error instanceof ProgressDependencyError) {
+      res.status(503).json(failure("SERVICE_UNAVAILABLE", "sign-in is temporarily unavailable", req.requestId));
+      return;
+    }
+    throw error;
+  }
+});
+
+projectRouter.get("/:id/progress/history", requireAuthenticated, requirePermission("progress.read"), async (req, res) => {
+  try {
+    noStore(res);
+    const actor = req.actor;
+    if (!actor) return;
+    const unknown = Object.keys(req.query).filter((key) => !["page", "limit"].includes(key));
+    const repeated = Object.values(req.query).some((value) => Array.isArray(value));
+    if (unknown.length > 0 || repeated) {
+      res.status(400).json(failure("VALIDATION_ERROR", "request could not be completed", req.requestId));
+      return;
+    }
+    const parsed = progressHistoryQuerySchema.safeParse(req.query);
+    if (!parsed.success) {
+      res.status(400).json(failure("VALIDATION_ERROR", "request could not be completed", req.requestId));
+      return;
+    }
+    const result = await listProgressHistory(actor, routeId(req.params.id), parsed.data);
+    if (!result.ok) {
+      sendFailure(res, req, result);
+      return;
+    }
+    res.status(200).json(success(result.history, req.requestId));
+  } catch (error) {
+    if (error instanceof ProgressDependencyError) {
+      res.status(503).json(failure("SERVICE_UNAVAILABLE", "sign-in is temporarily unavailable", req.requestId));
+      return;
+    }
+    throw error;
+  }
+});
+
+projectRouter.get(
+  "/:id/financial-progress",
+  requireAuthenticated,
+  requirePermission("project.read"),
+  requirePermission("finance.budget.read"),
+  requirePermission("finance.payment.read"),
+  async (req, res) => {
+    try {
+      noStore(res);
+      const actor = req.actor;
+      if (!actor) return;
+      const result = await getFinancialProgress(actor, routeId(req.params.id));
+      if (!result.ok) {
+        sendFailure(res, req, result);
+        return;
+      }
+      res.status(200).json(success({ summary: result.summary, calculatedAt: result.calculatedAt }, req.requestId));
+    } catch (error) {
+      if (error instanceof FinancialProgressDependencyError) {
+        res.status(503).json(failure("SERVICE_UNAVAILABLE", "sign-in is temporarily unavailable", req.requestId));
+        return;
+      }
+      throw error;
+    }
+  },
+);
+
+projectRouter.post("/:id/progress", requireAuthenticated, requirePermission("progress.submit"), async (req, res) => {
+  try {
+    noStore(res);
+    const actor = req.actor;
+    if (!actor) return;
+    if (!isJsonContentType(req)) {
+      res.status(415).json(failure("UNSUPPORTED_MEDIA", "JSON body is required", req.requestId));
+      return;
+    }
+    const parsed = progressSubmitSchema.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json(failure("VALIDATION_ERROR", "request could not be completed", req.requestId));
+      return;
+    }
+    const result = await submitProgress(actor, routeId(req.params.id), parsed.data, req.requestId);
+    if (!result.ok) {
+      sendFailure(res, req, result);
+      return;
+    }
+    res.status(201).json(success({
+      report: result.report,
+      revision: result.revision,
+      status: result.status,
+      physicalProgress: result.physicalProgress,
+    }, req.requestId));
+  } catch (error) {
+    if (error instanceof ProgressDependencyError) {
       res.status(503).json(failure("SERVICE_UNAVAILABLE", "sign-in is temporarily unavailable", req.requestId));
       return;
     }
