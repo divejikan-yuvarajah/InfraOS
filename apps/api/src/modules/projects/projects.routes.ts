@@ -11,6 +11,8 @@ import { ProgressDependencyError, getProgress, listProgressHistory, submitProgre
 import { FinancialProgressDependencyError, getFinancialProgress } from "./financial-progress.service.js";
 import { DEPENDENCY_CANDIDATE_KEYS, DEPENDENCY_LIST_KEYS, dependencyCandidateQuerySchema, dependencyCreateSchema, dependencyListQuerySchema, dependencyRemoveSchema } from "./dependency.schema.js";
 import { DependencyLinkError, addProjectDependency, listProjectDependencies, removeProjectDependency, searchDependencyCandidates } from "./dependency.service.js";
+import { ACTIVITY_QUERY_KEYS, activityQuerySchema } from "./activity.schema.js";
+import { ActivityDependencyError, getProjectActivity } from "./activity.service.js";
 import { TIMELINE_QUERY_KEYS, timelineQuerySchema } from "./timeline.schema.js";
 import { TimelineDependencyError, getProjectTimeline } from "./timeline.service.js";
 import { projectCreateSchema, projectListQuerySchema, projectPatchSchema, projectReviewQueueQuerySchema, projectReviewSchema, projectTransitionSchema } from "./projects.schema.js";
@@ -479,6 +481,42 @@ projectRouter.get(
       res.status(200).json(success({ timeline: result.timeline }, req.requestId));
     } catch (error) {
       if (error instanceof TimelineDependencyError) {
+        res.status(503).json(failure("SERVICE_UNAVAILABLE", "sign-in is temporarily unavailable", req.requestId));
+        return;
+      }
+      throw error;
+    }
+  },
+);
+
+projectRouter.get(
+  "/:id/activity",
+  requireAuthenticated,
+  requirePermission("project.read"),
+  requirePermission("project.timeline.read"),
+  async (req, res) => {
+    try {
+      noStore(res);
+      const actor = req.actor;
+      if (!actor) return;
+      const unknown = Object.keys(req.query).filter((key) => !ACTIVITY_QUERY_KEYS.includes(key as (typeof ACTIVITY_QUERY_KEYS)[number]));
+      if (unknown.length > 0 || Object.values(req.query).some((value) => Array.isArray(value))) {
+        res.status(400).json(failure("VALIDATION_ERROR", "request could not be completed", req.requestId));
+        return;
+      }
+      const parsed = activityQuerySchema.safeParse(req.query);
+      if (!parsed.success) {
+        res.status(400).json(failure("VALIDATION_ERROR", "request could not be completed", req.requestId));
+        return;
+      }
+      const result = await getProjectActivity(actor, routeId(req.params.id), parsed.data);
+      if (!result.ok) {
+        sendFailure(res, req, result);
+        return;
+      }
+      res.status(200).json(success(result.activity, req.requestId));
+    } catch (error) {
+      if (error instanceof ActivityDependencyError) {
         res.status(503).json(failure("SERVICE_UNAVAILABLE", "sign-in is temporarily unavailable", req.requestId));
         return;
       }

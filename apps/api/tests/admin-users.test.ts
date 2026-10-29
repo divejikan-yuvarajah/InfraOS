@@ -353,6 +353,13 @@ describe("step 48 admin user management", { timeout: 120_000 }, () => {
     expect([401, 409]).toContain(statuses[1]);
     const stillActive = await User.countDocuments({ roleId: data.superUser.roleId, status: "ACTIVE", emailVerified: true });
     expect(stillActive).toBe(1);
+    const superUserAfterRace = await User.findById(data.superUser._id);
+    const superPeerAfterRace = await User.findById(data.superPeer._id);
+    const actingAdminToken =
+      superUserAfterRace?.status === "ACTIVE"
+        ? await tokenFor(data.superUser._id.toString(), superUserAfterRace.credentialEpoch ?? 0)
+        : await tokenFor(data.superPeer._id.toString(), superPeerAfterRace?.credentialEpoch ?? 0);
+    data.superToken = actingAdminToken;
 
     const disabled = await request(app)
       .post(`/api/v1/admin/users/${data.officer._id.toString()}/disable`)
