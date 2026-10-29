@@ -442,3 +442,62 @@
     grid-template-columns: 1fr 1fr;
   }
 }
+
+.project-timeline-toolbar,
+.project-timeline-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.project-timeline-rail,
+.project-timeline-rail ol,
+.project-timeline-ranges ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.project-timeline-rail {
+  display: grid;
+  gap: 1rem;
+  border-left: 3px solid var(--infra-maroon);
+  padding-left: 0.75rem;
+}
+
+.project-timeline-card {
+  overflow-wrap: anywhere;
+  border-top: 3px solid var(--infra-yellow);
+}
+
+.project-timeline-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.75rem;
+  margin-right: 0.35rem;
+  border-radius: 999px;
+  padding: 0.1rem 0.55rem;
+}
+
+.project-timeline-chip.planned {
+  border: 1px solid color-mix(in srgb, var(--infra-yellow) 55%, white);
+  background: color-mix(in srgb, var(--infra-yellow) 28%, white);
+}
+
+.project-timeline-chip.recorded {
+  border: 1px solid color-mix(in srgb, var(--infra-green) 40%, white);
+  background: color-mix(in srgb, var(--infra-green) 12%, white);
+}
+
+.project-timeline-ranges,
+.project-timeline-prereq {
+  overflow-x: auto;
+  max-width: 100%;
+}
+
+.project-timeline-prereq input {
+  display: block;
+  width: min(100%, 24rem);
+  min-height: 2.5rem;
+}

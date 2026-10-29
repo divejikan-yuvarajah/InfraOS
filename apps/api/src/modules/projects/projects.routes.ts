@@ -9,6 +9,10 @@ import { MilestoneDependencyError, createMilestone, getMilestone, listMilestones
 import { progressHistoryQuerySchema, progressSubmitSchema } from "./progress.schema.js";
 import { ProgressDependencyError, getProgress, listProgressHistory, submitProgress } from "./progress.service.js";
 import { FinancialProgressDependencyError, getFinancialProgress } from "./financial-progress.service.js";
+import { DEPENDENCY_CANDIDATE_KEYS, DEPENDENCY_LIST_KEYS, dependencyCandidateQuerySchema, dependencyCreateSchema, dependencyListQuerySchema, dependencyRemoveSchema } from "./dependency.schema.js";
+import { DependencyLinkError, addProjectDependency, listProjectDependencies, removeProjectDependency, searchDependencyCandidates } from "./dependency.service.js";
+import { TIMELINE_QUERY_KEYS, timelineQuerySchema } from "./timeline.schema.js";
+import { TimelineDependencyError, getProjectTimeline } from "./timeline.service.js";
 import { projectCreateSchema, projectListQuerySchema, projectPatchSchema, projectReviewQueueQuerySchema, projectReviewSchema, projectTransitionSchema } from "./projects.schema.js";
 import { ProjectDependencyError, createProject, getProject, getReview, listProjectCatalog, listReviewQueue, reviewProject, transitionProject, updateProjectDraft } from "./projects.service.js";
 import type { ProjectFailure } from "./projects.types.js";
@@ -438,6 +442,182 @@ projectRouter.get(
       res.status(200).json(success({ summary: result.summary, calculatedAt: result.calculatedAt }, req.requestId));
     } catch (error) {
       if (error instanceof FinancialProgressDependencyError) {
+        res.status(503).json(failure("SERVICE_UNAVAILABLE", "sign-in is temporarily unavailable", req.requestId));
+        return;
+      }
+      throw error;
+    }
+  },
+);
+
+projectRouter.get(
+  "/:id/timeline",
+  requireAuthenticated,
+  requirePermission("project.read"),
+  requirePermission("project.timeline.read"),
+  async (req, res) => {
+    try {
+      noStore(res);
+      const actor = req.actor;
+      if (!actor) return;
+      const unknown = Object.keys(req.query).filter((key) => !TIMELINE_QUERY_KEYS.includes(key as (typeof TIMELINE_QUERY_KEYS)[number]));
+      const repeated = Object.values(req.query).some((value) => Array.isArray(value));
+      if (unknown.length > 0 || repeated) {
+        res.status(400).json(failure("VALIDATION_ERROR", "request could not be completed", req.requestId));
+        return;
+      }
+      const parsed = timelineQuerySchema.safeParse(req.query);
+      if (!parsed.success) {
+        res.status(400).json(failure("VALIDATION_ERROR", "request could not be completed", req.requestId));
+        return;
+      }
+      const result = await getProjectTimeline(actor, routeId(req.params.id), parsed.data);
+      if (!result.ok) {
+        sendFailure(res, req, result);
+        return;
+      }
+      res.status(200).json(success({ timeline: result.timeline }, req.requestId));
+    } catch (error) {
+      if (error instanceof TimelineDependencyError) {
+        res.status(503).json(failure("SERVICE_UNAVAILABLE", "sign-in is temporarily unavailable", req.requestId));
+        return;
+      }
+      throw error;
+    }
+  },
+);
+
+projectRouter.get(
+  "/:id/dependencies",
+  requireAuthenticated,
+  requirePermission("project.read"),
+  requirePermission("project.timeline.read"),
+  async (req, res) => {
+    try {
+      noStore(res);
+      const actor = req.actor;
+      if (!actor) return;
+      const unknown = Object.keys(req.query).filter((key) => !DEPENDENCY_LIST_KEYS.includes(key as (typeof DEPENDENCY_LIST_KEYS)[number]));
+      if (unknown.length > 0 || Object.values(req.query).some((value) => Array.isArray(value))) {
+        res.status(400).json(failure("VALIDATION_ERROR", "request could not be completed", req.requestId));
+        return;
+      }
+      const parsed = dependencyListQuerySchema.safeParse(req.query);
+      if (!parsed.success) {
+        res.status(400).json(failure("VALIDATION_ERROR", "request could not be completed", req.requestId));
+        return;
+      }
+      const result = await listProjectDependencies(actor, routeId(req.params.id), parsed.data);
+      if (!result.ok) {
+        sendFailure(res, req, result);
+        return;
+      }
+      res.status(200).json(success(result.dependencies, req.requestId));
+    } catch (error) {
+      if (error instanceof DependencyLinkError) {
+        res.status(503).json(failure("SERVICE_UNAVAILABLE", "sign-in is temporarily unavailable", req.requestId));
+        return;
+      }
+      throw error;
+    }
+  },
+);
+
+projectRouter.get(
+  "/:id/dependencies/candidates",
+  requireAuthenticated,
+  requirePermission("project.update"),
+  async (req, res) => {
+    try {
+      noStore(res);
+      const actor = req.actor;
+      if (!actor) return;
+      const unknown = Object.keys(req.query).filter((key) => !DEPENDENCY_CANDIDATE_KEYS.includes(key as (typeof DEPENDENCY_CANDIDATE_KEYS)[number]));
+      if (unknown.length > 0 || Object.values(req.query).some((value) => Array.isArray(value))) {
+        res.status(400).json(failure("VALIDATION_ERROR", "request could not be completed", req.requestId));
+        return;
+      }
+      const parsed = dependencyCandidateQuerySchema.safeParse(req.query);
+      if (!parsed.success) {
+        res.status(400).json(failure("VALIDATION_ERROR", "request could not be completed", req.requestId));
+        return;
+      }
+      const result = await searchDependencyCandidates(actor, routeId(req.params.id), parsed.data);
+      if (!result.ok) {
+        sendFailure(res, req, result);
+        return;
+      }
+      res.status(200).json(success({ candidates: result.candidates }, req.requestId));
+    } catch (error) {
+      if (error instanceof DependencyLinkError) {
+        res.status(503).json(failure("SERVICE_UNAVAILABLE", "sign-in is temporarily unavailable", req.requestId));
+        return;
+      }
+      throw error;
+    }
+  },
+);
+
+projectRouter.post(
+  "/:id/dependencies",
+  requireAuthenticated,
+  requirePermission("project.update"),
+  async (req, res) => {
+    try {
+      noStore(res);
+      const actor = req.actor;
+      if (!actor) return;
+      if (!isJsonContentType(req)) {
+        res.status(415).json(failure("UNSUPPORTED_MEDIA", "JSON body is required", req.requestId));
+        return;
+      }
+      const parsed = dependencyCreateSchema.safeParse(req.body);
+      if (!parsed.success) {
+        res.status(400).json(failure("VALIDATION_ERROR", "request could not be completed", req.requestId));
+        return;
+      }
+      const result = await addProjectDependency(actor, routeId(req.params.id), parsed.data, req.requestId);
+      if (!result.ok) {
+        sendFailure(res, req, result);
+        return;
+      }
+      res.status(201).json(success({ link: result.link, graphRevision: result.graphRevision }, req.requestId));
+    } catch (error) {
+      if (error instanceof DependencyLinkError) {
+        res.status(503).json(failure("SERVICE_UNAVAILABLE", "sign-in is temporarily unavailable", req.requestId));
+        return;
+      }
+      throw error;
+    }
+  },
+);
+
+projectRouter.delete(
+  "/:id/dependencies/:dependencyId",
+  requireAuthenticated,
+  requirePermission("project.update"),
+  async (req, res) => {
+    try {
+      noStore(res);
+      const actor = req.actor;
+      if (!actor) return;
+      if (!isJsonContentType(req)) {
+        res.status(415).json(failure("UNSUPPORTED_MEDIA", "JSON body is required", req.requestId));
+        return;
+      }
+      const parsed = dependencyRemoveSchema.safeParse(req.body);
+      if (!parsed.success) {
+        res.status(400).json(failure("VALIDATION_ERROR", "request could not be completed", req.requestId));
+        return;
+      }
+      const result = await removeProjectDependency(actor, routeId(req.params.id), routeId(req.params.dependencyId), parsed.data, req.requestId);
+      if (!result.ok) {
+        sendFailure(res, req, result);
+        return;
+      }
+      res.status(200).json(success({ removedId: result.removedId, graphRevision: result.graphRevision }, req.requestId));
+    } catch (error) {
+      if (error instanceof DependencyLinkError) {
         res.status(503).json(failure("SERVICE_UNAVAILABLE", "sign-in is temporarily unavailable", req.requestId));
         return;
       }

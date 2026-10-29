@@ -16,6 +16,7 @@ import { classifyEditError } from "@/lib/projects/edit-outcome";
 import { getProjectCopy, projectReadMessage } from "@/lib/projects/messages";
 import { getReviewCopy } from "@/lib/projects/review-messages";
 import { geometrySummary, lkrBudgetLabel, projectCoreQueryKey, safeListReturn, utcDateLabel, utcStampLabel } from "@/lib/projects/overview-format";
+import { canLinkTimeline } from "@/lib/projects/timeline-view";
 import type { ProjectDetail, ProjectLocation } from "@/lib/projects/types";
 
 function useAuthPart(read: () => string, server: string): string {
@@ -43,6 +44,7 @@ function OverviewBody({
   pending,
   notice,
   reviewLabel,
+  showTimeline,
   onTransition,
 }: {
   project: ProjectDetail;
@@ -51,6 +53,7 @@ function OverviewBody({
   pending: boolean;
   notice: string | null;
   reviewLabel: string;
+  showTimeline: boolean;
   onTransition: (action: "SUBMIT" | "HOLD" | "RESUME" | "REOPEN", reason?: string) => void;
 }) {
   const [reason, setReason] = useState("");
@@ -74,6 +77,7 @@ function OverviewBody({
       <p role="note">{copy.overviewOnly}</p>
       <p><Link className="auth-access-button" href={`/projects/${project.id}/milestones`}>{copy.milestones}</Link></p>
       <p><Link className="auth-access-button" href={`/projects/${project.id}/progress`}>{copy.physicalProgress}</Link></p>
+      {showTimeline ? <p><Link className="auth-access-button" href={`/projects/${project.id}/timeline`}>{copy.timeline}</Link></p> : null}
       <p role="note">{copy.readOnly}</p>
       {project.status === "DRAFT" ? <p role="status">{copy.draftOverview}</p> : null}
       {project.status === "SUBMITTED" || project.status === "UNDER_REVIEW" ? <p role="note">{copy.waitingReview}</p> : null}
@@ -255,6 +259,7 @@ export function ProjectOverviewClient({ id }: { id: string }) {
           pending={transition.isPending}
           notice={notice}
           reviewLabel={getReviewCopy(locale).openReview}
+          showTimeline={canLinkTimeline(roleKey)}
           onTransition={(action, reason) => {
             setNotice(null);
             transition.mutate({ action, reason });
