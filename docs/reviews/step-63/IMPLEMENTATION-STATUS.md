@@ -11,8 +11,8 @@ Privacy-safe activity history is implemented for the existing timeline audience.
 - `GET /api/v1/projects/:id/activity` requires a live session, `project.read`, and `project.timeline.read`. No `project.activity.read` permission was added. Inspector, contractor, and citizen stay outside this route.
 - Query: `limit` 1–50 default 20, `cursor`, `category` `all|project|milestone|progress|dependency`. Unknown or repeated keys are 400. Response is `no-store`.
 - Rows are allowlisted persisted actions only. Unknown actions are omitted. Actor text is “Authorized staff” or “System event”. Notes, reasons, emails, IP, user agent, raw snapshots, and money are not returned.
-- A dependency title is included only when the prerequisite is inside the caller’s project read scope. Otherwise the row says the prerequisite is outside the sign-in.
-- A progress report row is added only when it is not the same percent within 5 seconds of a `progress.reported` audit. `createdAt` is used only when no `project.created` audit exists and the source query was not truncated.
+- A progress report is hidden only when one unused `progress.reported` audit has the same percent and the same timestamp. A later report with the same percent stays visible and is still not inspection verification. `createdAt` is used only when no `project.created` audit exists and the source query was not truncated.
+- A dependency title is read from `newValue.prerequisiteProjectId` or, for a removal, `oldValue.prerequisiteProjectId`. The identifier is not returned. A title or code is returned only when that project is inside the caller's read scope.
 - Ordering is timestamp descending, then id descending. Source reads stop at 200 rows. A truncated source is `partial_source_coverage`.
 - The GET path does not write audit, project, milestone, progress, dependency, or graph-lock documents.
 
@@ -30,6 +30,13 @@ Isolated API `http://localhost:4017` and web `http://localhost:3007`. Synthetic 
 
 Screenshots: `docs/reviews/step-63/evidence/`. Demo listeners on 3007 and 4017 were stopped. Ports 3000 and 4010 were left running.
 
+Correction browser, 2026-10-30, disposable Mongo on `http://localhost:4018` and web `http://localhost:3008`, project `6ae3c2908951be3b567df23c`:
+
+- The manager signed in, opened activity, and used Load more. The older created, milestone, and progress rows appeared, status stayed ACTIVE at 100 percent, and the manager email was absent.
+- At width 320, `scrollWidth` stayed 320.
+- Sign-out returned the same URL to `/login` with no earlier rows. The foreign officer then saw “outside your scope” and did not see “Deck pour”, “Project draft updated”, or the project title.
+- Those listeners were stopped. Ports 3000 and 4010 were still listening.
+
 ## Checks
 
 | Command | Result |
@@ -42,10 +49,12 @@ Screenshots: `docs/reviews/step-63/evidence/`. Demo listeners on 3007 and 4017 w
 | `npm run build` | exit 0 |
 | `git diff --check` | exit 0 |
 
+Correction rerun on 2026-10-30, local only: API 337 exit 0, web 184 exit 0, type-check exit 0 after restoring the `ActivityViewItem` import, lint exit 0 with the same two warnings, build exit 0. GitHub Actions has not run these uncommitted fixes.
+
 ## Limitations
 
 - Sinhala and Tamil event titles are still the English draft keys. Native review was not run.
 - History is the allowlisted sources, capped at 200 rows per source. It is not a complete audit export.
 - Stored payment rows are omitted. A stored PAID value is not a bank settlement.
 - Cross-agency prerequisites stay hidden. Contractor user linkage and Step 51 grant races remain outside this step.
-- No Atlas index was created. No commit, push, pull request, or deployment was made.
+- No Atlas index was created. The correction is uncommitted. PR #112 is not merged.
