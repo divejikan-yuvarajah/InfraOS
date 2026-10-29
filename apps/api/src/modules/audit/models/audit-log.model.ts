@@ -22,6 +22,8 @@ const snapshotSchema = new Schema({
   roleId: reference("Role", false),
   agencyId: reference("Agency", false),
   managerId: reference("User", false),
+  dependencyId: reference("ProjectDependency", false),
+  prerequisiteProjectId: reference("Project", false),
   contractorId: reference("Contractor", false),
   physicalProgress: percentage(),
   financialProgress: percentage(),
