@@ -81,6 +81,7 @@ export function ProjectTimelineClient({ id }: { id: string }) {
       </div>
       <p role="note">{copy.nativeReview}</p>
       <p><Link className="auth-access-button" href={`/projects/${id}/overview`}>{copy.back}</Link></p>
+      <p><Link className="auth-access-button" href={`/projects/${id}/activity`}>{copy.activityLink}</Link></p>
       {timelineQuery.isLoading ? <p role="status">{copy.loading}</p> : null}
       {error ? <p role="alert">{error}</p> : null}
       {showBody && timeline ? (
