@@ -78,6 +78,7 @@ function OverviewBody({
       <p><Link className="auth-access-button" href={`/projects/${project.id}/milestones`}>{copy.milestones}</Link></p>
       <p><Link className="auth-access-button" href={`/projects/${project.id}/progress`}>{copy.physicalProgress}</Link></p>
       {showTimeline ? <p><Link className="auth-access-button" href={`/projects/${project.id}/timeline`}>{copy.timeline}</Link></p> : null}
+      {showTimeline ? <p><Link className="auth-access-button" href={`/projects/${project.id}/activity`}>{copy.activity}</Link></p> : null}
       <p role="note">{copy.readOnly}</p>
       {project.status === "DRAFT" ? <p role="status">{copy.draftOverview}</p> : null}
       {project.status === "SUBMITTED" || project.status === "UNDER_REVIEW" ? <p role="note">{copy.waitingReview}</p> : null}

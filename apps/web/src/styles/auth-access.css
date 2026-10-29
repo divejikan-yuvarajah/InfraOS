@@ -501,3 +501,32 @@
   width: min(100%, 24rem);
   min-height: 2.5rem;
 }
+
+.project-activity-list,
+.project-activity-list ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.project-activity-card {
+  overflow-wrap: anywhere;
+  border-left: 3px solid var(--infra-maroon, #8c1f28);
+}
+
+.project-activity-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.project-activity-toolbar button,
+.project-activity-card time {
+  min-height: 2.75rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .project-activity-card {
+    transition: none;
+  }
+}
