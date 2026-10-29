@@ -51,12 +51,13 @@ async function actor(email: string, role: SystemRoleKey, agencyId: unknown) {
   return { user, token: (await signAccessToken(user._id.toString(), 1)).token, role: roleDoc };
 }
 
-async function audit(action: string, resourceType: "PROJECT" | "MILESTONE", resourceId: unknown, at: string, userId: unknown, snapshot?: Record<string, unknown>) {
+async function audit(action: string, resourceType: "PROJECT" | "MILESTONE", resourceId: unknown, at: string, userId: unknown, snapshot?: Record<string, unknown>, oldSnapshot?: Record<string, unknown>) {
   const [row] = await AuditLog.create([{
     userId,
     action,
     resourceType,
     resourceId,
+    oldValue: oldSnapshot,
     newValue: snapshot,
     timestamp: new Date(at),
     requestId: "activity-test",
@@ -111,6 +112,18 @@ describe("step 63 project activity", { timeout: 120_000 }, () => {
       financialProgress: 40,
       createdBy: manager.user._id,
     });
+    const removedVisible = await Project.create({
+      projectCode: "INF-ACT-6303",
+      title: "Visible removed prerequisite",
+      projectType: "ROAD",
+      agencyId: child._id,
+      managerId: manager.user._id,
+      budget: { amountMinor: 1, currency: "LKR" },
+      status: "ACTIVE",
+      physicalProgress: 0,
+      financialProgress: 0,
+      createdBy: manager.user._id,
+    });
     const sibling = await Project.create({
       projectCode: "INF-ACT-6302",
       title: "Visible prerequisite",
@@ -158,7 +171,8 @@ describe("step 63 project activity", { timeout: 120_000 }, () => {
     await audit("milestone.status_changed", "MILESTONE", milestone._id, "2026-07-04T00:00:00.000Z", manager.user._id, { status: "DELAYED" });
     await audit("milestone.status_changed", "MILESTONE", foreignMilestone._id, "2026-07-04T01:00:00.000Z", manager.user._id, { status: "COMPLETED" });
     await audit("project.dependency_linked", "PROJECT", project._id, "2026-07-05T00:00:00.000Z", manager.user._id, { prerequisiteProjectId: sibling._id });
-    await audit("project.dependency_removed", "PROJECT", project._id, "2026-07-06T00:00:00.000Z", manager.user._id, { prerequisiteProjectId: hidden._id });
+    await audit("project.dependency_removed", "PROJECT", project._id, "2026-07-06T00:00:00.000Z", manager.user._id, { agencyId: child._id }, { prerequisiteProjectId: hidden._id });
+    await audit("project.dependency_removed", "PROJECT", project._id, "2026-07-06T01:00:00.000Z", manager.user._id, { agencyId: child._id }, { prerequisiteProjectId: removedVisible._id });
     await audit("project.unknown_action", "PROJECT", project._id, "2026-07-07T00:00:00.000Z", manager.user._id, { status: "ACTIVE" });
     await audit("project.updated", "PROJECT", project._id, same, manager.user._id, { status: "DRAFT" });
     await ProgressReport.create({
@@ -168,7 +182,16 @@ describe("step 63 project activity", { timeout: 120_000 }, () => {
       previousPercent: 0,
       note: "private inspection note",
       reporterUserId: manager.user._id,
-      reportedAt: new Date("2026-07-03T00:00:01.000Z"),
+      reportedAt: new Date("2026-07-03T00:00:00.000Z"),
+    });
+    await ProgressReport.create({
+      projectId: project._id,
+      sequence: 2,
+      reportedPercent: 100,
+      previousPercent: 100,
+      note: "second private note",
+      reporterUserId: manager.user._id,
+      reportedAt: new Date("2026-07-03T00:00:02.000Z"),
     });
     const before = await AuditLog.countDocuments({});
     const response = await request(app).get(`/api/v1/projects/${project._id.toString()}/activity?limit=20`).set("Authorization", `Bearer ${manager.token}`);
@@ -178,7 +201,11 @@ describe("step 63 project activity", { timeout: 120_000 }, () => {
     expect(body).not.toContain("Secret activity title");
     expect(body).not.toContain("private reason");
     expect(body).not.toContain("private inspection note");
+    expect(body).not.toContain("second private note");
     expect(body).not.toContain("Hidden foreign target");
+    expect(body).not.toContain(hidden._id.toString());
+    expect(body).not.toContain(removedVisible._id.toString());
+    expect(body).not.toContain("prerequisiteProjectId");
     expect(body).not.toContain("Foreign pier");
     expect(body).not.toContain("990000");
     expect(body).not.toContain("pm63@example.com");
@@ -191,8 +218,13 @@ describe("step 63 project activity", { timeout: 120_000 }, () => {
     expect(kinds).toContain("MILESTONE_STATUS_CHANGED");
     expect(kinds).toContain("DEPENDENCY_LINKED");
     expect(kinds).toContain("DEPENDENCY_REMOVED");
-    expect(kinds).not.toContain("PROGRESS_RECORDED");
+    expect(kinds.filter((kind: string) => kind === "PROGRESS_RECORDED")).toHaveLength(1);
     expect(body).toContain("Visible prerequisite");
+    expect(body).toContain("Visible removed prerequisite");
+    const removed = response.body.data.activities.filter((entry: { kind: string }) => entry.kind === "DEPENDENCY_REMOVED");
+    expect(removed).toHaveLength(2);
+    expect(removed.some((entry: { detail: { prerequisiteVisibility?: string; title?: string } }) => entry.detail?.prerequisiteVisibility === "restricted" && !entry.detail.title)).toBe(true);
+    expect(removed.some((entry: { detail: { prerequisiteVisibility?: string; projectCode?: string } }) => entry.detail?.prerequisiteVisibility === "visible" && entry.detail.projectCode === "INF-ACT-6303")).toBe(true);
     expect(body).toContain("Deck pour");
     expect(body).toContain("reported_not_verified");
     expect(body).not.toContain("project.unknown_action");

@@ -8,7 +8,8 @@ Date: 2026-10-30 (local). Reviewer: same agent that implemented Step 63. This is
 | --- | --- |
 | Step 63 — Project Activity History | **APPROVE** for privacy-safe, scoped activity history |
 | Production readiness | **BLOCKED** |
-| G1–G6 | **NOT RUN** |
+| G1–G5 | Done earlier for PR #112. This correction is not committed. |
+| G6 | **NOT RUN** |
 
 Same-agent **APPROVE** does not authorize staging, commit, push, merge, or deployment. G6 would need a separate approval after any later G1–G5.
 
@@ -60,6 +61,27 @@ Chosen behavior:
 ## Git observation
 
 Branch `feature/projecttrace-activity-history` was created from `origin/development` at `c0ff470`. Step 63 is uncommitted. Unrelated dirty production-readiness and earlier review documents, plus untracked `Prompts/`, were left unstaged. Ports 3000 and 4010 were not stopped.
+
+## Correction pass (local, not GitHub CI)
+
+HEAD after a fast-forward is `22b675d58eba63cf3f603eec791357af52a6b67d`. That Copilot commit re-signs the surviving Super Admin after the disable race and still asserts officer epoch 1, refresh revocation, and 401 for the old officer token. It does not weaken those checks. No further change was made to `admin-users.test.ts`.
+
+Local fixes, not yet on the remote branch:
+
+- Activity pages reset when the user, epoch, role, or project changes, and Load more ignores a cursor from another scope. Signing out hides the previous list.
+- Removal audits store the prerequisite id in `oldValue`. The activity reader uses that id only to decide visibility. Visible removals show code and title. Restricted removals do not show either, or the id.
+- Progress-report dedupe matches one audit to one report at the same percent and exact timestamp. A second report two seconds later with the same percent is returned as a recorded source, not an audit, and its note is omitted.
+
+| Command | Local result | GitHub Actions |
+| --- | --- | --- |
+| `npm run test:api` | 40 files, 337 tests, exit 0 | Not run for these uncommitted fixes |
+| `npm run test:web` | 44 files, 184 tests, exit 0 | Not run for these uncommitted fixes |
+| `npm run type-check` | First web failure: missing `ActivityViewItem` import. Fixed. Rerun exit 0 | Not run for these uncommitted fixes |
+| `npm run lint` | Exit 0. Same two existing web warnings | Not run for these uncommitted fixes |
+| `npm run build` | Exit 0 | Not run for these uncommitted fixes |
+| `git diff --check` | Exit 0 | — |
+
+Browser correction: `http://localhost:3008/projects/6ae3c2908951be3b567df23c/activity` against `http://localhost:4018`. Load more, sign-out with no retained rows, foreign denial without the earlier titles, and width 320 with no horizontal overflow. Native Sinhala and Tamil review remains **NOT RUN**.
 
 ## Still blocked
 

@@ -24,6 +24,35 @@ export function activityQueryKey(epoch: string, userId: string, roleKey: string,
   return ["activity", epoch, userId, roleKey, projectId, category, cursor] as const;
 }
 
+export function activityScope(epoch: string, userId: string, roleKey: string, projectId: string): string {
+  return [epoch, userId, roleKey, projectId].join(":");
+}
+
+export type ActivityPageState = {
+  scope: string;
+  cursor?: string;
+  pages: ActivityViewItem[];
+};
+
+export function activityPageState(scope: string): ActivityPageState {
+  return { scope, pages: [] };
+}
+
+/** Drop accumulated rows when the signed-in person, epoch, role, or project changes. */
+export function activityPagesForScope(state: ActivityPageState, scope: string): ActivityPageState {
+  return state.scope === scope ? state : activityPageState(scope);
+}
+
+export function visibleActivityItems(state: ActivityPageState, scope: string, signedIn: boolean, current: ActivityViewItem[]): ActivityViewItem[] {
+  if (!signedIn || state.scope !== scope) return [];
+  return state.cursor ? [...state.pages, ...current] : current;
+}
+
+export function rememberActivityPage(state: ActivityPageState, scope: string, shown: ActivityViewItem[], nextCursor: string | null): ActivityPageState {
+  if (state.scope !== scope || !nextCursor) return state;
+  return { scope, cursor: nextCursor, pages: shown };
+}
+
 export function formatActivityWhen(iso: string, locale: AuthLocale): string {
   const tag = locale === "si" ? "si-LK" : locale === "ta" ? "ta-LK" : "en-LK";
   return new Intl.DateTimeFormat(tag, { dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Colombo" }).format(new Date(iso));
