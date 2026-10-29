@@ -73,6 +73,7 @@ function OverviewBody({
       </header>
       <p role="note">{copy.overviewOnly}</p>
       <p><Link className="auth-access-button" href={`/projects/${project.id}/milestones`}>{copy.milestones}</Link></p>
+      <p><Link className="auth-access-button" href={`/projects/${project.id}/progress`}>{copy.physicalProgress}</Link></p>
       <p role="note">{copy.readOnly}</p>
       {project.status === "DRAFT" ? <p role="status">{copy.draftOverview}</p> : null}
       {project.status === "SUBMITTED" || project.status === "UNDER_REVIEW" ? <p role="note">{copy.waitingReview}</p> : null}
