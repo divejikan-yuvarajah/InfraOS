@@ -60,7 +60,10 @@
 
 .project-milestone-form label,
 .project-milestone-form input,
-.project-milestone-form textarea {
+.project-milestone-form textarea,
+.project-progress-form label,
+.project-progress-form input,
+.project-progress-form textarea {
   display: block;
   width: 100%;
   max-width: 100%;
@@ -68,12 +71,36 @@
 }
 
 .project-milestone-form input,
-.project-milestone-form textarea {
+.project-milestone-form textarea,
+.project-progress-form input,
+.project-progress-form textarea {
   margin: 0.25rem 0 0.75rem;
 }
 
-.project-milestone-list {
+.project-milestone-list,
+.project-progress-list {
   overflow-wrap: anywhere;
+}
+
+.progress-compare-track {
+  height: 0.75rem;
+  max-width: 100%;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--app-line);
+}
+
+.progress-compare-fill-physical,
+.progress-compare-fill-financial {
+  height: 100%;
+}
+
+.progress-compare-fill-physical {
+  background: var(--infra-maroon);
+}
+
+.progress-compare-fill-financial {
+  background: var(--infra-green);
 }
 
 .project-milestone-list button {
