@@ -9,7 +9,7 @@ import { getAuthEpoch, getMemoryAccessToken, getMemorySession, subscribeAuth } f
 import type { AuthLocale } from "@/lib/auth/types";
 import { fetchProjectActivity } from "@/lib/projects/activity-api";
 import { activityTitle, getActivityCopy } from "@/lib/projects/activity-messages";
-import { activityQueryKey, formatActivityWhen, type ActivityFilter, type ActivityViewItem } from "@/lib/projects/activity-view";
+import { activityPageState, activityPagesForScope, activityQueryKey, activityScope, formatActivityWhen, rememberActivityPage, visibleActivityItems, type ActivityFilter, type ActivityPageState, type ActivityViewItem } from "@/lib/projects/activity-view";
 import { classifyEditError } from "@/lib/projects/edit-outcome";
 
 function useAuthPart(read: () => string): string {
@@ -42,22 +42,24 @@ function detailText(item: ActivityViewItem, copy: ReturnType<typeof getActivityC
 export function ProjectActivityClient({ id }: { id: string }) {
   const [locale, setLocale] = useState<AuthLocale>("en");
   const [category, setCategory] = useState<ActivityFilter>("all");
-  const [cursor, setCursor] = useState<string | undefined>(undefined);
-  const [pages, setPages] = useState<ActivityViewItem[]>([]);
   const copy = getActivityCopy(locale);
   const epoch = useAuthPart(() => String(getAuthEpoch()));
   const userId = useAuthPart(() => getMemorySession()?.user.id ?? "");
   const roleKey = useAuthPart(() => getMemorySession()?.user.roleKey ?? "");
   const signedIn = useAuthPart(() => (getMemoryAccessToken() ? "yes" : "no"));
+  const scope = activityScope(epoch, userId, roleKey, id);
+  const [pageState, setPageState] = useState<ActivityPageState>(() => activityPageState(scope));
+  if (pageState.scope !== scope) setPageState(activityPageState(scope));
+  const pages = activityPagesForScope(pageState, scope);
   const activityQuery = useQuery({
-    queryKey: activityQueryKey(epoch, userId, roleKey, id, category, cursor ?? ""),
+    queryKey: activityQueryKey(epoch, userId, roleKey, id, category, pages.cursor ?? ""),
     enabled: signedIn === "yes" && Boolean(userId),
     retry: false,
-    queryFn: () => fetchProjectActivity(id, category, cursor),
+    queryFn: () => fetchProjectActivity(id, category, pages.cursor),
   });
   const error = activityQuery.error ? noticeFor(classifyEditError(activityQuery.error), copy) : null;
-  const current = activityQuery.data?.activities ?? [];
-  const items = cursor ? [...pages, ...current] : current;
+  const current = activityQuery.data?.projectId === id ? activityQuery.data.activities : [];
+  const items = visibleActivityItems(pages, scope, signedIn === "yes", current);
 
   return (
     <StaffWorkspaceShell title={copy.title} description={copy.description} wide>
@@ -71,7 +73,7 @@ export function ProjectActivityClient({ id }: { id: string }) {
       <p><Link className="auth-access-button" href={`/projects/${id}/timeline`}>{copy.timeline}</Link></p>
       {activityQuery.isLoading ? <p role="status">{copy.loading}</p> : null}
       {error ? <p role="alert">{error}</p> : null}
-      {activityQuery.data && !error ? (
+      {signedIn === "yes" && activityQuery.data?.projectId === id && !error ? (
         <>
           <p role="note">{copy.provenance}</p>
           <p role="note">{copy.notCompletion}</p>
@@ -82,7 +84,7 @@ export function ProjectActivityClient({ id }: { id: string }) {
           {activityQuery.data.coverage === "partial_source_coverage" ? <p role="status">{copy.partial}</p> : null}
           <div className="project-activity-toolbar" role="group" aria-label={copy.filter}>
             {(["all", "project", "milestone", "progress", "dependency"] as const).map((value) => (
-              <button key={value} type="button" className="auth-access-button" aria-pressed={category === value} onClick={() => { setCategory(value); setCursor(undefined); setPages([]); }}>
+              <button key={value} type="button" className="auth-access-button" aria-pressed={category === value} onClick={() => { setCategory(value); setPageState(activityPageState(scope)); }}>
                 {copy[value]}
               </button>
             ))}
@@ -106,8 +108,7 @@ export function ProjectActivityClient({ id }: { id: string }) {
               type="button"
               className="auth-access-button"
               onClick={() => {
-                setPages(items);
-                setCursor(activityQuery.data?.nextCursor ?? undefined);
+                setPageState((state) => rememberActivityPage(activityPagesForScope(state, scope), scope, items, activityQuery.data?.nextCursor ?? null));
               }}
             >
               {copy.loadMore}

@@ -94,8 +94,13 @@ type AuditRow = {
   action: string;
   timestamp?: Date;
   userId?: mongoose.Types.ObjectId | null;
+  oldValue?: unknown;
   newValue?: unknown;
 };
+
+function prerequisiteTargetId(row: AuditRow): string | null {
+  return objectId(snapshotField(row.newValue, "prerequisiteProjectId")) ?? objectId(snapshotField(row.oldValue, "prerequisiteProjectId"));
+}
 
 function itemFromAudit(row: AuditRow, detail: ActivityItem["detail"]): ActivityItem | null {
   const mapped = classifyActivityAction(row.action);
@@ -124,7 +129,7 @@ export async function getProjectActivity(actor: AuthenticatedActor, projectId: s
       AuditLog.find({ resourceType: "PROJECT", resourceId: project._id, action: { $in: [...PROJECT_ACTIVITY_ACTIONS] } })
         .sort({ timestamp: -1, _id: -1 })
         .limit(ACTIVITY_SOURCE_CAP + 1)
-        .select("+newValue action timestamp userId"),
+        .select("+oldValue +newValue action timestamp userId"),
       milestoneIds.length === 0
         ? Promise.resolve([])
         : AuditLog.find({ resourceType: "MILESTONE", resourceId: { $in: milestoneIds }, action: { $in: [...MILESTONE_ACTIVITY_ACTIONS] } })
@@ -140,7 +145,7 @@ export async function getProjectActivity(actor: AuthenticatedActor, projectId: s
     const targetIds = [...new Set(kept.flatMap((row) => {
       const mapped = classifyActivityAction(row.action);
       if (mapped?.category !== "dependency") return [];
-      const targetId = objectId(snapshotField(row.newValue, "prerequisiteProjectId"));
+      const targetId = prerequisiteTargetId(row);
       return targetId ? [targetId] : [];
     }))];
     const visibleTargets = targetIds.length === 0
@@ -148,7 +153,7 @@ export async function getProjectActivity(actor: AuthenticatedActor, projectId: s
       : await Project.find({ $and: [readFilter, { _id: { $in: targetIds } }] }).select("projectCode title");
     const targets = new Map(visibleTargets.map((row) => [row._id.toString(), row]));
     const items: ActivityItem[] = [];
-    const progressTimes: Array<{ at: number; percent: number | null }> = [];
+    const progressMatches = new Map<string, number>();
     for (const row of kept) {
       const mapped = classifyActivityAction(row.action);
       if (!mapped) continue;
@@ -156,9 +161,12 @@ export async function getProjectActivity(actor: AuthenticatedActor, projectId: s
       if (mapped.category === "progress") {
         const reportedPercent = percentToken(snapshotField(row.newValue, "physicalProgress"));
         detail = { reportedPercent, meaning: "reported_not_verified", completesProject: false };
-        progressTimes.push({ at: row.timestamp instanceof Date ? row.timestamp.getTime() : 0, percent: reportedPercent });
+        if (reportedPercent !== null && row.timestamp instanceof Date) {
+          const key = `${reportedPercent}@${row.timestamp.getTime()}`;
+          progressMatches.set(key, (progressMatches.get(key) ?? 0) + 1);
+        }
       } else if (mapped.category === "dependency") {
-        const targetId = objectId(snapshotField(row.newValue, "prerequisiteProjectId"));
+        const targetId = prerequisiteTargetId(row);
         const visible = targetId ? targets.get(targetId) : undefined;
         detail = visible
           ? { scheduling: "informational", prerequisiteVisibility: "visible", projectCode: visible.projectCode, title: visible.title }
@@ -180,9 +188,13 @@ export async function getProjectActivity(actor: AuthenticatedActor, projectId: s
       if (item) items.push(item);
     }
     for (const report of reports.slice(0, ACTIVITY_SOURCE_CAP)) {
-      const at = report.reportedAt instanceof Date ? report.reportedAt.getTime() : 0;
-      const duplicate = progressTimes.some((event) => event.percent === report.reportedPercent && Math.abs(event.at - at) < 5000);
-      if (duplicate || !(report.reportedAt instanceof Date)) continue;
+      if (!(report.reportedAt instanceof Date)) continue;
+      const key = `${report.reportedPercent}@${report.reportedAt.getTime()}`;
+      const matched = progressMatches.get(key) ?? 0;
+      if (matched > 0) {
+        progressMatches.set(key, matched - 1);
+        continue;
+      }
       items.push({
         id: `report:${report._id.toString()}`,
         kind: "PROGRESS_RECORDED",
