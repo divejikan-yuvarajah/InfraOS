@@ -13,6 +13,8 @@ import { DEPENDENCY_CANDIDATE_KEYS, DEPENDENCY_LIST_KEYS, dependencyCandidateQue
 import { DependencyLinkError, addProjectDependency, listProjectDependencies, removeProjectDependency, searchDependencyCandidates } from "./dependency.service.js";
 import { ACTIVITY_QUERY_KEYS, activityQuerySchema } from "./activity.schema.js";
 import { ActivityDependencyError, getProjectActivity } from "./activity.service.js";
+import { dashboardQuerySchema } from "./dashboard.schema.js";
+import { DashboardDependencyError, getProjectDashboard } from "./dashboard.service.js";
 import { TIMELINE_QUERY_KEYS, timelineQuerySchema } from "./timeline.schema.js";
 import { TimelineDependencyError, getProjectTimeline } from "./timeline.service.js";
 import { projectCreateSchema, projectListQuerySchema, projectPatchSchema, projectReviewQueueQuerySchema, projectReviewSchema, projectTransitionSchema } from "./projects.schema.js";
@@ -102,6 +104,36 @@ projectRouter.get("/review-queue", requireAuthenticated, requirePermission("proj
     res.status(200).json(success(result.list, req.requestId));
   } catch (error) {
     if (error instanceof ProjectDependencyError) {
+      res.status(503).json(failure("SERVICE_UNAVAILABLE", "sign-in is temporarily unavailable", req.requestId));
+      return;
+    }
+    throw error;
+  }
+});
+
+projectRouter.get("/dashboard", requireAuthenticated, requirePermission("project.dashboard.read"), async (req, res) => {
+  try {
+    noStore(res);
+    const actor = req.actor;
+    if (!actor) return;
+    const repeated = Object.values(req.query).some((value) => Array.isArray(value));
+    if (Object.keys(req.query).length > 0 || repeated) {
+      res.status(400).json(failure("VALIDATION_ERROR", "request could not be completed", req.requestId));
+      return;
+    }
+    const parsed = dashboardQuerySchema.safeParse(req.query);
+    if (!parsed.success) {
+      res.status(400).json(failure("VALIDATION_ERROR", "request could not be completed", req.requestId));
+      return;
+    }
+    const result = await getProjectDashboard(actor);
+    if (!result.ok) {
+      sendFailure(res, req, result);
+      return;
+    }
+    res.status(200).json(success(result.dashboard, req.requestId));
+  } catch (error) {
+    if (error instanceof DashboardDependencyError) {
       res.status(503).json(failure("SERVICE_UNAVAILABLE", "sign-in is temporarily unavailable", req.requestId));
       return;
     }

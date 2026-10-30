@@ -1,0 +1,5 @@
+{
+  "begin": 200,
+  "pm": "{\"success\":true,\"data\":{\"notices\":[{\"id\":\"6ae43127c9b783535dfcd58e\",\"type\":\"APPROVAL\",\"titleKey\":\"project.review_started\",\"isRead\":false,\"createdAt\":\"2026-10-30T05:54:47.932Z\",\"readAt\":null,\"project\":{\"id\":\"6ae43107c9b783535dfcd4f7\",\"projectCode\":\"INF-NOTE-6501\",\"title\":\"Synthetic notice road\",\"status\":\"UNDER_REVIEW\"}}],\"nextCursor\":null,\"unreadCount\":1},\"meta\":{\"requestId\":\"bf8eb9bb-ae1a-42ec-b2c5-eed70bcc7c14\"}}",
+  "reviewer": "{\"success\":true,\"data\":{\"notices\":[{\"id\":\"6ae43113c9b783535dfcd51b\",\"type\":\"APPROVAL\",\"titleKey\":\"project.submitted\",\"isRead\":false,\"createdAt\":\"2026-10-30T05:54:27.227Z\",\"readAt\":null,\"project\":{\"id\":\"6ae43107c9b783535dfcd4f7\",\"projectCode\":\"INF-NOTE-6501\",\"title\":\"Synthetic notice road\",\"status\":\"UNDER_REVIEW\"}}],\"nextCursor\":null,\"unreadCount\":1},\"meta\":{\"requestId\":\"84643289-c9f0-40a4-b530-2a64a7894204\"}}"
+}

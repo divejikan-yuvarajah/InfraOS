@@ -2,7 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import type { ReactNode } from "react";
+import { useSyncExternalStore, type ReactNode } from "react";
+import { useQuery } from "@tanstack/react-query";
+
+import { getAuthEpoch, getMemoryAccessToken, getMemorySession, subscribeAuth } from "@/lib/auth/state";
+import { fetchUnreadCount } from "@/lib/projects/notice-api";
+import { classifyEditError } from "@/lib/projects/edit-outcome";
 
 const NAV = [
   { href: "/dashboard", label: "Workspace" },
@@ -13,11 +18,16 @@ const NAV = [
   { href: "/admin/roles", label: "Roles" },
   { href: "/projects", label: "Projects" },
   { href: "/projects/reviews", label: "Reviews" },
+  { href: "/notifications", label: "Notices" },
 ] as const;
 
 function navCurrent(pathname: string, href: string): boolean {
   if (href === "/projects/reviews") return pathname === href || pathname.endsWith("/review");
   return pathname === href;
+}
+
+function useAuthPart(read: () => string): string {
+  return useSyncExternalStore(subscribeAuth, read, () => "");
 }
 
 export function StaffWorkspaceShell({
@@ -34,13 +44,23 @@ export function StaffWorkspaceShell({
   children: ReactNode;
 }) {
   const pathname = usePathname();
+  const epoch = useAuthPart(() => String(getAuthEpoch()));
+  const userId = useAuthPart(() => getMemorySession()?.user.id ?? "");
+  const roleKey = useAuthPart(() => getMemorySession()?.user.roleKey ?? "");
+  const signedIn = useAuthPart(() => (getMemoryAccessToken() ? "yes" : "no")) === "yes";
+  const unread = useQuery({
+    queryKey: ["notifications-count", epoch, userId, roleKey],
+    enabled: signedIn,
+    queryFn: () => fetchUnreadCount(),
+  });
+  const hideNotices = !signedIn || (unread.error ? classifyEditError(unread.error) === "denied" : false);
   return (
     <div data-infra-app className="auth-access-root">
       <header className="auth-access-main auth-access-header">
         <p className="auth-access-kicker">{kicker}</p>
         <nav className="auth-access-nav" aria-label="Staff workspace">
           <ul className="auth-access-nav-list">
-            {NAV.map((item) => (
+            {NAV.filter((item) => item.href !== "/notifications" || !hideNotices).map((item) => (
               <li key={item.href}>
                 <Link
                   href={item.href}
@@ -50,6 +70,9 @@ export function StaffWorkspaceShell({
                   aria-current={navCurrent(pathname, item.href) ? "page" : undefined}
                 >
                   {item.label}
+                  {item.href === "/notifications" && typeof unread.data === "number" ? (
+                    <span aria-live="polite"> {unread.data}</span>
+                  ) : null}
                 </Link>
               </li>
             ))}

@@ -12,6 +12,7 @@ import { milestoneTarget } from "./milestone.policy.js";
 import type { MilestoneCreateInput, MilestoneListQuery, MilestonePatchInput, MilestoneTransitionInput } from "./milestones.schema.js";
 import { Milestone } from "./models/milestone.model.js";
 import { Project } from "./models/project.model.js";
+import { notifyCommittedAudit } from "../notifications/notice.service.js";
 import type { MilestoneStatus } from "./project.constants.js";
 
 const WRITE_ELIGIBLE = new Set(["APPROVED", "ACTIVE"]);
@@ -152,7 +153,7 @@ async function writeAudit(
   previous?: { status: string; agencyId: mongoose.Types.ObjectId },
 ): Promise<void> {
   await milestoneHooks.beforeAudit();
-  await AuditLog.create(
+  const [row] = await AuditLog.create(
     [{
       userId: new mongoose.Types.ObjectId(actor.userId),
       action,
@@ -165,6 +166,15 @@ async function writeAudit(
     }],
     { session },
   );
+  if (!row) throw new MilestoneDependencyError();
+  await notifyCommittedAudit({
+    session,
+    auditId: row._id,
+    action,
+    resourceType: "MILESTONE",
+    resourceId: milestoneId,
+    actorId: actor.userId,
+  });
 }
 
 function countsOf(rows: { status: string }[]) {

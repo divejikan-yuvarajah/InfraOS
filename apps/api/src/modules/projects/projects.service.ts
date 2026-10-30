@@ -13,6 +13,7 @@ import { AdminLifecycleLock, AGENCY_HIERARCHY_LOCK } from "../identity/admin-use
 import { Role } from "../identity/models/role.model.js";
 import { User } from "../identity/models/user.model.js";
 import { Project } from "./models/project.model.js";
+import { notifyCommittedAudit } from "../notifications/notice.service.js";
 import type { ProjectCreateInput, ProjectListQuery, ProjectPatchInput, ProjectReviewInput, ProjectReviewQueueQuery, ProjectTransitionInput } from "./projects.schema.js";
 import { reviewNeedsReason, reviewSeparatesDuties, reviewTarget, type ReviewAction } from "./review.policy.js";
 import type { ProjectDetailDto, ProjectFailure, ProjectListDto, ProjectSummaryDto, ReviewDetailDto, ReviewQueueDto } from "./projects.types.js";
@@ -327,7 +328,7 @@ async function writeAudit(
   previous?: { status: string; agencyId: mongoose.Types.ObjectId },
 ): Promise<void> {
   await projectHooks.beforeAudit();
-  await AuditLog.create(
+  const [row] = await AuditLog.create(
     [
       {
         userId: new mongoose.Types.ObjectId(actor.userId),
@@ -342,6 +343,15 @@ async function writeAudit(
     ],
     { session },
   );
+  if (!row) throw new ProjectDependencyError();
+  await notifyCommittedAudit({
+    session,
+    auditId: row._id,
+    action,
+    resourceType: "PROJECT",
+    resourceId: projectId,
+    actorId: actor.userId,
+  });
 }
 
 export async function createProject(
