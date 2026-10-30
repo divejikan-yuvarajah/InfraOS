@@ -4,12 +4,15 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+import { ProjectDashboard } from "@/components/projects/project-dashboard";
 import { StaffWorkspaceShell } from "@/components/auth/staff-workspace-shell";
 import { logoutWithAuthClient } from "@/lib/auth/client";
-import { getAuthAccessCopy } from "@/lib/auth/messages";
+import type { AuthLocale } from "@/lib/auth/types";
+import { getDashboardCopy } from "@/lib/projects/dashboard-messages";
 
 export function WorkspaceHome() {
-  const copy = getAuthAccessCopy();
+  const [locale, setLocale] = useState<AuthLocale>("en");
+  const copy = getDashboardCopy(locale);
   const router = useRouter();
   const [leaving, setLeaving] = useState(false);
 
@@ -20,27 +23,23 @@ export function WorkspaceHome() {
   }
 
   return (
-    <StaffWorkspaceShell title={copy.workspaceTitle} description={copy.workspaceBody}>
-      <section className="auth-access-card" aria-labelledby="workspace-status">
-        <p id="workspace-status" className="auth-access-status" role="status">
-          {copy.nativeReview}
-        </p>
-      </section>
+    <StaffWorkspaceShell title={copy.title} description={copy.description} wide>
+      <ProjectDashboard locale={locale} onLocale={setLocale} />
       <div className="auth-access-actions">
         <Link className="auth-access-link" href="/profile">
-          Profile
+          {copy.profile}
         </Link>
         <Link className="auth-access-link" href="/settings">
-          Settings
+          {copy.settings}
         </Link>
         <Link className="auth-access-link" href="/admin/users">
-          Staff directory
+          {copy.staff}
         </Link>
         <Link className="auth-access-link" href="/admin/agencies">
-          Agencies
+          {copy.agencies}
         </Link>
         <Link className="auth-access-link" href="/admin/roles">
-          Roles
+          {copy.roles}
         </Link>
         <button type="button" className="auth-access-button" disabled={leaving} onClick={() => void signOut()}>
           {copy.signOut}

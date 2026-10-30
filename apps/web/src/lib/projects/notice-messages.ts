@@ -1,0 +1,115 @@
+import type { AuthLocale } from "@/lib/auth/types";
+
+const EN = {
+  title: "Project notices",
+  description: "Notices created after a committed project action. Refresh to see new rows.",
+  nativeReview: "Sinhala and Tamil labels are drafts pending native review.",
+  language: "Notice language",
+  english: "English",
+  sinhala: "සිංහල",
+  tamil: "தமிழ்",
+  all: "All",
+  unread: "Unread",
+  read: "Read",
+  markRead: "Mark read",
+  markUnread: "Mark unread",
+  loadMore: "Load more",
+  empty: "No notices in this filter.",
+  loading: "Loading notices",
+  forbidden: "Notices are not available for this sign-in.",
+  expired: "Sign in again to load notices.",
+  unavailable: "Notices are temporarily unavailable.",
+  retry: "Try again",
+  unreadCount: "Unread notices",
+  openProject: "Open project",
+  unavailableProject: "The project is outside this sign-in.",
+  restricted: "Project details are hidden.",
+  "project.submitted": "Project submitted for review",
+  "project.review_started": "Project review started",
+  "project.approved": "Project approved",
+  "project.rejected": "Project decision recorded",
+  "project.returned": "Project returned",
+  "project.status_changed": "Project status changed",
+  "project.reopened": "Project reopened",
+  "milestone.created": "Milestone recorded",
+  "milestone.updated": "Milestone updated",
+  "milestone.status_changed": "Milestone status changed",
+};
+
+const SI = {
+  ...EN,
+  title: "ව්‍යාපෘති දැනුම්දීම්",
+  description: "ස්ථිර වූ ක්‍රියාවකින් පසු දැනුම්දීම්. අලුත් පේළි සඳහා නැවත පූරණය කරන්න.",
+  nativeReview: "සිංහල සහ දෙමළ ලේබල කෙටුම්පතකි. මව් භාෂා සමාලෝචනය බලාපොරොත්තු වේ.",
+  all: "සියල්ල",
+  unread: "නොකියවූ",
+  read: "කියවූ",
+  markRead: "කියවූ ලෙස",
+  markUnread: "නොකියවූ ලෙස",
+  loadMore: "තව පූරණය",
+  empty: "මෙම පෙරහනේ දැනුම්දීම් නැත.",
+  loading: "දැනුම්දීම් පූරණය වේ",
+  forbidden: "මෙම පිවිසුමට දැනුම්දීම් නැත.",
+  expired: "දැනුම්දීම් සඳහා නැවත පිවිසෙන්න.",
+  unavailable: "දැනුම්දීම් තාවකාලිකව නොමැත.",
+  retry: "නැවත උත්සාහ කරන්න",
+  unreadCount: "නොකියවූ දැනුම්දීම්",
+  openProject: "ව්‍යාපෘතිය",
+  unavailableProject: "ව්‍යාපෘතිය මෙම පිවිසුමෙන් පිටතය.",
+  restricted: "ව්‍යාපෘති විස්තර සඟවා ඇත.",
+  "project.submitted": "ව්‍යාපෘතිය සමාලෝචනයට යොමු විය",
+  "project.review_started": "ව්‍යාපෘති සමාලෝචනය ආරම්භ විය",
+  "project.approved": "ව්‍යාපෘතිය අනුමත විය",
+  "project.rejected": "ව්‍යාපෘති තීරණය සටහන් විය",
+  "project.returned": "ව්‍යාපෘතිය ආපසු එවිණි",
+  "project.status_changed": "ව්‍යාපෘති තත්ත්වය වෙනස් විය",
+  "project.reopened": "ව්‍යාපෘතිය නැවත විවෘත විය",
+  "milestone.created": "සන්ධිස්ථානය සටහන් විය",
+  "milestone.updated": "සන්ධිස්ථානය යාවත්කාලීන විය",
+  "milestone.status_changed": "සන්ධිස්ථාන තත්ත්වය වෙනස් විය",
+};
+
+const TA = {
+  ...EN,
+  title: "திட்ட அறிவிப்புகள்",
+  description: "உறுதியான செயலுக்குப் பின் அறிவிப்புகள். புதிய வரிகளுக்கு மீண்டும் ஏற்றவும்.",
+  nativeReview: "சிங்கள மற்றும் தமிழ்ச் சொற்கள் வரைவு. தாய்மொழி மதிப்பாய்வு நிலுவையில் உள்ளது.",
+  all: "அனைத்தும்",
+  unread: "படிக்காதது",
+  read: "படித்தது",
+  markRead: "படித்ததாக",
+  markUnread: "படிக்காததாக",
+  loadMore: "மேலும் ஏற்று",
+  empty: "இந்த வடிகட்டலில் அறிவிப்பு இல்லை.",
+  loading: "அறிவிப்புகள் ஏற்றப்படுகின்றன",
+  forbidden: "இந்த உள்நுழைவுக்கு அறிவிப்பு இல்லை.",
+  expired: "அறிவிப்புகளுக்கு மீண்டும் உள்நுழையுங்கள்.",
+  unavailable: "அறிவிப்புகள் தற்காலிகமாக இல்லை.",
+  retry: "மீண்டும் முயல்க",
+  unreadCount: "படிக்காத அறிவிப்புகள்",
+  openProject: "திட்டம்",
+  unavailableProject: "திட்டம் இந்த உள்நுழைவுக்கு வெளியே உள்ளது.",
+  restricted: "திட்ட விவரம் மறைக்கப்பட்டது.",
+  "project.submitted": "திட்டம் மதிப்பாய்வுக்கு அனுப்பப்பட்டது",
+  "project.review_started": "திட்ட மதிப்பாய்வு தொடங்கியது",
+  "project.approved": "திட்டம் அங்கீகரிக்கப்பட்டது",
+  "project.rejected": "திட்ட முடிவு பதிவானது",
+  "project.returned": "திட்டம் திருப்பப்பட்டது",
+  "project.status_changed": "திட்ட நிலை மாறியது",
+  "project.reopened": "திட்டம் மீண்டும் திறக்கப்பட்டது",
+  "milestone.created": "மைல்கல் பதிவானது",
+  "milestone.updated": "மைல்கல் புதுப்பிக்கப்பட்டது",
+  "milestone.status_changed": "மைல்கல் நிலை மாறியது",
+};
+
+const COPY = { en: EN, si: SI, ta: TA };
+
+export type NoticeCopy = { [K in keyof typeof EN]: string };
+
+export function getNoticeCopy(locale: AuthLocale): NoticeCopy {
+  return COPY[locale];
+}
+
+export function noticeTitle(copy: NoticeCopy, key: string): string {
+  return key in copy ? copy[key as keyof NoticeCopy] : key;
+}
