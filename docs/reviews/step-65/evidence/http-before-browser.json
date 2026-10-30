@@ -1,0 +1,25 @@
+{
+  "submitStatus": 200,
+  "submitCache": [
+    "no-store"
+  ],
+  "submitBody": "{\"success\":true,\"data\":{\"project\":{\"id\":\"6ae42db8671d3abf1b244821\",\"projectCode\":\"INF-NOTE-6501\",\"title\":\"Synthetic notice road\",\"projectType\":\"ROAD\",\"status\":\"SUBMITTED\",\"agencyId\":\"6ae42db8671d3abf1b244813\",\"agencyCode\":\"DEPT_WEST\",\"managerId\":\"6ae42db8671d3abf1b244819\",\"startDate\":\"2027-01-01T00:00:00.000Z\",\"plannedEndDate\":\"2027-06-01T00:00:00.000Z\",\"createdAt\":\"2026-10-30T05:40:08.390Z\",\"updatedAt\":\"2026-10-30T05:40:42.188Z\",\"revision\":1,\"description\":null,\"location\":{\"district\":\"Colombo\",\"province\":\"Western\"},\"geometry\":{\"type\":\"Point\",\"coordinates\":[79.86,6.93]},\"actualEndDate\":null,\"physicalProgress\":0,\"managerName\":\"Manager Fixture\",\"canEditDraft\":false,\"availableActions\":[],\"submissionGaps\":[],\"availableReviewActions\":[],\"reviewDecision\":null,\"budget\":{\"amountMinor\":1000000,\"currency\":\"LKR\"}}},\"meta\":{\"requestId\":\"37500ba5-b4f5-4348-800a-70176f36d1a7\"}}",
+  "reviewerUnreadStatus": 200,
+  "reviewerUnreadCache": [
+    "no-store"
+  ],
+  "reviewerUnreadBody": "{\"success\":true,\"data\":{\"notices\":[{\"id\":\"6ae42dda671d3abf1b244845\",\"type\":\"APPROVAL\",\"titleKey\":\"project.submitted\",\"isRead\":false,\"createdAt\":\"2026-10-30T05:40:42.211Z\",\"readAt\":null,\"project\":{\"id\":\"6ae42db8671d3abf1b244821\",\"projectCode\":\"INF-NOTE-6501\",\"title\":\"Synthetic notice road\",\"status\":\"SUBMITTED\"}}],\"nextCursor\":null,\"unreadCount\":1},\"meta\":{\"requestId\":\"9bd00845-bc52-4818-a1f0-ee709eee0fee\"}}",
+  "unreadCountStatus": 200,
+  "unreadCountBody": "{\"success\":true,\"data\":{\"count\":1},\"meta\":{\"requestId\":\"31d9dc90-69e1-4d03-b5a9-685acaa52d07\"}}",
+  "foreignStatus": 200,
+  "foreignBody": "{\"success\":true,\"data\":{\"notices\":[],\"nextCursor\":null,\"unreadCount\":0},\"meta\":{\"requestId\":\"aa2b295a-bfb8-440a-8606-4b36d04e0c03\"}}",
+  "actorStatus": 200,
+  "actorBody": "{\"success\":true,\"data\":{\"notices\":[],\"nextCursor\":null,\"unreadCount\":0},\"meta\":{\"requestId\":\"09858d4e-c406-4c86-a9c2-517104020449\"}}",
+  "activityStatus": 200,
+  "activityBody": "{\"success\":true,\"data\":{\"projectId\":\"6ae42db8671d3abf1b244821\",\"projectStatus\":\"SUBMITTED\",\"physicalProgress\":0,\"progressMeaning\":\"reported_not_verified\",\"activities\":[{\"id\":\"audit:6ae42dda671d3abf1b24483e\",\"kind\":\"PROJECT_SUBMITTED\",\"category\":\"project\",\"occurredAt\":\"2026-10-30T05:40:42.193Z\",\"source\":\"audit\",\"titleKey\":\"activity.projectSubmitted\",\"actor\":{\"label\":\"Authorized staff\",\"identityVisible\":false},\"detail\":{\"status\":\"SUBMITTED\"}},{\"id\":\"record:6ae42db8671d3abf1b244821\",\"kind\":\"PROJECT_RECORD_METADATA\",\"category\":\"project\",\"occurredAt\":\"2026-10-30T05:40:08.390Z\",\"source\":\"record_metadata\",\"titleKey\":\"activity.projectRecorded\",\"actor\":{\"label\":\"System event\",\"identityVisible\":false},\"detail\":{\"meaning\":\"record_timestamp_not_audit\"}}],\"pageSize\":20,\"nextCursor\":null,\"hasMore\":false,\"coverage\":\"supported_events_only\",\"sourceAvailability\":{\"audit\":\"available\",\"progress\":\"available\"}},\"meta\":{\"requestId\":\"3790b123-aca5-4f37-b745-6e3b9c754b26\"}}",
+  "dashboardStatus": 200,
+  "dashboardCache": [
+    "no-store"
+  ],
+  "dashboardBody": "{\"success\":true,\"data\":{\"asOf\":\"2026-10-30T05:40:42.436Z\",\"timezone\":\"Asia/Colombo\",\"scope\":\"agency\",\"coverage\":{\"projects\":\"complete\",\"milestones\":\"complete\",\"reviews\":\"complete\",\"finance\":\"complete\"},\"counts\":{\"total\":1,\"byStatus\":{\"DRAFT\":0,\"SUBMITTED\":1,\"UNDER_REVIEW\":0,\"REJECTED\":0,\"APPROVED\":0,\"ACTIVE\":0,\"ON_HOLD\":0,\"DELAYED\":0,\"COMPLETED\":0,\"CANCELLED\":0},\"active\":0,\"onHold\":0,\"delayed\":0},\"recentProjects\":[{\"id\":\"6ae42db8671d3abf1b244821\",\"projectCode\":\"INF-NOTE-6501\",\"title\":\"Synthetic notice road\",\"status\":\"SUBMITTED\",\"updatedAt\":\"2026-10-30T05:40:42.188Z\"}],\"physical\":{\"reportedAt100StillNotCompleted\":0,\"completedByStatus\":0,\"meaning\":\"physical_progress_does_not_set_status\"},\"milestones\":{\"overdue\":0,\"dueWithin14Days\":0,\"meaning\":\"planned_not_completed\",\"items\":[]},\"reviews\":{\"pending\":1,\"items\":[{\"id\":\"6ae42db8671d3abf1b244821\",\"projectCode\":\"INF-NOTE-6501\",\"title\":\"Synthetic notice road\",\"status\":\"SUBMITTED\",\"updatedAt\":\"2026-10-30T05:40:42.188Z\"}]},\"finance\":{\"storedPaidCount\":0,\"storedPaidAmountMinor\":0,\"currency\":\"LKR\",\"provenance\":\"stored_record_provisional_not_bank_settlement\"},\"assignedToYou\":null,\"availableWidgets\":[\"counts\",\"status\",\"recent\",\"physical\",\"milestones\",\"reviews\",\"finance\"]},\"meta\":{\"requestId\":\"c85a1391-c124-43f8-9f31-22a1ed9fb517\"}}"
+}
