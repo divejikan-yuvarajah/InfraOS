@@ -104,3 +104,51 @@ export function dashboardLinks(roleKey: string, payload: DashboardPayload | null
   }
   return links;
 }
+
+export type AttentionItem = { id: "delayed" | "reviews" | "overdue" | "reportedOpen"; count: number; href: string | null };
+
+/** Prioritised list built only from real counts. Empty when nothing needs attention. */
+export function attentionItems(payload: DashboardPayload): AttentionItem[] {
+  const items: AttentionItem[] = [];
+  if (payload.counts.delayed > 0) items.push({ id: "delayed", count: payload.counts.delayed, href: "/projects?status=DELAYED" });
+  if (payload.reviews && payload.reviews.pending > 0) items.push({ id: "reviews", count: payload.reviews.pending, href: "/projects/reviews" });
+  if (payload.milestones && payload.milestones.overdue > 0) {
+    const first = payload.milestones.items.find((item) => item.classification === "overdue");
+    items.push({ id: "overdue", count: payload.milestones.overdue, href: first ? `/projects/${first.projectId}` : null });
+  }
+  if (payload.physical.reportedAt100StillNotCompleted > 0) {
+    items.push({ id: "reportedOpen", count: payload.physical.reportedAt100StillNotCompleted, href: null });
+  }
+  return items;
+}
+
+export type StatusTone = "success" | "active" | "pending" | "critical" | "neutral";
+
+export const STATUS_TONE: Record<DashboardStatus, StatusTone> = {
+  DRAFT: "neutral",
+  SUBMITTED: "pending",
+  UNDER_REVIEW: "pending",
+  REJECTED: "critical",
+  APPROVED: "success",
+  ACTIVE: "active",
+  ON_HOLD: "neutral",
+  DELAYED: "critical",
+  COMPLETED: "success",
+  CANCELLED: "neutral",
+};
+
+/** Donut arcs for statuses with a non-zero count. Fractions sum to 1 when total > 0. */
+export function donutSegments(payload: DashboardPayload): { status: DashboardStatus; count: number; fraction: number }[] {
+  const total = STATUSES.reduce((sum, status) => sum + payload.counts.byStatus[status], 0);
+  if (total === 0) return [];
+  return STATUSES.filter((status) => payload.counts.byStatus[status] > 0).map((status) => ({
+    status,
+    count: payload.counts.byStatus[status],
+    fraction: payload.counts.byStatus[status] / total,
+  }));
+}
+
+export function statusLabel(status: string): string {
+  const spaced = status.replaceAll("_", " ").toLowerCase();
+  return spaced.charAt(0).toUpperCase() + spaced.slice(1);
+}

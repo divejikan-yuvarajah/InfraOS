@@ -131,3 +131,37 @@
   --input: var(--border);
   --ring: var(--infra-orange);
 }
+
+/* Mission Control additions (UI modernization). Derived from the tokens above; no new hues. */
+:root {
+  --brand-soft: color-mix(in srgb, var(--infra-orange) 8%, white);
+  --brand-border: color-mix(in srgb, var(--infra-orange) 30%, white);
+  --status-success-soft: color-mix(in srgb, var(--infra-green) 9%, white);
+  --status-warning-soft: color-mix(in srgb, var(--infra-yellow) 14%, white);
+  --status-danger-soft: color-mix(in srgb, var(--infra-maroon) 8%, white);
+  --status-neutral-soft: #f1f5f9;
+
+  /* Charcoal sidebar (built from --infra-text) */
+  --mc-sidebar-bg: var(--infra-text);
+  --mc-sidebar-fg: #f8fafc;
+  --mc-sidebar-muted: #a8b3c4;
+  --mc-sidebar-hover: color-mix(in srgb, white 6%, var(--infra-text));
+  --mc-sidebar-active: color-mix(in srgb, white 10%, var(--infra-text));
+  --mc-sidebar-border: color-mix(in srgb, white 12%, var(--infra-text));
+  --mc-sidebar-width: 16rem;
+  --mc-topbar-height: 3.5rem;
+  --mc-content-max: 90rem;
+  --mc-gutter: 1.5rem;
+
+  --mc-radius-control: 0.5rem;
+  --mc-radius-card: 0.75rem;
+  --mc-radius-panel: 1rem;
+  --mc-shadow-overlay: 0 12px 32px rgb(17 24 39 / 0.18);
+  --mc-shadow-raised: 0 2px 8px rgb(17 24 39 / 0.08);
+  --mc-ease: cubic-bezier(0, 0, 0.2, 1);
+  --mc-focus: 2px solid #b63d00;
+
+  /* Script-aware line heights */
+  --mc-leading-latin: 1.5;
+  --mc-leading-indic: 1.75;
+}

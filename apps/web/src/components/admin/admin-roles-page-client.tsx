@@ -180,6 +180,7 @@ export function AdminRolesPageClient() {
               </Form>
             ) : null}
             <h3>Catalog</h3>
+            <div className="admin-roles-catalog">
             {(catalog.data ?? []).map((group) => (
               <fieldset key={group.module}>
                 <legend>{group.module}</legend>
@@ -211,8 +212,9 @@ export function AdminRolesPageClient() {
                 </ul>
               </fieldset>
             ))}
+            </div>
             {canEdit ? (
-              <div>
+              <div className="admin-roles-save">
                 <p aria-live="polite">
                   Add {preview.added.join(", ") || "nothing"}. Remove {preview.removed.join(", ") || "nothing"}.
                 </p>

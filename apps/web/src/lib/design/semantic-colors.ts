@@ -36,11 +36,13 @@ export function projectStatusVisual(status: ProjectStatus): StatusBadgeVariant {
       return "pending";
     case "REJECTED":
       return "critical";
-    case "ON_HOLD":
     case "DELAYED":
-      return "warning";
-    case "APPROVED":
+      return "critical";
+    case "ON_HOLD":
+      return "neutral";
     case "ACTIVE":
+      return "info";
+    case "APPROVED":
       return "success";
     case "COMPLETED":
       return "success";

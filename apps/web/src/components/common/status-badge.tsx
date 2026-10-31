@@ -5,6 +5,15 @@ import type {
   WorkStatus,
 } from "@infraos/shared-types";
 
+import {
+  ActivityIcon,
+  AlertTriangleIcon,
+  CheckCircle2Icon,
+  ClockIcon,
+  MinusCircleIcon,
+  type LucideIcon,
+} from "lucide-react";
+
 import { Badge, type badgeVariants } from "@/components/ui/badge";
 import {
   conflictSeverityVisual,
@@ -19,19 +28,36 @@ import type { VariantProps } from "class-variance-authority";
 type BadgeVariant = VariantProps<typeof badgeVariants>["variant"];
 
 function formatStatusLabel(status: string): string {
-  return status.replaceAll("_", " ");
+  const spaced = status.replaceAll("_", " ").toLowerCase();
+  return spaced.charAt(0).toUpperCase() + spaced.slice(1);
 }
 
 export type StatusBadgeProps = {
   variant: StatusBadgeVariant;
   label: string;
+  size?: "sm" | "md";
   className?: string;
 };
 
+/** Unified status vocabulary: every status carries an icon plus its text label, never colour alone. */
+const STATUS_ICON: Record<StatusBadgeVariant, LucideIcon> = {
+  success: CheckCircle2Icon,
+  pending: ClockIcon,
+  warning: ClockIcon,
+  critical: AlertTriangleIcon,
+  info: ActivityIcon,
+  neutral: MinusCircleIcon,
+};
+
 /** Low-level status badge with explicit variant + label (always include text). */
-export function StatusBadge({ variant, label, className }: StatusBadgeProps) {
+export function StatusBadge({ variant, label, size = "md", className }: StatusBadgeProps) {
+  const Icon = STATUS_ICON[variant];
   return (
-    <Badge variant={variant as BadgeVariant} className={cn(className)}>
+    <Badge
+      variant={variant as BadgeVariant}
+      className={cn(size === "md" ? "h-6" : "h-5", "gap-1 px-2 font-medium", className)}
+    >
+      <Icon aria-hidden="true" />
       {label}
     </Badge>
   );

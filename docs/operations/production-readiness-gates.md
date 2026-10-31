@@ -58,3 +58,19 @@ Production login was not enabled on any deployment. No Atlas connection, schema 
 - `apps/api/src/scripts/step57-isolated-dev.ts` still contains disposable fixture credentials. Do not deploy that script. Moving those credentials is a separate review.
 
 Do not stage, commit, push, open a pull request, or merge without a separate approval. Production approval remains blocked on the P0 gates above.
+
+## Post-merge addendum — 28 October 2026
+
+The local record above is unchanged. It described the worktree before this change was committed. What follows was checked against GitHub after the merge.
+
+[Pull request #100](https://github.com/divejikan-yuvarajah/InfraOS/pull/100) is merged. The base was `development` at `9ee3ea341b258a0557bf6b43793bbe72b308dd6d`. The head was `dabeede1845d019ff69f575c8961c1a318113115` on `feature/production-readiness-phase-1`. The merge commit on `development` is `596e50648de5e6fad212c5601ff53b6952fa7dad`, merged at 2026-10-27T19:56:12Z. GitHub `development` still points at that commit. The pull request changed the same five files, with 175 additions and 8 deletions. Production login was not enabled.
+
+Three `INFRAOS quality gates` runs completed with conclusion **success**. Each job is “API, web, types, lint, build”. The database-refusal step, frontend tests, disposable API tests, TypeScript, ESLint, and the production build each succeeded. No database URI was configured.
+
+| Event | Commit | Run | Result |
+| --- | --- | --- | --- |
+| `pull_request` | `dabeede1845d019ff69f575c8961c1a318113115` | [run 40573064407](https://github.com/divejikan-yuvarajah/InfraOS/actions/runs/40573064407) | PASS. Completed 2026-10-27T19:56:05Z. [Job](https://github.com/divejikan-yuvarajah/InfraOS/actions/runs/40573064407/job/122432120118). |
+| `push` to `development` | `596e50648de5e6fad212c5601ff53b6952fa7dad` | [run 40573548659](https://github.com/divejikan-yuvarajah/InfraOS/actions/runs/40573548659) | PASS. Completed 2026-10-27T19:59:26Z. [Job](https://github.com/divejikan-yuvarajah/InfraOS/actions/runs/40573548659/job/122433819327). |
+| `pull_request` on the merge commit | `596e50648de5e6fad212c5601ff53b6952fa7dad` | [run 40573611678](https://github.com/divejikan-yuvarajah/InfraOS/actions/runs/40573611678) | PASS. Completed 2026-10-27T19:59:56Z. [Job](https://github.com/divejikan-yuvarajah/InfraOS/actions/runs/40573611678/job/122434042691). |
+
+These runs do not close the P0 gates. Atlas indexes, Step 51 races, email delivery, null-agency Super Admin, native Sinhala and Tamil copy, release controls, and a signed-in staging cookie check stay open. A green quality run is not production readiness and is not approval to set `NEXT_PUBLIC_AUTH_LOGIN_ENABLED=1`.

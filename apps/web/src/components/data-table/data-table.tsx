@@ -322,7 +322,7 @@ function DataTableView<TData>({
           table.getRowModel().rows.map((row) => (
             <TableRow key={row.id} data-state={row.getIsSelected() ? "selected" : undefined}>
               {row.getVisibleCells().map((cell) => (
-                <TableCell key={cell.id}>
+                <TableCell key={cell.id} data-label={(cell.column.columnDef.meta as { label?: string } | undefined)?.label}>
                   {flexRender(cell.column.columnDef.cell, cell.getContext())}
                 </TableCell>
               ))}

@@ -16,5 +16,5 @@
     "rootDir": "src"
   },
   "include": ["src/**/*.ts"],
-  "exclude": ["src/scripts/step55-isolated-dev.ts", "src/scripts/step57-isolated-dev.ts", "src/scripts/step58-isolated-dev.ts", "src/scripts/step59-isolated-dev.ts", "src/scripts/step60-isolated-dev.ts", "src/scripts/step61-isolated-dev.ts", "src/scripts/step62-isolated-dev.ts", "src/scripts/step63-isolated-dev.ts", "src/scripts/step64-isolated-dev.ts", "src/scripts/step65-isolated-dev.ts"]
+  "exclude": ["src/scripts/step55-isolated-dev.ts", "src/scripts/step57-isolated-dev.ts", "src/scripts/step58-isolated-dev.ts", "src/scripts/step59-isolated-dev.ts", "src/scripts/step60-isolated-dev.ts", "src/scripts/step61-isolated-dev.ts", "src/scripts/step62-isolated-dev.ts", "src/scripts/step63-isolated-dev.ts", "src/scripts/step64-isolated-dev.ts", "src/scripts/step65-isolated-dev.ts", "src/scripts/mission-control-demo.ts"]
 }
