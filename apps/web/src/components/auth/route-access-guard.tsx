@@ -22,6 +22,8 @@ import {
 } from "@/lib/auth/state";
 
 import "@/styles/auth-access.css";
+import "@/styles/mission-control.css";
+import "@/styles/mission-control-dashboard.css";
 
 function AccessStatus({
   title,
