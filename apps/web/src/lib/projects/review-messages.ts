@@ -38,6 +38,7 @@ export type ReviewCopy = {
   noDecision: string;
   submissionFound: string;
   submissionMissing: string;
+  noActions: string;
   submissionActor: string;
   sectionSchedule: string;
   sectionLocation: string;
@@ -94,6 +95,7 @@ const EN: ReviewCopy = {
   noDecision: "No review decision has been recorded.",
   submissionFound: "Trusted submission recorded",
   submissionMissing: "No single trusted submission was found. Approval stays closed.",
+  noActions: "No review action is available to you for this project right now.",
   submissionActor: "Submitting account",
   sectionSchedule: "Planned schedule",
   sectionLocation: "Location",

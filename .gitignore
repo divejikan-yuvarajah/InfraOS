@@ -37,6 +37,7 @@ build/
 .next-step63-demo/
 .next-step64-demo/
 .next-step65-demo/
+.next-mc-demo/
 out/
 coverage/
 *.tsbuildinfo

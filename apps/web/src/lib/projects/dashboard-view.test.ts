@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { getDashboardCopy } from "./dashboard-messages";
-import { dashboardCards, dashboardIsEmpty, dashboardIsPartial, dashboardLinks, dashboardQueryKey, dashboardScope, statusRows, visibleDashboard, type DashboardPayload } from "./dashboard-view";
+import { attentionItems, donutSegments, dashboardCards, dashboardIsEmpty, dashboardIsPartial, dashboardLinks, dashboardQueryKey, dashboardScope, statusRows, visibleDashboard, type DashboardPayload } from "./dashboard-view";
 
 function payload(overrides: Partial<DashboardPayload> = {}): DashboardPayload {
   return {
@@ -73,5 +73,39 @@ describe("project dashboard view", () => {
       expect(copy.retry.length).toBeGreaterThan(0);
       expect(copy.projects).not.toEqual(copy.reviewQueue);
     }
+  });
+});
+
+describe("attention and donut helpers", () => {
+  it("lists only real, non-zero items and links to real views", () => {
+    const items = attentionItems(
+      payload({
+        counts: { ...payload().counts, delayed: 2 },
+        reviews: { pending: 3, items: [] },
+        milestones: {
+          overdue: 1,
+          dueWithin14Days: 0,
+          items: [{ id: "m1", projectId: "p9", projectCode: "X", projectTitle: "T", title: "M", status: "IN_PROGRESS", plannedEnd: "2026-01-01T00:00:00.000Z", classification: "overdue", meaning: "planned_not_completed" }],
+          meaning: "planned_not_completed",
+        },
+      }),
+    );
+    expect(items.map((i) => [i.id, i.count, i.href])).toEqual([
+      ["delayed", 2, "/projects?status=DELAYED"],
+      ["reviews", 3, "/projects/reviews"],
+      ["overdue", 1, "/projects/p9"],
+      ["reportedOpen", 1, null],
+    ]);
+  });
+  it("is empty when nothing needs attention and hides unavailable sources", () => {
+    const quiet = payload({ milestones: null, reviews: null, physical: { reportedAt100StillNotCompleted: 0, completedByStatus: 0, meaning: "physical_progress_does_not_set_status" } });
+    expect(attentionItems(quiet)).toEqual([]);
+  });
+  it("builds donut fractions that sum to one, and none for zero projects", () => {
+    const segs = donutSegments(payload());
+    expect(segs.map((s) => s.status)).toEqual(["ACTIVE", "ON_HOLD"]);
+    expect(segs.reduce((n, s) => n + s.fraction, 0)).toBeCloseTo(1);
+    const none = payload({ counts: { ...payload().counts, byStatus: { ...payload().counts.byStatus, ACTIVE: 0, ON_HOLD: 0 } } });
+    expect(donutSegments(none)).toEqual([]);
   });
 });

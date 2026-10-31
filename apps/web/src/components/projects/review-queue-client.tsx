@@ -78,26 +78,31 @@ export function ReviewQueueClient() {
     () => [
       {
         accessorKey: "projectCode",
+        meta: { label: copy.columnCode },
         header: ({ column }) => <DataTableColumnHeader column={column} title={copy.columnCode} />,
         cell: ({ row }) => <Link href={`/projects/${row.original.id}/review`}>{row.original.projectCode}</Link>,
       },
       {
         accessorKey: "title",
+        meta: { label: copy.columnTitle },
         header: ({ column }) => <DataTableColumnHeader column={column} title={copy.columnTitle} />,
       },
       {
         accessorKey: "status",
+        meta: { label: copy.columnStatus },
         header: ({ column }) => <DataTableColumnHeader column={column} title={copy.columnStatus} />,
         cell: ({ row }) => <ProjectStatusBadge status={row.original.status as ProjectStatus} />,
       },
       {
         accessorKey: "agencyCode",
+        meta: { label: copy.columnAgency },
         enableSorting: false,
         header: copy.columnAgency,
         cell: ({ row }) => row.original.agencyCode ?? row.original.agencyId,
       },
       {
         id: "review",
+        meta: { label: copy.openReview },
         enableSorting: false,
         header: copy.openReview,
         cell: ({ row }) => (

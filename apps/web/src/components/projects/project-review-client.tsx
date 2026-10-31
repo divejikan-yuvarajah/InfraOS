@@ -172,18 +172,19 @@ export function ProjectReviewClient({ id }: { id: string }) {
           </section>
           <section className="auth-access-card" aria-labelledby="review-actions">
             <h3 id="review-actions">{copy.reviewTitle}</h3>
+            {project.availableReviewActions?.length ? null : <p role="status">{copy.noActions}</p>}
             <div className="auth-access-locale-row">
               {project.availableReviewActions?.includes("BEGIN_REVIEW") ? (
-                <button type="button" className="auth-access-button" onClick={() => open("BEGIN_REVIEW")}>{copy.beginReview}</button>
+                <button type="button" className="auth-access-button" data-decision="begin" onClick={() => open("BEGIN_REVIEW")}>{copy.beginReview}</button>
               ) : null}
               {project.availableReviewActions?.includes("APPROVE") ? (
-                <button type="button" className="auth-access-button" onClick={() => open("APPROVE")}>{copy.approve}</button>
+                <button type="button" className="auth-access-button" data-decision="approve" onClick={() => open("APPROVE")}>{copy.approve}</button>
               ) : null}
               {project.availableReviewActions?.includes("REJECT") ? (
-                <button type="button" className="auth-access-button" onClick={() => open("REJECT")}>{copy.reject}</button>
+                <button type="button" className="auth-access-button" data-decision="reject" onClick={() => open("REJECT")}>{copy.reject}</button>
               ) : null}
               {project.availableReviewActions?.includes("RETURN_FOR_CHANGES") ? (
-                <button type="button" className="auth-access-button" onClick={() => open("RETURN_FOR_CHANGES")}>{copy.returnForChanges}</button>
+                <button type="button" className="auth-access-button" data-decision="return" onClick={() => open("RETURN_FOR_CHANGES")}>{copy.returnForChanges}</button>
               ) : null}
             </div>
           </section>
@@ -200,7 +201,7 @@ export function ProjectReviewClient({ id }: { id: string }) {
               </ul>
             ) : <p role="status">{copy.noDecision}</p>}
           </section>
-          <dialog ref={dialogRef} className="auth-access-card" aria-labelledby="review-confirm-title" onClose={() => { if (!decision.isPending) setPendingAction(null); }}>
+          <dialog ref={dialogRef} className="auth-access-card mc-dialog" aria-labelledby="review-confirm-title" onClose={() => { if (!decision.isPending) setPendingAction(null); }}>
             <h3 id="review-confirm-title">{confirmTitle}</h3>
             {needsReason ? (
               <div>

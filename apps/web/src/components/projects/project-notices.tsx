@@ -85,10 +85,16 @@ export function ProjectNotices() {
             const href = noticeHref(item);
             return (
               <li key={item.id} className={item.isRead ? "project-notice is-read" : "project-notice is-unread"}>
-                <p>{noticeTitle(copy, item.titleKey)}</p>
-                <time dateTime={item.createdAt}>{formatActivityWhen(item.createdAt, locale)}</time>
-                {href && item.project ? <Link href={href}>{copy.openProject}: {item.project.projectCode} {item.project.title}</Link> : <p>{copy.restricted}</p>}
-                <button type="button" className="auth-access-button" onClick={() => void mark(item.id, !item.isRead)}>
+                <span className="mc-notice-dot" aria-hidden="true" />
+                <div className="mc-notice-main">
+                  <p className="mc-notice-title">
+                    {item.isRead ? null : <span className="mc-sr">{copy.unread}: </span>}
+                    {noticeTitle(copy, item.titleKey)}
+                  </p>
+                  {href && item.project ? <Link href={href}>{copy.openProject}: {item.project.projectCode} {item.project.title}</Link> : <p>{copy.restricted}</p>}
+                  <time dateTime={item.createdAt}>{formatActivityWhen(item.createdAt, locale)}</time>
+                </div>
+                <button type="button" className="auth-access-button mc-notice-action" onClick={() => void mark(item.id, !item.isRead)}>
                   {item.isRead ? copy.markUnread : copy.markRead}
                 </button>
               </li>
