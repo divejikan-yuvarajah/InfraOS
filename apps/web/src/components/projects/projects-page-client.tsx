@@ -80,6 +80,7 @@ export function ProjectsPageClient() {
     () => [
       {
         accessorKey: "projectCode",
+        meta: { label: copy.columnCode },
         header: ({ column }) => <DataTableColumnHeader column={column} title={copy.columnCode} />,
         cell: ({ row }) => (
           <Link href={`/projects/${row.original.id}/overview${listQuery ? `?list=${encodeURIComponent(listQuery)}` : ""}`}>
@@ -89,30 +90,36 @@ export function ProjectsPageClient() {
       },
       {
         accessorKey: "title",
+        meta: { label: copy.columnTitle },
         header: ({ column }) => <DataTableColumnHeader column={column} title={copy.columnTitle} />,
       },
       {
         accessorKey: "projectType",
+        meta: { label: copy.columnType },
         header: ({ column }) => <DataTableColumnHeader column={column} title={copy.columnType} />,
       },
       {
         accessorKey: "status",
+        meta: { label: copy.columnStatus },
         header: ({ column }) => <DataTableColumnHeader column={column} title={copy.columnStatus} />,
         cell: ({ row }) => <ProjectStatusBadge status={row.original.status as ProjectStatus} />,
       },
       {
         accessorKey: "agencyCode",
+        meta: { label: copy.columnAgency },
         enableSorting: false,
         header: copy.columnAgency,
         cell: ({ row }) => row.original.agencyCode ?? row.original.agencyId,
       },
       {
         accessorKey: "startDate",
+        meta: { label: copy.columnStart },
         header: ({ column }) => <DataTableColumnHeader column={column} title={copy.columnStart} />,
         cell: ({ row }) => row.original.startDate?.slice(0, 10) ?? "—",
       },
       {
         accessorKey: "plannedEndDate",
+        meta: { label: copy.columnEnd },
         header: ({ column }) => <DataTableColumnHeader column={column} title={copy.columnEnd} />,
         cell: ({ row }) => row.original.plannedEndDate?.slice(0, 10) ?? "—",
       },
