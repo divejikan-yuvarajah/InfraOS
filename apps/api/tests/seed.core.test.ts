@@ -35,7 +35,7 @@ describe("core seed", { timeout: 60_000 }, () => {
 
     const sa = await Role.findOne({ key: "SUPER_ADMIN" });
     expect(sa?.isSystem).toBe(true);
-    expect(sa?.permissions).not.toContain("project.approve");
+    expect(sa?.permissions).toContain("project.approve");
     expect(sa?.permissions).not.toContain("finance.payment.approve");
     expect(sa?.permissions).not.toContain("inspection.verify");
     expect(sa?.permissions).not.toContain("roadsync.conflict.resolve");
