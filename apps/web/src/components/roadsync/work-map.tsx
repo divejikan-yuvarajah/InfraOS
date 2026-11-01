@@ -6,6 +6,9 @@ import type { GeoJSONSource, Map as MlMap, StyleSpecification } from "maplibre-g
 import { useEffect, useRef, useState } from "react";
 import { DownloadIcon, Trash2Icon, Undo2Icon, UploadIcon } from "lucide-react";
 
+import { useWorkspaceLocale } from "@/lib/i18n/workspace-locale";
+import { BAND_COLOR as BAND_HEX, BANDS_ASC as BAND_ORDER } from "@/lib/roadsync/assessment";
+import { getAssessmentCopy } from "@/lib/roadsync/assessment-copy";
 import { validateGeo, type GeoValidation, type WorkMapFeature } from "@/lib/roadsync/api";
 import { NEAR_TIME_COLOR, OVERLAP_COLOR, type NearbyOverlay } from "@/lib/roadsync/nearby";
 import { parseGeometryText, type GeometryInput, type GeometryKind, type Position } from "@/lib/roadsync/work-requests-view";
@@ -38,14 +41,65 @@ function useNearbyOverlay(mapRef: React.RefObject<MlMap | null>, ready: boolean,
         if (typeof key === "string") selectRef.current?.(key);
       });
     }
-    (map.getSource("nearby") as GeoJSONSource).setData({ type: "FeatureCollection", features: overlay?.features ?? [] } as never);
-    map.setFilter("nearby-selected", ["all", ["==", ["get", "key"], overlay?.selectedKey ?? ""], ["==", ["get", "kind"], "candidate"]] as never);
+    // Steps 70-71: conflicts mode. Same overlay prop; band-coloured layers on their own source.
+    if (!map.getSource("conflicts")) {
+      map.addSource("conflicts", { type: "geojson", data: EMPTY as never });
+      const feat = (role: string) => ["==", ["get", "feature"], role] as never;
+      const band = ["match", ["get", "band"], "info", BAND_HEX.info, "low", BAND_HEX.low, "medium", BAND_HEX.medium, "high", BAND_HEX.high, "critical", BAND_HEX.critical, "#64748b"] as never;
+      const line = ["all", feat("candidate"), ["!=", ["geometry-type"], "Point"]] as never;
+      map.addLayer({ id: "conflict-profile-casing", type: "line", source: "conflicts", filter: ["==", ["get", "kind"], "profile"] as never, paint: { "line-color": "#ffffff", "line-width": 9 } });
+      map.addLayer({ id: "conflict-profile", type: "line", source: "conflicts", filter: ["==", ["get", "kind"], "profile"] as never, paint: { "line-color": band, "line-width": 5.5 } });
+      map.addLayer({ id: "conflict-fill", type: "fill", source: "conflicts", filter: ["all", feat("candidate"), ["==", ["geometry-type"], "Polygon"]] as never, paint: { "fill-color": band, "fill-opacity": 0.2 } });
+      map.addLayer({ id: "conflict-casing", type: "line", source: "conflicts", filter: line, paint: { "line-color": "#ffffff", "line-width": 6 } });
+      map.addLayer({ id: "conflict-line", type: "line", source: "conflicts", filter: ["all", line, ["!=", ["get", "kind"], "opportunity"]] as never, paint: { "line-color": band, "line-width": ["match", ["get", "kind"], "advisory", 2.5, 4.5], "line-opacity": ["match", ["get", "kind"], "advisory", 0.7, 1] } });
+      map.addLayer({ id: "conflict-opportunity", type: "line", source: "conflicts", filter: ["all", line, ["==", ["get", "kind"], "opportunity"]] as never, paint: { "line-color": "#1B6B3A", "line-width": 4, "line-dasharray": [2, 1.5] } });
+      map.addLayer({ id: "conflict-connector", type: "line", source: "conflicts", filter: feat("connector"), paint: { "line-color": "#334155", "line-width": 1.5, "line-dasharray": [1, 2] } });
+      map.addLayer({ id: "conflict-point", type: "circle", source: "conflicts", filter: ["all", feat("candidate"), ["==", ["geometry-type"], "Point"]] as never, paint: { "circle-radius": 6, "circle-color": band, "circle-stroke-color": "#fff", "circle-stroke-width": 3 } });
+      map.addLayer({ id: "conflict-pulse", type: "circle", source: "conflicts", filter: ["all", feat("hotspot"), ["in", ["get", "band"], ["literal", ["critical", "high"]]]] as never, paint: { "circle-radius": 14, "circle-color": band, "circle-opacity": 0.3 } });
+      map.addLayer({ id: "conflict-hotspot", type: "circle", source: "conflicts", filter: feat("hotspot"), paint: { "circle-radius": 8, "circle-color": ["match", ["get", "kind"], "opportunity", "#1B6B3A", band], "circle-stroke-color": "#fff", "circle-stroke-width": 3 } });
+      map.addLayer({ id: "conflict-halo", type: "line", source: "conflicts", filter: ["==", ["get", "candidateId"], ""] as never, paint: { "line-color": "#f59e0b", "line-width": 13, "line-opacity": 0.55 } });
+      map.addLayer({ id: "conflict-hover", type: "line", source: "conflicts", filter: ["==", ["get", "candidateId"], ""] as never, paint: { "line-color": "#0f172a", "line-width": 9, "line-opacity": 0.25 } });
+      map.addLayer({ id: "conflict-scrub", type: "circle", source: "conflicts", filter: feat("scrub"), paint: { "circle-radius": 8, "circle-color": "#ffffff", "circle-stroke-color": "#0f172a", "circle-stroke-width": 3 } });
+      map.on("click", (e) => {
+        const hit = map.queryRenderedFeatures(e.point, { layers: ["conflict-hotspot", "conflict-line", "conflict-opportunity", "conflict-fill", "conflict-point"] })[0];
+        const id = hit?.properties?.candidateId;
+        if (typeof id === "string") selectRef.current?.(id);
+      });
+    }
+    const conflicts = overlay?.mode === "conflicts";
+    (map.getSource("nearby") as GeoJSONSource).setData({ type: "FeatureCollection", features: conflicts ? [] : overlay?.features ?? [] } as never);
+    (map.getSource("conflicts") as GeoJSONSource).setData({ type: "FeatureCollection", features: conflicts ? overlay?.features ?? [] : [] } as never);
+    map.setFilter("nearby-selected", ["all", ["==", ["get", "key"], conflicts ? "" : overlay?.selectedKey ?? ""], ["==", ["get", "kind"], "candidate"]] as never);
+    const only = (id: string | null | undefined) => ["all", ["==", ["get", "candidateId"], conflicts ? id ?? "" : ""], ["==", ["get", "feature"], "candidate"], ["!=", ["geometry-type"], "Point"]] as never;
+    map.setFilter("conflict-halo", only(overlay?.selectedKey));
+    map.setFilter("conflict-hover", only(overlay?.hoverKey));
     if (overlay?.selectedKey) {
-      const f = (overlay.features as { properties?: { key?: string; kind?: string }; geometry: GeometryInput }[]).find((x) => x.properties?.key === overlay.selectedKey && x.properties?.kind === "candidate");
+      const features = overlay.features as { properties?: { key?: string; kind?: string; candidateId?: string; feature?: string }; geometry: GeometryInput }[];
+      const f = conflicts
+        ? features.find((x) => x.properties?.candidateId === overlay.selectedKey && x.properties?.feature === "candidate")
+        : features.find((x) => x.properties?.key === overlay.selectedKey && x.properties?.kind === "candidate");
       const b = f ? boundsOf([f.geometry]) : null;
       if (b) map.fitBounds(b, { padding: 80, maxZoom: 17, duration: 400 });
     }
   }, [overlay, ready, mapRef]);
+
+  // Pulse on critical/high hotspots only; a static ring under reduced motion. The loop is cancelled on cleanup.
+  const conflictsOn = overlay?.mode === "conflicts";
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!ready || !map || !conflictsOn || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return undefined;
+    let frame = 0;
+    const tick = (t: number) => {
+      const phase = (t % 1800) / 1800;
+      if (map.getLayer("conflict-pulse")) {
+        map.setPaintProperty("conflict-pulse", "circle-radius", 10 + 12 * phase);
+        map.setPaintProperty("conflict-pulse", "circle-opacity", 0.4 * (1 - phase));
+      }
+      frame = window.requestAnimationFrame(tick);
+    };
+    frame = window.requestAnimationFrame(tick);
+    return () => window.cancelAnimationFrame(frame);
+  }, [conflictsOn, ready, mapRef]);
 }
 
 /** Free OpenStreetMap raster tiles: no API key, attribution always visible. */
@@ -98,6 +152,10 @@ function useMap(container: React.RefObject<HTMLDivElement | null>, onReady: (map
         const map = created;
         map.addSource("shapes", { type: "geojson", data: EMPTY as never });
         map.addLayer({ id: "shape-fill", type: "fill", source: "shapes", filter: ["==", ["geometry-type"], "Polygon"], paint: { "fill-color": ["coalesce", ["get", "color"], ACCENT], "fill-opacity": 0.18 } });
+        // Steps 70-71: a band-coloured ring under assessed requests on the overview map.
+        const bandColor = ["match", ["get", "band"], "info", BAND_HEX.info, "low", BAND_HEX.low, "medium", BAND_HEX.medium, "high", BAND_HEX.high, "critical", BAND_HEX.critical, "rgba(0,0,0,0)"] as never;
+        map.addLayer({ id: "shape-risk", type: "line", source: "shapes", filter: ["all", ["!=", ["geometry-type"], "Point"], ["has", "band"]] as never, paint: { "line-color": bandColor, "line-width": 12, "line-opacity": 0.55 } });
+        map.addLayer({ id: "shape-risk-point", type: "circle", source: "shapes", filter: ["all", ["==", ["geometry-type"], "Point"], ["has", "band"]] as never, paint: { "circle-radius": 14, "circle-color": "rgba(0,0,0,0)", "circle-stroke-color": bandColor, "circle-stroke-width": 4 } });
         map.addLayer({ id: "shape-casing", type: "line", source: "shapes", filter: ["!=", ["geometry-type"], "Point"], paint: { "line-color": "#ffffff", "line-width": 7 } });
         map.addLayer({ id: "shape-line", type: "line", source: "shapes", filter: ["!=", ["geometry-type"], "Point"], paint: { "line-color": ["coalesce", ["get", "color"], ACCENT], "line-width": 4, "line-dasharray": ["case", ["==", ["get", "status"], "DRAFT"], ["literal", [2, 1]], ["literal", [1, 0]]] } });
         map.addLayer({ id: "shape-point", type: "circle", source: "shapes", filter: ["==", ["geometry-type"], "Point"], paint: { "circle-radius": 8, "circle-color": ["coalesce", ["get", "color"], ACCENT], "circle-stroke-color": "#fff", "circle-stroke-width": 3 } });
@@ -147,13 +205,32 @@ export function WorkMap({ features, height = 320, label, onSelect, overlay }: { 
     if (!ready) return;
     const list = features.map((f) => {
       const props = "properties" in f ? f.properties : undefined;
-      return { type: "Feature", geometry: f.geometry, properties: props ? { id: props.id, status: props.status, color: STATUS_COLOR[props.status] ?? ACCENT } : {} };
+      return { type: "Feature", geometry: f.geometry, properties: props ? { id: props.id, status: props.status, color: STATUS_COLOR[props.status] ?? ACCENT, ...(props.maxBand ? { band: props.maxBand } : {}) } : {} };
     });
     setShapes(mapRef.current, list);
     const b = boundsOf(features.map((f) => f.geometry));
     if (b) mapRef.current?.fitBounds(b, { padding: 48, maxZoom: 17, duration: 0 });
   }, [features, ready, mapRef]);
-  return <div ref={container} className="rs-map" style={{ height }} role="region" aria-label={label} />;
+  return (
+    <>
+      <div ref={container} className="rs-map" style={{ height }} role="region" aria-label={label} />
+      {overlay?.mode === "conflicts" ? <ConflictLegend /> : null}
+    </>
+  );
+}
+
+/** Legend for conflicts mode: bands, kinds, hotspot and profile. Icons and labels, never colour alone. */
+function ConflictLegend() {
+  const [locale] = useWorkspaceLocale();
+  const copy = getAssessmentCopy(locale);
+  return (
+    <ul className="rs-legend" aria-label={copy.heading}>
+      {BAND_ORDER.map((b) => <li key={b}><i style={{ background: BAND_HEX[b] }} aria-hidden="true" />{copy.bands[b]}</li>)}
+      <li><i className="is-opp" aria-hidden="true" />{copy.kindOne.opportunity}</li>
+      <li><i className="is-hot" aria-hidden="true" />{copy.profile.pointOnly}</li>
+      <li><i className="is-prof" aria-hidden="true" />{copy.profile.title}</li>
+    </ul>
+  );
 }
 
 /* ---------- location picker (create form) ---------- */
