@@ -7,6 +7,8 @@ import type { GeometryInput } from "./work-requests-view";
 export type PreviewBody = {
   geometry: GeometryInput;
   schedule?: { plannedStart: string; plannedEnd: string };
+  /** Steps 70-71: optional drafting fields so the preview can assess conflicts. Missing fields are reported, never required. */
+  subject?: { workType?: string; priority?: string; trafficImpact?: { level: string } };
   radiusMeters: number;
   excludeRequestId?: string;
 };

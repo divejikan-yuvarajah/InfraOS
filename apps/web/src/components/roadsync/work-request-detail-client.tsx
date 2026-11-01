@@ -19,9 +19,13 @@ import {
   workRequestQueryKey,
 } from "@/lib/roadsync/work-requests-view";
 import type { NearbyOverlay } from "@/lib/roadsync/nearby";
+import { getAssessmentCopy } from "@/lib/roadsync/assessment-copy";
 import { getAuthEpoch, getMemorySession, subscribeAuth } from "@/lib/auth/state";
+import { useWorkspaceLocale } from "@/lib/i18n/workspace-locale";
 
+import { ConflictsPanel, useAssessment } from "./conflicts-panel";
 import { NearbyActivityPanel } from "./nearby-activity";
+import { RiskChip } from "./risk-visuals";
 import { PriorityMark, WorkTypeIcon } from "./roadsync-shared";
 import { WorkMap } from "./work-map";
 
@@ -33,7 +37,11 @@ export function WorkRequestDetailClient({ id }: { id: string }) {
   const roleKey = useAuthPart(() => getMemorySession()?.user.roleKey ?? "");
   const userId = useAuthPart(() => getMemorySession()?.user.id ?? "");
   const epoch = useAuthPart(() => String(getAuthEpoch()));
-  const [overlay, setOverlay] = useState<NearbyOverlay | null>(null);
+  const [nearbyOverlay, setNearbyOverlay] = useState<NearbyOverlay | null>(null);
+  const [conflictOverlay, setConflictOverlay] = useState<NearbyOverlay | null>(null);
+  const [layer, setLayer] = useState<"conflicts" | "nearby">("conflicts");
+  const [locale] = useWorkspaceLocale();
+  const risk = getAssessmentCopy(locale);
   const created = useSearchParams().get("created") === "1";
   const query = useQuery({
     queryKey: workRequestQueryKey(epoch, userId, roleKey, "detail", id),
@@ -42,6 +50,10 @@ export function WorkRequestDetailClient({ id }: { id: string }) {
     retry: false,
   });
   const wr = query.data;
+  const assessment = useAssessment(id, Boolean(wr && wr.status !== "DRAFT"));
+  const assessed = assessment.query.data;
+  const severity = new Map((assessed?.items ?? []).map((i) => [i.candidateId, { kind: i.assessment.kind, band: i.assessment.effective.band }] as const));
+  const overlay = layer === "nearby" ? nearbyOverlay ?? conflictOverlay : conflictOverlay ?? nearbyOverlay;
   const failure = query.error ? classifyWorkRequestError(query.error) : null;
   const geo = wr ? summarizeGeometry(wr.geometry) : null;
   const vertices = wr ? (wr.geometry.type === "Point" ? [wr.geometry.coordinates] : wr.geometry.type === "LineString" ? wr.geometry.coordinates : (wr.geometry.coordinates[0] ?? [])) : [];
@@ -88,6 +100,7 @@ export function WorkRequestDetailClient({ id }: { id: string }) {
                     {wr.nearbyCount > 0 ? ` · ${wr.nearbyCount} nearby` : ""}
                   </span>
                 ) : null}
+                {wr.status !== "DRAFT" && assessed?.summary.status === "completed" ? <a href="#conflicts" className="rs-listrisk" aria-label={`${risk.riskIndex}: ${assessed.summary.riskIndex}`}><RiskChip value={assessed.summary.riskIndex} band={assessed.summary.maxBand} copy={risk} /></a> : null}
               </div>
               <dl className="rs-facts">
                 <div><dt>Project</dt><dd>{wr.projectTitle ?? "—"}{wr.projectCode ? ` (${wr.projectCode})` : ""}</dd></div>
@@ -102,13 +115,19 @@ export function WorkRequestDetailClient({ id }: { id: string }) {
             {wr.status === "DRAFT" ? <div className="rs-notice" role="note">
               <InfoIcon aria-hidden="true" style={{ width: "1.1rem", height: "1.1rem", flex: "none", marginTop: "0.1rem" }} />
               <p style={{ margin: 0 }}>
-                <strong>Draft work request.</strong> Conflict detection is not available yet, so this request has not been checked against other works. Times are shown in Sri Lanka time.
+                <strong>Draft work request.</strong> Drafts are not assessed for conflicts. Use the conflict preview while drafting; the full assessment runs once the request is submitted. Times are shown in Sri Lanka time.
               </p>
             </div> : null}
 
             <div className="rs-detail-grid">
               <section className="rs-section" aria-labelledby="rs-geo">
                 <h2 id="rs-geo">Location</h2>
+                {nearbyOverlay && conflictOverlay ? (
+                  <div className="rs-cseg" role="group" aria-label="Map layer">
+                    <button type="button" className="rs-btn" aria-pressed={layer === "conflicts"} onClick={() => setLayer("conflicts")}>{risk.tab}</button>
+                    <button type="button" className="rs-btn" aria-pressed={layer === "nearby"} onClick={() => setLayer("nearby")}>Nearby</button>
+                  </div>
+                ) : null}
                 <WorkMap features={[{ geometry: wr.geometry }]} height={300} label="Work request location map" overlay={overlay} />
                 <p className="rs-help">
                   {geo.label} · {geo.vertices} {geo.vertices === 1 ? "vertex" : "vertices"}
@@ -126,9 +145,14 @@ export function WorkRequestDetailClient({ id }: { id: string }) {
               </section>
             </div>
             {wr.status !== "DRAFT" ? (
-              <div className="rs-section" id="nearby">
-                <NearbyActivityPanel mode="persisted" requestId={wr.id} self={{ workType: wr.workType, plannedStart: wr.plannedStart, plannedEnd: wr.plannedEnd, geometry: wr.geometry }} canRun={canHintCreate(roleKey)} onOverlay={setOverlay} />
-              </div>
+              <>
+                <div className="rs-section" id="conflicts">
+                  <ConflictsPanel requestId={wr.id} self={{ workType: wr.workType, plannedStart: wr.plannedStart, plannedEnd: wr.plannedEnd, geometry: wr.geometry }} canRun={canHintCreate(roleKey)} national={roleKey === "SUPER_ADMIN"} onOverlay={setConflictOverlay} />
+                </div>
+                <div className="rs-section" id="nearby">
+                  <NearbyActivityPanel mode="persisted" requestId={wr.id} self={{ workType: wr.workType, plannedStart: wr.plannedStart, plannedEnd: wr.plannedEnd, geometry: wr.geometry }} canRun={canHintCreate(roleKey)} onOverlay={setNearbyOverlay} severity={severity} />
+                </div>
+              </>
             ) : null}
           </>
         ) : null}

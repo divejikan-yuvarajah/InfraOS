@@ -1,5 +1,7 @@
 import type { WorkPriority, WorkStatus, WorkType } from "@infraos/shared-types";
 
+import type { Band } from "./assessment";
+
 /**
  * Local literals typed against shared-types: the web bundler cannot resolve runtime
  * imports from that package, so a parity test guards against drift.
@@ -27,6 +29,8 @@ export type WorkRequestRecord = {
   revision: number;
   detection?: { status: "pending" | "running" | "completed" | "failed"; completedAt: string | null; counts: { nearby: number; candidates: number; agencies: number; truncated: boolean } | null } | null;
   nearbyCount: number;
+  /** Steps 70-71 summary. Null until the request has been assessed. */
+  assessment?: { status: string; riskIndex: number; maxBand: Band | null; conflicts: number; opportunities: number } | null;
 };
 
 export type WorkRequestListData = {
@@ -244,7 +248,7 @@ export function firstInvalidField(errors: WorkRequestFormErrors): keyof WorkRequ
 
 /* ---------- list ---------- */
 
-export type WorkRequestFilters = { status: string; workType: string; priority: string; projectId: string; page: number; hasCandidates?: boolean };
+export type WorkRequestFilters = { status: string; workType: string; priority: string; projectId: string; page: number; hasCandidates?: boolean; band?: string; hasConflicts?: boolean; sort?: "riskIndex" };
 export const EMPTY_FILTERS: WorkRequestFilters = { status: "", workType: "", priority: "", projectId: "", page: 1 };
 
 export function filtersToQuery(f: WorkRequestFilters, limit = 20): string {
@@ -254,11 +258,14 @@ export function filtersToQuery(f: WorkRequestFilters, limit = 20): string {
   if (f.priority) params.set("priority", f.priority);
   if (f.projectId) params.set("projectId", f.projectId);
   if (f.hasCandidates) params.set("hasCandidates", "true");
+  if (f.band) params.set("band", f.band);
+  if (f.hasConflicts) params.set("hasConflicts", "true");
+  if (f.sort) params.set("sort", f.sort);
   return params.toString();
 }
 
 export function hasActiveFilters(f: WorkRequestFilters): boolean {
-  return Boolean(f.status || f.workType || f.priority || f.projectId || f.hasCandidates);
+  return Boolean(f.status || f.workType || f.priority || f.projectId || f.hasCandidates || f.band || f.hasConflicts);
 }
 
 /** Roles whose server grant includes roadsync.work_request.create. A hint only: the API enforces it. */

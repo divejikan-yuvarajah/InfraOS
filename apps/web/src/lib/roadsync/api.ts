@@ -84,7 +84,7 @@ export async function validateGeo(geojson: unknown): Promise<GeoValidation> {
 export type WorkMapFeature = {
   type: "Feature";
   geometry: import("./work-requests-view").GeometryInput;
-  properties: { id: string; workType: string; status: string; priority: string; plannedStart: string; plannedEnd: string; agencyName: string | null; projectTitle: string | null; projectCode: string | null };
+  properties: { id: string; workType: string; status: string; priority: string; plannedStart: string; plannedEnd: string; agencyName: string | null; projectTitle: string | null; projectCode: string | null; maxBand?: import("./assessment").Band | null; riskIndex?: number | null };
 };
 export type WorkMapData = { type: "FeatureCollection"; truncated: boolean; features: WorkMapFeature[] };
 

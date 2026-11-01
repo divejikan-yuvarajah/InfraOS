@@ -1,3 +1,4 @@
+import type { ConflictOverlay, PreviewAssessment, PreviewItemAssessment } from "./assessment";
 import type { GeometryInput } from "./work-requests-view";
 
 /** Steps 68-69: mirrors the API projection. Facts are from the viewer's own request (self = a) vs the other item (b). */
@@ -42,8 +43,8 @@ export type NearbyOther = {
   detailLevel: "full" | "redacted";
   canOpen: boolean;
 };
-export type NearbyView = { key: string; candidateId: string | null; other: NearbyOther; spatial: SpatialFacts; temporal: TemporalFacts; isCandidate: boolean; canOpen: boolean; stale: boolean };
-export type NearbySummary = { nearby: number; candidates: number; overlapping: number; nearInTime: number; agencies: number; closestMeters: number | null };
+export type NearbyView = { key: string; candidateId: string | null; other: NearbyOther; spatial: SpatialFacts; temporal: TemporalFacts; isCandidate: boolean; canOpen: boolean; stale: boolean; assessment?: PreviewItemAssessment };
+export type NearbySummary = { nearby: number; candidates: number; overlapping: number; nearInTime: number; agencies: number; closestMeters: number | null; assessment?: PreviewAssessment };
 export type SourceCheck = { source: "work_request" | "project" | "asset"; ok: boolean; error?: string };
 export type DetectionState = {
   status: "pending" | "running" | "completed" | "failed";
@@ -105,7 +106,8 @@ export function searchArea(geometry: GeometryInput, radius: number) {
   return { type: "Feature", properties: { kind: "area" }, geometry: { type: "Polygon", coordinates: [ring] } };
 }
 
-export type NearbyOverlay = { features: unknown[]; selectedKey: string | null; onSelect?: (key: string) => void };
+/** One overlay prop for both layers sets: nearby (Steps 68-69) and conflicts (Steps 70-71). */
+export type NearbyOverlay = { mode?: "nearby"; features: unknown[]; selectedKey: string | null; hoverKey?: string | null; onSelect?: (key: string) => void } | ConflictOverlay;
 
 /** GeoJSON for the map overlay: search area, candidate shapes, and dotted connectors to the closest points. */
 export function overlayFeatures(views: NearbyView[], self: GeometryInput | null, radius: number): unknown[] {
