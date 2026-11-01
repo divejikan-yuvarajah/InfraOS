@@ -29,6 +29,11 @@ import {
 } from "@/lib/roadsync/work-requests-view";
 import { getAuthEpoch, getMemorySession, subscribeAuth } from "@/lib/auth/state";
 
+import { useWorkspaceLocale } from "@/lib/i18n/workspace-locale";
+import { BANDS_DESC, fmt, type Band } from "@/lib/roadsync/assessment";
+import { getAssessmentCopy } from "@/lib/roadsync/assessment-copy";
+
+import { BandPill } from "./risk-visuals";
 import { PriorityMark, WorkTypeIcon } from "./roadsync-shared";
 import { WorkMap } from "./work-map";
 
@@ -41,6 +46,8 @@ export function WorkRequestsListClient() {
   const userId = useAuthPart(() => getMemorySession()?.user.id ?? "");
   const epoch = useAuthPart(() => String(getAuthEpoch()));
   const [filters, setFilters] = useState<WorkRequestFilters>(EMPTY_FILTERS);
+  const [locale] = useWorkspaceLocale();
+  const risk = getAssessmentCopy(locale);
   const query = filtersToQuery(filters);
   const router = useRouter();
   const [view, setView] = useState<"list" | "map">("list");
@@ -145,6 +152,24 @@ export function WorkRequestsListClient() {
             <input type="checkbox" checked={Boolean(filters.hasCandidates)} onChange={(e) => set({ hasCandidates: e.target.checked })} />
             Has nearby activity
           </label>
+          <label className="rs-field">
+            <span className="rs-label">{risk.list.bandFilter}</span>
+            <select className="rs-input" value={filters.band ?? ""} onChange={(e) => set({ band: e.target.value })}>
+              <option value="">—</option>
+              {BANDS_DESC.map((b) => <option key={b} value={b}>{risk.bands[b]}</option>)}
+            </select>
+          </label>
+          <label className="rs-nb-check">
+            <input type="checkbox" checked={Boolean(filters.hasConflicts)} onChange={(e) => set({ hasConflicts: e.target.checked })} />
+            {risk.list.hasConflicts}
+          </label>
+          <label className="rs-field">
+            <span className="rs-label">{risk.filters.sort}</span>
+            <select className="rs-input" value={filters.sort ?? ""} onChange={(e) => set({ sort: e.target.value === "riskIndex" ? "riskIndex" : undefined })}>
+              <option value="">{risk.list.sortDate}</option>
+              <option value="riskIndex">{risk.list.sortRisk}</option>
+            </select>
+          </label>
           {projects.data ? (
             <label className="rs-field">
               <span className="rs-label">Project</span>
@@ -238,7 +263,7 @@ export function WorkRequestsListClient() {
                         {WORK_TYPE_LABELS[wr.workType]}
                         <span className="mc-sr"> — open details</span>
                       </Link>
-                      <p className="rs-sub">{wr.geometry.type === "Point" ? "Point" : wr.geometry.type === "LineString" ? "Corridor" : "Area"} · {wr.agencyName ?? "Agency"}{wr.nearbyCount > 0 ? <span className="rs-nb-chip" style={{ marginLeft: "0.5rem" }}>{wr.nearbyCount} nearby</span> : null}</p>
+                      <p className="rs-sub">{wr.geometry.type === "Point" ? "Point" : wr.geometry.type === "LineString" ? "Corridor" : "Area"} · {wr.agencyName ?? "Agency"}{wr.nearbyCount > 0 ? <span className="rs-nb-chip" style={{ marginLeft: "0.5rem" }}>{wr.assessment?.maxBand ? fmt(risk.list.risk, { n: wr.nearbyCount, band: risk.bands[wr.assessment.maxBand as Band] }) : fmt(risk.list.nearbyOnly, { n: wr.nearbyCount })}</span> : null}{wr.assessment?.maxBand ? <span style={{ marginLeft: "0.5rem" }} title={`${risk.riskIndex}: ${wr.assessment.riskIndex}`}><BandPill band={wr.assessment.maxBand as Band} copy={risk} /></span> : null}</p>
                     </div>
                   </div>
                   <div className="rs-cell">

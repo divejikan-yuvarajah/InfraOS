@@ -13,6 +13,11 @@ import {
   type DetectionResult, type NearbyOverlay, type NearbySummary, type NearbyView, type PreviewResult, type SourceCheck, type TemporalFacts,
 } from "@/lib/roadsync/nearby";
 import { WORK_TYPE_LABELS, workRequestQueryKey, type GeometryInput } from "@/lib/roadsync/work-requests-view";
+import { useWorkspaceLocale } from "@/lib/i18n/workspace-locale";
+import type { Band, Kind } from "@/lib/roadsync/assessment";
+import { getAssessmentCopy } from "@/lib/roadsync/assessment-copy";
+
+import { KindPill } from "./risk-visuals";
 
 const DAY_MS = 86_400_000;
 const dayOf = (iso: string) => Math.floor((Date.parse(iso) + 5.5 * 3_600_000) / DAY_MS);
@@ -20,11 +25,11 @@ const dayLabel = (iso: string) => new Intl.DateTimeFormat("en-GB", { timeZone: "
 const isoDayLabel = (iso: string) => new Intl.DateTimeFormat("en-GB", { timeZone: "UTC", day: "numeric", month: "short" }).format(new Date(`${iso}T00:00:00Z`));
 
 const INFRA_ICON: Record<string, LucideIcon> = { ROAD: RouteIcon, WATER: DropletsIcon, DRAINAGE: DropletsIcon, ELECTRICITY: ZapIcon, TELECOM: RadioTowerIcon, BRIDGE: LandmarkIcon };
-const InfraIcon = ({ type }: { type: string }) => {
+export const InfraIcon = ({ type }: { type: string }) => {
   const Icon = INFRA_ICON[type] ?? ShapesIcon;
   return <Icon aria-hidden="true" />;
 };
-const infraLabel = (t: string) => t.replaceAll("_", " ").toLowerCase().replace(/^./, (c) => c.toUpperCase());
+export const infraLabel = (t: string) => t.replaceAll("_", " ").toLowerCase().replace(/^./, (c) => c.toUpperCase());
 
 function useAuthPart(read: () => string): string {
   return useSyncExternalStore(subscribeAuth, read, () => "");
@@ -140,7 +145,10 @@ function MiniBars({ self, v }: { self: Self; v: NearbyView }) {
   return pair ? <ScheduleOverlapChart self={pair.self} lanes={[pair.lane]} compact /> : null;
 }
 
-function Card({ v, self, selected, onOpen }: { v: NearbyView; self: Self; selected: boolean; onOpen: (key: string, el: HTMLButtonElement) => void }) {
+type Severity = { kind: Kind; band: Band };
+
+function Card({ v, self, selected, onOpen, severity }: { v: NearbyView; self: Self; selected: boolean; onOpen: (key: string, el: HTMLButtonElement) => void; severity?: Severity }) {
+  const [locale] = useWorkspaceLocale();
   const t = v.temporal;
   const color = INFRA_COLOR[v.other.infrastructureType] ?? MUTED_COLOR;
   const shared = v.spatial.sharedLengthMeters > 0 ? `≈ ${meters(v.spatial.sharedLengthMeters)} shared corridor${v.spatial.sharedPctOfA !== null ? ` (${Math.round(v.spatial.sharedPctOfA * 100)} % of yours)` : ""}` : null;
@@ -149,7 +157,7 @@ function Card({ v, self, selected, onOpen }: { v: NearbyView; self: Self; select
       <button type="button" className="rs-nb-card" data-selected={selected || undefined} style={{ borderLeftColor: color }} aria-pressed={selected}
         aria-label={`${v.other.ref}, ${v.other.title}. ${spatialLabel(v.spatial)}. ${timeRelationLabel(t)}${t.overlapDays ? `, ${t.overlapDays} days overlap` : ""}. Open comparison.`}
         onClick={(e) => onOpen(v.key, e.currentTarget)}>
-        <span className="rs-nb-line1"><span className="rs-nb-icon" style={{ color }}><InfraIcon type={v.other.infrastructureType} /></span><strong>{v.other.title}</strong><code>{v.other.ref}</code><span className="rs-nb-badge">{SOURCE_LABEL[v.other.sourceType]}</span></span>
+        <span className="rs-nb-line1"><span className="rs-nb-icon" style={{ color }}><InfraIcon type={v.other.infrastructureType} /></span><strong>{v.other.title}</strong><code>{v.other.ref}</code><span className="rs-nb-badge">{SOURCE_LABEL[v.other.sourceType]}</span>{severity ? <KindPill kind={severity.kind} band={severity.band} copy={getAssessmentCopy(locale)} /> : null}</span>
         <span className="rs-nb-line2">
           <span className="rs-nb-chip">{v.other.agencyName ?? "Unknown agency"}</span>
           <span>{infraLabel(v.other.infrastructureType)}</span>
@@ -222,9 +230,11 @@ type PanelProps = {
   compact?: boolean;
   /** Tells the parent which overlay to draw on its map. */
   onOverlay?: (overlay: NearbyOverlay | null) => void;
+  /** Steps 70-71: severity per candidate id, so both sections show the same pill. */
+  severity?: Map<string, Severity>;
 };
 
-export function NearbyActivityPanel({ mode, requestId, self, canRun = false, compact = false, onOverlay }: PanelProps) {
+export function NearbyActivityPanel({ mode, requestId, self, canRun = false, compact = false, onOverlay, severity }: PanelProps) {
   const roleKey = useAuthPart(() => getMemorySession()?.user.roleKey ?? "");
   const userId = useAuthPart(() => getMemorySession()?.user.id ?? "");
   const epoch = useAuthPart(() => String(getAuthEpoch()));
@@ -355,7 +365,7 @@ export function NearbyActivityPanel({ mode, requestId, self, canRun = false, com
             </div>
           ) : (
             <ul className="rs-nb-list" aria-label="Nearby items" onKeyDown={onListKey}>
-              {shown.map((v) => <Card key={v.key} v={v} self={self} selected={selected === v.key} onOpen={openCard} />)}
+              {shown.map((v) => <Card key={v.key} v={v} self={self} selected={selected === v.key} onOpen={openCard} severity={v.candidateId ? severity?.get(v.candidateId) : undefined} />)}
             </ul>
           )}
           {compact && views.length > 3 ? <p className="rs-help">Showing 3 of {views.length}. Open the full view on the work request page after saving.</p> : null}

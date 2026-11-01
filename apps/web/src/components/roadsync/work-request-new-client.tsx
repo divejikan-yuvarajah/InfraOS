@@ -33,6 +33,7 @@ import { getAuthEpoch, getMemorySession, subscribeAuth } from "@/lib/auth/state"
 
 import { PriorityMark, WORK_TYPE_ICONS } from "./roadsync-shared";
 import type { NearbyOverlay } from "@/lib/roadsync/nearby";
+import { ConflictPreview } from "./conflict-preview";
 import { NearbyActivityPanel } from "./nearby-activity";
 import { LocationPicker } from "./work-map";
 
@@ -108,6 +109,10 @@ export function WorkRequestNewClient() {
   const geoSummary = geometry.ok ? summarizeGeometry(geometry.geometry) : null;
   const startUtc = colomboLocalToUtc(values.plannedStart);
   const endUtc = colomboLocalToUtc(values.plannedEnd);
+  const datesOk = Boolean(startUtc && endUtc && new Date(endUtc) >= new Date(startUtc));
+  const previewGeometry = geometry.ok && geoValid !== false ? geometry.geometry : null;
+  const previewStart = datesOk ? startUtc : null;
+  const previewEnd = datesOk ? endUtc : null;
 
   function onSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -149,7 +154,7 @@ export function WorkRequestNewClient() {
   }
 
   return (
-    <StaffWorkspaceShell title="Create work request" description="Draft a planned work request linked to one of your projects. It is saved as a draft; nothing is submitted or checked for conflicts." wide>
+    <StaffWorkspaceShell title="Create work request" description="Draft a planned work request linked to one of your projects. It is saved as a draft; nothing is submitted. The conflict preview is advisory." wide>
       <div className="rs-page">
         <p className="rs-crumb">Operations / RoadSync / New</p>
         {errorEntries.length > 0 || serverError ? (
@@ -244,6 +249,7 @@ export function WorkRequestNewClient() {
                 self={{ workType: values.workType || null, plannedStart: startUtc && endUtc && new Date(endUtc) >= new Date(startUtc) ? startUtc : null, plannedEnd: startUtc && endUtc && new Date(endUtc) >= new Date(startUtc) ? endUtc : null, geometry: geometry.ok && geoValid !== false ? geometry.geometry : null }}
                 onOverlay={setOverlay}
               />
+              <ConflictPreview variant="compact" geometry={previewGeometry} plannedStart={previewStart} plannedEnd={previewEnd} workType={values.workType} priority={values.priority} />
               <p className="rs-help">Nearby activity is advisory and never blocks saving.</p>
             </section>
 
@@ -291,6 +297,7 @@ export function WorkRequestNewClient() {
               <div><dt>Window</dt><dd>{startUtc && endUtc ? `${formatColombo(startUtc)} → ${formatColombo(endUtc)}` : "Not set"}</dd></div>
               <div><dt>Status on save</dt><dd>Draft</dd></div>
             </dl>
+            <ConflictPreview variant="review" geometry={previewGeometry} plannedStart={previewStart} plannedEnd={previewEnd} workType={values.workType} priority={values.priority} />
           </aside>
         </form>
       </div>
