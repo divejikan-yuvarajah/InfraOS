@@ -152,3 +152,36 @@ export function statusLabel(status: string): string {
   const spaced = status.replaceAll("_", " ").toLowerCase();
   return spaced.charAt(0).toUpperCase() + spaced.slice(1);
 }
+
+/* ---------- Site Plan portfolio line (Phase 6) ---------- */
+
+export type PortfolioNode = { status: DashboardStatus; count: number; href: string };
+/** `from` is set only when the lifecycle policy allows exactly one origin (HOLD and MARK_DELAYED: from ACTIVE). */
+export type PortfolioLine = { main: PortfolioNode[]; branches: (PortfolioNode & { from: DashboardStatus | null })[]; total: number };
+
+const MAIN_LINE: DashboardStatus[] = ["DRAFT", "SUBMITTED", "UNDER_REVIEW", "APPROVED", "ACTIVE", "COMPLETED"];
+// REJECTED (from SUBMITTED or UNDER_REVIEW) and CANCELLED (from four states) have no single origin.
+const BRANCHES: { status: DashboardStatus; from: DashboardStatus | null }[] = [
+  { status: "REJECTED", from: null },
+  { status: "ON_HOLD", from: "ACTIVE" },
+  { status: "DELAYED", from: "ACTIVE" },
+  { status: "CANCELLED", from: null },
+];
+
+/** Counts per lifecycle node from counts.byStatus only. Branches with zero projects are omitted. */
+export function portfolioLine(payload: DashboardPayload): PortfolioLine {
+  const node = (status: DashboardStatus): PortfolioNode => ({ status, count: payload.counts.byStatus[status] ?? 0, href: `/projects?status=${status}` });
+  return {
+    main: MAIN_LINE.map(node),
+    branches: BRANCHES.map((b) => ({ ...node(b.status), from: b.from })).filter((b) => b.count > 0),
+    total: payload.counts.total,
+  };
+}
+
+/** Localized status label: uses translated dashboard copy where it exists, English otherwise. */
+export function dashboardStatusLabel(status: string, copy: { active: string; onHold: string; delayed: string }): string {
+  if (status === "ACTIVE") return copy.active;
+  if (status === "ON_HOLD") return copy.onHold;
+  if (status === "DELAYED") return copy.delayed;
+  return statusLabel(status);
+}

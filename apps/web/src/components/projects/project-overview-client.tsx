@@ -1,182 +1,215 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { PROJECT_STATUSES, type ProjectStatus } from "@/lib/projects/list-query";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useState, useSyncExternalStore } from "react";
 
 import { StaffWorkspaceShell } from "@/components/auth/staff-workspace-shell";
-import { ProjectStatusBadge } from "@/components/common/status-badge";
+import { ContextBar, DualProgress, FactsList, HonestyChip, LifecycleRail, StatusChip } from "@/components/site-plan/site-plan";
 import { ApiError } from "@/lib/api/client";
 import { getAuthEpoch, getMemoryAccessToken, getMemorySession, subscribeAuth } from "@/lib/auth/state";
-import type { AuthLocale } from "@/lib/auth/types";
+import { useWorkspaceLocale } from "@/lib/i18n/workspace-locale";
 import { fetchProject, transitionProject } from "@/lib/projects/api";
+import { getDashboardCopy } from "@/lib/projects/dashboard-messages";
+import { dashboardStatusLabel } from "@/lib/projects/dashboard-view";
 import { classifyEditError } from "@/lib/projects/edit-outcome";
+import { fetchFinancialProgress } from "@/lib/projects/finance-api";
+import { financeQueryKey, financialForBar } from "@/lib/projects/finance-summary";
 import { getProjectCopy, projectReadMessage } from "@/lib/projects/messages";
-import { getReviewCopy } from "@/lib/projects/review-messages";
 import { geometrySummary, lkrBudgetLabel, projectCoreQueryKey, safeListReturn, utcDateLabel, utcStampLabel } from "@/lib/projects/overview-format";
-import { canLinkTimeline } from "@/lib/projects/timeline-view";
+import { getReviewCopy } from "@/lib/projects/review-messages";
 import type { ProjectDetail, ProjectLocation } from "@/lib/projects/types";
+
+import { ProjectRecordTabs } from "./project-record-tabs";
+
+import "@/styles/site-plan-projects.css";
 
 function useAuthPart(read: () => string, server: string): string {
   return useSyncExternalStore(subscribeAuth, read, () => server);
 }
 
-function placeLine(location: ProjectLocation | null | undefined, missing: string): string {
-  if (!location) return missing;
+function placeLine(location: ProjectLocation | null | undefined): string {
+  if (!location) return "";
   const parts = [location.roadName, location.locality, location.district, location.province].filter((part) => part && part.trim());
-  return parts.length > 0 ? parts.join(", ") : missing;
+  return parts.join(", ");
 }
 
-function Fact({ label, value }: { label: string; value: string }) {
-  return (
-    <p>
-      <span className="auth-access-field-label">{label}</span> {value}
-    </p>
-  );
-}
+type TransitionAction = "SUBMIT" | "HOLD" | "RESUME" | "REOPEN";
 
 function OverviewBody({
   project,
   copy,
+  statusText,
   listQuery,
   pending,
   notice,
   reviewLabel,
-  showTimeline,
+  financial,
   onTransition,
 }: {
   project: ProjectDetail;
   copy: ReturnType<typeof getProjectCopy>;
+  statusText: string;
   listQuery: string | null;
   pending: boolean;
   notice: string | null;
   reviewLabel: string;
-  showTimeline: boolean;
-  onTransition: (action: "SUBMIT" | "HOLD" | "RESUME" | "REOPEN", reason?: string) => void;
+  financial: { value: number | null; withheld: boolean };
+  onTransition: (action: TransitionAction, reason?: string) => void;
 }) {
   const [reason, setReason] = useState("");
   const needsReason = Boolean(project.availableActions?.includes("HOLD") || project.availableActions?.includes("RESUME"));
-  const status = PROJECT_STATUSES.find((item) => item === project.status);
-  const placeNote = project.location?.description?.trim() ? project.location.description : copy.notProvided;
-  const description = project.description?.trim() ? project.description : copy.notProvided;
+  const gaps = project.submissionGaps ?? [];
+  const canSubmit = Boolean(project.availableActions?.includes("SUBMIT")) && gaps.length === 0;
+  const hasAction = canSubmit || needsReason || Boolean(project.availableActions?.includes("REOPEN"));
+  const gapText = (gap: string) =>
+    gap === "dates" ? copy.gapDates : gap === "geometry" ? copy.gapGeometry : gap === "location" ? copy.gapLocation : gap === "budget" ? copy.gapBudget : copy.gapIdentity;
   return (
     <>
-      <header className="project-overview-header auth-access-card">
-        <div>
-          <p className="auth-access-field-label">{copy.fieldCode}</p>
-          <h2 id="project-overview-title">{project.title}</h2>
-          <p>{project.projectCode}</p>
-        </div>
-        {status ? <ProjectStatusBadge status={status as ProjectStatus} /> : <p>{project.status}</p>}
-        <p>{copy.fieldType}: {copy.types[project.projectType as keyof typeof copy.types] ?? project.projectType}</p>
-        <p>{copy.columnAgency}: {project.agencyCode ?? project.agencyId}</p>
-        <Fact label={copy.fieldManager} value={project.managerName?.trim() || copy.notProvided} />
-      </header>
-      <p role="note">{copy.overviewOnly}</p>
-      <p><Link className="auth-access-button" href={`/projects/${project.id}/milestones`}>{copy.milestones}</Link></p>
-      <p><Link className="auth-access-button" href={`/projects/${project.id}/progress`}>{copy.physicalProgress}</Link></p>
-      {showTimeline ? <p><Link className="auth-access-button" href={`/projects/${project.id}/timeline`}>{copy.timeline}</Link></p> : null}
-      {showTimeline ? <p><Link className="auth-access-button" href={`/projects/${project.id}/activity`}>{copy.activity}</Link></p> : null}
-      <p role="note">{copy.readOnly}</p>
-      {project.status === "DRAFT" ? <p role="status">{copy.draftOverview}</p> : null}
-      {project.status === "SUBMITTED" || project.status === "UNDER_REVIEW" ? <p role="note">{copy.waitingReview}</p> : null}
-      {project.status === "REJECTED" ? <p role="note">{copy.rejectedNote}</p> : null}
-      {project.reviewDecision?.reason ? (
-        <p role="status">{copy.decisionReason}: {project.reviewDecision.reason}</p>
-      ) : null}
-      <section className="auth-access-card project-overview-mark" aria-labelledby="project-lifecycle">
-        <h3 id="project-lifecycle">{copy.lifecycleTitle}</h3>
-        <p>{copy.lifecycleNote}</p>
-        {project.submissionGaps && project.submissionGaps.length > 0 ? (
-          <div role="status">
-            <p>{copy.submissionNeeds}</p>
-            <ul>
-              {project.submissionGaps.map((gap) => (
-                <li key={gap}>{gap === "dates" ? copy.gapDates : gap === "geometry" ? copy.gapGeometry : gap === "location" ? copy.gapLocation : gap === "budget" ? copy.gapBudget : copy.gapIdentity}</li>
-              ))}
-            </ul>
+      <section className="sp-surface spp-identity" aria-labelledby="project-overview-title">
+        <div className="spp-identity-top">
+          <div className="spp-identity-main">
+            <p className="spp-code">{project.projectCode}</p>
+            <h2 id="project-overview-title">{project.title}</h2>
+            <p className="spp-meta">
+              <span className="spp-tag">{copy.types[project.projectType as keyof typeof copy.types] ?? project.projectType}</span>
+              <span className="spp-tag">{project.agencyCode ?? project.agencyId}</span>
+              <span>
+                {copy.fieldManager}: <strong>{project.managerName?.trim() || copy.notProvided}</strong>
+              </span>
+            </p>
           </div>
-        ) : null}
-        {notice ? <p role="alert">{notice}</p> : null}
-        <div className="auth-access-locale-row">
-          {project.availableActions?.includes("SUBMIT") && !(project.submissionGaps && project.submissionGaps.length > 0) ? (
-            <button type="button" className="auth-access-button" disabled={pending} onClick={() => onTransition("SUBMIT")}>
-              {pending ? copy.lifecycleWorking : copy.submitForReview}
-            </button>
+          <div className="spp-identity-status">
+            <StatusChip domain="project" status={project.status} label={statusText} />
+          </div>
+        </div>
+        <LifecycleRail status={project.status} />
+      </section>
+
+      {project.status === "DRAFT" ? <p className="spp-note" role="status">{copy.draftOverview}</p> : null}
+      {project.status === "SUBMITTED" || project.status === "UNDER_REVIEW" ? <p className="spp-note" role="note">{copy.waitingReview}</p> : null}
+      {project.status === "REJECTED" ? <p className="spp-note is-critical" role="note">{copy.rejectedNote}</p> : null}
+      {project.reviewDecision?.reason ? (
+        <p className="spp-note" role="status">
+          <strong>{copy.decisionReason}:</strong> {project.reviewDecision.reason}
+        </p>
+      ) : null}
+
+      {project.canEditDraft || (project.availableReviewActions && project.availableReviewActions.length > 0) ? (
+        <div className="spp-actions">
+          {project.canEditDraft ? (
+            <Link className="spp-btn" href={`/projects/${project.id}/edit${listQuery ? `?list=${encodeURIComponent(listQuery)}` : ""}`}>
+              {copy.editDraft}
+            </Link>
           ) : null}
-          {needsReason ? (
-            <div>
-              <label className="auth-access-field-label" htmlFor="project-lifecycle-reason">{copy.reasonLabel}</label>
-              <input
-                id="project-lifecycle-reason"
-                className="auth-access-input"
-                value={reason}
-                maxLength={500}
-                onChange={(event) => setReason(event.target.value)}
-              />
-            </div>
-          ) : null}
-          {project.availableActions?.includes("HOLD") ? (
-            <button type="button" className="auth-access-button" disabled={pending || reason.trim().length === 0} onClick={() => onTransition("HOLD", reason.trim())}>
-              {copy.holdProject}
-            </button>
-          ) : null}
-          {project.availableActions?.includes("RESUME") ? (
-            <button type="button" className="auth-access-button" disabled={pending || reason.trim().length === 0} onClick={() => onTransition("RESUME", reason.trim())}>
-              {copy.resumeProject}
-            </button>
-          ) : null}
-          {project.availableActions?.includes("REOPEN") ? (
-            <button type="button" className="auth-access-button" disabled={pending} onClick={() => onTransition("REOPEN")}>
-              {pending ? copy.lifecycleWorking : copy.reopenDraft}
-            </button>
+          {project.availableReviewActions && project.availableReviewActions.length > 0 ? (
+            <Link className="spp-btn" href={`/projects/${project.id}/review`}>
+              {reviewLabel}
+            </Link>
           ) : null}
         </div>
-      </section>
-      {project.canEditDraft ? (
-        <p>
-          <Link className="auth-access-button" href={`/projects/${project.id}/edit${listQuery ? `?list=${encodeURIComponent(listQuery)}` : ""}`}>
-            {copy.editDraft}
-          </Link>
-        </p>
       ) : null}
-      {project.availableReviewActions && project.availableReviewActions.length > 0 ? (
-        <p>
-          <Link className="auth-access-button" href={`/projects/${project.id}/review`}>{reviewLabel}</Link>
-        </p>
-      ) : null}
-      <div className="project-overview-grid">
-        <section className="auth-access-card project-overview-mark" aria-labelledby="project-description">
-          <h3 id="project-description">{copy.sectionDescription}</h3>
-          <p className="project-overview-prose">{description}</p>
-        </section>
-        <section className="auth-access-card project-overview-mark" aria-labelledby="project-schedule">
-          <h3 id="project-schedule">{copy.sectionSchedule}</h3>
-          <Fact label={copy.fieldStart} value={utcDateLabel(project.startDate, copy.notProvided)} />
-          <Fact label={copy.fieldEnd} value={utcDateLabel(project.plannedEndDate, copy.notProvided)} />
-          <Fact label={copy.fieldActualEnd} value={utcDateLabel(project.actualEndDate, copy.notProvided)} />
-          <Fact label={copy.fieldUpdated} value={utcStampLabel(project.updatedAt, copy.notProvided)} />
-        </section>
-        <section className="auth-access-card project-overview-mark" aria-labelledby="project-place">
-          <h3 id="project-place">{copy.sectionPlace}</h3>
-          <p className="project-overview-prose">{placeLine(project.location, copy.notProvided)}</p>
-          <Fact label={copy.fieldPlaceNote} value={placeNote} />
-          <Fact label={copy.fieldGeometry} value={geometrySummary(project.geometry, copy.notProvided)} />
-        </section>
-        <section className="auth-access-card project-overview-mark" aria-labelledby="project-progress">
-          <h3 id="project-progress">{copy.sectionRecorded}</h3>
-          <p>{typeof project.physicalProgress === "number" ? `${project.physicalProgress}%` : copy.notProvided}</p>
-          <p>{copy.progressNote}</p>
-        </section>
-        {project.budget ? (
-          <section className="auth-access-card project-overview-mark" aria-labelledby="project-budget">
-            <h3 id="project-budget">{copy.sectionBudget}</h3>
-            <p>{lkrBudgetLabel(project.budget.amountMinor, copy.notProvided)}</p>
+
+      <div className="spp-cols">
+        <div className="spp-col">
+          <section className="sp-surface spp-panel" aria-labelledby="project-description">
+            <h3 id="project-description">{copy.sectionDescription}</h3>
+            <p className="spp-prose">{project.description?.trim() ? project.description : copy.notProvided}</p>
           </section>
-        ) : null}
+          <section className="sp-surface spp-panel" aria-labelledby="project-schedule">
+            <h3 id="project-schedule">{copy.sectionSchedule}</h3>
+            <FactsList
+              facts={[
+                { label: copy.fieldStart, value: utcDateLabel(project.startDate, ""), missing: copy.notProvided },
+                { label: copy.fieldEnd, value: utcDateLabel(project.plannedEndDate, ""), missing: copy.notProvided },
+                { label: copy.fieldActualEnd, value: utcDateLabel(project.actualEndDate, ""), missing: copy.notProvided },
+                { label: copy.fieldUpdated, value: utcStampLabel(project.updatedAt, ""), missing: copy.notProvided },
+              ]}
+            />
+          </section>
+          <section className="sp-surface spp-panel" aria-labelledby="project-place">
+            <h3 id="project-place">{copy.sectionPlace}</h3>
+            <FactsList
+              facts={[
+                { label: copy.sectionPlace, value: placeLine(project.location), missing: copy.notProvided },
+                { label: copy.fieldPlaceNote, value: project.location?.description?.trim() || "", missing: copy.notProvided },
+                { label: copy.fieldGeometry, value: geometrySummary(project.geometry, ""), missing: copy.notProvided },
+              ]}
+            />
+          </section>
+        </div>
+
+        <div className="spp-col">
+          {hasAction || gaps.length > 0 || notice ? (
+            <section className="sp-surface spp-panel spp-next" aria-labelledby="project-lifecycle">
+              <h3 id="project-lifecycle">{copy.lifecycleTitle}</h3>
+              <p className="spp-small">{copy.lifecycleNote}</p>
+              {gaps.length > 0 ? (
+                <div className="spp-gaps" role="status">
+                  <p>{copy.submissionNeeds}</p>
+                  <ul>
+                    {gaps.map((gap) => (
+                      <li key={gap}>{gapText(gap)}</li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
+              {notice ? <p className="spp-notice" role="alert">{notice}</p> : null}
+              {needsReason ? (
+                <div className="spp-field">
+                  <label htmlFor="project-lifecycle-reason">{copy.reasonLabel}</label>
+                  <input id="project-lifecycle-reason" className="spp-input" value={reason} maxLength={500} onChange={(event) => setReason(event.target.value)} />
+                </div>
+              ) : null}
+              <div className="spp-actions">
+                {canSubmit ? (
+                  <button type="button" className="spp-btn is-primary" disabled={pending} onClick={() => onTransition("SUBMIT")}>
+                    {pending ? copy.lifecycleWorking : copy.submitForReview}
+                  </button>
+                ) : null}
+                {project.availableActions?.includes("HOLD") ? (
+                  <button type="button" className="spp-btn" disabled={pending || reason.trim().length === 0} onClick={() => onTransition("HOLD", reason.trim())}>
+                    {copy.holdProject}
+                  </button>
+                ) : null}
+                {project.availableActions?.includes("RESUME") ? (
+                  <button type="button" className="spp-btn" disabled={pending || reason.trim().length === 0} onClick={() => onTransition("RESUME", reason.trim())}>
+                    {copy.resumeProject}
+                  </button>
+                ) : null}
+                {project.availableActions?.includes("REOPEN") ? (
+                  <button type="button" className="spp-btn" disabled={pending} onClick={() => onTransition("REOPEN")}>
+                    {pending ? copy.lifecycleWorking : copy.reopenDraft}
+                  </button>
+                ) : null}
+              </div>
+            </section>
+          ) : null}
+
+          <section className="sp-surface spp-panel" aria-labelledby="project-progress">
+            <h3 id="project-progress">{copy.sectionRecorded}</h3>
+            <DualProgress
+              physical={typeof project.physicalProgress === "number" ? project.physicalProgress : null}
+              financial={financial.value}
+              financialWithheld={financial.withheld}
+              names={{ physical: copy.physicalProgress, financial: "Financial progress" }}
+            />
+            <p className="spp-small">{copy.progressNote}</p>
+            <p className="spp-small">{copy.overviewOnly}</p>
+          </section>
+
+          {project.budget ? (
+            <section className="sp-surface spp-panel" aria-labelledby="project-budget">
+              <h3 id="project-budget">
+                {copy.sectionBudget} <HonestyChip kind="provisional" />
+              </h3>
+              <p className="spp-money">{lkrBudgetLabel(project.budget.amountMinor, copy.notProvided)}</p>
+            </section>
+          ) : null}
+        </div>
       </div>
+      <p className="spp-small">{copy.readOnly}</p>
     </>
   );
 }
@@ -186,7 +219,7 @@ export function ProjectOverviewClient({ id }: { id: string }) {
   const epoch = useAuthPart(() => String(getAuthEpoch()), "0");
   const userId = useAuthPart(() => getMemorySession()?.user.id ?? "", "");
   const roleKey = useAuthPart(() => getMemorySession()?.user.roleKey ?? "", "");
-  const [locale, setLocale] = useState<AuthLocale>("en");
+  const [locale] = useWorkspaceLocale();
   const copy = getProjectCopy(locale);
   const listQuery = searchParams.get("list");
   const back = safeListReturn(listQuery);
@@ -197,8 +230,14 @@ export function ProjectOverviewClient({ id }: { id: string }) {
     queryFn: () => fetchProject(id),
     retry: false,
   });
+  const finance = useQuery({
+    queryKey: financeQueryKey(epoch, userId, roleKey, id),
+    queryFn: () => fetchFinancialProgress(id),
+    enabled: Boolean(project.data),
+    retry: false,
+  });
   const transition = useMutation({
-    mutationFn: (input: { action: "SUBMIT" | "HOLD" | "RESUME" | "REOPEN"; reason?: string }) => {
+    mutationFn: (input: { action: TransitionAction; reason?: string }) => {
       const revision = project.data?.revision;
       if (typeof revision !== "number") throw new ApiError("missing revision", 409, { code: "CONFLICT" });
       return transitionProject(id, { action: input.action, revision, reason: input.reason });
@@ -225,42 +264,47 @@ export function ProjectOverviewClient({ id }: { id: string }) {
     : project.error
       ? (offline ? copy.offline : copy.unavailable)
       : null;
+  const financeStatus = finance.error ? (finance.error instanceof ApiError ? finance.error.status : 0) : null;
+  const financial = financialForBar(finance.data?.summary, financeStatus);
+  const dash = getDashboardCopy(locale);
 
   return (
-    <StaffWorkspaceShell title={copy.overview} description={project.data?.projectCode} wide>
-      <p><Link href={back}>{copy.backToList}</Link></p>
-      <section className="auth-access-card" aria-labelledby="project-locale">
-        <p id="project-locale" className="auth-access-field-label">View language (draft)</p>
-        <div className="auth-access-locale-row" role="group" aria-label="Project language">
-          {(["en", "si", "ta"] as const).map((code) => (
-            <button key={code} type="button" className="auth-access-button" aria-pressed={locale === code} onClick={() => setLocale(code)}>
-              {code === "en" ? "English" : code === "si" ? "සිංහල" : "தமிழ்"}
-            </button>
-          ))}
-        </div>
-        <p role="note">{copy.nativeReview}</p>
-      </section>
+    <StaffWorkspaceShell
+      title={copy.overview}
+      description={project.data?.projectCode}
+      wide
+      context={
+        <ContextBar
+          crumbs={[
+            { label: copy.breadcrumbProjects, href: back },
+            { label: project.data?.projectCode ?? copy.overview },
+          ]}
+        />
+      }
+    >
+      <ProjectRecordTabs id={id} roleKey={roleKey} copy={copy} />
       {project.isLoading ? (
-        <div className="project-overview-grid" role="status" aria-busy="true" aria-label={copy.loadingProject}>
-          <div className="auth-access-card project-overview-skeleton" />
-          <div className="auth-access-card project-overview-skeleton" />
+        <div className="spp-cols" role="status" aria-busy="true" aria-label={copy.loadingProject}>
+          <div className="mc-skel spp-skel" />
+          <div className="mc-skel spp-skel" />
         </div>
       ) : null}
       {error ? (
-        <div className="auth-access-banner error" role="alert">
+        <div className="mc-alert is-critical" role="alert">
           <p>{error}</p>
-          <button type="button" className="auth-access-button" onClick={() => void project.refetch()}>{copy.retry}</button>
+          <button type="button" className="mc-btn" onClick={() => void project.refetch()}>{copy.retry}</button>
         </div>
       ) : null}
       {project.data ? (
         <OverviewBody
           project={project.data}
           copy={copy}
+          statusText={dashboardStatusLabel(project.data.status, dash)}
           listQuery={listQuery}
           pending={transition.isPending}
           notice={notice}
           reviewLabel={getReviewCopy(locale).openReview}
-          showTimeline={canLinkTimeline(roleKey)}
+          financial={financial}
           onTransition={(action, reason) => {
             setNotice(null);
             transition.mutate({ action, reason });

@@ -1,0 +1,29 @@
+/**
+ * Site Plan skin for pages that still use the older auth-access-* classes (forms, admin, profile, reviews).
+ * Scoped to the staff workspace (.mc-root); the login and public pages are untouched.
+ * Rules: surfaces match .sp-surface, buttons are secondary by default and only submit buttons are orange
+ * (one orange fill per view), focus stays orange.
+ */
+.mc-root .auth-access-card { margin-top: 1rem; border: 0; border-left: 0; border-radius: var(--sp-radius-md); background: var(--infra-surface); box-shadow: var(--sp-lift-1); padding: 1.05rem 1.25rem; }
+.mc-root .auth-access-card h2, .mc-root .auth-access-card h3 { font-family: var(--font-infra-display, var(--font-display, system-ui)), system-ui, sans-serif; font-weight: 700; letter-spacing: -0.005em; }
+
+.mc-root .auth-access-button { display: inline-flex; align-items: center; justify-content: center; min-height: 2.5rem; padding: 0.4rem 1rem; border: 1px solid var(--infra-border-strong); border-radius: var(--mc-radius-control); background: #fff; color: var(--infra-text); font-weight: 600; font-size: 0.875rem; text-decoration: none; transition: background-color 150ms var(--mc-ease); }
+.mc-root .auth-access-button:hover:not(:disabled) { background: #f1f5f9; }
+.mc-root .auth-access-button[aria-pressed="true"] { background: var(--infra-text); border-color: var(--infra-text); color: #fff; }
+.mc-root .auth-access-button[type="submit"] { background: var(--infra-orange); border-color: var(--infra-orange); color: var(--infra-text); }
+.mc-root .auth-access-button[type="submit"]:hover:not(:disabled) { background: color-mix(in srgb, var(--infra-orange) 88%, black); }
+.mc-root .auth-access-button:focus-visible, .mc-root .auth-access-link:focus-visible { outline: 2px solid var(--infra-orange-text); outline-offset: 2px; }
+.mc-root .auth-access-link { color: var(--infra-orange-text); font-weight: 600; }
+
+.mc-root .auth-access-field-label { font-size: 0.8125rem; font-weight: 600; color: var(--infra-text-secondary); }
+.mc-root .auth-access-input, .mc-root select.auth-access-input { min-height: 2.5rem; border: 1px solid var(--infra-border-strong); border-radius: var(--mc-radius-control); }
+.mc-root .auth-access-input:focus-visible { outline: 2px solid var(--infra-orange-text); outline-offset: 1px; }
+.mc-root .auth-access-status { font-size: 0.8125rem; color: var(--infra-text-secondary); }
+.mc-root .auth-access-banner { border-radius: var(--sp-radius-sm); }
+
+/* Plain tables inside staff pages */
+.mc-root .admin-users-table-wrap { border-radius: var(--sp-radius-md); box-shadow: var(--sp-lift-1); background: var(--infra-surface); overflow: hidden; }
+.mc-root .project-list-filters { padding: 0.85rem 1rem; border-radius: var(--sp-radius-md); background: var(--infra-surface); box-shadow: var(--sp-lift-1); }
+
+/* Buttons size to their label instead of stretching across form grids. */
+.mc-root form .auth-access-button { justify-self: start; width: auto; }

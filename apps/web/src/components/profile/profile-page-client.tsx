@@ -5,6 +5,7 @@ import { useCallback, useEffect, useId, useState } from "react";
 import { useForm } from "react-hook-form";
 
 import { StaffWorkspaceShell } from "@/components/auth/staff-workspace-shell";
+import { WorkspaceContext } from "@/components/projects/project-record-nav";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -16,11 +17,11 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { ApiError } from "@/lib/api/client";
-import type { AuthLocale } from "@/lib/auth/types";
 import { fetchSelfProfile, updateSelfProfile } from "@/lib/profile/api";
 import { getProfileCopy } from "@/lib/profile/messages";
 import { profileFormSchema, type ProfileFormValues } from "@/lib/profile/schema";
 import type { SelfProfile } from "@/lib/profile/types";
+import { useWorkspaceLocale } from "@/lib/i18n/workspace-locale";
 
 function formatLastLogin(value: string | null): string {
   if (!value) return "—";
@@ -35,7 +36,7 @@ function formatLastLogin(value: string | null): string {
 
 export function ProfilePageClient() {
   const statusId = useId();
-  const [locale, setLocale] = useState<AuthLocale>("en");
+  const [locale] = useWorkspaceLocale();
   const copy = getProfileCopy(locale);
   const [profile, setProfile] = useState<SelfProfile | null>(null);
   const [loadState, setLoadState] = useState<"loading" | "ready" | "error">("loading");
@@ -136,25 +137,8 @@ export function ProfilePageClient() {
   const submitting = form.formState.isSubmitting;
 
   return (
-    <StaffWorkspaceShell title={copy.title} description={copy.subtitle}>
-      <section className="auth-access-card" aria-labelledby="profile-locale">
-        <p id="profile-locale" className="auth-access-field-label">
-          View language (draft)
-        </p>
-        <div className="auth-access-locale-row" role="group" aria-label="Profile view language">
-          {(["en", "si", "ta"] as const).map((code) => (
-            <button
-              key={code}
-              type="button"
-              className={locale === code ? "auth-access-chip is-active" : "auth-access-chip"}
-              onClick={() => setLocale(code)}
-            >
-              {code.toUpperCase()}
-            </button>
-          ))}
-        </div>
-        <p className="auth-access-hint">{copy.nativeReview}</p>
-      </section>
+    <StaffWorkspaceShell title={copy.title} description={copy.subtitle} context={<WorkspaceContext locale={locale} current={copy.title} />}>
+      {locale !== "en" ? <p className="spp-small">{copy.nativeReview}</p> : null}
 
       {loadState === "loading" ? (
         <p className="auth-access-status" role="status">

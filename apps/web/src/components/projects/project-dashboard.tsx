@@ -3,41 +3,31 @@
 import Link from "next/link";
 import { useSyncExternalStore } from "react";
 import { useQuery } from "@tanstack/react-query";
-import type { ProjectStatus } from "@infraos/shared-types";
-import {
-  ActivityIcon,
-  AlertTriangleIcon,
-  CheckCircle2Icon,
-  ClipboardCheckIcon,
-  ClockIcon,
-  FolderKanbanIcon,
-  PauseCircleIcon,
-} from "lucide-react";
+import { AlertTriangleIcon, ArrowRightIcon, CheckIcon, ClipboardCheckIcon, ClockIcon, MegaphoneIcon, RefreshCwIcon } from "lucide-react";
 
-import { StatusBadge } from "@/components/common/status-badge";
-import { MotifIllustration, SurveyGrid } from "@/components/motif/connected-motif";
+import { MotifIllustration } from "@/components/motif/connected-motif";
+import { ContextBar, HonestyChip, StatusChip, StatusNode } from "@/components/site-plan/site-plan";
 import { getAuthEpoch, getMemoryAccessToken, getMemorySession, subscribeAuth } from "@/lib/auth/state";
 import type { AuthLocale } from "@/lib/auth/types";
-import { projectStatusVisual } from "@/lib/design/semantic-colors";
+import { coverageHonesty } from "@/lib/design/site-plan";
 import { fetchProjectDashboard } from "@/lib/projects/dashboard-api";
 import { getDashboardCopy } from "@/lib/projects/dashboard-messages";
 import {
-  STATUS_TONE,
   attentionItems,
   canLinkProjectRecord,
-  dashboardCards,
   dashboardIsEmpty,
-  dashboardIsPartial,
   dashboardQueryKey,
   dashboardScope,
-  donutSegments,
-  statusLabel,
+  dashboardStatusLabel,
+  portfolioLine,
   statusRows,
   visibleDashboard,
-  type DashboardPayload,
+  type AttentionItem,
 } from "@/lib/projects/dashboard-view";
 import { classifyEditError } from "@/lib/projects/edit-outcome";
 import { formatActivityWhen } from "@/lib/projects/activity-view";
+
+import "@/styles/site-plan-dashboard.css";
 
 function useAuthPart(read: () => string): string {
   return useSyncExternalStore(subscribeAuth, read, () => "");
@@ -49,62 +39,27 @@ function money(minor: number): string {
   return `LKR ${new Intl.NumberFormat("en-LK").format(whole)}.${cents}`;
 }
 
-const CARD_META = {
-  total: { icon: FolderKanbanIcon, tone: "neutral", href: "/projects" },
-  active: { icon: ActivityIcon, tone: "active", href: "/projects?status=ACTIVE" },
-  onHold: { icon: PauseCircleIcon, tone: "neutral", href: "/projects?status=ON_HOLD" },
-  delayed: { icon: AlertTriangleIcon, tone: "critical", href: "/projects?status=DELAYED" },
-  reportedOpen: { icon: CheckCircle2Icon, tone: "pending", href: null },
-  reviews: { icon: ClipboardCheckIcon, tone: "pending", href: "/projects/reviews" },
+/** Phase 6 headings with no SI/TA source yet: English fallback, listed in docs/design/i18n-missing.md. */
+const NEW_COPY = {
+  lifecycle: "Portfolio lifecycle",
+  lifecycleHint: "Projects at each stage. Branches show projects off the main path.",
+  honesty: "Progress and money",
+  completed: "Completed by status",
+  reportedOpen: "Reported 100%, not completed",
+  workspace: "Workspace",
+  dashboard: "Dashboard",
 } as const;
 
-type CardId = keyof typeof CARD_META;
+const ATTENTION_ICON: Record<AttentionItem["id"], typeof ClockIcon> = {
+  delayed: AlertTriangleIcon,
+  overdue: ClockIcon,
+  reviews: ClipboardCheckIcon,
+  reportedOpen: MegaphoneIcon,
+};
 
-const statusClass = (status: string) =>
-  `is-${STATUS_TONE[status as keyof typeof STATUS_TONE] ?? "neutral"} is-${status.toLowerCase()}`;
-
-function StatusDonut({ data, label }: { data: DashboardPayload; label: string }) {
-  const segments = donutSegments(data);
-  const circumference = 2 * Math.PI * 48;
-  const gap = segments.length > 1 ? 2 : 0;
-  const starts = segments.map((_, i) => segments.slice(0, i).reduce((sum, seg) => sum + seg.fraction * circumference, 0));
-  return (
-    <div className="mc-donut-wrap">
-      <svg
-        viewBox="0 0 120 120"
-        className="mc-donut"
-        role="img"
-        aria-label={`${label}: ${segments.map((s) => `${statusLabel(s.status)} ${s.count}`).join(", ")}`}
-      >
-        <circle cx="60" cy="60" r="48" fill="none" stroke="#eef2f6" strokeWidth="14" />
-        {segments.map((seg, i) => {
-          const len = Math.max(seg.fraction * circumference - gap, 0.5);
-          const start = starts[i] ?? 0;
-          return (
-            <circle
-              key={seg.status}
-              cx="60"
-              cy="60"
-              r="48"
-              fill="none"
-              strokeWidth="14"
-              className={`mc-seg ${statusClass(seg.status)}`}
-              strokeDasharray={`${len} ${circumference - len}`}
-              strokeDashoffset={-start}
-              transform="rotate(-90 60 60)"
-            />
-          );
-        })}
-      </svg>
-      <p className="mc-donut-center">
-        <span>{data.counts.total}</span>
-      </p>
-    </div>
-  );
-}
-
-export function ProjectDashboard({ locale, onLocale }: { locale: AuthLocale; onLocale: (locale: AuthLocale) => void }) {
+export function ProjectDashboard({ locale }: { locale: AuthLocale }) {
   const copy = getDashboardCopy(locale);
+  const label = (status: string) => dashboardStatusLabel(status, copy);
   const epoch = useAuthPart(() => String(getAuthEpoch()));
   const userId = useAuthPart(() => getMemorySession()?.user.id ?? "");
   const roleKey = useAuthPart(() => getMemorySession()?.user.roleKey ?? "");
@@ -127,126 +82,56 @@ export function ProjectDashboard({ locale, onLocale }: { locale: AuthLocale; onL
           ? copy.unavailable
           : null;
 
-  const cardLabel = (id: CardId) =>
-    id === "total"
-      ? copy.total
-      : id === "active"
-        ? copy.active
-        : id === "onHold"
-          ? copy.onHold
-          : id === "delayed"
-            ? copy.delayed
-            : id === "reportedOpen"
-              ? copy.reportedOpen
-              : copy.reviews;
-  const attentionLabel = (id: string, count: number) =>
-    id === "delayed"
-      ? `${copy.delayed}: ${count}`
-      : id === "reviews"
-        ? `${copy.reviews}: ${count}`
-        : id === "overdue"
-          ? `${copy.overdue}: ${count}`
-          : `${copy.reportedOpen}: ${count}`;
-
+  const attentionText = (item: AttentionItem) =>
+    item.id === "delayed" ? copy.delayed : item.id === "reviews" ? copy.reviews : item.id === "overdue" ? copy.overdue : copy.reportedOpen;
+  const scopeLabel = data ? (data.scope === "platform" ? copy.scopePlatform : data.scope === "assigned" ? copy.scopeAssigned : copy.scopeAgency) : null;
   const attention = data ? attentionItems(data) : [];
   const empty = data ? dashboardIsEmpty(data) : false;
+  const line = data ? portfolioLine(data) : null;
+  const financeHonesty = data ? coverageHonesty(data.coverage.finance) : null;
 
   return (
-    <section className="mc-dash" aria-label={copy.title}>
-      <div className="mc-dash-toolbar">
-        <p className="mc-caption" role="status">
-          {copy.nativeReview}
-        </p>
-        <div className="mc-segmented" role="group" aria-label={copy.language}>
-          {(["en", "si", "ta"] as const).map((item) => (
-            <button
-              key={item}
-              type="button"
-              lang={item}
-              className={locale === item ? "is-current" : undefined}
-              aria-pressed={locale === item}
-              onClick={() => onLocale(item)}
-            >
-              {item === "en" ? copy.english : item === "si" ? copy.sinhala : copy.tamil}
-            </button>
-          ))}
-        </div>
-      </div>
+    <section className="spd" aria-label={copy.title}>
+      <ContextBar
+        crumbs={[{ label: NEW_COPY.workspace }, { label: NEW_COPY.dashboard }]}
+        scope={scopeLabel}
+        asOf={data ? formatActivityWhen(data.asOf, locale) : null}
+      />
+      {locale !== "en" ? <p className="spd-note">{copy.nativeReview}</p> : null}
+
       {query.isPending && signedIn ? (
-        <div className="mc-kpis mc-skeleton" role="status" aria-label={copy.loading}>
-          {Array.from({ length: 6 }, (_, i) => (
-            <span key={i} className="mc-skel" />
-          ))}
+        <div className="spd-grid" role="status" aria-label={copy.loading}>
+          <span className="mc-skel spd-skel-wide" />
+          <span className="mc-skel" />
+          <span className="mc-skel spd-skel-full" />
         </div>
       ) : null}
+
       {notice ? (
         <div className="mc-alert is-critical" role="alert">
           <AlertTriangleIcon aria-hidden="true" />
           <p>{notice}</p>
           {failure !== "denied" && failure !== "expired" ? (
             <button type="button" className="mc-btn" onClick={() => void query.refetch()}>
+              <RefreshCwIcon aria-hidden="true" style={{ width: "1rem", height: "1rem", display: "inline", marginRight: "0.35rem" }} />
               {copy.retry}
             </button>
           ) : null}
         </div>
       ) : null}
-      {data ? (
+
+      {data && line ? (
         <>
-          <p className="mc-provenance">
-            <strong>
-              {data.scope === "platform" ? copy.scopePlatform : data.scope === "assigned" ? copy.scopeAssigned : copy.scopeAgency}
-            </strong>
-            <span aria-hidden="true"> · </span>
-            {copy.asOf} <time dateTime={data.asOf}>{formatActivityWhen(data.asOf, locale)}</time>
-          </p>
-          {dashboardIsPartial(data) ? (
-            <p className="mc-note" role="status">
-              {copy.milestonesUnavailable}
-            </p>
-          ) : null}
-
-          <ul className="mc-kpis">
-            {dashboardCards(data).map((card) => {
-              const id = card.id as CardId;
-              const meta = CARD_META[id];
-              const Icon = meta.icon;
-              const href = meta.href;
-              const inner = (
-                <>
-                  <span className={`mc-chip is-${meta.tone}`}>
-                    <Icon aria-hidden="true" />
-                  </span>
-                  <span className="mc-kpi-label">{cardLabel(id)}</span>
-                  <span className="mc-kpi-value">{card.value === null ? "—" : card.value}</span>
-                  {id !== "total" && card.value !== null ? (
-                    <span className="mc-kpi-context">
-                      / {data.counts.total} {copy.total.toLowerCase()}
-                    </span>
-                  ) : null}
-                  {card.value === null ? <span className="mc-kpi-context">{copy.kpiRoleLimited}</span> : null}
-                </>
-              );
-              return (
-                <li key={card.id} className={`mc-kpi is-${meta.tone}`}>
-                  {href && card.value !== null ? (
-                    <Link href={href} className="mc-kpi-link">
-                      {inner}
-                    </Link>
-                  ) : (
-                    <div className="mc-kpi-link">{inner}</div>
-                  )}
-                </li>
-              );
-            })}
-          </ul>
-
-          <div className="mc-bento">
-            <section className="mc-panel mc-insight" aria-labelledby="mc-attention">
-              <SurveyGrid className="mc-insight-grid" />
-              <h2 id="mc-attention">{copy.attention}</h2>
+          <div className="spd-grid">
+            {/* 1 · Action before history */}
+            <section className="sp-surface spd-attention" aria-labelledby="spd-attention-h">
+              <header className="spd-head">
+                <h2 id="spd-attention-h">{copy.attention}</h2>
+                {attention.length > 0 ? <span className="spd-count">{attention.reduce((n, i) => n + i.count, 0)}</span> : null}
+              </header>
               {attention.length === 0 ? (
-                <div className="mc-calm">
-                  <MotifIllustration kind={empty ? "no-projects" : "all-clear"} className="mc-illustration" />
+                <div className="spd-calm">
+                  <MotifIllustration kind={empty ? "no-projects" : "all-clear"} className="spd-illustration" />
                   <p role="status">{empty ? copy.empty : copy.attentionClear}</p>
                   {empty ? (
                     <Link href="/projects" className="mc-link">
@@ -255,65 +140,121 @@ export function ProjectDashboard({ locale, onLocale }: { locale: AuthLocale; onL
                   ) : null}
                 </div>
               ) : (
-                <ul className="mc-attention-list">
+                <ul className="spd-lane">
                   {attention.map((item) => {
-                    const Icon =
-                      item.id === "reviews"
-                        ? ClipboardCheckIcon
-                        : item.id === "reportedOpen"
-                          ? CheckCircle2Icon
-                          : item.id === "overdue"
-                            ? ClockIcon
-                            : AlertTriangleIcon;
-                    const row = (
+                    const Icon = ATTENTION_ICON[item.id];
+                    const critical = item.id === "delayed" || item.id === "overdue";
+                    const body = (
                       <>
-                        <Icon aria-hidden="true" />
-                        <span>{attentionLabel(item.id, item.count)}</span>
-                        {item.href ? <span className="mc-link-hint">{copy.viewList} →</span> : null}
+                        <span className="spd-lane-icon" aria-hidden="true">
+                          <Icon />
+                        </span>
+                        <span className="spd-lane-text">{attentionText(item)}</span>
+                        {item.id === "reportedOpen" ? <HonestyChip kind="reported" /> : null}
+                        <span className="spd-lane-count sp-num">{item.count}</span>
+                        {item.href ? <ArrowRightIcon className="spd-lane-go" aria-hidden="true" /> : null}
                       </>
                     );
                     return (
-                      <li key={item.id} className={item.id === "delayed" || item.id === "overdue" ? "is-critical" : "is-pending"}>
-                        {item.href ? <Link href={item.href}>{row}</Link> : <div>{row}</div>}
+                      <li key={item.id} data-weight={critical ? "critical" : "pending"}>
+                        {item.href ? (
+                          <Link href={item.href} className="spd-lane-row">
+                            {body}
+                            <span className="mc-sr"> — {copy.viewList}</span>
+                          </Link>
+                        ) : (
+                          <div className="spd-lane-row">{body}</div>
+                        )}
                       </li>
                     );
                   })}
                 </ul>
               )}
-              <p className="mc-caption">
-                {copy.physicalMeaning} {copy.completedByStatus}: {data.physical.completedByStatus}.
-              </p>
             </section>
 
-            <section className="mc-panel mc-status" aria-labelledby="project-dashboard-status">
-              <h2 id="project-dashboard-status">{copy.statusChart}</h2>
-              <p className="mc-caption">
-                {copy.total}: {data.counts.total}
-              </p>
-              {donutSegments(data).length === 0 ? (
-                <div className="mc-calm">
-                  <MotifIllustration kind="no-projects" className="mc-illustration" />
-                  <p>{copy.empty}</p>
+            {/* 2 · Progress honesty: reported ≠ completed, money is provisional */}
+            <section className="sp-surface spd-honesty" aria-labelledby="spd-honesty-h">
+              <header className="spd-head">
+                <h2 id="spd-honesty-h">{NEW_COPY.honesty}</h2>
+              </header>
+              <dl className="spd-pair">
+                <div data-kind="completed">
+                  <dt>
+                    <span className="spd-pair-mark" aria-hidden="true">
+                      <CheckIcon />
+                    </span>
+                    {NEW_COPY.completed}
+                  </dt>
+                  <dd className="sp-num">{data.physical.completedByStatus}</dd>
                 </div>
-              ) : (
-                <>
-                  <StatusDonut data={data} label={copy.statusChart} />
-                  <ul className="mc-legend">
-                    {donutSegments(data).map((seg) => (
-                      <li key={seg.status}>
-                        <span className={`mc-swatch ${statusClass(seg.status)}`} aria-hidden="true" />
-                        <span>{statusLabel(seg.status)}</span>
-                        <span className="mc-num">
-                          {seg.count} · {Math.round(seg.fraction * 100)}%
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                </>
-              )}
+                <div data-kind="reported">
+                  <dt>
+                    <span className="spd-pair-mark" aria-hidden="true" />
+                    {NEW_COPY.reportedOpen}
+                    <HonestyChip kind="reported" />
+                  </dt>
+                  <dd className="sp-num">{data.physical.reportedAt100StillNotCompleted}</dd>
+                </div>
+              </dl>
+              <p className="spd-small">{copy.physicalMeaning}</p>
+              <div className="spd-money">
+                <p className="spd-money-label">
+                  {copy.finance} <HonestyChip kind="provisional" />
+                </p>
+                {data.finance ? (
+                  <>
+                    <p className="spd-money-value sp-num">{money(data.finance.storedPaidAmountMinor)}</p>
+                    <p className="spd-small">
+                      {data.finance.storedPaidCount} · {copy.financeMeaning}
+                    </p>
+                  </>
+                ) : (
+                  <p className="spd-small">
+                    {financeHonesty ? <HonestyChip kind={financeHonesty} /> : null}{" "}
+                    {data.coverage.finance === "unavailable" ? copy.financeSourceDown : copy.financeUnavailable}
+                  </p>
+                )}
+              </div>
+            </section>
+
+            {/* 3 · Portfolio lifecycle line (replaces equal KPI cards + donut) */}
+            <section className="sp-surface spd-line" aria-labelledby="spd-line-h">
+              <header className="spd-head">
+                <h2 id="spd-line-h">{NEW_COPY.lifecycle}</h2>
+                <span className="spd-total">
+                  {copy.total}: <strong className="sp-num">{line.total}</strong>
+                </span>
+              </header>
+              <p className="spd-small">{NEW_COPY.lifecycleHint}</p>
+              <ol className="spd-route" aria-label={NEW_COPY.lifecycle}>
+                {line.main.map((n) => (
+                  <li key={n.status} data-empty={n.count === 0 ? "true" : undefined}>
+                    <Link href={n.href} className="spd-stop">
+                      <span className="spd-stop-node">
+                        <StatusNode domain="project" status={n.status} />
+                      </span>
+                      <span className="spd-stop-count sp-num">{n.count}</span>
+                      <span className="spd-stop-label">{label(n.status)}</span>
+                    </Link>
+                  </li>
+                ))}
+              </ol>
+              {line.branches.length > 0 ? (
+                <ul className="spd-branches" aria-label="Off the main path">
+                  {line.branches.map((b) => (
+                    <li key={b.status}>
+                      <Link href={b.href} className="spd-branch">
+                        <StatusChip domain="project" status={b.status} label={label(b.status)} />
+                        <span className="sp-num">{b.count}</span>
+                        {b.from ? <span className="spd-from">from {label(b.from)}</span> : null}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
               <details className="mc-details">
                 <summary>{copy.statusTable}</summary>
-                <table className="mc-table-mini" id="project-dashboard-table">
+                <table className="mc-table-mini">
                   <caption className="mc-sr">{copy.statusTable}</caption>
                   <thead>
                     <tr>
@@ -326,7 +267,7 @@ export function ProjectDashboard({ locale, onLocale }: { locale: AuthLocale; onL
                   <tbody>
                     {statusRows(data).map((row) => (
                       <tr key={row.status}>
-                        <th scope="row">{statusLabel(row.status)}</th>
+                        <th scope="row">{label(row.status)}</th>
                         <td className="mc-num">{row.count}</td>
                       </tr>
                     ))}
@@ -335,103 +276,107 @@ export function ProjectDashboard({ locale, onLocale }: { locale: AuthLocale; onL
               </details>
             </section>
 
-            <section className="mc-panel mc-milestones" aria-labelledby="project-dashboard-milestones">
-              <h2 id="project-dashboard-milestones">{copy.milestones}</h2>
+            {/* 4 · Planned milestone dates */}
+            <section className="sp-surface spd-milestones" aria-labelledby="spd-ms-h">
+              <header className="spd-head">
+                <h2 id="spd-ms-h">{copy.milestones}</h2>
+              </header>
               {data.milestones ? (
                 <>
-                  <div
-                    className="mc-split-bar"
-                    role="img"
-                    aria-label={`${copy.overdue}: ${data.milestones.overdue}. ${copy.due}: ${data.milestones.dueWithin14Days}.`}
-                  >
-                    {data.milestones.overdue + data.milestones.dueWithin14Days === 0 ? (
-                      <span className="is-empty" />
-                    ) : (
-                      <>
-                        <span className="is-critical" style={{ flexGrow: data.milestones.overdue }} />
-                        <span className="is-pending" style={{ flexGrow: data.milestones.dueWithin14Days }} />
-                      </>
-                    )}
-                  </div>
-                  <ul className="mc-legend">
-                    <li>
-                      <span className="mc-swatch is-critical" aria-hidden="true" />
-                      <span>{copy.overdue}</span>
-                      <span className="mc-num">{data.milestones.overdue}</span>
-                    </li>
-                    <li>
-                      <span className="mc-swatch is-pending" aria-hidden="true" />
-                      <span>{copy.due}</span>
-                      <span className="mc-num">{data.milestones.dueWithin14Days}</span>
-                    </li>
-                  </ul>
-                  <ul className="mc-rows">
-                    {data.milestones.items.map((item) => (
+                  <dl className="spd-kv">
+                    <div data-weight="critical">
+                      <dt>{copy.overdue}</dt>
+                      <dd className="sp-num">{data.milestones.overdue}</dd>
+                    </div>
+                    <div data-weight="pending">
+                      <dt>{copy.due}</dt>
+                      <dd className="sp-num">{data.milestones.dueWithin14Days}</dd>
+                    </div>
+                  </dl>
+                  {data.milestones.items.length > 0 ? (
+                    <ul className="spd-rows">
+                      {data.milestones.items.map((item) => (
+                        <li key={item.id} data-weight={item.classification === "overdue" ? "critical" : "pending"}>
+                          <Link href={`/projects/${item.projectId}`} className="spd-code">
+                            {item.projectCode}
+                          </Link>
+                          <span className="spd-row-title">{item.title}</span>
+                          <time dateTime={item.plannedEnd} className="spd-when">
+                            {formatActivityWhen(item.plannedEnd, locale)}
+                          </time>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : null}
+                  <p className="spd-small">{copy.plannedMeaning}</p>
+                </>
+              ) : (
+                <p className="spd-small">
+                  <HonestyChip kind="unavailable" /> {copy.milestonesUnavailable}
+                </p>
+              )}
+            </section>
+
+            {/* 5 · Reviews (role-dependent: only when the API includes them) */}
+            {data.reviews ? (
+              <section className="sp-surface spd-reviews" aria-labelledby="spd-rev-h">
+                <header className="spd-head">
+                  <h2 id="spd-rev-h">{copy.reviews}</h2>
+                  <span className="spd-count">{data.reviews.pending}</span>
+                </header>
+                {data.reviews.items.length > 0 ? (
+                  <ul className="spd-rows">
+                    {data.reviews.items.map((item) => (
                       <li key={item.id}>
-                        <Link href={`/projects/${item.projectId}`} className="mc-code">
+                        <Link href={`/projects/${item.id}/review`} className="spd-code">
                           {item.projectCode}
                         </Link>
-                        <span className="mc-row-title">{item.title}</span>
-                        <StatusBadge
-                          size="sm"
-                          variant={item.classification === "overdue" ? "critical" : "pending"}
-                          label={item.classification === "overdue" ? copy.overdue : copy.due}
-                        />
-                        <time dateTime={item.plannedEnd}>{formatActivityWhen(item.plannedEnd, locale)}</time>
+                        <span className="spd-row-title">{item.title}</span>
+                        <StatusChip domain="project" status={item.status} label={label(item.status)} />
                       </li>
                     ))}
                   </ul>
-                  <p className="mc-caption">{copy.plannedMeaning}</p>
-                </>
-              ) : (
-                <div className="mc-calm">
-                  <MotifIllustration kind="unavailable" className="mc-illustration" />
-                  <p>{copy.milestonesUnavailable}</p>
-                </div>
-              )}
-            </section>
+                ) : null}
+                <Link href="/projects/reviews" className="mc-link">
+                  {copy.reviewQueue} →
+                </Link>
+              </section>
+            ) : null}
 
-            <section className="mc-panel mc-finance" aria-labelledby="project-dashboard-finance">
-              <h2 id="project-dashboard-finance">
-                {copy.finance} <span className="mc-tag">{copy.provisional}</span>
-              </h2>
-              {data.finance ? (
-                <>
-                  <p className="mc-big">{money(data.finance.storedPaidAmountMinor)}</p>
-                  <p className="mc-caption">
-                    {data.finance.storedPaidCount} · {copy.financeMeaning}
-                  </p>
-                </>
-              ) : (
-                <div className="mc-calm">
-                  <MotifIllustration kind="unavailable" className="mc-illustration" />
-                  <p>{data.coverage.finance === "unavailable" ? copy.financeSourceDown : copy.financeUnavailable}</p>
-                </div>
-              )}
-            </section>
-
-            <section className="mc-panel mc-recent" aria-labelledby="mc-recent-h">
-              <h2 id="mc-recent-h">{copy.recent}</h2>
+            {/* 6 · Recent projects (history last) */}
+            <section className="sp-surface spd-recent" aria-labelledby="spd-recent-h">
+              <header className="spd-head">
+                <h2 id="spd-recent-h">{copy.recent}</h2>
+                {typeof data.assignedToYou === "number" ? (
+                  <span className="spd-total">
+                    {copy.assigned}: <strong className="sp-num">{data.assignedToYou}</strong>
+                  </span>
+                ) : null}
+              </header>
               {data.recentProjects.length === 0 ? (
-                <p className="mc-caption">{copy.empty}</p>
+                <p className="spd-small">{copy.empty}</p>
               ) : (
-                <ul className="mc-rows">
+                <ul className="spd-rows spd-rows-table">
                   {data.recentProjects.map((project) => (
-                    <li key={project.id}>
-                      <Link href={`/projects/${project.id}`} className="mc-code">
+                    <li key={project.id} data-weight={project.status === "COMPLETED" || project.status === "CANCELLED" ? "done" : undefined}>
+                      <Link href={`/projects/${project.id}`} className="spd-code">
                         {project.projectCode}
                       </Link>
-                      <span className="mc-row-title">{project.title}</span>
-                      <StatusBadge
-                        size="sm"
-                        variant={projectStatusVisual(project.status as ProjectStatus)}
-                        label={statusLabel(project.status)}
-                      />
-                      <time dateTime={project.updatedAt}>{formatActivityWhen(project.updatedAt, locale)}</time>
+                      <span className="spd-row-title">{project.title}</span>
+                      <StatusChip domain="project" status={project.status} label={label(project.status)} />
+                      <time dateTime={project.updatedAt} className="spd-when">
+                        {formatActivityWhen(project.updatedAt, locale)}
+                      </time>
                       {canLinkProjectRecord(roleKey) ? (
-                        <span className="mc-row-links">
-                          <Link href={`/projects/${project.id}/timeline`}>{copy.timeline}</Link>
-                          <Link href={`/projects/${project.id}/activity`}>{copy.activity}</Link>
+                        <span className="spd-row-links">
+                          <Link href={`/projects/${project.id}/timeline`}>
+                            {copy.timeline}
+                            <span className="mc-sr"> — {project.projectCode}</span>
+                          </Link>
+                          <Link href={`/projects/${project.id}/activity`}>
+                            {copy.activity}
+                            <span className="mc-sr"> — {project.projectCode}</span>
+                          </Link>
                         </span>
                       ) : null}
                     </li>
@@ -442,33 +387,7 @@ export function ProjectDashboard({ locale, onLocale }: { locale: AuthLocale; onL
                 {copy.projects} →
               </Link>
             </section>
-
-            {data.reviews ? (
-              <section className="mc-panel mc-reviews" aria-labelledby="project-dashboard-reviews">
-                <h2 id="project-dashboard-reviews">{copy.reviews}</h2>
-                <p className="mc-big">{data.reviews.pending}</p>
-                <ul className="mc-rows">
-                  {data.reviews.items.map((item) => (
-                    <li key={item.id}>
-                      <Link href={`/projects/${item.id}/review`} className="mc-code">
-                        {item.projectCode}
-                      </Link>
-                      <span className="mc-row-title">{item.title}</span>
-                      <StatusBadge size="sm" variant="pending" label={statusLabel(item.status)} />
-                    </li>
-                  ))}
-                </ul>
-                <Link href="/projects/reviews" className="mc-link">
-                  {copy.reviewQueue} →
-                </Link>
-              </section>
-            ) : null}
           </div>
-          {typeof data.assignedToYou === "number" ? (
-            <p className="mc-caption">
-              {copy.assigned}: {data.assignedToYou}
-            </p>
-          ) : null}
         </>
       ) : null}
     </section>
