@@ -31,7 +31,8 @@ import {
 } from "@/lib/roadsync/work-requests-view";
 import { getAuthEpoch, getMemorySession, subscribeAuth } from "@/lib/auth/state";
 
-import { GeometryPreview, PriorityMark, WORK_TYPE_ICONS } from "./roadsync-shared";
+import { PriorityMark, WORK_TYPE_ICONS } from "./roadsync-shared";
+import { LocationPicker } from "./work-map";
 
 function useAuthPart(read: () => string): string {
   return useSyncExternalStore(subscribeAuth, read, () => "");
@@ -64,6 +65,8 @@ export function WorkRequestNewClient() {
   const [serverError, setServerError] = useState<string | null>(null);
   const summaryRef = useRef<HTMLDivElement>(null);
   const submitting = useRef(false);
+  // Step 67: the server geometry check (null = not checked yet or unavailable; the API rechecks on create).
+  const [geoValid, setGeoValid] = useState<boolean | null>(null);
 
   const projects = useQuery({
     queryKey: workRequestQueryKey(epoch, userId, roleKey, "project-options"),
@@ -115,6 +118,11 @@ export function WorkRequestNewClient() {
         summaryRef.current?.focus();
         if (first) document.getElementById(`rs-${first}`)?.setAttribute("data-first-invalid", "true");
       }, 0);
+      return;
+    }
+    if (geoValid === false) {
+      setErrors({ coordinates: "Fix the location problems shown under the map." });
+      window.setTimeout(() => summaryRef.current?.focus(), 0);
       return;
     }
     setErrors({});
@@ -214,13 +222,18 @@ export function WorkRequestNewClient() {
                   ))}
                 </div>
               </fieldset>
+              <LocationPicker
+                kind={values.geometryKind}
+                coordinates={values.coordinates}
+                onChange={(kind, text) => { setValues((c) => ({ ...c, geometryKind: kind, coordinates: text })); setErrors((c) => ({ ...c, coordinates: undefined, geometryKind: undefined })); }}
+                onValidity={setGeoValid}
+              />
               <div className="rs-field">
                 <label className="rs-label" htmlFor="rs-coordinates">Coordinates — longitude, latitude</label>
                 <textarea id="rs-coordinates" className="rs-input" value={values.coordinates} onChange={(e) => set("coordinates", e.target.value)} spellCheck={false} placeholder={"79.8612, 6.9271\n79.8650, 6.9302"} {...aria("coordinates")} />
                 <p className="rs-help">{KIND_HELP[values.geometryKind]} Longitude comes first (Sri Lanka is about 79–82, 5–10).</p>
                 {errors.coordinates ? <p id="rs-coordinates-err" className="rs-error">{errors.coordinates}</p> : null}
               </div>
-              {values.coordinates.trim() && geometry.ok ? <GeometryPreview geometry={geometry.geometry} /> : null}
             </section>
 
             <section className="rs-section" aria-labelledby="rs-s3">

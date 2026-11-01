@@ -35,5 +35,22 @@ export const workRequestListQuerySchema = z.object({
   projectId: objectId.optional(),
 }).strict();
 
+const bboxSchema = z.string().max(120).transform((v, ctx) => {
+  const n = v.split(",").map(Number);
+  if (n.length !== 4 || n.some((x) => !Number.isFinite(x)) || n[0]! >= n[2]! || n[1]! >= n[3]! || Math.abs(n[0]!) > 180 || Math.abs(n[2]!) > 180 || Math.abs(n[1]!) > 90 || Math.abs(n[3]!) > 90) {
+    ctx.addIssue({ code: "custom", message: "bbox" });
+    return z.NEVER;
+  }
+  return n as [number, number, number, number];
+});
+
+export const workRequestMapQuerySchema = z.object({
+  status: z.enum(WORK_STATUSES).optional(),
+  workType: z.enum(WORK_TYPES).optional(),
+  priority: z.enum(WORK_PRIORITIES).optional(),
+  projectId: objectId.optional(),
+  bbox: bboxSchema.optional(),
+}).strict();
+
 export type WorkRequestCreateInput = z.infer<typeof workRequestCreateSchema>;
 export type WorkRequestListQuery = z.infer<typeof workRequestListQuerySchema>;

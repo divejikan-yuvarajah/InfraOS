@@ -214,4 +214,56 @@ describe("step 66 roadsync work requests", { timeout: 120_000 }, () => {
     expect((await get(d.officer.token, "?priority=LOW")).body.data.total).toBe(0);
     expect((await get(d.officer.token, "/ffffffffffffffffffffffff")).status).toBe(404);
   });
+  it("step 67: normalizes geometry on create and rejects out-of-country, swapped and self-crossing shapes", async () => {
+    const d = await world();
+    const open = { type: "Polygon", coordinates: [[[79.86, 6.93], [79.861, 6.93], [79.861, 6.931], [79.86, 6.931]]] };
+    const res = await post(d.officer.token, body(d.approved.id, { geometry: open }));
+    expect(res.status).toBe(201);
+    const ring = res.body.data.workRequest.geometry.coordinates[0];
+    expect(ring[0]).toEqual(ring[ring.length - 1]);
+    const rejected = [
+      { geometry: { type: "Point", coordinates: [77.2, 28.6] }, code: "OUTSIDE_SRI_LANKA" },
+      { geometry: { type: "Point", coordinates: [6.93, 79.86] }, code: "COORDINATES_SWAPPED" },
+      { geometry: { type: "Polygon", coordinates: [[[79.86, 6.93], [79.87, 6.94], [79.87, 6.93], [79.86, 6.94], [79.86, 6.93]]] }, code: "SELF_INTERSECTION" },
+    ];
+    for (const item of rejected) {
+      const r = await post(d.officer.token, body(d.approved.id, { geometry: item.geometry }));
+      expect(r.status).toBe(400);
+      expect(r.body.error.details[0].code).toBe(item.code);
+    }
+    expect(await WorkRequest.countDocuments({})).toBe(1);
+  });
+
+  it("step 67: map endpoint uses the same scope, honours bbox and validates its query", async () => {
+    const d = await world();
+    await post(d.officer.token, body(d.approved.id));
+    const map = await get(d.officer.token, "/map");
+    expect(map.status).toBe(200);
+    expect(map.body.data.type).toBe("FeatureCollection");
+    expect(map.body.data.features).toHaveLength(1);
+    expect(Object.keys(map.body.data.features[0].properties)).not.toContain("agencyId");
+    expect((await get(d.foreign.token, "/map")).body.data.features).toHaveLength(0);
+    expect((await get(d.officer.token, "/map?bbox=81,8,81.5,8.5")).body.data.features).toHaveLength(0);
+    expect((await get(d.officer.token, "/map?bbox=79.8,6.9,79.9,7")).body.data.features).toHaveLength(1);
+    expect((await get(d.officer.token, "/map?bbox=1,2,3")).status).toBe(400);
+    expect((await get(d.citizen.token, "/map")).status).toBe(403);
+  });
+
+  it("step 67: geo validate returns candidates for collections and stores nothing", async () => {
+    const d = await world();
+    const validate = (token: string, geojson: unknown) =>
+      request(app).post("/api/v1/roadsync/geo/validate").set("Authorization", `Bearer ${token}`).send({ geojson });
+    const line = { type: "LineString", coordinates: [[79.86, 6.93], [79.87, 6.93]] };
+    const one = await validate(d.officer.token, { type: "Feature", properties: {}, geometry: line });
+    expect(one.body.data.valid).toBe(true);
+    expect(one.body.data.derived.lengthMeters).toBeGreaterThan(1000);
+    const many = await validate(d.officer.token, { type: "FeatureCollection", features: [{ type: "Feature", properties: { name: "A" }, geometry: line }, { type: "Feature", properties: {}, geometry: { type: "Point", coordinates: [79.86, 6.93] } }, { type: "Feature", properties: {}, geometry: { type: "MultiPoint", coordinates: [] } }] });
+    expect(many.body.data.candidates).toHaveLength(2);
+    expect(many.body.data.candidates[0].label).toBe("A");
+    expect((await validate(d.officer.token, { type: "GeometryCollection", geometries: [] })).body.data.errors[0].code).toBe("UNSUPPORTED_TYPE");
+    expect((await request(app).post("/api/v1/roadsync/geo/validate").set("Authorization", `Bearer ${d.officer.token}`).send({ geojson: line, extra: 1 })).status).toBe(400);
+    expect((await validate(d.citizen.token, line)).status).toBe(403);
+    expect((await request(app).post("/api/v1/roadsync/geo/validate").send({ geojson: line })).status).toBe(401);
+    expect(await AuditLog.countDocuments({})).toBe(0);
+  });
 });
