@@ -1,0 +1,132 @@
+/**
+ * "Site Plan" design language (docs/design/04-direction.md). Staff workspace only.
+ * Components use these semantic tokens; raw brand hex lives in tokens.css only.
+ */
+:root {
+  /* canvas + drafting grid */
+  --sp-canvas: #faf8f4;
+  --sp-grid-line: rgb(17 24 39 / 0.045);
+  --sp-grid-size: 24px;
+
+  /* materials (Geist-style lift levels) */
+  --sp-radius-sm: 6px;
+  --sp-radius-md: 12px;
+  --sp-radius-lg: 16px;
+  --sp-lift-0: 0 0 0 1px var(--infra-border);
+  --sp-lift-1: 0 0 0 1px var(--infra-border), 0 1px 2px rgb(17 24 39 / 0.04);
+  --sp-lift-2: 0 0 0 1px var(--infra-border), 0 8px 24px -12px rgb(17 24 39 / 0.18);
+
+  /* density */
+  --sp-row-comfortable: 3rem;
+  --sp-row-compact: 2.25rem;
+
+  /* node tones: fill colour (brand) + readable text colour (derived) */
+  --sp-tone-neutral: #94a3b8;
+  --sp-tone-neutral-text: var(--infra-text-secondary);
+  --sp-tone-pending: var(--infra-yellow);
+  --sp-tone-pending-text: var(--infra-yellow-text);
+  --sp-tone-hold: #64748b;
+  --sp-tone-hold-text: var(--infra-text-secondary);
+  --sp-tone-active: var(--infra-orange);
+  --sp-tone-active-text: var(--infra-orange-text);
+  --sp-tone-critical: var(--infra-maroon);
+  --sp-tone-critical-text: var(--infra-critical-text);
+  --sp-tone-success: var(--infra-green);
+  --sp-tone-success-text: var(--infra-green-text);
+
+  --sp-tint-pending: #fff8e6;
+  --sp-tint-active: #fff3ea;
+  --sp-tint-critical: #fdecee;
+  --sp-tint-success: #ecfdf3;
+  --sp-tint-neutral: #f1f5f9;
+}
+
+/* Drafting grid canvas: apply to a page container. Decorative only. */
+.sp-canvas {
+  background-color: var(--sp-canvas);
+  background-image:
+    linear-gradient(var(--sp-grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--sp-grid-line) 1px, transparent 1px);
+  background-size: var(--sp-grid-size) var(--sp-grid-size);
+}
+
+/* Tabular figures everywhere numbers are compared. */
+.sp-num { font-variant-numeric: tabular-nums; }
+
+/* SI/TA need more vertical room than Latin (measured per page, see 04-direction). */
+:lang(si) .sp-text, :lang(ta) .sp-text, .sp-text:lang(si), .sp-text:lang(ta) { line-height: 1.75; }
+
+/* ---------- surfaces ---------- */
+.sp-surface { background: var(--infra-surface); border-radius: var(--sp-radius-md); box-shadow: var(--sp-lift-1); }
+.sp-surface-raised { background: var(--infra-surface); border-radius: var(--sp-radius-md); box-shadow: var(--sp-lift-2); }
+
+/* ---------- context bar (page header extension) ---------- */
+.sp-context { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.75rem 1rem; min-width: 0; }
+.sp-crumbs { display: flex; flex-wrap: wrap; align-items: center; gap: 0.35rem; margin: 0; padding: 0; list-style: none; font-size: 0.8125rem; color: var(--infra-text-muted); min-width: 0; }
+.sp-crumbs a { color: var(--infra-text-secondary); text-decoration: none; }
+.sp-crumbs a:hover { color: var(--infra-text); text-decoration: underline; text-underline-offset: 0.2em; }
+.sp-crumbs [aria-current="page"] { color: var(--infra-text); font-weight: 600; }
+.sp-crumb-sep { color: var(--infra-border-strong); }
+.sp-context-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; font-size: 0.8125rem; color: var(--infra-text-secondary); }
+.sp-scope { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.15rem 0.6rem; border-radius: 999px; background: var(--infra-surface); box-shadow: var(--sp-lift-0); font-weight: 600; color: var(--infra-text); }
+.sp-scope::before { content: ""; width: 0.45rem; height: 0.45rem; border-radius: 50%; background: var(--sp-tone-success); }
+.sp-asof { font-variant-numeric: tabular-nums; }
+.sp-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+
+/* ---------- status node + chip ---------- */
+.sp-node { display: inline-block; flex: none; width: 0.875rem; height: 0.875rem; color: var(--sp-node-color, var(--sp-tone-neutral)); }
+.sp-node[data-tone="neutral"] { --sp-node-color: var(--sp-tone-neutral); }
+.sp-node[data-tone="pending"] { --sp-node-color: var(--sp-tone-pending); }
+.sp-node[data-tone="hold"] { --sp-node-color: var(--sp-tone-hold); }
+.sp-node[data-tone="active"] { --sp-node-color: var(--sp-tone-active); }
+.sp-node[data-tone="critical"] { --sp-node-color: var(--sp-tone-critical); }
+.sp-node[data-tone="success"] { --sp-node-color: var(--sp-tone-success); }
+
+.sp-chip { display: inline-flex; align-items: center; gap: 0.4rem; max-width: 100%; padding: 0.15rem 0.6rem 0.15rem 0.45rem; border-radius: 999px; font-size: 0.8125rem; font-weight: 600; line-height: 1.4; white-space: nowrap; background: var(--sp-chip-bg, var(--sp-tint-neutral)); color: var(--sp-chip-fg, var(--sp-tone-neutral-text)); }
+.sp-chip[data-tone="pending"] { --sp-chip-bg: var(--sp-tint-pending); --sp-chip-fg: var(--sp-tone-pending-text); }
+.sp-chip[data-tone="hold"] { --sp-chip-bg: var(--sp-tint-neutral); --sp-chip-fg: var(--sp-tone-hold-text); }
+.sp-chip[data-tone="active"] { --sp-chip-bg: var(--sp-tint-active); --sp-chip-fg: var(--sp-tone-active-text); }
+.sp-chip[data-tone="critical"] { --sp-chip-bg: var(--sp-tint-critical); --sp-chip-fg: var(--sp-tone-critical-text); }
+.sp-chip[data-tone="success"] { --sp-chip-bg: var(--sp-tint-success); --sp-chip-fg: var(--sp-tone-success-text); }
+
+/* Honesty chips: dotted outline, transparent fill, so they never read as a status. */
+.sp-honesty { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.05rem 0.5rem; border: 1px dashed var(--infra-border-strong); border-radius: var(--sp-radius-sm); background: transparent; color: var(--infra-text-secondary); font-size: 0.6875rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; white-space: nowrap; }
+.sp-honesty svg { width: 0.75rem; height: 0.75rem; }
+.sp-honesty[data-kind="provisional"] { border-color: var(--infra-yellow); color: var(--infra-yellow-text); }
+.sp-honesty[data-kind="unavailable"], .sp-honesty[data-kind="withheld"] { color: var(--infra-text-muted); }
+:lang(si) .sp-honesty, :lang(ta) .sp-honesty { text-transform: none; letter-spacing: 0; }
+
+/* ---------- lifecycle rail ---------- */
+.sp-rail { display: flex; align-items: flex-start; gap: 0; margin: 0; padding: 0; list-style: none; overflow-x: auto; scrollbar-width: thin; }
+.sp-rail-step { position: relative; display: grid; justify-items: center; gap: 0.35rem; flex: 1 1 0; min-width: 4.75rem; padding-top: 0.1rem; text-align: center; font-size: 0.75rem; color: var(--infra-text-muted); }
+.sp-rail-step::before { content: ""; position: absolute; top: 0.55rem; left: -50%; width: 100%; height: 2px; background: var(--infra-border-strong); z-index: 0; }
+.sp-rail-step:first-child::before { display: none; }
+.sp-rail-step[data-state="done"]::before, .sp-rail-step[data-state="current"]::before { background: var(--infra-text); }
+.sp-rail-dot { position: relative; z-index: 1; width: 1.1rem; height: 1.1rem; border-radius: 50%; border: 2px solid var(--infra-border-strong); background: var(--infra-surface); }
+.sp-rail-step[data-state="done"] .sp-rail-dot { border-color: var(--infra-text); background: var(--infra-text); }
+.sp-rail-step[data-state="current"] .sp-rail-dot { border-color: var(--infra-orange); background: var(--infra-surface); box-shadow: 0 0 0 4px var(--sp-tint-active); }
+.sp-rail-step[data-state="current"] { color: var(--infra-text); font-weight: 700; }
+.sp-rail-step[data-state="done"] { color: var(--infra-text-secondary); }
+.sp-rail-branch { display: inline-flex; align-items: center; gap: 0.4rem; margin-top: 0.6rem; font-size: 0.8125rem; color: var(--infra-text-secondary); }
+.sp-rail-branch::before { content: ""; width: 1.25rem; height: 0.75rem; border-left: 2px solid var(--infra-text); border-bottom: 2px solid var(--infra-text); border-bottom-left-radius: 6px; transform: translateY(-0.25rem); }
+
+/* ---------- dual progress ---------- */
+.sp-progress { display: grid; gap: 0.7rem; }
+.sp-track-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 0.25rem 0.75rem; font-size: 0.8125rem; }
+.sp-track-name { color: var(--infra-text-secondary); font-weight: 600; }
+.sp-track-value { display: inline-flex; align-items: center; gap: 0.4rem; font-weight: 700; color: var(--infra-text); font-variant-numeric: tabular-nums; }
+.sp-track { position: relative; height: 0.5rem; border-radius: 999px; background: var(--sp-tint-neutral); overflow: hidden; }
+.sp-track-fill { height: 100%; border-radius: inherit; background: var(--infra-text); transition: width 300ms var(--mc-ease); }
+.sp-track[data-kind="financial"] .sp-track-fill { background: repeating-linear-gradient(135deg, var(--infra-yellow) 0 6px, color-mix(in srgb, var(--infra-yellow) 55%, white) 6px 10px); }
+.sp-track[data-unavailable="true"] { background: repeating-linear-gradient(90deg, var(--infra-border) 0 4px, transparent 4px 8px); }
+
+/* ---------- facts list (labelled rows) ---------- */
+.sp-facts { display: grid; margin: 0; }
+.sp-fact { display: grid; grid-template-columns: minmax(7rem, 11rem) minmax(0, 1fr); gap: 0.25rem 1rem; padding: 0.65rem 0; border-bottom: 1px solid var(--infra-border); }
+.sp-fact:last-child { border-bottom: 0; }
+.sp-fact dt { font-size: 0.8125rem; color: var(--infra-text-muted); }
+.sp-fact dd { margin: 0; min-width: 0; font-size: 0.9rem; font-weight: 550; color: var(--infra-text); overflow-wrap: anywhere; }
+.sp-fact dd[data-missing="true"] { font-weight: 400; color: var(--infra-text-muted); font-style: italic; }
+@media (max-width: 520px) { .sp-fact { grid-template-columns: 1fr; } }
+
+@media (prefers-reduced-motion: reduce) { .sp-track-fill { transition: none; } }
