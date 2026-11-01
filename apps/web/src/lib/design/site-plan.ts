@@ -49,11 +49,10 @@ export function statusText(status: string): string {
 
 /** Main path only. Off-path states are shown as a branch flag, never as fake steps. */
 export const PROJECT_MAIN_PATH = ["DRAFT", "SUBMITTED", "UNDER_REVIEW", "APPROVED", "ACTIVE", "COMPLETED"] as const;
+// HOLD and MARK_DELAYED only leave ACTIVE (lifecycle.policy.ts), so ACTIVE is a safe anchor.
 const OFF_PATH_ANCHOR: Record<string, (typeof PROJECT_MAIN_PATH)[number]> = {
-  REJECTED: "UNDER_REVIEW",
   ON_HOLD: "ACTIVE",
   DELAYED: "ACTIVE",
-  CANCELLED: "DRAFT",
 };
 
 export type RailStep = { status: string; state: "done" | "current" | "upcoming" };
@@ -63,12 +62,16 @@ export type LifecycleRailModel = { steps: RailStep[]; branch: string | null; ter
  * Derived from the current status alone. "done" means "the main path got past this node",
  * which every status after it implies; no dates or history are claimed.
  * CANCELLED has no known anchor (a project can be cancelled from several states), so no
- * step is marked done or current for it.
+ * step is marked done or current for it. REJECTED marks only Draft and Submitted as passed.
  */
 export function lifecycleRail(status: string): LifecycleRailModel {
   const path = PROJECT_MAIN_PATH as readonly string[];
   if (status === "CANCELLED") {
     return { steps: path.map((s) => ({ status: s, state: "upcoming" as const })), branch: "CANCELLED", terminated: true };
+  }
+  // REJECTED leaves SUBMITTED or UNDER_REVIEW (review.policy.ts): only "submitted" is certain.
+  if (status === "REJECTED") {
+    return { steps: path.map((s, i) => ({ status: s, state: i <= 1 ? ("done" as const) : ("upcoming" as const) })), branch: "REJECTED", terminated: true };
   }
   const anchor = path.includes(status) ? status : OFF_PATH_ANCHOR[status];
   if (!anchor) return { steps: path.map((s) => ({ status: s, state: "upcoming" as const })), branch: null, terminated: false };

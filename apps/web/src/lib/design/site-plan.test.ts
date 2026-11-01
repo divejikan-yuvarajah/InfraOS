@@ -25,7 +25,10 @@ describe("lifecycle rail", () => {
     expect(rail.branch).toBe("DELAYED");
     expect(rail.steps.find((s) => s.state === "current")?.status).toBe("ACTIVE");
     expect(rail.steps).toHaveLength(PROJECT_MAIN_PATH.length);
-    expect(lifecycleRail("REJECTED").terminated).toBe(true);
+    const rejected = lifecycleRail("REJECTED");
+    expect(rejected.terminated).toBe(true);
+    // Rejection can follow Submitted or Under review: only Submitted is claimed.
+    expect(rejected.steps.map((s) => s.state)).toEqual(["done", "done", "upcoming", "upcoming", "upcoming", "upcoming"]);
   });
   it("claims no progress for cancelled projects", () => {
     const rail = lifecycleRail("CANCELLED");

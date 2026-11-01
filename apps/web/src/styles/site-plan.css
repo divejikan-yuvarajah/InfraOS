@@ -135,6 +135,9 @@
 .mc-frame.sp-canvas { min-height: 100dvh; }
 .mc-page-context { position: relative; margin-top: 0.9rem; }
 .mc-env { display: inline-flex; }
+.mc-env-compact { display: none; }
+.mc-env-compact .sp-honesty { padding: 0.05rem 0.35rem; }
+.mc-drawer-env { margin: 1rem 0 0; padding: 0 0.75rem; }
 .mc-lang { display: inline-flex; padding: 2px; border-radius: var(--sp-radius-sm); background: var(--infra-surface); box-shadow: var(--sp-lift-0); }
 .mc-lang button { min-width: 2.5rem; min-height: 2rem; padding: 0 0.5rem; border: 0; border-radius: 4px; background: transparent; color: var(--infra-text-secondary); font: inherit; font-size: 0.8125rem; font-weight: 600; cursor: pointer; }
 .mc-lang button:hover { background: var(--sp-tint-neutral); }
@@ -142,5 +145,6 @@
 .mc-lang button:focus-visible { outline: 2px solid var(--infra-orange-text); outline-offset: 1px; }
 @media (max-width: 40rem) {
   .mc-env { display: none; }
+  .mc-env-compact { display: inline-flex; }
   .mc-lang button { min-width: 2.25rem; min-height: 2.75rem; padding: 0 0.35rem; }
 }

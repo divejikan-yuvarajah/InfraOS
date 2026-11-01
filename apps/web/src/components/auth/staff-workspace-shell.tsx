@@ -166,6 +166,9 @@ export function StaffWorkspaceShell({
                   locale={locale}
                   onNavigate={() => setDrawer(false)}
                 />
+                <p className="mc-drawer-env">
+                  <HonestyChip kind="demo" />
+                </p>
               </Dialog.Content>
             </Dialog.Portal>
           </Dialog.Root>
@@ -173,6 +176,9 @@ export function StaffWorkspaceShell({
           <div className="mc-topbar-spacer" />
           <span className="mc-env">
             <HonestyChip kind="demo" />
+          </span>
+          <span className="mc-env-compact">
+            <HonestyChip kind="demo" label="Demo" />
           </span>
           <div className="mc-lang" role="group" aria-label="View language (Sinhala and Tamil are drafts pending native review)">
             {WORKSPACE_LOCALES.map((code) => (

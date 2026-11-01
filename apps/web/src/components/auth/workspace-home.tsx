@@ -6,11 +6,11 @@ import { getDashboardCopy } from "@/lib/projects/dashboard-messages";
 import { useWorkspaceLocale } from "@/lib/i18n/workspace-locale";
 
 export function WorkspaceHome() {
-  const [locale, setLocale] = useWorkspaceLocale();
+  const [locale] = useWorkspaceLocale();
   const copy = getDashboardCopy(locale);
   return (
     <StaffWorkspaceShell title={copy.title} description={copy.description} wide>
-      <ProjectDashboard locale={locale} onLocale={setLocale} />
+      <ProjectDashboard locale={locale} />
     </StaffWorkspaceShell>
   );
 }
