@@ -14,35 +14,30 @@ const geistSans = Geist({
   variable: "--font-sans",
   subsets: ["latin"],
   display: "swap",
-  weight: ["400", "500", "600", "700"],
 });
 
 const manrope = Manrope({
   variable: "--font-display",
   subsets: ["latin"],
   display: "swap",
-  weight: ["500", "600", "700", "800"],
 });
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
   display: "swap",
-  weight: ["400", "500", "600", "700"],
 });
 
 const notoSinhala = Noto_Sans_Sinhala({
   variable: "--font-sinhala",
   subsets: ["sinhala"],
   display: "swap",
-  weight: ["400", "500", "600", "700"],
 });
 
 const notoTamil = Noto_Sans_Tamil({
   variable: "--font-tamil",
   subsets: ["tamil"],
   display: "swap",
-  weight: ["400", "500", "600", "700"],
 });
 
 export const metadata: Metadata = {
