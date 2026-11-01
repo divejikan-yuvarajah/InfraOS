@@ -12,7 +12,6 @@ import { ProjectStatusBadge } from "@/components/common/status-badge";
 import { DataTable } from "@/components/data-table/data-table";
 import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header";
 import { ApiError } from "@/lib/api/client";
-import type { AuthLocale } from "@/lib/auth/types";
 import { getAuthEpoch, getMemorySession, subscribeAuth } from "@/lib/auth/state";
 import type { TableQueryState } from "@/lib/data-table/query-state";
 import { fetchReviewQueue } from "@/lib/projects/api";
@@ -29,6 +28,7 @@ import {
 } from "@/lib/projects/review-query";
 import type { ProjectSummary } from "@/lib/projects/types";
 import type { ProjectStatus } from "@/lib/projects/list-query";
+import { useWorkspaceLocale } from "@/lib/i18n/workspace-locale";
 
 function useAuthPart(read: () => string): string {
   return useSyncExternalStore(subscribeAuth, read, () => "");
@@ -41,7 +41,7 @@ export function ReviewQueueClient() {
   const roleKey = useAuthPart(() => getMemorySession()?.user.roleKey ?? "");
   const userId = useAuthPart(() => getMemorySession()?.user.id ?? "");
   const epoch = useAuthPart(() => String(getAuthEpoch()));
-  const [locale, setLocale] = useState<AuthLocale>("en");
+  const [locale, setLocale] = useWorkspaceLocale();
   const copy = getReviewCopy(locale);
   const serialized = searchParams.toString();
   const urlState = useMemo(() => parseReviewQueue(new URLSearchParams(serialized)), [serialized]);

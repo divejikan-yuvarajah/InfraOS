@@ -10,7 +10,6 @@ import { StaffWorkspaceShell } from "@/components/auth/staff-workspace-shell";
 import { ProjectStatusBadge } from "@/components/common/status-badge";
 import { ApiError } from "@/lib/api/client";
 import { getAuthEpoch, getMemoryAccessToken, getMemorySession, subscribeAuth } from "@/lib/auth/state";
-import type { AuthLocale } from "@/lib/auth/types";
 import { fetchProject, transitionProject } from "@/lib/projects/api";
 import { classifyEditError } from "@/lib/projects/edit-outcome";
 import { getProjectCopy, projectReadMessage } from "@/lib/projects/messages";
@@ -18,6 +17,7 @@ import { getReviewCopy } from "@/lib/projects/review-messages";
 import { geometrySummary, lkrBudgetLabel, projectCoreQueryKey, safeListReturn, utcDateLabel, utcStampLabel } from "@/lib/projects/overview-format";
 import { canLinkTimeline } from "@/lib/projects/timeline-view";
 import type { ProjectDetail, ProjectLocation } from "@/lib/projects/types";
+import { useWorkspaceLocale } from "@/lib/i18n/workspace-locale";
 
 function useAuthPart(read: () => string, server: string): string {
   return useSyncExternalStore(subscribeAuth, read, () => server);
@@ -186,7 +186,7 @@ export function ProjectOverviewClient({ id }: { id: string }) {
   const epoch = useAuthPart(() => String(getAuthEpoch()), "0");
   const userId = useAuthPart(() => getMemorySession()?.user.id ?? "", "");
   const roleKey = useAuthPart(() => getMemorySession()?.user.roleKey ?? "", "");
-  const [locale, setLocale] = useState<AuthLocale>("en");
+  const [locale, setLocale] = useWorkspaceLocale();
   const copy = getProjectCopy(locale);
   const listQuery = searchParams.get("list");
   const back = safeListReturn(listQuery);

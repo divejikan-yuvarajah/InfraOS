@@ -27,7 +27,7 @@ import { getAdminUsersCopy } from "@/lib/admin-users/messages";
 import { adminUserCreateFormSchema, type AdminUserCreateFormValues } from "@/lib/admin-users/schema";
 import type { AdminUserRecord } from "@/lib/admin-users/types";
 import { ApiError } from "@/lib/api/client";
-import type { AuthLocale } from "@/lib/auth/types";
+import { useWorkspaceLocale } from "@/lib/i18n/workspace-locale";
 
 function messageFor(error: unknown, copy: ReturnType<typeof getAdminUsersCopy>): string {
   if (error instanceof ApiError && (error.status === 401 || error.status === 403)) return copy.forbidden;
@@ -38,7 +38,7 @@ function messageFor(error: unknown, copy: ReturnType<typeof getAdminUsersCopy>):
 
 export function AdminUsersPageClient() {
   const queryClient = useQueryClient();
-  const [locale, setLocale] = useState<AuthLocale>("en");
+  const [locale, setLocale] = useWorkspaceLocale();
   const copy = getAdminUsersCopy(locale);
   const [q, setQ] = useState("");
   const [page, setPage] = useState(1);

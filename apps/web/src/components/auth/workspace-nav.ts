@@ -16,6 +16,8 @@ export type WorkspaceNavItem = {
   href: string;
   label: string;
   icon: LucideIcon;
+  /** Only strings already present in the module message files (drafts pending native review). */
+  i18n?: { si?: string; ta?: string };
 };
 
 export type WorkspaceNavGroup = { label: string; items: readonly WorkspaceNavItem[] };
@@ -26,8 +28,8 @@ export const WORKSPACE_NAV: readonly WorkspaceNavGroup[] = [
   {
     label: "Operations",
     items: [
-      { href: "/projects", label: "Projects", icon: FolderKanbanIcon },
-      { href: "/projects/reviews", label: "Reviews", icon: ClipboardCheckIcon },
+      { href: "/projects", label: "Projects", icon: FolderKanbanIcon, i18n: { si: "ව්‍යාපෘති", ta: "திட்டங்கள்" } },
+      { href: "/projects/reviews", label: "Reviews", icon: ClipboardCheckIcon, i18n: { si: "ව්‍යාපෘති සමාලෝචන", ta: "திட்ட மதிப்பாய்வுகள்" } },
       { href: "/roadsync/work-requests", label: "Work Requests", icon: RouteIcon },
     ],
   },
@@ -36,13 +38,19 @@ export const WORKSPACE_NAV: readonly WorkspaceNavGroup[] = [
     items: [
       { href: "/notifications", label: "Notifications", icon: BellIcon },
       { href: "/admin/users", label: "Staff", icon: UsersIcon },
-      { href: "/admin/agencies", label: "Agencies", icon: Building2Icon },
-      { href: "/admin/roles", label: "Roles", icon: ShieldCheckIcon },
+      { href: "/admin/agencies", label: "Agencies", icon: Building2Icon, i18n: { si: "ආයතන", ta: "நிறுவனங்கள்" } },
+      { href: "/admin/roles", label: "Roles", icon: ShieldCheckIcon, i18n: { si: "භූමිකා", ta: "பாத்திரங்கள்" } },
       { href: "/profile", label: "Profile", icon: UserCircleIcon },
       { href: "/settings", label: "Settings", icon: SlidersHorizontalIcon },
     ],
   },
 ];
+
+/** Missing SI/TA keys fall back to English (listed in docs/design phase report). */
+export function navLabel(item: WorkspaceNavItem, locale: "en" | "si" | "ta"): string {
+  if (locale === "en") return item.label;
+  return item.i18n?.[locale] ?? item.label;
+}
 
 export function navCurrent(pathname: string, href: string): boolean {
   const reviews = pathname === "/projects/reviews" || /^\/projects\/[^/]+\/review$/.test(pathname);

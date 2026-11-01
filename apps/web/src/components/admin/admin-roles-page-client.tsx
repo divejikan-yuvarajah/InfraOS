@@ -16,11 +16,11 @@ import type { RoleRecord } from "@/lib/admin-roles/types";
 import { ADMIN_ROLES_QUERY_KEY, bannerFromStatus, grantChangePreview, roleBannerMessage, visibleRoleGrants } from "@/lib/admin-roles/view-state";
 import { ApiError } from "@/lib/api/client";
 import { getMemorySession } from "@/lib/auth/state";
-import type { AuthLocale } from "@/lib/auth/types";
+import { useWorkspaceLocale } from "@/lib/i18n/workspace-locale";
 
 export function AdminRolesPageClient() {
   const queryClient = useQueryClient();
-  const [locale, setLocale] = useState<AuthLocale>("en");
+  const [locale, setLocale] = useWorkspaceLocale();
   const copy = getRoleCopy(locale);
   const canEdit = roleManageIsPlatformHint(getMemorySession()?.user.roleKey);
   const [selectedId, setSelectedId] = useState<string | null>(null);

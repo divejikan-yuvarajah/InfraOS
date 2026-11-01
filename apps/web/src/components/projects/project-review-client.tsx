@@ -8,12 +8,12 @@ import { useRef, useState, useSyncExternalStore } from "react";
 import { StaffWorkspaceShell } from "@/components/auth/staff-workspace-shell";
 import { ProjectStatusBadge } from "@/components/common/status-badge";
 import { ApiError } from "@/lib/api/client";
-import type { AuthLocale } from "@/lib/auth/types";
 import { getAuthEpoch, getMemoryAccessToken, getMemorySession, subscribeAuth } from "@/lib/auth/state";
 import { lkrBudgetLabel, projectCoreQueryKey, reviewDetailQueryKey, utcDateLabel } from "@/lib/projects/overview-format";
 import { fetchReview, submitReview } from "@/lib/projects/api";
 import { getReviewCopy, reviewFailureMessage } from "@/lib/projects/review-messages";
 import type { ProjectStatus } from "@/lib/projects/list-query";
+import { useWorkspaceLocale } from "@/lib/i18n/workspace-locale";
 
 function useAuthPart(read: () => string): string {
   return useSyncExternalStore(subscribeAuth, read, () => "");
@@ -23,7 +23,7 @@ export function ProjectReviewClient({ id }: { id: string }) {
   const epoch = useAuthPart(() => String(getAuthEpoch()));
   const userId = useAuthPart(() => getMemorySession()?.user.id ?? "");
   const roleKey = useAuthPart(() => getMemorySession()?.user.roleKey ?? "");
-  const [locale, setLocale] = useState<AuthLocale>("en");
+  const [locale, setLocale] = useWorkspaceLocale();
   const copy = getReviewCopy(locale);
   const queryClient = useQueryClient();
   const dialogRef = useRef<HTMLDialogElement>(null);

@@ -27,9 +27,9 @@ import { getProjectCopy, projectListMessage } from "@/lib/projects/messages";
 import type { ProjectSummary } from "@/lib/projects/types";
 import { ApiError } from "@/lib/api/client";
 import { getAuthEpoch, getMemorySession, subscribeAuth } from "@/lib/auth/state";
-import type { AuthLocale } from "@/lib/auth/types";
 import type { TableQueryState } from "@/lib/data-table/query-state";
 import { projectListQueryKey } from "@/lib/projects/overview-format";
+import { useWorkspaceLocale } from "@/lib/i18n/workspace-locale";
 
 function useAuthPart(read: () => string): string {
   return useSyncExternalStore(subscribeAuth, read, () => "");
@@ -42,7 +42,7 @@ export function ProjectsPageClient() {
   const roleKey = useAuthPart(() => getMemorySession()?.user.roleKey ?? "");
   const userId = useAuthPart(() => getMemorySession()?.user.id ?? "");
   const epoch = useAuthPart(() => String(getAuthEpoch()));
-  const [locale, setLocale] = useState<AuthLocale>("en");
+  const [locale, setLocale] = useWorkspaceLocale();
   const copy = getProjectCopy(locale);
   const serialized = searchParams.toString();
   const urlState = useMemo(() => parseProjectListParams(new URLSearchParams(serialized)), [serialized]);

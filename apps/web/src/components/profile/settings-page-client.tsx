@@ -7,10 +7,10 @@ import { useEffect, useState } from "react";
 import { StaffWorkspaceShell } from "@/components/auth/staff-workspace-shell";
 import { Button } from "@/components/ui/button";
 import { logoutWithAuthClient } from "@/lib/auth/client";
-import type { AuthLocale } from "@/lib/auth/types";
 import { fetchSelfProfile } from "@/lib/profile/api";
 import { getSettingsCopy } from "@/lib/profile/messages";
 import type { SelfProfile } from "@/lib/profile/types";
+import { useWorkspaceLocale } from "@/lib/i18n/workspace-locale";
 
 function formatLastLogin(value: string | null): string {
   if (!value) return "—";
@@ -25,7 +25,7 @@ function formatLastLogin(value: string | null): string {
 
 export function SettingsPageClient() {
   const router = useRouter();
-  const [locale, setLocale] = useState<AuthLocale>("en");
+  const [locale, setLocale] = useWorkspaceLocale();
   const copy = getSettingsCopy(locale);
   const [profile, setProfile] = useState<SelfProfile | null>(null);
   const [loadState, setLoadState] = useState<"loading" | "ready" | "error">("loading");

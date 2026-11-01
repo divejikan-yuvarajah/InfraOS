@@ -7,11 +7,11 @@ import { useQuery } from "@tanstack/react-query";
 
 import { StaffWorkspaceShell } from "@/components/auth/staff-workspace-shell";
 import { getAuthEpoch, getMemoryAccessToken, getMemorySession, subscribeAuth } from "@/lib/auth/state";
-import type { AuthLocale } from "@/lib/auth/types";
 import { classifyEditError } from "@/lib/projects/edit-outcome";
 import { ProjectPrerequisites } from "@/components/projects/project-prerequisites";
 import { fetchProjectTimeline } from "@/lib/projects/timeline-api";
 import { getTimelineCopy, timelineTitle } from "@/lib/projects/timeline-messages";
+import { useWorkspaceLocale } from "@/lib/i18n/workspace-locale";
 import {
   formatTimelineWhen,
   groupByHeading,
@@ -40,7 +40,7 @@ function statusLabel(status: string | undefined, copy: ReturnType<typeof getTime
 }
 
 export function ProjectTimelineClient({ id }: { id: string }) {
-  const [locale, setLocale] = useState<AuthLocale>("en");
+  const [locale, setLocale] = useWorkspaceLocale();
   const [group, setGroup] = useState<TimelineGroup>("all");
   const [sort, setSort] = useState<"asc" | "desc">("asc");
   const [page, setPage] = useState(1);

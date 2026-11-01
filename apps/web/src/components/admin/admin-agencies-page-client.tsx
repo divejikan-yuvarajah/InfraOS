@@ -27,8 +27,8 @@ import { getAgencyCopy } from "@/lib/admin-agencies/messages";
 import { agencyCreateFormSchema, agencyManageIsPlatformHint, type AgencyCreateFormValues } from "@/lib/admin-agencies/schema";
 import type { AgencyRecord } from "@/lib/admin-agencies/types";
 import { ApiError } from "@/lib/api/client";
-import type { AuthLocale } from "@/lib/auth/types";
 import { getMemorySession } from "@/lib/auth/state";
+import { useWorkspaceLocale } from "@/lib/i18n/workspace-locale";
 
 function messageFor(error: unknown, copy: ReturnType<typeof getAgencyCopy>): string {
   if (!(error instanceof ApiError)) return copy.unavailable;
@@ -44,7 +44,7 @@ function messageFor(error: unknown, copy: ReturnType<typeof getAgencyCopy>): str
 
 export function AdminAgenciesPageClient() {
   const queryClient = useQueryClient();
-  const [locale, setLocale] = useState<AuthLocale>("en");
+  const [locale, setLocale] = useWorkspaceLocale();
   const copy = getAgencyCopy(locale);
   const canManage = agencyManageIsPlatformHint(getMemorySession()?.user.roleKey);
   const [q, setQ] = useState("");

@@ -6,11 +6,11 @@ import { useQuery } from "@tanstack/react-query";
 
 import { StaffWorkspaceShell } from "@/components/auth/staff-workspace-shell";
 import { getAuthEpoch, getMemoryAccessToken, getMemorySession, subscribeAuth } from "@/lib/auth/state";
-import type { AuthLocale } from "@/lib/auth/types";
 import { fetchProjectActivity } from "@/lib/projects/activity-api";
 import { activityTitle, getActivityCopy } from "@/lib/projects/activity-messages";
 import { activityPageState, activityPagesForScope, activityQueryKey, activityScope, formatActivityWhen, rememberActivityPage, visibleActivityItems, type ActivityFilter, type ActivityPageState, type ActivityViewItem } from "@/lib/projects/activity-view";
 import { classifyEditError } from "@/lib/projects/edit-outcome";
+import { useWorkspaceLocale } from "@/lib/i18n/workspace-locale";
 
 function useAuthPart(read: () => string): string {
   return useSyncExternalStore(subscribeAuth, read, () => "");
@@ -40,7 +40,7 @@ function detailText(item: ActivityViewItem, copy: ReturnType<typeof getActivityC
 }
 
 export function ProjectActivityClient({ id }: { id: string }) {
-  const [locale, setLocale] = useState<AuthLocale>("en");
+  const [locale, setLocale] = useWorkspaceLocale();
   const [category, setCategory] = useState<ActivityFilter>("all");
   const copy = getActivityCopy(locale);
   const epoch = useAuthPart(() => String(getAuthEpoch()));

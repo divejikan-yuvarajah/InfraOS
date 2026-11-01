@@ -11,14 +11,14 @@ import { classifyCreateError, type CreateFailure } from "@/lib/projects/create-o
 import { projectCreateCachePlan, type ProjectCreateRequest } from "@/lib/projects/create-transform";
 import { getProjectCopy } from "@/lib/projects/messages";
 import { getAuthEpoch, getMemoryAccessToken, getMemorySession } from "@/lib/auth/state";
-import type { AuthLocale } from "@/lib/auth/types";
+import { useWorkspaceLocale } from "@/lib/i18n/workspace-locale";
 
 import { ProjectCreateForm } from "./project-create-form";
 
 export function ProjectCreatePageClient() {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const [locale, setLocale] = useState<AuthLocale>("en");
+  const [locale, setLocale] = useWorkspaceLocale();
   const [failure, setFailure] = useState<CreateFailure | null>(null);
   const copy = getProjectCopy(locale);
 

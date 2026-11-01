@@ -9,12 +9,15 @@ import { BellIcon, Building2Icon, ChevronDownIcon, LogOutIcon, MenuIcon, XIcon }
 
 import { InfraosMark } from "@/components/landing/infraos-mark";
 import { RouteLines } from "@/components/motif/connected-motif";
+import { HonestyChip } from "@/components/site-plan/site-plan";
 import { logoutWithAuthClient } from "@/lib/auth/client";
 import { getAuthEpoch, getMemoryAccessToken, getMemorySession, subscribeAuth } from "@/lib/auth/state";
+import type { AuthLocale } from "@/lib/auth/types";
+import { LOCALE_NAME, LOCALE_SHORT, WORKSPACE_LOCALES, useWorkspaceLocale } from "@/lib/i18n/workspace-locale";
 import { fetchUnreadCount } from "@/lib/projects/notice-api";
 import { classifyEditError } from "@/lib/projects/edit-outcome";
 
-import { ROLE_LABELS, WORKSPACE_NAV, initialsOf, navCurrent } from "./workspace-nav";
+import { ROLE_LABELS, WORKSPACE_NAV, initialsOf, navCurrent, navLabel } from "./workspace-nav";
 
 function useAuthPart(read: () => string): string {
   return useSyncExternalStore(subscribeAuth, read, () => "");
@@ -24,11 +27,13 @@ function SidebarNav({
   pathname,
   unread,
   hideNotices,
+  locale,
   onNavigate,
 }: {
   pathname: string;
   unread: number | undefined;
   hideNotices: boolean;
+  locale: AuthLocale;
   onNavigate?: () => void;
 }) {
   return (
@@ -39,7 +44,9 @@ function SidebarNav({
           <div key={group.label} className="mc-nav-group">
             <p className="mc-nav-label">{group.label}</p>
             <ul>
-              {items.map(({ href, label, icon: Icon }) => {
+              {items.map((item) => {
+                const { href, icon: Icon } = item;
+                const label = navLabel(item, locale);
                 const active = navCurrent(pathname, href);
                 return (
                   <li key={href}>
@@ -88,15 +95,19 @@ export function StaffWorkspaceShell({
   title,
   description,
   wide = false,
+  context,
   children,
 }: {
   kicker?: string;
   title: string;
   description?: string;
   wide?: boolean;
+  /** Optional Site Plan context bar (breadcrumbs, scope, as-of, actions) under the page title. */
+  context?: ReactNode;
   children: ReactNode;
 }) {
   const pathname = usePathname();
+  const [locale, setLocale] = useWorkspaceLocale();
   const router = useRouter();
   const [drawer, setDrawer] = useState(false);
   const [leaving, setLeaving] = useState(false);
@@ -124,17 +135,17 @@ export function StaffWorkspaceShell({
   }
 
   return (
-    <div data-infra-app className="auth-access-root mc-root">
+    <div data-infra-app className="auth-access-root mc-root" lang={locale}>
       <a href="#mc-main" className="mc-skip">
         Skip to content
       </a>
       <aside className="mc-sidebar" aria-label="Sidebar">
         <SidebarBrand scopeLabel={scopeLabel} />
-        <SidebarNav pathname={pathname} unread={unreadCount} hideNotices={hideNotices} />
+        <SidebarNav pathname={pathname} unread={unreadCount} hideNotices={hideNotices} locale={locale} />
         <p className="mc-sidebar-foot">{kicker}</p>
       </aside>
 
-      <div className="mc-frame">
+      <div className="mc-frame sp-canvas">
         <header className="mc-topbar">
           <Dialog.Root open={drawer} onOpenChange={setDrawer}>
             <Dialog.Trigger className="mc-icon-btn mc-menu-btn" aria-label="Open navigation">
@@ -152,6 +163,7 @@ export function StaffWorkspaceShell({
                   pathname={pathname}
                   unread={unreadCount}
                   hideNotices={hideNotices}
+                  locale={locale}
                   onNavigate={() => setDrawer(false)}
                 />
               </Dialog.Content>
@@ -159,6 +171,24 @@ export function StaffWorkspaceShell({
           </Dialog.Root>
           <p className="mc-topbar-title">{title}</p>
           <div className="mc-topbar-spacer" />
+          <span className="mc-env">
+            <HonestyChip kind="demo" />
+          </span>
+          <div className="mc-lang" role="group" aria-label="View language (Sinhala and Tamil are drafts pending native review)">
+            {WORKSPACE_LOCALES.map((code) => (
+              <button
+                key={code}
+                type="button"
+                lang={code}
+                aria-pressed={locale === code}
+                aria-label={LOCALE_NAME[code]}
+                className={locale === code ? "is-current" : undefined}
+                onClick={() => setLocale(code)}
+              >
+                {LOCALE_SHORT[code]}
+              </button>
+            ))}
+          </div>
           {!hideNotices ? (
             <Link
               href="/notifications"
@@ -219,6 +249,7 @@ export function StaffWorkspaceShell({
             <RouteLines className="mc-page-header-motif" />
             <h1 className="mc-title">{title}</h1>
             {description ? <p className="mc-description">{description}</p> : null}
+            {context ? <div className="mc-page-context">{context}</div> : null}
           </header>
           <div className={wide ? "auth-access-main is-wide mc-body" : "auth-access-main mc-body is-narrow"}>
             {children}

@@ -16,11 +16,11 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { ApiError } from "@/lib/api/client";
-import type { AuthLocale } from "@/lib/auth/types";
 import { fetchSelfProfile, updateSelfProfile } from "@/lib/profile/api";
 import { getProfileCopy } from "@/lib/profile/messages";
 import { profileFormSchema, type ProfileFormValues } from "@/lib/profile/schema";
 import type { SelfProfile } from "@/lib/profile/types";
+import { useWorkspaceLocale } from "@/lib/i18n/workspace-locale";
 
 function formatLastLogin(value: string | null): string {
   if (!value) return "—";
@@ -35,7 +35,7 @@ function formatLastLogin(value: string | null): string {
 
 export function ProfilePageClient() {
   const statusId = useId();
-  const [locale, setLocale] = useState<AuthLocale>("en");
+  const [locale, setLocale] = useWorkspaceLocale();
   const copy = getProfileCopy(locale);
   const [profile, setProfile] = useState<SelfProfile | null>(null);
   const [loadState, setLoadState] = useState<"loading" | "ready" | "error">("loading");

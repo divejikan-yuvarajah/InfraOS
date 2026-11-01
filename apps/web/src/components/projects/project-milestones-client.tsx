@@ -9,13 +9,13 @@ import { useForm } from "react-hook-form";
 import { StaffWorkspaceShell } from "@/components/auth/staff-workspace-shell";
 import { ApiError } from "@/lib/api/client";
 import { getAuthEpoch, getMemoryAccessToken, getMemorySession, subscribeAuth } from "@/lib/auth/state";
-import type { AuthLocale } from "@/lib/auth/types";
 import { fetchProject } from "@/lib/projects/api";
 import { classifyEditError } from "@/lib/projects/edit-outcome";
 import { actionsFor, milestoneFormSchema } from "@/lib/projects/milestone-form";
 import { getMilestoneCopy } from "@/lib/projects/milestone-messages";
 import { createMilestone, fetchMilestones, patchMilestone, transitionMilestone, type MilestoneRecord } from "@/lib/projects/milestones-api";
 import { projectCoreQueryKey } from "@/lib/projects/overview-format";
+import { useWorkspaceLocale } from "@/lib/i18n/workspace-locale";
 
 const WRITE_ROLES = new Set(["GOV_ADMIN", "AGENCY_OFFICER", "PROJECT_MANAGER"]);
 const ELIGIBLE = new Set(["APPROVED", "ACTIVE"]);
@@ -41,7 +41,7 @@ function noticeFor(kind: string, copy: ReturnType<typeof getMilestoneCopy>): str
 }
 
 export function ProjectMilestonesClient({ id }: { id: string }) {
-  const [locale, setLocale] = useState<AuthLocale>("en");
+  const [locale, setLocale] = useWorkspaceLocale();
   const copy = getMilestoneCopy(locale);
   const queryClient = useQueryClient();
   const epoch = useAuthPart(() => String(getAuthEpoch()));

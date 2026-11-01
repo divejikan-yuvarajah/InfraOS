@@ -8,12 +8,12 @@ import { useState, useSyncExternalStore } from "react";
 import { StaffWorkspaceShell } from "@/components/auth/staff-workspace-shell";
 import { ApiError } from "@/lib/api/client";
 import { getAuthEpoch, getMemoryAccessToken, getMemorySession, subscribeAuth } from "@/lib/auth/state";
-import type { AuthLocale } from "@/lib/auth/types";
 import { fetchProject, patchProject } from "@/lib/projects/api";
 import { classifyEditError, type EditFailure } from "@/lib/projects/edit-outcome";
 import { projectEditCachePlan, type ProjectPatchRequest } from "@/lib/projects/edit-transform";
 import { getProjectCopy, projectReadMessage } from "@/lib/projects/messages";
 import { projectCoreQueryKey, safeListReturn } from "@/lib/projects/overview-format";
+import { useWorkspaceLocale } from "@/lib/i18n/workspace-locale";
 
 import { ProjectEditForm } from "./project-edit-form";
 
@@ -28,7 +28,7 @@ export function ProjectEditPageClient({ id }: { id: string }) {
   const epoch = useAuthPart(() => String(getAuthEpoch()), "0");
   const userId = useAuthPart(() => getMemorySession()?.user.id ?? "", "");
   const roleKey = useAuthPart(() => getMemorySession()?.user.roleKey ?? "", "");
-  const [locale, setLocale] = useState<AuthLocale>("en");
+  const [locale, setLocale] = useWorkspaceLocale();
   const [failure, setFailure] = useState<EditFailure | null>(null);
   const [saved, setSaved] = useState(false);
   const copy = getProjectCopy(locale);

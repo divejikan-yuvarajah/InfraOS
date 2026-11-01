@@ -9,7 +9,6 @@ import { useForm } from "react-hook-form";
 import { StaffWorkspaceShell } from "@/components/auth/staff-workspace-shell";
 import { ApiError } from "@/lib/api/client";
 import { getAuthEpoch, getMemoryAccessToken, getMemorySession, subscribeAuth } from "@/lib/auth/state";
-import type { AuthLocale } from "@/lib/auth/types";
 import { fetchProject } from "@/lib/projects/api";
 import { classifyEditError } from "@/lib/projects/edit-outcome";
 import { fetchFinancialProgress } from "@/lib/projects/finance-api";
@@ -19,6 +18,7 @@ import { fetchProgress, fetchProgressHistory, submitProgress } from "@/lib/proje
 import { progressFormSchema, progressNoteReady } from "@/lib/projects/progress-form";
 import { getProgressCopy } from "@/lib/projects/progress-messages";
 import { formatLkrMinor } from "@/lib/data-table/query-state";
+import { useWorkspaceLocale } from "@/lib/i18n/workspace-locale";
 
 type FormValues = { percentage: number; note: string };
 
@@ -41,7 +41,7 @@ function noticeFor(kind: string, copy: ReturnType<typeof getProgressCopy>): stri
 }
 
 export function ProjectProgressClient({ id }: { id: string }) {
-  const [locale, setLocale] = useState<AuthLocale>("en");
+  const [locale, setLocale] = useWorkspaceLocale();
   const [page, setPage] = useState(1);
   const [notice, setNotice] = useState<string | null>(null);
   const copy = getProgressCopy(locale);

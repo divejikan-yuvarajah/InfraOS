@@ -6,11 +6,11 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { StaffWorkspaceShell } from "@/components/auth/staff-workspace-shell";
 import { getAuthEpoch, getMemoryAccessToken, getMemorySession, subscribeAuth } from "@/lib/auth/state";
-import type { AuthLocale } from "@/lib/auth/types";
 import { fetchNotices, setNoticeRead } from "@/lib/projects/notice-api";
 import { getNoticeCopy, noticeTitle } from "@/lib/projects/notice-messages";
 import { classifyEditError } from "@/lib/projects/edit-outcome";
 import { formatActivityWhen } from "@/lib/projects/activity-view";
+import { useWorkspaceLocale } from "@/lib/i18n/workspace-locale";
 import {
   noticeHref,
   noticePageState,
@@ -27,7 +27,7 @@ function useAuthPart(read: () => string): string {
 }
 
 export function ProjectNotices() {
-  const [locale, setLocale] = useState<AuthLocale>("en");
+  const [locale, setLocale] = useWorkspaceLocale();
   const [state, setState] = useState<"all" | "read" | "unread">("all");
   const [pages, setPages] = useState<NoticePageState>(() => noticePageState(""));
   const copy = getNoticeCopy(locale);
