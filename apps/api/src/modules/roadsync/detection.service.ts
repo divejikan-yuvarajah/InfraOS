@@ -17,6 +17,7 @@ import { roadsyncEvents, type DetectionCompletedEvent } from "./roadsync.events.
 import { analyzeSchedules, notApplicable, TIMED_RELATIONS, type ScheduleSide, type TemporalResult, type WorkingHours } from "./schedule.analysis.js";
 import { analyzeSpatial, searchPolygon, simplifyForTransport, type AnyGeometry, type SpatialResult } from "./spatial.analysis.js";
 import { readFilter } from "./work-requests.service.js";
+import { sequenceOf, type AssessSide } from "./assessment.engine.js";
 
 export type SourceType = "work_request" | "project" | "asset";
 type Oid = mongoose.Types.ObjectId;
@@ -54,7 +55,19 @@ export type SubjectInput = {
   bufferMeters: number;
   schedule: ScheduleSide | null;
   infrastructureType: string;
+  workType?: string | null;
+  priority?: string | null;
 };
+
+/** Engine view of a stored/normalized item. Traffic impact is not captured by any source yet, so it is null. */
+export function itemSide(item: SourceItem): AssessSide {
+  const priority = item.type === "work_request" && typeof item.detail.priority === "string" ? item.detail.priority : null;
+  return { sourceType: item.type, workType: item.workType, infrastructureType: item.infrastructureType, traffic: null, priority, isEmergency: false, workingHours: item.workingHours, start: item.start, end: item.end };
+}
+const subjectSide = (s: SubjectInput): AssessSide => ({
+  sourceType: "work_request", workType: s.workType ?? null, infrastructureType: s.infrastructureType, traffic: null, priority: s.priority ?? null,
+  isEmergency: s.schedule?.isEmergency ?? false, workingHours: s.schedule?.workingHours ?? "day", start: s.schedule?.start ?? null, end: s.schedule?.end ?? null,
+});
 
 export type PairResult = { item: SourceItem; spatial: SpatialResult; temporal: TemporalResult; isCandidate: boolean };
 export type SourceCheck = { source: SourceType; ok: boolean; error?: string };
@@ -117,7 +130,7 @@ function assetItem(r: AssetRow): SourceItem {
 }
 
 /** Reloads items by id for read responses (any status, so an inactive pair can still show its other side). */
-async function loadItems(refs: { type: SourceType; id: string }[]): Promise<Map<string, SourceItem>> {
+export async function loadItems(refs: { type: SourceType; id: string }[]): Promise<Map<string, SourceItem>> {
   const ids = (t: SourceType) => refs.filter((r) => r.type === t).map((r) => oid(r.id));
   const [w, p, a] = await Promise.all([
     ids("work_request").length ? WorkRequest.find({ _id: { $in: ids("work_request") } }).select("agencyId projectId workType status priority plannedStart plannedEnd geometry updatedAt").lean() : [],
@@ -145,10 +158,16 @@ function analyzePair(a: SubjectInput, b: SourceItem, radius: number, subjectIsA:
   if (b.type === "asset") temporal = notApplicable("permanent");
   else if (!subjectSchedule || !itemSchedule) temporal = notApplicable("unknown");
   else temporal = subjectIsA ? analyzeSchedules(subjectSchedule, itemSchedule) : analyzeSchedules(itemSchedule, subjectSchedule);
+  // Step 70: surface work finishing before invasive work starts (7 < gap <= 180 d) is a candidate even though it is not "adjacent".
+  const [sideA, sideB] = subjectIsA ? [subjectSide(a), itemSide(b)] : [itemSide(b), subjectSide(a)];
+  const sequenceRisk = sequenceOf(sideA, sideB, temporal);
+  if (sequenceRisk) temporal = { ...temporal, sequenceRisk };
   return { spatial, temporal };
 }
 
-const isCandidateOf = (s: SpatialResult, t: TemporalResult) => s.relation !== "none" && (TIMED_RELATIONS.includes(t.relation) || !t.applicable);
+const SEQUENCE_SPATIAL = ["intersecting", "footprint_overlap", "adjacent"];
+const isCandidateOf = (s: SpatialResult, t: TemporalResult) =>
+  s.relation !== "none" && (TIMED_RELATIONS.includes(t.relation) || !t.applicable || Boolean(t.sequenceRisk && SEQUENCE_SPATIAL.includes(s.relation)));
 
 async function collect(subject: SubjectInput, radius: number, limit: number) {
   const area = searchPolygon(subject.geometry, subject.bufferMeters + radius);
@@ -327,6 +346,7 @@ export async function runDetection(requestId: string, opts: { runBy: string; rad
     const subject: SubjectInput = {
       id: requestId, agencyId: String(claimed.agencyId), projectId: String(claimed.projectId), geometry: claimed.geometry as unknown as AnyGeometry, bufferMeters: DETECTION.DEFAULT_BUFFER_M,
       schedule: { start: claimed.plannedStart, end: claimed.plannedEnd, workingHours: "day", flexibleDays: 0, isEmergency: false }, infrastructureType: INFRA_OF_WORK[claimed.workType] ?? "OTHER",
+      workType: claimed.workType, priority: claimed.priority,
     };
     const found = await collect(subject, radius, DETECTION.MAX_CANDIDATES_PERSISTED);
     const total = found.sources.length;
@@ -346,14 +366,15 @@ export async function runDetection(requestId: string, opts: { runBy: string; rad
       const bAgency = p.subjectIsA ? p.item.agencyId : subject.agencyId!;
       const aInfra = p.subjectIsA ? subject.infrastructureType : p.item.infrastructureType;
       const bInfra = p.subjectIsA ? p.item.infrastructureType : subject.infrastructureType;
-      const inputsHash = createHash("sha1").update(JSON.stringify([subject.geometry, subject.bufferMeters, claimed.plannedStart, claimed.plannedEnd, p.item.geometry, p.item.start, p.item.end, p.item.status, radius])).digest("hex");
+      const inputsHash = createHash("sha1").update(JSON.stringify([subject.geometry, subject.bufferMeters, claimed.plannedStart, claimed.plannedEnd, p.item.geometry, p.item.start, p.item.end, p.item.status, radius, subject.workType, p.item.workType, subject.priority, p.item.detail.priority ?? null])).digest("hex");
       if (existingHash.get(key) === inputsHash) continue;
       ops.push({
         updateOne: {
           filter: { aType: "work_request", aId: oid(ref.a), bType: p.item.type, bId: oid(ref.b) },
           update: {
             $set: {
-              agencyIds: [oid(aAgency), oid(bAgency)], aInfrastructureType: aInfra, bInfrastructureType: bInfra, spatial: p.spatial, temporal: p.temporal, isCandidate: p.isCandidate,
+              agencyIds: [oid(aAgency), oid(bAgency)], aInfrastructureType: aInfra, bInfrastructureType: bInfra,
+              aWorkType: p.subjectIsA ? subject.workType ?? null : p.item.workType, bWorkType: p.subjectIsA ? p.item.workType : subject.workType ?? null, spatial: p.spatial, temporal: p.temporal, isCandidate: p.isCandidate,
               status: "active", inactiveReason: null, detectedBy: opts.runBy, sourceUpdatedAt: p.item.updatedAt, inputsHash,
             },
             $setOnInsert: { detectedAt: now },
@@ -424,7 +445,7 @@ export type DetectionQuery = {
   limit: number;
 };
 
-async function loadPairViews(actor: AuthenticatedActor, requestId: string) {
+export async function loadPairViews(actor: AuthenticatedActor, requestId: string) {
   const docs = await Candidate.find({ status: "active", $or: [{ aType: "work_request", aId: oid(requestId) }, { bType: "work_request", bId: oid(requestId) }] }).limit(DETECTION.MAX_CANDIDATES_PERSISTED * 2).lean();
   const refs = docs.map((d) => {
     const subjectIsA = d.aType === "work_request" && String(d.aId) === requestId;

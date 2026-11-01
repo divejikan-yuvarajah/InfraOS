@@ -21,6 +21,8 @@ export type TemporalResult = {
   overlapPctOfB: number | null;
   hoursCompatibility: "same_shift" | "different_shifts" | "overlaps_24h" | null;
   shift: { a: ShiftAdvice; b: ShiftAdvice } | null;
+  /** Step 70: set by detection, not by analyzeSchedules. Surface work first, invasive work later, within the sequence window. */
+  sequenceRisk?: { direction: "a_then_b" | "b_then_a"; gapDays: number } | null;
 };
 
 const DAY_MS = 86_400_000;

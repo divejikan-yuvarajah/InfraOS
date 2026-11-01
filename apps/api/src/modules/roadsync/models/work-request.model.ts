@@ -29,7 +29,9 @@ const workRequestSchema = new Schema({
   status: { type: String, enum: WORK_STATUSES, required: true, default: "DRAFT" },
   priority: { type: String, enum: WORK_PRIORITIES, required: true, default: "NORMAL" },
   detection: { type: detectionSchema },
-}, { timestamps: true, strict: "throw", collection: "workRequests" });
+  /** Steps 70-71, server-owned (never accepted from clients): status, counts, riskIndex, maxBand, corridorProfile. */
+  assessment: { type: Schema.Types.Mixed, default: undefined },
+},{ timestamps: true, strict: "throw", collection: "workRequests" });
 
 dateOrder(workRequestSchema, "plannedStart", "plannedEnd");
 

@@ -268,3 +268,61 @@ export function simplifyForTransport<G extends AnyGeometry>(g: G, toleranceMeter
   if (g.type === "LineString") return { ...g, coordinates: thin(g.coordinates as Pos[], false) };
   return { ...g, coordinates: (g.coordinates as Pos[][]).map((r) => thin(r, true)) };
 }
+
+// ---------- Steps 70-71 helpers (pure) ----------
+
+/** Total length of a LineString in meters (0 for points and polygons). */
+export function lineLengthMeters(g: AnyGeometry): number {
+  if (g.type !== "LineString") return 0;
+  return lineLength(shapeOf(g, projection(meanLat(g))));
+}
+
+/** Point `distance` meters along a LineString (clamped to its ends). */
+export function pointAlongLine(g: AnyGeometry, distance: number): Pos {
+  const proj = projection(meanLat(g));
+  const shape = shapeOf(g, proj);
+  let left = Math.max(0, distance);
+  for (const [a, b] of shape.segs) {
+    const len = Math.hypot(b[0] - a[0], b[1] - a[1]);
+    if (left <= len || len === 0) {
+      const t = len === 0 ? 0 : left / len;
+      return proj.inv([a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t]);
+    }
+    left -= len;
+  }
+  return proj.inv(shape.verts[shape.verts.length - 1]!);
+}
+
+/** Distance in meters from a [lng, lat] point to a geometry (0 when inside a polygon). */
+export function distanceFromPoint(point: Pos, g: AnyGeometry): number {
+  const proj = projection(meanLat(g));
+  return pointToShape(proj.fwd(point), shapeOf(g, proj));
+}
+
+function crossingPoint([p1, q1]: Seg, [p2, q2]: Seg): Pt | null {
+  const d = (q1[0] - p1[0]) * (q2[1] - p2[1]) - (q1[1] - p1[1]) * (q2[0] - p2[0]);
+  if (d === 0) return null;
+  const t = ((p2[0] - p1[0]) * (q2[1] - p2[1]) - (p2[1] - p1[1]) * (q2[0] - p2[0])) / d;
+  const u = ((p2[0] - p1[0]) * (q1[1] - p1[1]) - (p2[1] - p1[1]) * (q1[0] - p1[0])) / d;
+  return t >= 0 && t <= 1 && u >= 0 && u <= 1 ? [p1[0] + t * (q1[0] - p1[0]), p1[1] + t * (q1[1] - p1[1])] : null;
+}
+
+/**
+ * Where the pair "bites": the first crossing of the two shapes when they intersect, otherwise the midpoint
+ * of the closest points. Falls back to the first vertex of `a` for containment or collinear contact.
+ */
+export function hotspotOf(a: AnyGeometry, b: AnyGeometry, spatial: Pick<SpatialResult, "intersects" | "closestPoints">): Pos {
+  const proj = projection((meanLat(a) + meanLat(b)) / 2);
+  if (spatial.intersects) {
+    const sa = shapeOf(a, proj);
+    const sb = shapeOf(b, proj);
+    for (const s of sa.segs) for (const t of sb.segs) {
+      const hit = crossingPoint(s, t);
+      if (hit) return proj.inv(hit);
+    }
+    return proj.inv(sa.verts[0]!);
+  }
+  const c = spatial.closestPoints;
+  if (c) return [(c[0][0] + c[1][0]) / 2, (c[0][1] + c[1][1]) / 2];
+  return flatten(a)[0] ?? [0, 0];
+}
