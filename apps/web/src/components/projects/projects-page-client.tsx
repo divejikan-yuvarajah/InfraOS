@@ -19,6 +19,7 @@ import { getDashboardCopy } from "@/lib/projects/dashboard-messages";
 import { dashboardStatusLabel } from "@/lib/projects/dashboard-view";
 import {
   canHintProjectCreate,
+  canHintProjectReview,
   EMPTY_PROJECT_LIST_STATE,
   parseProjectListParams,
   PROJECT_LIST_PAGE_SIZES,
@@ -164,7 +165,7 @@ export function ProjectsPageClient() {
           crumbs={[{ label: copy.breadcrumbWorkspace, href: "/dashboard" }, { label: copy.breadcrumbProjects }]}
           actions={
             <>
-              {roleKey === "GOV_ADMIN" ? (
+              {canHintProjectReview(roleKey) ? (
                 <Link className="spp-btn" href="/projects/reviews">
                   {getReviewCopy(locale).title}
                 </Link>

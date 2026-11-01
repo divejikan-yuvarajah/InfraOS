@@ -2,11 +2,13 @@
 
 Date: 2026-10-28. Same-agent implementation record. This is not an independent human signoff.
 
-End-of-step verification on 2026-10-29 added the denial fallback, Escape-to-close, draft language switch, and the extra API cases. The verification record is `docs/reviews/step-58/END-OF-STEP-VERIFICATION.md`. Feature recommendation there is **APPROVE**. Production readiness stays **BLOCKED**.
+End-of-step verification on 2026-10-29 added the denial fallback, Escape-to-close, draft language switch, and the extra API cases. The verification record is `docs/reviews/step-58/END-OF-STEP-VERIFICATION.md`.
+
+**Owner acceptance:** 2026-10-29. Step 58 accepted on commit `004d60d` (`feature/projecttrace-milestones`). Production readiness stays **BLOCKED**.
 
 ## Verdict
 
-**Feature-ready for owner review.** Assigned staff can create, edit, list, and transition milestones on an approved project. The parent project is not completed and its recorded physical progress is not changed.
+**Accepted for feature scope.** Assigned staff can create, edit, list, and transition milestones on an approved project. The parent project is not completed and its recorded physical progress is not changed.
 
 **Production-ready: BLOCKED.** Existing release blockers remain. Step 58 does not clear them.
 

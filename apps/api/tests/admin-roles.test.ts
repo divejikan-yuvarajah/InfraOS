@@ -145,9 +145,9 @@ describe("step 50 role administration", { timeout: 120_000 }, () => {
       .put(`/api/v1/admin/roles/${superRole._id.toString()}/permissions`)
       .set("Authorization", `Bearer ${data.superUser.token}`)
       .send({
-        permissions: [...superRole.permissions, "project.approve"],
+        permissions: [...superRole.permissions, "inspection.submit"],
         revision: superRole.__v ?? 0,
-        reason: "Try operational approval",
+        reason: "Try inspector duties",
       });
     expect(approve.status).toBe(409);
 
@@ -184,7 +184,7 @@ describe("step 50 role administration", { timeout: 120_000 }, () => {
         });
       expect(denied.status).toBe(409);
     }
-    for (const permission of ["finance.payment.approve", "inspection.verify", "roadsync.conflict.resolve"] as const) {
+    for (const permission of ["finance.payment.approve", "inspection.verify", "roadsync.conflict.resolve", "progress.submit"] as const) {
       const denied = await request(app)
         .put(`/api/v1/admin/roles/${superRole._id.toString()}/permissions`)
         .set("Authorization", `Bearer ${data.superUser.token}`)

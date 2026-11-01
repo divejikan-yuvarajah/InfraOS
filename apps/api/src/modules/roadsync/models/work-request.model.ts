@@ -3,6 +3,22 @@ import { dateOrder, reference } from "../../../shared/database/fields.js";
 import { geometryField } from "../../../shared/database/geometry.js";
 import { WORK_PRIORITIES, WORK_STATUSES, WORK_TYPES } from "../roadsync.constants.js";
 
+/** Server-owned detection summary (Steps 68-69). Never accepted from clients. */
+const detectionSchema = new Schema({
+  status: { type: String, enum: ["pending", "running", "completed", "failed"], required: true, default: "pending" },
+  startedAt: { type: Date },
+  completedAt: { type: Date },
+  counts: {
+    type: new Schema({ nearby: Number, candidates: Number, agencies: Number, truncated: Boolean }, { _id: false, strict: "throw" }),
+  },
+  error: { type: String, maxlength: 200 },
+  runBy: { type: String, maxlength: 40 },
+  sourcesChecked: {
+    type: [new Schema({ source: String, ok: Boolean, error: { type: String, maxlength: 200 } }, { _id: false, strict: "throw" })],
+    default: undefined,
+  },
+}, { _id: false, strict: "throw" });
+
 const workRequestSchema = new Schema({
   projectId: reference("Project"),
   agencyId: reference("Agency"),
@@ -12,7 +28,10 @@ const workRequestSchema = new Schema({
   plannedEnd: { type: Date, required: true },
   status: { type: String, enum: WORK_STATUSES, required: true, default: "DRAFT" },
   priority: { type: String, enum: WORK_PRIORITIES, required: true, default: "NORMAL" },
-}, { timestamps: true, strict: "throw", collection: "workRequests" });
+  detection: { type: detectionSchema },
+  /** Steps 70-71, server-owned (never accepted from clients): status, counts, riskIndex, maxBand, corridorProfile. */
+  assessment: { type: Schema.Types.Mixed, default: undefined },
+},{ timestamps: true, strict: "throw", collection: "workRequests" });
 
 dateOrder(workRequestSchema, "plannedStart", "plannedEnd");
 

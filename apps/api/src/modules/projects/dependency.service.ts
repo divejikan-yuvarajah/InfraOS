@@ -19,7 +19,7 @@ import {
 import type { DependencyCandidateQuery, DependencyCreateBody, DependencyListQuery, DependencyRemoveBody } from "./dependency.schema.js";
 import type { ProjectFailure } from "./projects.types.js";
 
-const WRITE_DENY = new Set(["SUPER_ADMIN", "CONTRACTOR", "INSPECTOR", "CITIZEN"]);
+const WRITE_DENY = new Set(["CONTRACTOR", "INSPECTOR", "CITIZEN"]);
 
 class FlowControl extends Error {
   constructor(readonly status: ProjectFailure["status"], readonly code: ProjectFailure["code"]) {
@@ -267,7 +267,7 @@ export async function addProjectDependency(actor: AuthenticatedActor, projectId:
         oldValue: { agencyId: dependent.agencyId },
         newValue: { agencyId: dependent.agencyId, dependencyId: row._id, prerequisiteProjectId: prerequisite._id },
         requestId: auditRequestId(requestId),
-        agencyId: new mongoose.Types.ObjectId(actor.agencyId),
+        agencyId: actor.roleKey === "SUPER_ADMIN" ? dependent.agencyId : new mongoose.Types.ObjectId(actor.agencyId),
       }], { session });
       const lock = await DependencyGraphLock.findById(DEPENDENCY_GRAPH_LOCK_ID).select("seq").session(session);
       return {
@@ -317,7 +317,7 @@ export async function removeProjectDependency(actor: AuthenticatedActor, project
         oldValue: { agencyId: dependent.agencyId, dependencyId: row._id, prerequisiteProjectId: row.prerequisiteProjectId },
         newValue: { agencyId: dependent.agencyId },
         requestId: auditRequestId(requestId),
-        agencyId: new mongoose.Types.ObjectId(actor.agencyId),
+        agencyId: actor.roleKey === "SUPER_ADMIN" ? dependent.agencyId : new mongoose.Types.ObjectId(actor.agencyId),
       }], { session });
       const after = await Project.findById(dependent._id).select("status").session(session);
       if (!after || after.status !== statusBefore) throw new DependencyLinkError();

@@ -1,6 +1,18 @@
 # Step 58 end-of-step verification
 
-Date: 2026-10-29. Same-agent review. This is not independent project-owner signoff.
+Date: 2026-10-29. Same-agent review. Owner acceptance recorded below.
+
+## Owner acceptance
+
+**Accepted:** 2026-10-29. Step 58 — Milestone Management is accepted for in-scope feature delivery.
+
+| Item | Value |
+|---|---|
+| Commit | `004d60d78a0e5e660a401689b3978cfd8b7cc43f` |
+| Branch | `feature/projecttrace-milestones` |
+| Remote | https://github.com/divejikan-yuvarajah/InfraOS/tree/feature/projecttrace-milestones |
+
+Accepted scope includes scoped create, read, update, and status transitions; milestone timeline UI; tests and verification evidence. Weight and hard delete remain excluded. Production deployment remains blocked until separate release gates pass. Step 59 was not started.
 
 ## Conclusions
 

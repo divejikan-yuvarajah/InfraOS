@@ -9,7 +9,9 @@ describe("dependency view", () => {
     expect(dependencyQueryKey("1", "user", "PROJECT_MANAGER", "a")).not.toEqual(dependencyQueryKey("2", "user", "PROJECT_MANAGER", "a"));
     expect(canEditDependencies("PROJECT_MANAGER")).toBe(true);
     expect(canEditDependencies("CONTRACTOR")).toBe(false);
-    expect(canEditDependencies("SUPER_ADMIN")).toBe(false);
+    expect(canEditDependencies("SUPER_ADMIN")).toBe(true);
+    expect(canEditDependencies("INSPECTOR")).toBe(false);
+    expect(canEditDependencies("CITIZEN")).toBe(false);
   });
 
   it("maps conflict and hidden-target responses", () => {

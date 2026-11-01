@@ -76,8 +76,12 @@ export function projectReadFilter(scope: ResourceScope): Filter {
 }
 
 export function projectWriteFilter(actor: AuthenticatedActor, scope: ResourceScope): Filter {
-  if (actor.roleKey === "SUPER_ADMIN" || actor.roleKey === "CONTRACTOR" || actor.roleKey === "INSPECTOR" || actor.roleKey === "CITIZEN") {
+  if (actor.roleKey === "CONTRACTOR" || actor.roleKey === "INSPECTOR" || actor.roleKey === "CITIZEN") {
     return MATCH_NONE;
+  }
+  // Platform-wide management: only projects that have an owning agency, never ownerless records.
+  if (actor.roleKey === "SUPER_ADMIN") {
+    return scope.kind === "platform" ? { agencyId: { $exists: true, $ne: null } } : MATCH_NONE;
   }
   const agencyId = objectId(actor.agencyId);
   const userId = objectId(actor.userId);
@@ -226,7 +230,6 @@ export async function updateProjectTitle(
   if (!id || typeof title !== "string" || title.trim().length === 0 || title.length > 200) {
     return fail(400, "VALIDATION_ERROR");
   }
-  if (actor.roleKey === "SUPER_ADMIN") return fail(403, "FORBIDDEN");
   try {
     const scope = await resolveResourceScope(actor);
     const filter = projectWriteFilter(actor, scope);
@@ -355,6 +358,7 @@ export async function approvePayment(
   const userId = objectId(actor.userId);
   if (!id) return fail(400, "VALIDATION_ERROR");
   if (!userId) return fail(404, "NOT_FOUND");
+  // Payment approval is not granted to the platform role until a reviewed payment workflow exists.
   if (actor.roleKey === "SUPER_ADMIN") return fail(403, "FORBIDDEN");
   try {
     const scope = await resolveResourceScope(actor);

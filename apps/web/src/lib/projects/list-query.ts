@@ -39,7 +39,8 @@ export const PROJECT_LIST_SORTS = [
 
 export const PROJECT_LIST_PAGE_SIZES = [10, 20] as const;
 
-const CREATE_ROLE_HINTS = new Set(["GOV_ADMIN", "AGENCY_OFFICER", "PROJECT_MANAGER"]);
+const CREATE_ROLE_HINTS = new Set(["SUPER_ADMIN", "GOV_ADMIN", "AGENCY_OFFICER", "PROJECT_MANAGER"]);
+const REVIEW_ROLE_HINTS = new Set(["SUPER_ADMIN", "GOV_ADMIN"]);
 
 export type ProjectListSort = (typeof PROJECT_LIST_SORTS)[number];
 
@@ -119,4 +120,9 @@ export function resetProjectListPage(state: ProjectListState, patch: Partial<Pro
 
 export function canHintProjectCreate(roleKey: string | null | undefined): boolean {
   return CREATE_ROLE_HINTS.has(roleKey ?? "");
+}
+
+/** UI hint only. The API enforces project.approve and the submitter-independence rule. */
+export function canHintProjectReview(roleKey: string | null | undefined): boolean {
+  return REVIEW_ROLE_HINTS.has(roleKey ?? "");
 }

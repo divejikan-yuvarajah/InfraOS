@@ -151,7 +151,9 @@ describe("step 57 project review", { timeout: 120_000 }, () => {
     expect((await request(app).get("/api/v1/projects/review-queue").set("Authorization", `Bearer ${data.contractor.token}`)).status).toBe(403);
     expect((await request(app).get("/api/v1/projects/review-queue").set("Authorization", `Bearer ${data.inspector.token}`)).status).toBe(403);
     expect((await request(app).get("/api/v1/projects/review-queue").set("Authorization", `Bearer ${data.citizen.token}`)).status).toBe(403);
-    expect((await request(app).get("/api/v1/projects/review-queue").set("Authorization", `Bearer ${data.superUser.token}`)).status).toBe(403);
+    const superQueue = await request(app).get("/api/v1/projects/review-queue").set("Authorization", `Bearer ${data.superUser.token}`);
+    expect(superQueue.status).toBe(200);
+    expect(superQueue.body.data.total).toBe(1);
 
     const foreignQueue = await request(app).get("/api/v1/projects/review-queue").set("Authorization", `Bearer ${data.foreign.token}`);
     expect(foreignQueue.status).toBe(200);
@@ -254,6 +256,49 @@ describe("step 57 project review", { timeout: 120_000 }, () => {
     });
     expect(completed.status).toBe(409);
     expect((await Project.findById(project.id))?.status).toBe("APPROVED");
+  });
+
+  it("lets the platform administrator review other actors' work but never its own submission", async () => {
+    const data = await world();
+    const sa = { Authorization: `Bearer ${data.superUser.token}` };
+    const review = (id: string, action: string, revision: number) =>
+      request(app).post(`/api/v1/projects/${id}/review`).set(sa).send({ action, revision });
+
+    const theirs = await submittedProject(data.officer.token, "INF-REV-60");
+    const begun = await review(theirs.id, "BEGIN_REVIEW", theirs.revision);
+    expect(begun.status).toBe(200);
+    const approved = await review(theirs.id, "APPROVE", begun.body.data.project.revision);
+    expect(approved.status).toBe(200);
+    const audit = await AuditLog.findOne({ resourceId: theirs.id, action: "project.approved" });
+    expect(audit?.userId?.toString()).toBe(data.superUser.user._id.toString());
+    expect(audit?.agencyId?.toString()).toBe(data.child._id.toString());
+
+    const created = await request(app)
+      .post("/api/v1/projects")
+      .set(sa)
+      .send({ ...draftBody, projectCode: "INF-REV-61", title: "INF-REV-61", agencyId: data.child._id.toString() });
+    expect(created.status).toBe(201);
+    const id = created.body.data.project.id as string;
+    const filled = await request(app).patch(`/api/v1/projects/${id}`).set(sa).send({
+      startDate: "2027-01-01T00:00:00.000Z",
+      plannedEndDate: "2027-06-01T00:00:00.000Z",
+      location: { district: "Colombo", province: "Western" },
+      geometry: { type: "Point", coordinates: [79.86, 6.93] },
+      revision: created.body.data.project.revision,
+    });
+    expect(filled.status).toBe(200);
+    const submitted = await request(app).post(`/api/v1/projects/${id}/transition`).set(sa).send({ action: "SUBMIT", revision: filled.body.data.project.revision });
+    expect(submitted.status).toBe(200);
+    const ownBegin = await review(id, "BEGIN_REVIEW", submitted.body.data.project.revision);
+    expect(ownBegin.status).toBe(200);
+    const ownApprove = await review(id, "APPROVE", ownBegin.body.data.project.revision);
+    expect(ownApprove.status).toBe(409);
+    expect((await Project.findById(id))?.status).toBe("UNDER_REVIEW");
+    const independent = await request(app)
+      .post(`/api/v1/projects/${id}/review`)
+      .set("Authorization", `Bearer ${data.gov.token}`)
+      .send({ action: "APPROVE", revision: ownBegin.body.data.project.revision });
+    expect(independent.status).toBe(200);
   });
 
   it("fails closed without a trusted submission, on a duplicate event, and when the audit write fails", async () => {

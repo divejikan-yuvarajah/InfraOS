@@ -77,3 +77,69 @@ Signed-in browser at 320/360/390/768/1024/1440 and 200% zoom: **NOT RUN**. No pr
 Canonical next step: **Step 55 — Edit Project & Validation**. It should add the authorized edit route and valid draft transitions. This page must not grow an Edit button until that route exists.
 
 **STOP. Step 55 was not implemented. Nothing was staged or committed.**
+
+## Addendum — 26 October 2026 verification
+
+**SAME-AGENT VERIFICATION. Not owner or browser signoff.**
+
+Roadmap title, unchanged: **Step 54 — Project Details & Overview Page.** `Prompts/Steps.docx` has that title and no Step 54 micro-bullets.
+
+### Git
+
+- Directory: `C:\Users\ASUS\Desktop\InfraOS\InfraOS`
+- Branch: `development`, tracking `origin/development`
+- SHA at the start of this pass: `35edec5d309a067e181b74a27ce85f69eebc9f36`
+- Preserved the uncommitted Step 53 addendum in `docs/reviews/step-53/IMPLEMENTATION-STATUS.md`
+- Untracked `Prompts/` files were not edited or staged
+- No branch, commit, push, or checkout
+- Application behavior was not rewritten. One test gap was filled: `apps/api/tests/projects-foundation.test.ts` now checks a missing bearer and an expired detail token
+
+Step 52 create still writes the same `project.core` query key and navigates to `/projects/{id}/overview`. Step 53 still links the project code with a sanitized `list` return.
+
+### Classification
+
+| Behavior | Status |
+|---|---|
+| `GET /api/v1/projects/:id`, live `project.read`, scope, `no-store` | EXISTS+VERIFIED |
+| 400 malformed id, 404 out of scope without the project code, 403 contractor and revoked `project.read` | EXISTS+VERIFIED |
+| 401 missing bearer and expired access token on detail | EXISTS+VERIFIED by the test added in this pass |
+| 503 when `findOne` fails | EXISTS+VERIFIED |
+| Manager name only for the same agency; no email | EXISTS+VERIFIED |
+| Budget only with live `finance.budget.read`; omitted otherwise | EXISTS+VERIFIED |
+| `financialProgress` and contractor label omitted | EXISTS+VERIFIED |
+| UTC date prefix, LKR cents, Point / LineString / Polygon summaries, safe list return | EXISTS+VERIFIED in web unit tests |
+| Overview query key is epoch, user id, role, and id | EXISTS+VERIFIED by the key helper. Signed-in account switch NOT RUN |
+| No Edit, Submit, Approve, or future-tab links | EXISTS+VERIFIED by code |
+| Signed-in browser, widths, zoom, keyboard | BLOCKED |
+
+### Focused commands
+
+| Command | Exit | Result |
+|---|---|---|
+| `npm run test -w @infraos/api -- tests/projects-foundation.test.ts` | 0 | 7 tests, including the new detail 401 cases. Disposable replica only |
+| `npm run test -w @infraos/web -- src/lib/projects/overview-format.test.ts src/lib/projects/create-transform.test.ts` | 0 | 12 tests |
+| `npm run type-check:web` | 0 | |
+| `npm run type-check:api` | 0 | |
+
+### Browser
+
+**BLOCKED / NOT RUN.** `apps/api/.env` uses an Atlas URI. This pass did not start `dev:api`, did not open Atlas, and did not seed it. Production `next start` still forces the preview gate; that gate was not removed and is not signed-in proof. No screenshot was taken.
+
+Step 53’s signed-in demo is also still blocked, so combined phase acceptance stays blocked even though these unit checks passed.
+
+### Next step
+
+**Step 55 — Edit Project & Validation** was not implemented.
+
+### Proposed Git commands — do not run until a separate approval
+
+`feature/projecttrace-list-overview-hardening` does not exist. No checkout is proposed until that branch is explicitly approved. If a commit is approved, stage only the reviewed paths:
+
+```text
+git add -- apps/api/tests/projects-foundation.test.ts docs/reviews/step-53/IMPLEMENTATION-STATUS.md docs/reviews/step-54/IMPLEMENTATION-STATUS.md
+git diff --cached --check
+git diff --cached --stat
+git commit -m "fix(projecttrace): verify project detail privacy and overview"
+```
+
+Do not stage `Prompts/`, `.env`, or screenshots. Push, pull request, merge, and `main` each need their own approval.

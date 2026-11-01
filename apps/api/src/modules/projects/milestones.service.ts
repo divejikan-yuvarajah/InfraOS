@@ -162,7 +162,7 @@ async function writeAudit(
       oldValue: previous ?? snapshot,
       newValue: snapshot,
       requestId: auditRequestId(requestId),
-      agencyId: new mongoose.Types.ObjectId(actor.agencyId),
+      agencyId: actor.roleKey === "SUPER_ADMIN" ? snapshot.agencyId : new mongoose.Types.ObjectId(actor.agencyId),
     }],
     { session },
   );

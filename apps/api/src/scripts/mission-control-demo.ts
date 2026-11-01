@@ -340,7 +340,7 @@ async function main(): Promise<void> {
 
   const app = createApp();
   await new Promise<void>((resolve) => {
-    app.listen(env.PORT, () => resolve());
+    app.listen(env.PORT, "127.0.0.1", () => resolve());
   });
   const managerToken = await signIn("mc-manager@example.com");
   for (const item of [review1, submitted]) {

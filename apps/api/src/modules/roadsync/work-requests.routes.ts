@@ -8,6 +8,8 @@ import { WORK_REQUEST_LIST_KEYS, workRequestCreateSchema, workRequestListQuerySc
 import { WorkRequestDependencyError, createWorkRequest, getWorkRequest, listWorkRequests, mapWorkRequests, type WorkRequestFailure } from "./work-requests.service.js";
 import { extractCandidates, validateWorkGeometry } from "./geo.service.js";
 import { workRequestMapQuerySchema } from "./work-requests.schema.js";
+import { assessmentRouter } from "./assessment.routes.js";
+import { detectionRouter } from "./detection.routes.js";
 
 type Res = { status: (code: number) => { json: (body: unknown) => void }; setHeader: (name: string, value: string) => void };
 
@@ -26,6 +28,8 @@ function unavailable(res: Res, req: { requestId: string }): void {
 }
 
 export const roadsyncRouter = Router();
+roadsyncRouter.use(detectionRouter);
+roadsyncRouter.use(assessmentRouter);
 
 roadsyncRouter.get("/work-requests", requireAuthenticated, requirePermission("roadsync.work_request.read"), async (req, res) => {
   try {

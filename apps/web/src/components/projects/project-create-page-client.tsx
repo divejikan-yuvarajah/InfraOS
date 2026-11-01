@@ -1,11 +1,12 @@
 "use client";
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { StaffWorkspaceShell } from "@/components/auth/staff-workspace-shell";
 import { WorkspaceContext } from "@/components/projects/project-record-nav";
+import { fetchAgencies } from "@/lib/admin-agencies/api";
 import { createProject } from "@/lib/projects/api";
 import { classifyCreateError, type CreateFailure } from "@/lib/projects/create-outcome";
 import { projectCreateCachePlan, type ProjectCreateRequest } from "@/lib/projects/create-transform";
@@ -21,6 +22,15 @@ export function ProjectCreatePageClient() {
   const [locale] = useWorkspaceLocale();
   const [failure, setFailure] = useState<CreateFailure | null>(null);
   const copy = getProjectCopy(locale);
+  const roleKey = getMemorySession()?.user.roleKey ?? "";
+  const platformAdmin = roleKey === "SUPER_ADMIN";
+  // Only the platform administrator picks an owning agency; the server re-validates it.
+  const agencies = useQuery({
+    queryKey: ["project-create-agencies", String(getAuthEpoch()), getMemorySession()?.user.id ?? "", roleKey],
+    queryFn: () => fetchAgencies({ status: "ACTIVE" }),
+    enabled: platformAdmin,
+    retry: false,
+  });
 
   const mutation = useMutation({
     mutationFn: (body: ProjectCreateRequest) => createProject(body),
@@ -55,6 +65,14 @@ export function ProjectCreatePageClient() {
         copy={copy}
         failure={failure}
         pending={mutation.isPending}
+        agencyChoice={
+          platformAdmin
+            ? {
+                options: (agencies.data?.agencies ?? []).map((agency) => ({ id: agency.id, label: `${agency.name} (${agency.code})` })),
+                unavailable: agencies.isError,
+              }
+            : null
+        }
         onCancel={() => router.push("/projects")}
         onSubmitBody={async (body) => {
           setFailure(null);
