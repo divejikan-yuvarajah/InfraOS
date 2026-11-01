@@ -24,7 +24,7 @@
   - `reviews` (null → the panel is omitted);
   - `finance` (`withheld` / `unavailable` chips);
   - `assignedToYou`.
-  
+
   No role-specific data was invented.
 
 ## Data honesty
