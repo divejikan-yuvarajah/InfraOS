@@ -114,8 +114,18 @@ export function LifecycleRail({ status, labels }: { status: string; labels?: Par
 
 /* ---------- DualProgress ---------- */
 
-export function DualProgress({ physical, financial, names }: { physical: number | null | undefined; financial: number | null | undefined; names?: { physical?: string; financial?: string } }) {
-  const tracks = dualProgress(physical, financial);
+export function DualProgress({
+  physical,
+  financial,
+  financialWithheld = false,
+  names,
+}: {
+  physical: number | null | undefined;
+  financial: number | null | undefined;
+  financialWithheld?: boolean;
+  names?: { physical?: string; financial?: string };
+}) {
+  const tracks = dualProgress(physical, financial, { financialWithheld });
   return (
     <div className="sp-progress">
       {tracks.map((t) => {
@@ -126,6 +136,7 @@ export function DualProgress({ physical, financial, names }: { physical: number 
               <span className="sp-track-name">{title}</span>
               <span className="sp-track-value">
                 {t.value === null ? "—" : `${t.value}%`}
+                {t.over ? <span className="sp-track-over">over budget</span> : null}
                 <HonestyChip kind={t.honesty} />
               </span>
             </div>
@@ -133,13 +144,15 @@ export function DualProgress({ physical, financial, names }: { physical: number 
               className="sp-track"
               data-kind={t.kind}
               data-unavailable={t.value === null ? "true" : undefined}
+              data-over={t.over ? "true" : undefined}
               role={t.value === null ? undefined : "progressbar"}
               aria-label={t.value === null ? undefined : `${title}: ${t.label}`}
               aria-valuemin={t.value === null ? undefined : 0}
               aria-valuemax={t.value === null ? undefined : 100}
-              aria-valuenow={t.value ?? undefined}
+              aria-valuenow={t.value === null ? undefined : t.fill}
+              aria-valuetext={t.value === null ? undefined : t.label}
             >
-              {t.value !== null ? <div className="sp-track-fill" style={{ width: `${t.value}%` }} /> : <span className="mc-sr">{t.label}</span>}
+              {t.value !== null ? <div className="sp-track-fill" style={{ width: `${t.fill}%` }} /> : <span className="mc-sr">{t.label}</span>}
             </div>
           </div>
         );

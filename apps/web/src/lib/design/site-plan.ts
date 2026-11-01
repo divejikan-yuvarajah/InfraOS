@@ -85,16 +85,42 @@ export function lifecycleRail(status: string): LifecycleRailModel {
 
 /* ---------- dual progress ---------- */
 
-export type ProgressTrack = { kind: "physical" | "financial"; value: number | null; label: string; honesty: HonestyKind };
-const clampPct = (n: number | null | undefined) => (typeof n === "number" && Number.isFinite(n) ? Math.min(100, Math.max(0, Math.round(n))) : null);
+/**
+ * `value` is the real figure (financial may exceed 100 on an overrun); `fill` is the bar width, capped at 100.
+ * `over` is true when the real figure is above 100, so the UI can say so instead of showing a full bar as "100%".
+ */
+export type ProgressTrack = { kind: "physical" | "financial"; value: number | null; fill: number; over: boolean; label: string; honesty: HonestyKind };
+const whole = (n: number | null | undefined) => (typeof n === "number" && Number.isFinite(n) ? Math.max(0, Math.round(n)) : null);
 
-/** Physical progress is always "reported"; financial is always "provisional". Null → unavailable. */
-export function dualProgress(physical: number | null | undefined, financial: number | null | undefined): [ProgressTrack, ProgressTrack] {
-  const p = clampPct(physical);
-  const f = clampPct(financial);
+/**
+ * Physical progress is always "reported"; financial is always "provisional".
+ * A missing value is "unavailable", and a financial figure the viewer's role may not read is "withheld".
+ */
+export function dualProgress(
+  physical: number | null | undefined,
+  financial: number | null | undefined,
+  options: { financialWithheld?: boolean } = {},
+): [ProgressTrack, ProgressTrack] {
+  const p = whole(physical);
+  const f = options.financialWithheld ? null : whole(financial);
+  const financialHonesty: HonestyKind = options.financialWithheld ? "withheld" : f === null ? "unavailable" : "provisional";
   return [
-    { kind: "physical", value: p, label: p === null ? "Physical progress unavailable" : `Reported ${p}%`, honesty: p === null ? "unavailable" : "reported" },
-    { kind: "financial", value: f, label: f === null ? "Financial progress unavailable" : `Provisional ${f}%`, honesty: f === null ? "unavailable" : "provisional" },
+    {
+      kind: "physical",
+      value: p === null ? null : Math.min(100, p),
+      fill: p === null ? 0 : Math.min(100, p),
+      over: false,
+      label: p === null ? "Physical progress unavailable" : `Reported ${Math.min(100, p)}%`,
+      honesty: p === null ? "unavailable" : "reported",
+    },
+    {
+      kind: "financial",
+      value: f,
+      fill: f === null ? 0 : Math.min(100, f),
+      over: f !== null && f > 100,
+      label: options.financialWithheld ? "Financial progress withheld for your role" : f === null ? "Financial progress unavailable" : `Provisional ${f}%`,
+      honesty: financialHonesty,
+    },
   ];
 }
 

@@ -148,3 +148,8 @@
   .mc-env-compact { display: inline-flex; }
   .mc-lang button { min-width: 2.25rem; min-height: 2.75rem; padding: 0 0.35rem; }
 }
+
+/* Phase 7: overrun marker on the financial track */
+.sp-track-over { font-size: 0.6875rem; font-weight: 700; color: var(--infra-critical-text); text-transform: uppercase; letter-spacing: 0.04em; }
+.sp-track[data-over="true"] { box-shadow: inset 0 0 0 1px var(--infra-maroon); }
+:lang(si) .sp-track-over, :lang(ta) .sp-track-over { text-transform: none; letter-spacing: 0; }

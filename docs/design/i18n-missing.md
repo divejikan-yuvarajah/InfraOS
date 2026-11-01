@@ -29,4 +29,16 @@ No translations were invented. Native-speaker translations are needed. Existing 
 | Lifecycle rail "(passed / current stage / not reached)", "Lifecycle ended here.", "Off the main path." | `LifecycleRail` (not mounted yet) | Phase 4 |
 | RoadSync work-request screens (all strings) | `/roadsync/*` | Step 66 |
 
+Phase 7 additions (project list and record page). Seen in English in the Sinhala screenshots:
+
+| String (EN) | Where | Note |
+|---|---|---|
+| Comfortable / Compact, Row density | list density switch | new, Phase 7 |
+| Financial progress | record page, dual progress | new, Phase 7 |
+| over budget | dual progress overrun flag | new, Phase 7 |
+| Project sections | record tabs `aria-label` | new, Phase 7 |
+| Project lifecycle, "Status changes are confirmed by the server.", Reason, Place on hold, Resume, Submit for review, Reopen as draft | record page lifecycle panel | existing keys with no SI/TA value (the SI/TA copy falls back to English) |
+| Offline / unavailable message variants | record page errors | existing, same fallback |
+| Rows, Rows per page, Showing x–y of z, Previous / Next | shared `DataTable` pagination | existing English-only component |
+
 Strings reused **from existing SI/TA message files** (not new translations): Projects, Reviews (*Project reviews*), Agencies, Roles in the nav; every dashboard string from `dashboard-messages.ts`.

@@ -38,18 +38,32 @@ describe("lifecycle rail", () => {
 });
 
 describe("dual progress honesty", () => {
-  it("labels physical as reported and financial as provisional, clamped", () => {
-    const [p, f] = dualProgress(100, 140);
+  it("labels physical as reported and financial as provisional", () => {
+    const [p, f] = dualProgress(100, 40);
     expect(p.label).toBe("Reported 100%");
     expect(p.honesty).toBe("reported");
-    expect(f.label).toBe("Provisional 100%");
+    expect(f.label).toBe("Provisional 40%");
     expect(f.honesty).toBe("provisional");
+    expect(f.over).toBe(false);
+  });
+  it("never shows an overrun as exactly 100%", () => {
+    const [, f] = dualProgress(10, 140);
+    expect(f.value).toBe(140);
+    expect(f.fill).toBe(100);
+    expect(f.over).toBe(true);
+    expect(f.label).toBe("Provisional 140%");
   });
   it("never invents a value for missing data", () => {
     const [p, f] = dualProgress(null, Number.NaN);
     expect(p.value).toBeNull();
     expect(p.honesty).toBe("unavailable");
     expect(f.value).toBeNull();
+    expect(f.fill).toBe(0);
+  });
+  it("marks a role-withheld financial side as withheld even if a number is passed", () => {
+    const [, f] = dualProgress(50, 70, { financialWithheld: true });
+    expect(f.value).toBeNull();
+    expect(f.honesty).toBe("withheld");
   });
   it("maps coverage to chips", () => {
     expect(coverageHonesty("complete")).toBeNull();
