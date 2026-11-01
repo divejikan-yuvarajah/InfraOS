@@ -4,6 +4,7 @@ import {
   Building2Icon,
   ClipboardCheckIcon,
   FolderKanbanIcon,
+  RouteIcon,
   LayoutDashboardIcon,
   ShieldCheckIcon,
   SlidersHorizontalIcon,
@@ -27,6 +28,7 @@ export const WORKSPACE_NAV: readonly WorkspaceNavGroup[] = [
     items: [
       { href: "/projects", label: "Projects", icon: FolderKanbanIcon },
       { href: "/projects/reviews", label: "Reviews", icon: ClipboardCheckIcon },
+      { href: "/roadsync/work-requests", label: "Work Requests", icon: RouteIcon },
     ],
   },
   {

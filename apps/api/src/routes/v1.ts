@@ -9,6 +9,7 @@ import { adminUserRouter } from "../modules/identity/admin-users/admin-user.rout
 import { profileRouter } from "../modules/identity/profile/profile.routes.js";
 import { projectRouter } from "../modules/projects/projects.routes.js";
 import { notificationRouter } from "../modules/notifications/notice.routes.js";
+import { roadsyncRouter } from "../modules/roadsync/work-requests.routes.js";
 
 export function createV1Router(): Router {
   const router = Router();
@@ -23,5 +24,6 @@ export function createV1Router(): Router {
   router.use("/admin/permissions", adminPermissionRouter);
   router.use("/projects", projectRouter);
   router.use("/notifications", notificationRouter);
+  router.use("/roadsync", roadsyncRouter);
   return router;
 }
