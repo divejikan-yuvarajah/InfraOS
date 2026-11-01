@@ -206,7 +206,7 @@ export async function getProjectDashboard(actor: AuthenticatedActor, now = new D
     }
     const role = await Role.findById(actor.roleId).select("key isActive permissions");
     const granted = Array.isArray(role?.permissions) ? role.permissions : [];
-    const reviewer = actor.roleKey === "GOV_ADMIN" && role?.isActive && role.key === actor.roleKey && hasPermission(granted, "project.approve");
+    const reviewer = (actor.roleKey === "GOV_ADMIN" || actor.roleKey === "SUPER_ADMIN") && role?.isActive && role.key === actor.roleKey && hasPermission(granted, "project.approve");
     let reviews: ProjectDashboard["reviews"] = null;
     if (reviewer) {
       const scope = await resolveResourceScope(actor);

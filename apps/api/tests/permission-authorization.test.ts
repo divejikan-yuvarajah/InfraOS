@@ -224,14 +224,14 @@ describe("step 45 permission authorization", { timeout: 90_000 }, () => {
     expect(continued).toBe(false);
   });
 
-  it("denies super-admin operational duties and applies the other seeded roles from the database", async () => {
+  it("grants super-admin project approval only, and applies the other seeded roles from the database", async () => {
     const admin = await seedActor("SUPER_ADMIN", "super-p45@example.com");
-    expect(SYSTEM_ROLE_PERMISSIONS.SUPER_ADMIN).not.toContain("project.approve");
+    expect(SYSTEM_ROLE_PERMISSIONS.SUPER_ADMIN).toContain("project.approve");
+    expect((await request(harness).get("/harness/project-approve").set("Authorization", `Bearer ${admin.token}`)).status).toBe(200);
     expect(SYSTEM_ROLE_PERMISSIONS.SUPER_ADMIN).not.toContain("finance.payment.approve");
     expect(SYSTEM_ROLE_PERMISSIONS.SUPER_ADMIN).not.toContain("inspection.verify");
     expect(SYSTEM_ROLE_PERMISSIONS.SUPER_ADMIN).not.toContain("roadsync.conflict.resolve");
     for (const path of [
-      "/harness/project-approve",
       "/harness/payment-approve",
       "/harness/inspection-verify",
       "/harness/conflict-resolve",

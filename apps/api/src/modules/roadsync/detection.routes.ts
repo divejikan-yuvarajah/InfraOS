@@ -127,7 +127,7 @@ detectionRouter.post("/work-requests/:id/detection/run", requireAuthenticated, r
         resourceId: new mongoose.Types.ObjectId(id),
         newValue: { status: row?.detection?.status === "failed" ? "FAILED" : "COMPLETED" },
         requestId: /^[A-Za-z0-9_-]+$/.test(req.requestId) ? req.requestId.slice(0, 100) : "request",
-        agencyId: new mongoose.Types.ObjectId(actor.agencyId),
+        agencyId: actor.roleKey === "SUPER_ADMIN" && row?.agencyId ? row.agencyId : new mongoose.Types.ObjectId(actor.agencyId),
       });
     }
     res.status(outcome.state === "running" ? 202 : 200).json(success({ detection: outcome.detection }, req.requestId));

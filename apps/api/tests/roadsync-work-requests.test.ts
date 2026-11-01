@@ -156,10 +156,24 @@ describe("step 66 roadsync work requests", { timeout: 120_000 }, () => {
     expect((await request(app).get("/api/v1/roadsync/work-requests")).status).toBe(401);
     expect((await post(d.contractor.token, body(d.approved.id))).status).toBe(403);
     expect((await get(d.citizen.token)).status).toBe(403);
-    expect((await post(d.superUser.token, body(d.approved.id))).status).toBe(403);
     expect((await post(d.foreign.token, body(d.approved.id))).status).toBe(404);
     expect((await post(d.otherManager.token, body(d.approved.id))).status).toBe(404);
     expect(await WorkRequest.countDocuments({})).toBe(0);
+  });
+
+  it("lets the platform administrator create for the project's owning agency and audits the real actor", async () => {
+    const d = await world();
+    const unauthenticated = await request(app).post("/api/v1/roadsync/work-requests").send(body(d.approved.id));
+    expect(unauthenticated.status).toBe(401);
+    expect((await post(d.superUser.token, body("f".repeat(24)))).status).toBe(404);
+    const created = await post(d.superUser.token, body(d.approved.id));
+    expect(created.status).toBe(201);
+    const owner = (await Project.findById(d.approved.id))?.agencyId.toString();
+    const stored = await WorkRequest.findOne({});
+    expect(stored?.agencyId.toString()).toBe(owner);
+    const audit = await AuditLog.findOne({ resourceType: "WORK_REQUEST", action: "work_request.created" });
+    expect(audit?.userId?.toString()).toBe(d.superUser.user._id.toString());
+    expect(audit?.agencyId?.toString()).toBe(owner);
   });
 
   it("rejects unknown fields, bad geometry, bad dates and bad enums without persisting", async () => {

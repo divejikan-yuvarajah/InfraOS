@@ -139,7 +139,8 @@ describe("steps 68-69 roadsync detection", { timeout: 120_000 }, () => {
     const d = await world();
     expect((await read(d.officerB.token, d.subject.id)).status).toBe(404);
     expect((await run(d.officerB.token, d.subject.id)).status).toBe(404);
-    expect((await run(d.superUser.token, d.subject.id)).status).toBe(403);
+    expect((await run(d.superUser.token, d.subject.id)).status).toBe(200);
+    expect((await request(app).post(`/api/v1/roadsync/work-requests/${d.subject.id}/detection/run`)).status).toBe(401);
     expect((await run(d.officerA.token, d.draftA.id)).status).toBe(409);
     expect((await request(app).get(`/api/v1/roadsync/work-requests/${d.subject.id}/detection`)).status).toBe(401);
   });

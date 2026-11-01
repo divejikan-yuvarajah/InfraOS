@@ -276,7 +276,8 @@ export async function createWorkRequest(actor: AuthenticatedActor, input: WorkRe
           oldValue: snapshot,
           newValue: snapshot,
           requestId: auditRequestId(requestId),
-          agencyId: new mongoose.Types.ObjectId(actor.agencyId),
+          // Platform admins act across agencies: audit under the owning agency, userId stays the real actor.
+          agencyId: actor.roleKey === "SUPER_ADMIN" ? project.agencyId : new mongoose.Types.ObjectId(actor.agencyId),
         }], { session: mongo });
         const views = await toViews([row as unknown as Row], mongo);
         created = views[0] ?? null;

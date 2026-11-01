@@ -147,15 +147,34 @@ describe("step 51 project foundation", { timeout: 120_000 }, () => {
       .set("Authorization", `Bearer ${data.officer.token}`);
     expect(missing.status).toBe(404);
 
-    await Role.updateOne({ key: "SUPER_ADMIN" }, { $addToSet: { permissions: "project.create" } });
-    const superCreate = await request(app).post("/api/v1/projects").set("Authorization", `Bearer ${data.superUser.token}`).send({
-      ...draftBody,
-      projectCode: "INF-ROAD-202",
-    });
-    expect(superCreate.status).toBe(403);
+    // Platform administrator: must name the owning agency, which is validated server-side.
+    const superAuth = { Authorization: `Bearer ${data.superUser.token}` };
+    const noAgency = await request(app).post("/api/v1/projects").set(superAuth).send({ ...draftBody, projectCode: "INF-ROAD-202" });
+    expect(noAgency.status).toBe(400);
+    const unknownAgency = await request(app)
+      .post("/api/v1/projects")
+      .set(superAuth)
+      .send({ ...draftBody, projectCode: "INF-ROAD-202", agencyId: "f".repeat(24) });
+    expect(unknownAgency.status).toBe(409);
+    const superCreate = await request(app)
+      .post("/api/v1/projects")
+      .set(superAuth)
+      .send({ ...draftBody, projectCode: "INF-ROAD-202", agencyId: data.child._id.toString() });
+    expect(superCreate.status).toBe(201);
+    expect(superCreate.body.data.project.agencyId).toBe(data.child._id.toString());
+    expect(superCreate.body.data.project.managerId).toBeNull();
+    const superAudit = await AuditLog.findOne({ resourceId: superCreate.body.data.project.id, action: "project.created" });
+    expect(superAudit?.userId?.toString()).toBe(data.superUser.user._id.toString());
+    expect(superAudit?.agencyId?.toString()).toBe(data.child._id.toString());
+    // Other roles still cannot choose ownership, even when an agency id is supplied.
+    const officerOwn = await request(app)
+      .post("/api/v1/projects")
+      .set("Authorization", `Bearer ${data.officer.token}`)
+      .send({ ...draftBody, projectCode: "INF-ROAD-203", agencyId: data.other._id.toString() });
+    expect(officerOwn.status).toBe(400);
     const superRead = await request(app).get("/api/v1/projects").set("Authorization", `Bearer ${data.superUser.token}`);
     expect(superRead.status).toBe(200);
-    expect(superRead.body.data.total).toBe(1);
+    expect(superRead.body.data.total).toBe(2);
     expect(superRead.body.data.projects[0].budget).toBeUndefined();
     const superDetail = await request(app)
       .get(`/api/v1/projects/${ok.body.data.project.id}`)
@@ -560,7 +579,7 @@ describe("step 51 project foundation", { timeout: 120_000 }, () => {
       .send({ action: "SUBMIT", revision: filled.body.data.project.revision });
     expect(again.status).toBe(409);
 
-    expect((await request(app).post(`/api/v1/projects/${id}/transition`).set("Authorization", `Bearer ${data.superUser.token}`).send({ action: "SUBMIT", revision: submitted.body.data.project.revision })).status).toBe(403);
+    expect((await request(app).post(`/api/v1/projects/${id}/transition`).set("Authorization", `Bearer ${data.superUser.token}`).send({ action: "SUBMIT", revision: submitted.body.data.project.revision })).status).toBe(409);
     const other = await actor("other56@example.com", "AGENCY_OFFICER", data.other._id);
     const hidden = await request(app)
       .post(`/api/v1/projects/${id}/transition`)

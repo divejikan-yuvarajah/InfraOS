@@ -458,9 +458,15 @@ describe("step 46 resource scope", { timeout: 90_000 }, () => {
     expect(
       (await request(harness).get(`/harness/projects/${project._id.toString()}`).set("Authorization", `Bearer ${admin.token}`)).status,
     ).toBe(200);
+    // Platform administrator may now edit across agencies; the owning agency is untouched.
     expect(
-      (await request(harness).patch(`/harness/projects/${project._id.toString()}`).set("Authorization", `Bearer ${admin.token}`).send({ title: "No" })).status,
-    ).toBe(403);
+      (await request(harness).patch(`/harness/projects/${project._id.toString()}`).set("Authorization", `Bearer ${admin.token}`).send({ title: "Edited" })).status,
+    ).toBe(200);
+    expect((await Project.findById(project._id))?.agencyId.toString()).toBe(road._id.toString());
+    const officerWrite = await userFor("AGENCY_OFFICER", "other-officer-scope@example.com", ministry._id);
+    expect(
+      (await request(harness).patch(`/harness/projects/${project._id.toString()}`).set("Authorization", `Bearer ${officerWrite.token}`).send({ title: "Nope" })).status,
+    ).toBe(404);
 
     const outside = await Agency.create({ code: "TEL_C", name: "Telecom C", type: "DEPARTMENT", status: "ACTIVE" });
     const third = await Agency.create({ code: "ELEC_C", name: "Power C", type: "DEPARTMENT", status: "ACTIVE" });
@@ -505,10 +511,11 @@ describe("step 46 resource scope", { timeout: 90_000 }, () => {
     expect(
       (await request(harness).get(`/harness/conflicts/${conflict._id.toString()}`).set("Authorization", `Bearer ${bystander.token}`)).status,
     ).toBe(404);
-    for (const path of ["/harness/conflict-resolve", "/harness/project-approve", "/harness/payment-approve", "/harness/inspection-verify"]) {
+    for (const path of ["/harness/conflict-resolve", "/harness/payment-approve", "/harness/inspection-verify"]) {
       const denied = await request(permissionHarness).get(path).set("Authorization", `Bearer ${admin.token}`);
       expect(denied.status).toBe(403);
     }
+    expect((await request(permissionHarness).get("/harness/project-approve").set("Authorization", `Bearer ${admin.token}`)).status).toBe(200);
     expect((await Conflict.findById(conflict._id))?.status).toBe("OPEN");
     admin.role.permissions = admin.role.permissions.filter((item) => item !== "roadsync.conflict.read");
     await admin.role.save();
