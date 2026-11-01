@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useSyncExternalStore } from "react";
 
 import { StaffWorkspaceShell } from "@/components/auth/staff-workspace-shell";
+import { WorkspaceContext } from "@/components/projects/project-record-nav";
 import { ApiError } from "@/lib/api/client";
 import { getAuthEpoch, getMemoryAccessToken, getMemorySession, subscribeAuth } from "@/lib/auth/state";
 import { fetchProject, patchProject } from "@/lib/projects/api";
@@ -28,7 +29,7 @@ export function ProjectEditPageClient({ id }: { id: string }) {
   const epoch = useAuthPart(() => String(getAuthEpoch()), "0");
   const userId = useAuthPart(() => getMemorySession()?.user.id ?? "", "");
   const roleKey = useAuthPart(() => getMemorySession()?.user.roleKey ?? "", "");
-  const [locale, setLocale] = useWorkspaceLocale();
+  const [locale] = useWorkspaceLocale();
   const [failure, setFailure] = useState<EditFailure | null>(null);
   const [saved, setSaved] = useState(false);
   const copy = getProjectCopy(locale);
@@ -80,28 +81,9 @@ export function ProjectEditPageClient({ id }: { id: string }) {
   const editable = project.data?.canEditDraft === true && project.data.status === "DRAFT";
 
   return (
-    <StaffWorkspaceShell title={copy.editTitle} description={project.data?.projectCode} wide>
-      <nav className="auth-access-locale-row" aria-label="Breadcrumb">
-        <Link href="/dashboard">{copy.breadcrumbWorkspace}</Link>
-        <span aria-hidden="true">/</span>
-        <Link href="/projects">{copy.breadcrumbProjects}</Link>
-        <span aria-hidden="true">/</span>
-        <Link href={backOverview}>{copy.overview}</Link>
-        <span aria-hidden="true">/</span>
-        <span>{copy.breadcrumbEdit}</span>
-      </nav>
+    <StaffWorkspaceShell title={copy.editTitle} description={project.data?.projectCode} wide context={<WorkspaceContext locale={locale} current={copy.editTitle} projects />}>
+      {locale !== "en" ? <p className="spp-small">{copy.nativeReview}</p> : null}
       <p><Link href={safeListReturn(listRaw)}>{copy.backToList}</Link></p>
-      <section className="auth-access-card" aria-labelledby="project-edit-locale">
-        <p id="project-edit-locale" className="auth-access-field-label">View language (draft)</p>
-        <div className="auth-access-locale-row" role="group" aria-label="Project language">
-          {(["en", "si", "ta"] as const).map((code) => (
-            <button key={code} type="button" className="auth-access-button" aria-pressed={locale === code} onClick={() => setLocale(code)}>
-              {code === "en" ? "English" : code === "si" ? "සිංහල" : "தமிழ்"}
-            </button>
-          ))}
-        </div>
-        <p role="note">{copy.nativeReview}</p>
-      </section>
       <p className="auth-access-hint">{copy.editSubtitle}</p>
       {project.isLoading ? <p role="status">{copy.loadingProject}</p> : null}
       {loadError ? (

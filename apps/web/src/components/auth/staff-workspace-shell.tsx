@@ -19,6 +19,8 @@ import { classifyEditError } from "@/lib/projects/edit-outcome";
 
 import { ROLE_LABELS, WORKSPACE_NAV, initialsOf, navCurrent, navLabel } from "./workspace-nav";
 
+import "@/styles/site-plan-legacy.css";
+
 function useAuthPart(read: () => string): string {
   return useSyncExternalStore(subscribeAuth, read, () => "");
 }

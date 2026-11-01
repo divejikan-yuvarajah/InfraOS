@@ -8,6 +8,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 
 import { StaffWorkspaceShell } from "@/components/auth/staff-workspace-shell";
+import { WorkspaceContext } from "@/components/projects/project-record-nav";
 import { ProjectStatusBadge } from "@/components/common/status-badge";
 import { DataTable } from "@/components/data-table/data-table";
 import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header";
@@ -41,7 +42,7 @@ export function ReviewQueueClient() {
   const roleKey = useAuthPart(() => getMemorySession()?.user.roleKey ?? "");
   const userId = useAuthPart(() => getMemorySession()?.user.id ?? "");
   const epoch = useAuthPart(() => String(getAuthEpoch()));
-  const [locale, setLocale] = useWorkspaceLocale();
+  const [locale] = useWorkspaceLocale();
   const copy = getReviewCopy(locale);
   const serialized = searchParams.toString();
   const urlState = useMemo(() => parseReviewQueue(new URLSearchParams(serialized)), [serialized]);
@@ -133,19 +134,9 @@ export function ReviewQueueClient() {
   const agencies = list.data?.agencies ?? [];
 
   return (
-    <StaffWorkspaceShell title={copy.title} description={copy.subtitle} wide>
+    <StaffWorkspaceShell title={copy.title} description={copy.subtitle} wide context={<WorkspaceContext locale={locale} current={copy.title} projects />}>
+      {locale !== "en" ? <p className="spp-small">{copy.nativeReview}</p> : null}
       <p><Link href="/projects">{copy.backToProjects}</Link></p>
-      <section className="auth-access-card" aria-labelledby="review-locale">
-        <p id="review-locale" className="auth-access-field-label">View language (draft)</p>
-        <div className="auth-access-locale-row" role="group" aria-label="Review language">
-          {(["en", "si", "ta"] as const).map((code) => (
-            <button key={code} type="button" className="auth-access-button" aria-pressed={locale === code} onClick={() => setLocale(code)}>
-              {code === "en" ? "English" : code === "si" ? "සිංහල" : "தமிழ்"}
-            </button>
-          ))}
-        </div>
-        <p className="auth-access-status" role="note">{copy.nativeReview}</p>
-      </section>
       <section className="auth-access-card" aria-label="Review counts">
         <p>{copy.submittedCount}: {list.data?.counts.submitted ?? "—"}</p>
         <p>{copy.underReviewCount}: {list.data?.counts.underReview ?? "—"}</p>

@@ -6,6 +6,7 @@ import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 
 import { StaffWorkspaceShell } from "@/components/auth/staff-workspace-shell";
+import { WorkspaceContext } from "@/components/projects/project-record-nav";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -20,7 +21,7 @@ import { useWorkspaceLocale } from "@/lib/i18n/workspace-locale";
 
 export function AdminRolesPageClient() {
   const queryClient = useQueryClient();
-  const [locale, setLocale] = useWorkspaceLocale();
+  const [locale] = useWorkspaceLocale();
   const copy = getRoleCopy(locale);
   const canEdit = roleManageIsPlatformHint(getMemorySession()?.user.roleKey);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -99,19 +100,8 @@ export function AdminRolesPageClient() {
   const bannerText = roleBannerMessage(banner, copy);
 
   return (
-    <StaffWorkspaceShell title={copy.title} description={copy.subtitle} wide>
-      <section className="auth-access-card" aria-labelledby="role-locale">
-        <p id="role-locale" className="auth-access-field-label">View language (draft)</p>
-        <div className="auth-access-locale-row" role="group" aria-label="Role language">
-          {(["en", "si", "ta"] as const).map((code) => (
-            <button key={code} type="button" className="auth-access-button" aria-pressed={locale === code} onClick={() => setLocale(code)}>
-              {code.toUpperCase()}
-            </button>
-          ))}
-        </div>
-        <p className="auth-access-status" role="status">{copy.nativeReview}</p>
-        <p className="auth-access-copy">{copy.readOnly}</p>
-      </section>
+    <StaffWorkspaceShell title={copy.title} description={copy.subtitle} wide context={<WorkspaceContext locale={locale} current={copy.title} />}>
+      {locale !== "en" ? <p className="spp-small">{copy.nativeReview}</p> : null}
       {loadError ? <p className="auth-access-banner error" role="alert">{loadError}</p> : null}
       {bannerText ? (
         <p

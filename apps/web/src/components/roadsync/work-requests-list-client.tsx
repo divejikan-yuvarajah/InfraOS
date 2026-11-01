@@ -6,7 +6,7 @@ import { useState, useSyncExternalStore } from "react";
 import { PlusIcon, RefreshCwIcon, RouteIcon } from "lucide-react";
 
 import { StaffWorkspaceShell } from "@/components/auth/staff-workspace-shell";
-import { WorkStatusBadge } from "@/components/common/status-badge";
+import { StatusChip } from "@/components/site-plan/site-plan";
 import { RouteLines } from "@/components/motif/connected-motif";
 import { fetchProjects } from "@/lib/projects/api";
 import { classifyWorkRequestError, fetchWorkRequests, FAILURE_COPY } from "@/lib/roadsync/api";
@@ -175,7 +175,7 @@ export function WorkRequestsListClient() {
             {filtered ? (
               <button type="button" className="rs-btn" onClick={() => setFilters(EMPTY_FILTERS)}>Reset filters</button>
             ) : canHintCreate(roleKey) ? (
-              <Link href="/roadsync/work-requests/new" className="rs-btn is-primary">
+              <Link href="/roadsync/work-requests/new" className="rs-btn">
                 <PlusIcon aria-hidden="true" />
                 Create work request
               </Link>
@@ -218,7 +218,7 @@ export function WorkRequestsListClient() {
                   </div>
                   <div className="rs-cell">
                     <span className="rs-cell-label">Status</span>
-                    <WorkStatusBadge status={wr.status} />
+                    <StatusChip domain="work" status={wr.status} />
                   </div>
                 </li>
               ))}

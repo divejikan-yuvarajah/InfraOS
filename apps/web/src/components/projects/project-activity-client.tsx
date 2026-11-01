@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useState, useSyncExternalStore } from "react";
 import { useQuery } from "@tanstack/react-query";
 
@@ -11,6 +10,7 @@ import { activityTitle, getActivityCopy } from "@/lib/projects/activity-messages
 import { activityPageState, activityPagesForScope, activityQueryKey, activityScope, formatActivityWhen, rememberActivityPage, visibleActivityItems, type ActivityFilter, type ActivityPageState, type ActivityViewItem } from "@/lib/projects/activity-view";
 import { classifyEditError } from "@/lib/projects/edit-outcome";
 import { useWorkspaceLocale } from "@/lib/i18n/workspace-locale";
+import { ProjectRecordNav, RecordContext } from "./project-record-nav";
 
 function useAuthPart(read: () => string): string {
   return useSyncExternalStore(subscribeAuth, read, () => "");
@@ -40,7 +40,7 @@ function detailText(item: ActivityViewItem, copy: ReturnType<typeof getActivityC
 }
 
 export function ProjectActivityClient({ id }: { id: string }) {
-  const [locale, setLocale] = useWorkspaceLocale();
+  const [locale] = useWorkspaceLocale();
   const [category, setCategory] = useState<ActivityFilter>("all");
   const copy = getActivityCopy(locale);
   const epoch = useAuthPart(() => String(getAuthEpoch()));
@@ -62,15 +62,8 @@ export function ProjectActivityClient({ id }: { id: string }) {
   const items = visibleActivityItems(pages, scope, signedIn === "yes", current);
 
   return (
-    <StaffWorkspaceShell title={copy.title} description={copy.description} wide>
-      <div role="group" aria-label={copy.language}>
-        <button type="button" className="auth-access-button" aria-pressed={locale === "en"} onClick={() => setLocale("en")}>{copy.english}</button>
-        <button type="button" className="auth-access-button" aria-pressed={locale === "si"} onClick={() => setLocale("si")}>{copy.sinhala}</button>
-        <button type="button" className="auth-access-button" aria-pressed={locale === "ta"} onClick={() => setLocale("ta")}>{copy.tamil}</button>
-      </div>
-      <p role="note">{copy.nativeReview}</p>
-      <p><Link className="auth-access-button" href={`/projects/${id}/overview`}>{copy.back}</Link></p>
-      <p><Link className="auth-access-button" href={`/projects/${id}/timeline`}>{copy.timeline}</Link></p>
+    <StaffWorkspaceShell title={copy.title} description={copy.description} wide context={<RecordContext id={id} locale={locale} current={copy.title} />}>
+      <ProjectRecordNav id={id} locale={locale} />
       {activityQuery.isLoading ? <p role="status">{copy.loading}</p> : null}
       {error ? <p role="alert">{error}</p> : null}
       {signedIn === "yes" && activityQuery.data?.projectId === id && !error ? (

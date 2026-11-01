@@ -1,11 +1,11 @@
 "use client";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { StaffWorkspaceShell } from "@/components/auth/staff-workspace-shell";
+import { WorkspaceContext } from "@/components/projects/project-record-nav";
 import { createProject } from "@/lib/projects/api";
 import { classifyCreateError, type CreateFailure } from "@/lib/projects/create-outcome";
 import { projectCreateCachePlan, type ProjectCreateRequest } from "@/lib/projects/create-transform";
@@ -18,7 +18,7 @@ import { ProjectCreateForm } from "./project-create-form";
 export function ProjectCreatePageClient() {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const [locale, setLocale] = useWorkspaceLocale();
+  const [locale] = useWorkspaceLocale();
   const [failure, setFailure] = useState<CreateFailure | null>(null);
   const copy = getProjectCopy(locale);
 
@@ -49,25 +49,8 @@ export function ProjectCreatePageClient() {
   });
 
   return (
-    <StaffWorkspaceShell title={copy.createTitle} description={copy.createSubtitle} wide>
-      <nav className="auth-access-locale-row" aria-label="Breadcrumb">
-        <Link href="/dashboard">{copy.breadcrumbWorkspace}</Link>
-        <span aria-hidden="true">/</span>
-        <Link href="/projects">{copy.breadcrumbProjects}</Link>
-        <span aria-hidden="true">/</span>
-        <span>{copy.breadcrumbCreate}</span>
-      </nav>
-      <section className="auth-access-card" aria-labelledby="project-create-locale">
-        <p id="project-create-locale" className="auth-access-field-label">View language (draft)</p>
-        <div className="auth-access-locale-row" role="group" aria-label="Project language">
-          {(["en", "si", "ta"] as const).map((code) => (
-            <button key={code} type="button" className="auth-access-button" aria-pressed={locale === code} onClick={() => setLocale(code)}>
-              {code.toUpperCase()}
-            </button>
-          ))}
-        </div>
-        <p className="auth-access-status" role="status">{copy.nativeReview}</p>
-      </section>
+    <StaffWorkspaceShell title={copy.createTitle} description={copy.createSubtitle} wide context={<WorkspaceContext locale={locale} current={copy.createTitle} projects />}>
+      {locale !== "en" ? <p className="spp-small">{copy.nativeReview}</p> : null}
       <ProjectCreateForm
         copy={copy}
         failure={failure}

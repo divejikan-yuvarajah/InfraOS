@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { StaffWorkspaceShell } from "@/components/auth/staff-workspace-shell";
+import { WorkspaceContext } from "@/components/projects/project-record-nav";
 import { Button } from "@/components/ui/button";
 import { logoutWithAuthClient } from "@/lib/auth/client";
 import { fetchSelfProfile } from "@/lib/profile/api";
@@ -25,7 +26,7 @@ function formatLastLogin(value: string | null): string {
 
 export function SettingsPageClient() {
   const router = useRouter();
-  const [locale, setLocale] = useWorkspaceLocale();
+  const [locale] = useWorkspaceLocale();
   const copy = getSettingsCopy(locale);
   const [profile, setProfile] = useState<SelfProfile | null>(null);
   const [loadState, setLoadState] = useState<"loading" | "ready" | "error">("loading");
@@ -55,25 +56,8 @@ export function SettingsPageClient() {
   }
 
   return (
-    <StaffWorkspaceShell title={copy.title} description={copy.subtitle}>
-      <section className="auth-access-card" aria-labelledby="settings-locale">
-        <p id="settings-locale" className="auth-access-field-label">
-          View language (draft)
-        </p>
-        <div className="auth-access-locale-row" role="group" aria-label="Settings view language">
-          {(["en", "si", "ta"] as const).map((code) => (
-            <button
-              key={code}
-              type="button"
-              className={locale === code ? "auth-access-chip is-active" : "auth-access-chip"}
-              onClick={() => setLocale(code)}
-            >
-              {code.toUpperCase()}
-            </button>
-          ))}
-        </div>
-        <p className="auth-access-hint">{copy.nativeReview}</p>
-      </section>
+    <StaffWorkspaceShell title={copy.title} description={copy.subtitle} context={<WorkspaceContext locale={locale} current={copy.title} />}>
+      {locale !== "en" ? <p className="spp-small">{copy.nativeReview}</p> : null}
 
       {loadState === "loading" ? (
         <p className="auth-access-status" role="status">

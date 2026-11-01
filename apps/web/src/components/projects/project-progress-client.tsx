@@ -2,7 +2,6 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import Link from "next/link";
 import { useState, useSyncExternalStore } from "react";
 import { useForm } from "react-hook-form";
 
@@ -19,6 +18,7 @@ import { progressFormSchema, progressNoteReady } from "@/lib/projects/progress-f
 import { getProgressCopy } from "@/lib/projects/progress-messages";
 import { formatLkrMinor } from "@/lib/data-table/query-state";
 import { useWorkspaceLocale } from "@/lib/i18n/workspace-locale";
+import { ProjectRecordNav, RecordContext } from "./project-record-nav";
 
 type FormValues = { percentage: number; note: string };
 
@@ -41,7 +41,7 @@ function noticeFor(kind: string, copy: ReturnType<typeof getProgressCopy>): stri
 }
 
 export function ProjectProgressClient({ id }: { id: string }) {
-  const [locale, setLocale] = useWorkspaceLocale();
+  const [locale] = useWorkspaceLocale();
   const [page, setPage] = useState(1);
   const [notice, setNotice] = useState<string | null>(null);
   const copy = getProgressCopy(locale);
@@ -106,15 +106,9 @@ export function ProjectProgressClient({ id }: { id: string }) {
   const history = historyQuery.data;
 
   return (
-    <StaffWorkspaceShell title={copy.title} description={copy.description} wide>
-      <div role="group" aria-label={copy.language}>
-        <button type="button" className="auth-access-button" aria-pressed={locale === "en"} onClick={() => setLocale("en")}>{copy.english}</button>
-        <button type="button" className="auth-access-button" aria-pressed={locale === "si"} onClick={() => setLocale("si")}>{copy.sinhala}</button>
-        <button type="button" className="auth-access-button" aria-pressed={locale === "ta"} onClick={() => setLocale("ta")}>{copy.tamil}</button>
-      </div>
-      <p role="note">{copy.nativeReview}</p>
+    <StaffWorkspaceShell title={copy.title} description={copy.description} wide context={<RecordContext id={id} locale={locale} current={copy.title} />}>
+      <ProjectRecordNav id={id} locale={locale} />
       {roleKey === "CONTRACTOR" ? <p role="status">{copy.contractorBlocked}</p> : null}
-      <p><Link className="auth-access-button" href={`/projects/${id}/overview`}>{copy.back}</Link></p>
       {loading ? <p role="status">Loading</p> : null}
       {projectError ? <p role="alert">{projectError}</p> : null}
       {!projectQuery.isLoading && !projectQuery.isFetching && !projectQuery.data && !projectError && signedIn === "yes" && userId ? <p role="alert">{copy.notFound}</p> : null}

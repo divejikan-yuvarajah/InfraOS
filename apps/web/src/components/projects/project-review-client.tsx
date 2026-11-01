@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useRef, useState, useSyncExternalStore } from "react";
 
 import { StaffWorkspaceShell } from "@/components/auth/staff-workspace-shell";
+import { WorkspaceContext } from "@/components/projects/project-record-nav";
 import { ProjectStatusBadge } from "@/components/common/status-badge";
 import { ApiError } from "@/lib/api/client";
 import { getAuthEpoch, getMemoryAccessToken, getMemorySession, subscribeAuth } from "@/lib/auth/state";
@@ -23,7 +24,7 @@ export function ProjectReviewClient({ id }: { id: string }) {
   const epoch = useAuthPart(() => String(getAuthEpoch()));
   const userId = useAuthPart(() => getMemorySession()?.user.id ?? "");
   const roleKey = useAuthPart(() => getMemorySession()?.user.roleKey ?? "");
-  const [locale, setLocale] = useWorkspaceLocale();
+  const [locale] = useWorkspaceLocale();
   const copy = getReviewCopy(locale);
   const queryClient = useQueryClient();
   const dialogRef = useRef<HTMLDialogElement>(null);
@@ -117,19 +118,9 @@ export function ProjectReviewClient({ id }: { id: string }) {
         : copy.confirmBegin;
 
   return (
-    <StaffWorkspaceShell title={copy.reviewTitle} description={project?.projectCode} wide>
+    <StaffWorkspaceShell title={copy.reviewTitle} description={project?.projectCode} wide context={<WorkspaceContext locale={locale} current={copy.reviewTitle} projects />}>
+      {locale !== "en" ? <p className="spp-small">{copy.nativeReview}</p> : null}
       <p><Link href="/projects/reviews">{copy.backToQueue}</Link></p>
-      <section className="auth-access-card" aria-labelledby="review-detail-locale">
-        <p id="review-detail-locale" className="auth-access-field-label">View language (draft)</p>
-        <div className="auth-access-locale-row" role="group" aria-label="Review language">
-          {(["en", "si", "ta"] as const).map((code) => (
-            <button key={code} type="button" className="auth-access-button" aria-pressed={locale === code} onClick={() => setLocale(code)}>
-              {code === "en" ? "English" : code === "si" ? "සිංහල" : "தமிழ்"}
-            </button>
-          ))}
-        </div>
-        <p role="note">{copy.nativeReview}</p>
-      </section>
       {review.isLoading ? <p role="status">Loading</p> : null}
       {error ? <div className="auth-access-banner error" role="alert"><p>{error}</p></div> : null}
       {notice ? <p role="status">{notice}</p> : null}

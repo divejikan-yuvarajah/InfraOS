@@ -7,7 +7,7 @@ import { useSyncExternalStore } from "react";
 import { ArrowLeftIcon, CheckCircle2Icon, InfoIcon } from "lucide-react";
 
 import { StaffWorkspaceShell } from "@/components/auth/staff-workspace-shell";
-import { WorkStatusBadge } from "@/components/common/status-badge";
+import { StatusChip } from "@/components/site-plan/site-plan";
 import { RouteLines } from "@/components/motif/connected-motif";
 import { classifyWorkRequestError, fetchWorkRequest, FAILURE_COPY } from "@/lib/roadsync/api";
 import {
@@ -75,7 +75,7 @@ export function WorkRequestDetailClient({ id }: { id: string }) {
               <div className="rs-hero-top">
                 <WorkTypeIcon type={wr.workType} />
                 <h2>{WORK_TYPE_LABELS[wr.workType]}</h2>
-                <WorkStatusBadge status={wr.status} />
+                <StatusChip domain="work" status={wr.status} />
                 <PriorityMark priority={wr.priority} />
               </div>
               <dl className="rs-facts">

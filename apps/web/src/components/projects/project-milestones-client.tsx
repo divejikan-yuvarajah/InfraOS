@@ -2,7 +2,6 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import Link from "next/link";
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { useForm } from "react-hook-form";
 
@@ -16,6 +15,7 @@ import { getMilestoneCopy } from "@/lib/projects/milestone-messages";
 import { createMilestone, fetchMilestones, patchMilestone, transitionMilestone, type MilestoneRecord } from "@/lib/projects/milestones-api";
 import { projectCoreQueryKey } from "@/lib/projects/overview-format";
 import { useWorkspaceLocale } from "@/lib/i18n/workspace-locale";
+import { ProjectRecordNav, RecordContext } from "./project-record-nav";
 
 const WRITE_ROLES = new Set(["GOV_ADMIN", "AGENCY_OFFICER", "PROJECT_MANAGER"]);
 const ELIGIBLE = new Set(["APPROVED", "ACTIVE"]);
@@ -41,7 +41,7 @@ function noticeFor(kind: string, copy: ReturnType<typeof getMilestoneCopy>): str
 }
 
 export function ProjectMilestonesClient({ id }: { id: string }) {
-  const [locale, setLocale] = useWorkspaceLocale();
+  const [locale] = useWorkspaceLocale();
   const copy = getMilestoneCopy(locale);
   const queryClient = useQueryClient();
   const epoch = useAuthPart(() => String(getAuthEpoch()));
@@ -150,19 +150,9 @@ export function ProjectMilestonesClient({ id }: { id: string }) {
   const listError = listQuery.error ? classifyEditError(listQuery.error) : null;
 
   return (
-    <StaffWorkspaceShell title={copy.title} wide>
-      <section className="auth-access-card" aria-labelledby="milestone-locale">
-        <p id="milestone-locale" className="auth-access-field-label">View language (draft)</p>
-        <div className="auth-access-locale-row" role="group" aria-label="Milestone language">
-          {(["en", "si", "ta"] as const).map((code) => (
-            <button key={code} type="button" className="auth-access-button" aria-pressed={locale === code} onClick={() => setLocale(code)}>
-              {code === "en" ? "English" : code === "si" ? "සිංහල" : "தமிழ்"}
-            </button>
-          ))}
-        </div>
-        <p role="note">{copy.nativeReview}</p>
-      </section>
-      <p><Link href={`/projects/${id}/overview`}>{copy.back}</Link></p>
+    <StaffWorkspaceShell title={copy.title} wide context={<RecordContext id={id} locale={locale} current={copy.title} />}>
+      <ProjectRecordNav id={id} locale={locale} />
+      {locale !== "en" ? <p className="spp-small">{copy.nativeReview}</p> : null}
       {projectQuery.isLoading || (signedIn === "yes" && !userId) ? <p role="status">Loading</p> : null}
       {projectError ? <p role="alert">{noticeFor(projectError, copy)}</p> : null}
       {!projectQuery.isLoading && !projectQuery.isFetching && !projectQuery.data && !projectError && signedIn === "yes" && userId ? <p role="alert">{copy.notFound}</p> : null}
