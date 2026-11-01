@@ -60,3 +60,37 @@ export const FAILURE_COPY: Record<WorkRequestFailureKind, string> = {
   auth: "Your session has ended. Sign in again to continue.",
   unavailable: "RoadSync is temporarily unavailable. Try again shortly.",
 };
+
+/* ---------- Step 67: geometry validation and map ---------- */
+
+export type GeoIssue = { code: string; message: string };
+export type GeoValidation = {
+  valid: boolean;
+  errors?: GeoIssue[];
+  warnings: string[];
+  geometry?: import("./work-requests-view").GeometryInput;
+  derived?: { centroid: [number, number]; bbox: [number, number, number, number]; lengthMeters: number | null; areaSqMeters: number | null; vertexCount: number };
+  candidates: { index: number; label: string; type: string; valid: boolean }[];
+};
+
+/** Authoritative server check. Stores nothing; accepts a Geometry, Feature or FeatureCollection. */
+export async function validateGeo(geojson: unknown): Promise<GeoValidation> {
+  const { atEpoch, tokenAtStart } = guard();
+  const payload = await apiClient<Envelope<GeoValidation>>("/api/v1/roadsync/geo/validate", { method: "POST", authenticated: true, body: { geojson } });
+  moved(atEpoch, tokenAtStart);
+  return payload.data;
+}
+
+export type WorkMapFeature = {
+  type: "Feature";
+  geometry: import("./work-requests-view").GeometryInput;
+  properties: { id: string; workType: string; status: string; priority: string; plannedStart: string; plannedEnd: string; agencyName: string | null; projectTitle: string | null; projectCode: string | null };
+};
+export type WorkMapData = { type: "FeatureCollection"; truncated: boolean; features: WorkMapFeature[] };
+
+export async function fetchWorkRequestMap(query: string): Promise<WorkMapData> {
+  const { atEpoch, tokenAtStart } = guard();
+  const payload = await apiClient<Envelope<WorkMapData>>(`/api/v1/roadsync/work-requests/map${query ? `?${query}` : ""}`, { method: "GET", authenticated: true });
+  moved(atEpoch, tokenAtStart);
+  return payload.data;
+}
