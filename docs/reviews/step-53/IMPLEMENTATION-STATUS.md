@@ -56,3 +56,73 @@ Full `npm run test:api`, `test:web`, lint, and build were not run. Signed-in bro
 **Step 53 focused implementation: PASS**, with browser **NOT RUN** and production indexes **BLOCKED**.
 
 **STOP. Step 54 was not implemented.**
+
+## Addendum — 26 October 2026 verification
+
+**SAME-AGENT VERIFICATION. Not owner or browser signoff.**
+
+Roadmap line, reconfirmed from `Prompts/Steps.docx`: **Step 53 — Projects Listing Page.** “Search, filters, statuses, agencies, pagination and sorting.”
+
+### Git at this check
+
+- Directory: `C:\Users\ASUS\Desktop\InfraOS\InfraOS`
+- Branch: `development`, tracking `origin/development`
+- SHA: `35edec5d309a067e181b74a27ce85f69eebc9f36` (`feat(projecttrace): complete scoped project list and overview`)
+- Tracked tree matches that commit. Untracked only: `Prompts/INFRAOS_Steps_53_54_Enhanced_Development_Prompt.md` and `Prompts/INFRAOS_Steps_55_56_Enhanced_Development_Prompt.md`. Those were not edited or staged.
+- **NO CODE CHANGES** in this verification. No branch, commit, push, or checkout.
+
+The historical section above describes the pre-commit tree at `2b0507b`. That note is stale. Step 53 and Step 54 code are both in `35edec5`. This pass did not modify Step 54.
+
+### Classification
+
+| Behavior | Status |
+|---|---|
+| Auth, live `project.read`, scope, `Cache-Control: no-store` | EXISTS+VERIFIED in disposable Mongo |
+| Allowlisted page, limit, q, status, type, agencyId, sortBy, sortDir | EXISTS+VERIFIED |
+| Unknown, repeated, and `$` queries return 400 | EXISTS+VERIFIED |
+| `agencyId` narrows scope; out-of-scope id returns an empty page | EXISTS+VERIFIED |
+| Server sort with `_id` tie-break; page total from `countDocuments` | EXISTS+VERIFIED for distinct codes. Equal-key page ties were not given a separate fixture |
+| List omits budget, geometry, and description | EXISTS+VERIFIED |
+| Gov subtree, officer agency, inspector assignment, super-admin read, contractor/citizen 403 | EXISTS+VERIFIED |
+| Later deactivation, reparent, and removed `project.read` | EXISTS+VERIFIED |
+| Noindex `/projects`, server-mode table, URL state, code link with safe `list` return | EXISTS+VERIFIED by code and list-query tests. Browser NOT RUN |
+| Query key includes epoch, user id, and role | EXISTS+VERIFIED by the key helper. Signed-out account switch NOT RUN |
+| EN/SI/TA copy | EXISTS. Native review pending |
+| Signed-in browser at 320–1440 | BLOCKED |
+| Offset stability while rows are inserted | NOT a defect. `_id` tie-break does not stop page drift |
+
+`/projects/new` and `POST /api/v1/projects` remain in this SHA. No `REJECTED` status was added.
+
+### Focused commands
+
+| Command | Exit | Result |
+|---|---|---|
+| `npm run test -w @infraos/api -- tests/projects-foundation.test.ts` | 0 | 7 tests. Disposable replica only |
+| `npm run test -w @infraos/web -- src/lib/projects/list-query.test.ts` | 0 | 4 tests |
+| `npm run type-check:web` | 0 | |
+| `npm run type-check:api` | 0 | |
+
+### Browser
+
+**BLOCKED / NOT RUN.** `apps/api/.env` has an Atlas `MONGODB_URI`. This pass did not start `dev:api`, did not open that database, and did not seed it. `NEXT_PUBLIC_AUTH_LOGIN_ENABLED=1` is set for development only. Production `next start` still forces the preview gate, and that gate is not a signed-in demo. No screenshot was taken.
+
+To view the list later, use a disposable Mongo process, point only that process at it without writing the Atlas URI into logs, create a synthetic verified staff account through the normal provisioning flow, then open `http://localhost:3000/login` and `http://localhost:3000/projects` with `npm run dev:web`. Do not use `next start` for that check.
+
+### Gate
+
+Code-level Step 53 checks are satisfactory. Browser acceptance is not. Step 54 was not started or changed by this pass.
+
+### Proposed Git commands — do not run until a separate approval
+
+No source fix exists, so no commit is proposed. Do not stage the untracked `Prompts/` files. If a later hardening change is approved:
+
+```text
+git switch development
+git pull --ff-only origin development
+git switch -c feature/projecttrace-list-overview-hardening
+git add -- <exact reviewed paths only>
+git diff --cached --check
+git commit -m "fix(projecttrace): harden scoped project listing"
+```
+
+Push, a pull request into `development`, merge, and any `main` release each need their own approval.
