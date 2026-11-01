@@ -17,7 +17,8 @@ import { roadsyncEvents, type DetectionCompletedEvent } from "./roadsync.events.
 import { analyzeSchedules, notApplicable, TIMED_RELATIONS, type ScheduleSide, type TemporalResult, type WorkingHours } from "./schedule.analysis.js";
 import { analyzeSpatial, searchPolygon, simplifyForTransport, type AnyGeometry, type SpatialResult } from "./spatial.analysis.js";
 import { readFilter } from "./work-requests.service.js";
-import { sequenceOf, type AssessSide } from "./assessment.engine.js";
+import { assessPair, corridorProfile, redactFactors, riskIndexOf, sequenceOf, type AssessSide, type ProfileItem } from "./assessment.engine.js";
+import { bandOf, RULE_VERSION, type TrafficLevel } from "./assessment.rules.js";
 
 export type SourceType = "work_request" | "project" | "asset";
 type Oid = mongoose.Types.ObjectId;
@@ -291,13 +292,19 @@ export type PreviewInput = {
   schedule: { plannedStart: string; plannedEnd: string; workingHours: WorkingHours; flexibleDays: number; isEmergency: boolean } | null;
   radiusMeters: number;
   excludeRequestId: string | null;
+  /** Step 71: optional what-you-are-drafting fields. Missing fields are reported, never required. */
+  subject?: { workType?: string; priority?: string; isEmergency?: boolean; trafficImpact?: { level: TrafficLevel; closureType?: string | null } } | null;
 };
 
 export async function runDetectionPreview(actor: AuthenticatedActor, input: PreviewInput) {
   const schedule: ScheduleSide | null = input.schedule
     ? { start: new Date(input.schedule.plannedStart), end: new Date(input.schedule.plannedEnd), workingHours: input.schedule.workingHours, flexibleDays: input.schedule.flexibleDays, isEmergency: input.schedule.isEmergency }
     : null;
-  const subject: SubjectInput = { id: null, agencyId: null, projectId: null, geometry: input.geometry, bufferMeters: input.bufferMeters, schedule, infrastructureType: "OTHER" };
+  const workType = input.subject?.workType ?? null;
+  const subject: SubjectInput = {
+    id: null, agencyId: null, projectId: null, geometry: input.geometry, bufferMeters: input.bufferMeters, schedule,
+    infrastructureType: workType ? INFRA_OF_WORK[workType] ?? "OTHER" : "OTHER", workType, priority: input.subject?.priority ?? null,
+  };
   if (input.excludeRequestId) {
     const own = await WorkRequest.findOne({ $and: [await readFilter(actor), { _id: oid(input.excludeRequestId) }] }).select("projectId").lean();
     if (own) subject.projectId = String(own.projectId);
@@ -305,7 +312,34 @@ export async function runDetectionPreview(actor: AuthenticatedActor, input: Prev
   const found = await collect({ ...subject, id: input.excludeRequestId }, input.radiusMeters, DETECTION.PREVIEW_MAX);
   const oriented = found.pairs.map((p) => ({ ...p, ...orient(p.spatial, p.temporal, p.subjectIsA) }));
   const candidates = await toViews(actor, oriented);
-  return { summary: summarize(candidates, found.nearby), candidates, sourcesChecked: found.sources, truncated: found.truncated };
+
+  // Same engine as the persisted assessment, so what a user sees while drafting matches what is stored after submission.
+  const own: AssessSide = { ...subjectSide(subject), traffic: input.subject?.trafficImpact ?? null, isEmergency: input.subject?.isEmergency ?? input.schedule?.isEmergency ?? false };
+  const assessed = found.pairs.map((p, i) => {
+    const [sa, sb] = p.subjectIsA ? [own, itemSide(p.item)] : [itemSide(p.item), own];
+    const r = assessPair(sa, sb, p.spatial, p.temporal);
+    const detailLevel = candidates[i]?.other.detailLevel;
+    return { pair: p, r: { ...r, factors: detailLevel === "full" ? r.factors : redactFactors(r.factors) } };
+  });
+  const withAssessment = candidates.map((c, i) => {
+    const r = assessed[i]!.r;
+    return { ...c, assessment: { kind: r.kind, classes: r.classes, primaryClass: r.primaryClass, score: r.score, band: r.band, floorApplied: r.floorApplied, factors: r.factors, mitigations: r.mitigations, incompleteInputs: r.incompleteInputs, inputsAssumed: r.inputsAssumed } };
+  });
+  const conflicts = assessed.filter((x) => x.r.kind === "conflict");
+  const scores = conflicts.map((x) => x.r.score);
+  const top = Math.max(0, ...scores);
+  const incomplete = new Set<string>(assessed.flatMap((x) => x.r.incompleteInputs));
+  if (!workType) incomplete.add("workType");
+  if (!input.subject?.trafficImpact) incomplete.add("trafficImpact");
+  const assessment = {
+    riskIndex: riskIndexOf(scores),
+    maxBand: scores.length ? bandOf(top) : null,
+    counts: { conflicts: conflicts.length, opportunities: assessed.filter((x) => x.r.kind === "opportunity").length, advisories: assessed.filter((x) => x.r.kind === "advisory").length },
+    corridorProfile: corridorProfile(input.geometry, conflicts.map((x): ProfileItem => ({ id: `${x.pair.item.type}:${x.pair.item.id}`, score: x.r.score, geometry: x.pair.item.geometry, reachMeters: 25 + input.bufferMeters }))),
+    incompleteInputs: [...incomplete],
+    ruleVersion: RULE_VERSION,
+  };
+  return { summary: { ...summarize(candidates, found.nearby), assessment }, candidates: withAssessment, sourcesChecked: found.sources, truncated: found.truncated };
 }
 
 export function summarize(views: NearbyView[], nearby: number) {

@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+import { BAND_CODES, type Band } from "./assessment.rules.js";
 import { WORK_PRIORITIES, WORK_STATUSES, WORK_TYPES } from "./roadsync.constants.js";
 
 const objectId = z.string().regex(/^[a-f0-9]{24}$/i);
@@ -24,7 +25,10 @@ export const workRequestCreateSchema = z.object({
   geometry: geometryInputSchema,
 }).strict();
 
-export const WORK_REQUEST_LIST_KEYS = ["page", "limit", "status", "workType", "priority", "projectId", "hasCandidates"] as const;
+export const WORK_REQUEST_LIST_KEYS = ["page", "limit", "status", "workType", "priority", "projectId", "hasCandidates", "band", "hasConflicts", "sort"] as const;
+
+/** Step 71: comma-separated severity bands, validated against the rule config. */
+const bandList = z.string().max(100).transform((v) => v.split(",").filter(Boolean).slice(0, 5)).refine((arr) => arr.length > 0 && arr.every((b) => (BAND_CODES as readonly string[]).includes(b))).transform((arr) => arr as Band[]);
 
 export const workRequestListQuerySchema = z.object({
   page: z.coerce.number().int().min(1).max(10_000).default(1),
@@ -34,6 +38,9 @@ export const workRequestListQuerySchema = z.object({
   priority: z.enum(WORK_PRIORITIES).optional(),
   projectId: objectId.optional(),
   hasCandidates: z.enum(["true"]).optional(),
+  band: bandList.optional(),
+  hasConflicts: z.enum(["true"]).optional(),
+  sort: z.enum(["startDate", "riskIndex"]).default("startDate"),
 }).strict();
 
 const bboxSchema = z.string().max(120).transform((v, ctx) => {
