@@ -3,7 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useSyncExternalStore } from "react";
+import { useState, useSyncExternalStore } from "react";
 import { ArrowLeftIcon, CheckCircle2Icon, InfoIcon } from "lucide-react";
 
 import { StaffWorkspaceShell } from "@/components/auth/staff-workspace-shell";
@@ -11,14 +11,17 @@ import { StatusChip } from "@/components/site-plan/site-plan";
 import { RouteLines } from "@/components/motif/connected-motif";
 import { classifyWorkRequestError, fetchWorkRequest, FAILURE_COPY } from "@/lib/roadsync/api";
 import {
+  canHintCreate,
   formatColombo,
   formatPosition,
   summarizeGeometry,
   WORK_TYPE_LABELS,
   workRequestQueryKey,
 } from "@/lib/roadsync/work-requests-view";
+import type { NearbyOverlay } from "@/lib/roadsync/nearby";
 import { getAuthEpoch, getMemorySession, subscribeAuth } from "@/lib/auth/state";
 
+import { NearbyActivityPanel } from "./nearby-activity";
 import { PriorityMark, WorkTypeIcon } from "./roadsync-shared";
 import { WorkMap } from "./work-map";
 
@@ -30,6 +33,7 @@ export function WorkRequestDetailClient({ id }: { id: string }) {
   const roleKey = useAuthPart(() => getMemorySession()?.user.roleKey ?? "");
   const userId = useAuthPart(() => getMemorySession()?.user.id ?? "");
   const epoch = useAuthPart(() => String(getAuthEpoch()));
+  const [overlay, setOverlay] = useState<NearbyOverlay | null>(null);
   const created = useSearchParams().get("created") === "1";
   const query = useQuery({
     queryKey: workRequestQueryKey(epoch, userId, roleKey, "detail", id),
@@ -78,6 +82,12 @@ export function WorkRequestDetailClient({ id }: { id: string }) {
                 <h2>{WORK_TYPE_LABELS[wr.workType]}</h2>
                 <StatusChip domain="work" status={wr.status} />
                 <PriorityMark priority={wr.priority} />
+                {wr.status !== "DRAFT" ? (
+                  <span className="rs-nb-chip" role="status">
+                    {wr.detection?.status === "running" ? "Scanning…" : wr.detection?.status === "failed" ? "Scan failed" : wr.detection?.status === "completed" ? "Scanned" : "Not scanned"}
+                    {wr.nearbyCount > 0 ? ` · ${wr.nearbyCount} nearby` : ""}
+                  </span>
+                ) : null}
               </div>
               <dl className="rs-facts">
                 <div><dt>Project</dt><dd>{wr.projectTitle ?? "—"}{wr.projectCode ? ` (${wr.projectCode})` : ""}</dd></div>
@@ -89,17 +99,17 @@ export function WorkRequestDetailClient({ id }: { id: string }) {
               </dl>
             </section>
 
-            <div className="rs-notice" role="note">
+            {wr.status === "DRAFT" ? <div className="rs-notice" role="note">
               <InfoIcon aria-hidden="true" style={{ width: "1.1rem", height: "1.1rem", flex: "none", marginTop: "0.1rem" }} />
               <p style={{ margin: 0 }}>
                 <strong>Draft work request.</strong> Conflict detection is not available yet, so this request has not been checked against other works. Times are shown in Sri Lanka time.
               </p>
-            </div>
+            </div> : null}
 
             <div className="rs-detail-grid">
               <section className="rs-section" aria-labelledby="rs-geo">
                 <h2 id="rs-geo">Location</h2>
-                <WorkMap features={[{ geometry: wr.geometry }]} height={300} label="Work request location map" />
+                <WorkMap features={[{ geometry: wr.geometry }]} height={300} label="Work request location map" overlay={overlay} />
                 <p className="rs-help">
                   {geo.label} · {geo.vertices} {geo.vertices === 1 ? "vertex" : "vertices"}
                   {geo.lengthKm !== null ? ` · about ${geo.lengthKm.toFixed(2)} km` : ""}.
@@ -115,6 +125,11 @@ export function WorkRequestDetailClient({ id }: { id: string }) {
                 {vertices.length > 200 ? <p className="rs-help">Showing the first 200 of {vertices.length} vertices.</p> : null}
               </section>
             </div>
+            {wr.status !== "DRAFT" ? (
+              <div className="rs-section" id="nearby">
+                <NearbyActivityPanel mode="persisted" requestId={wr.id} self={{ workType: wr.workType, plannedStart: wr.plannedStart, plannedEnd: wr.plannedEnd, geometry: wr.geometry }} canRun={canHintCreate(roleKey)} onOverlay={setOverlay} />
+              </div>
+            ) : null}
           </>
         ) : null}
       </div>

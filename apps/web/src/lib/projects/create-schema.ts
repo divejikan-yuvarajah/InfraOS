@@ -18,6 +18,7 @@ export const projectCreateFormSchema = z
     locationDescription: z.string(),
     longitude: z.string(),
     latitude: z.string(),
+    agencyId: z.string().optional(),
   })
   .superRefine((value, ctx) => {
     const built = buildProjectCreateBody(value);

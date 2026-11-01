@@ -25,6 +25,8 @@ export type WorkRequestRecord = {
   createdAt: string;
   updatedAt: string;
   revision: number;
+  detection?: { status: "pending" | "running" | "completed" | "failed"; completedAt: string | null; counts: { nearby: number; candidates: number; agencies: number; truncated: boolean } | null } | null;
+  nearbyCount: number;
 };
 
 export type WorkRequestListData = {
@@ -242,7 +244,7 @@ export function firstInvalidField(errors: WorkRequestFormErrors): keyof WorkRequ
 
 /* ---------- list ---------- */
 
-export type WorkRequestFilters = { status: string; workType: string; priority: string; projectId: string; page: number };
+export type WorkRequestFilters = { status: string; workType: string; priority: string; projectId: string; page: number; hasCandidates?: boolean };
 export const EMPTY_FILTERS: WorkRequestFilters = { status: "", workType: "", priority: "", projectId: "", page: 1 };
 
 export function filtersToQuery(f: WorkRequestFilters, limit = 20): string {
@@ -251,16 +253,17 @@ export function filtersToQuery(f: WorkRequestFilters, limit = 20): string {
   if (f.workType) params.set("workType", f.workType);
   if (f.priority) params.set("priority", f.priority);
   if (f.projectId) params.set("projectId", f.projectId);
+  if (f.hasCandidates) params.set("hasCandidates", "true");
   return params.toString();
 }
 
 export function hasActiveFilters(f: WorkRequestFilters): boolean {
-  return Boolean(f.status || f.workType || f.priority || f.projectId);
+  return Boolean(f.status || f.workType || f.priority || f.projectId || f.hasCandidates);
 }
 
 /** Roles whose server grant includes roadsync.work_request.create. A hint only: the API enforces it. */
 export function canHintCreate(roleKey: string): boolean {
-  return roleKey === "GOV_ADMIN" || roleKey === "AGENCY_OFFICER" || roleKey === "PROJECT_MANAGER";
+  return roleKey === "SUPER_ADMIN" || roleKey === "GOV_ADMIN" || roleKey === "AGENCY_OFFICER" || roleKey === "PROJECT_MANAGER";
 }
 
 /** Session-scoped key so one user's cached records are never shown to another. */

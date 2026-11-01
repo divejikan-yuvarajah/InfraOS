@@ -7,7 +7,46 @@ import { useEffect, useRef, useState } from "react";
 import { DownloadIcon, Trash2Icon, Undo2Icon, UploadIcon } from "lucide-react";
 
 import { validateGeo, type GeoValidation, type WorkMapFeature } from "@/lib/roadsync/api";
+import { NEAR_TIME_COLOR, OVERLAP_COLOR, type NearbyOverlay } from "@/lib/roadsync/nearby";
 import { parseGeometryText, type GeometryInput, type GeometryKind, type Position } from "@/lib/roadsync/work-requests-view";
+
+/**
+ * Steps 68-69 nearby overlay: dashed search area, candidate shapes (halo by time relation), dotted connectors.
+ * Layers are created once per map and removed with it on unmount.
+ */
+function useNearbyOverlay(mapRef: React.RefObject<MlMap | null>, ready: boolean, overlay: NearbyOverlay | null | undefined) {
+  const selectRef = useRef(overlay?.onSelect);
+  useEffect(() => { selectRef.current = overlay?.onSelect; });
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!ready || !map) return;
+    if (!map.getSource("nearby")) {
+      map.addSource("nearby", { type: "geojson", data: EMPTY as never });
+      const is = (kind: string) => ["==", ["get", "kind"], kind] as never;
+      const cand = ["all", is("candidate"), ["!=", ["geometry-type"], "Point"]] as never;
+      map.addLayer({ id: "nearby-area", type: "line", source: "nearby", filter: is("area"), paint: { "line-color": "#0f172a", "line-width": 1.5, "line-dasharray": [2, 2], "line-opacity": 0.6 } });
+      map.addLayer({ id: "nearby-fill", type: "fill", source: "nearby", filter: ["all", is("candidate"), ["==", ["geometry-type"], "Polygon"]] as never, paint: { "fill-color": ["get", "color"], "fill-opacity": 0.2 } });
+      map.addLayer({ id: "nearby-halo", type: "line", source: "nearby", filter: cand, paint: { "line-color": ["match", ["get", "tone"], "overlap", OVERLAP_COLOR, "near", NEAR_TIME_COLOR, "rgba(0,0,0,0)"], "line-width": 11, "line-opacity": 0.45 } });
+      map.addLayer({ id: "nearby-casing", type: "line", source: "nearby", filter: cand, paint: { "line-color": "#ffffff", "line-width": 6 } });
+      map.addLayer({ id: "nearby-line", type: "line", source: "nearby", filter: cand, paint: { "line-color": ["get", "color"], "line-width": ["match", ["get", "tone"], "overlap", 4.5, 3], "line-opacity": ["match", ["get", "tone"], "other", 0.65, 1] } });
+      map.addLayer({ id: "nearby-connector", type: "line", source: "nearby", filter: is("connector"), paint: { "line-color": "#334155", "line-width": 1.5, "line-dasharray": [1, 2] } });
+      map.addLayer({ id: "nearby-point", type: "circle", source: "nearby", filter: ["all", is("candidate"), ["==", ["geometry-type"], "Point"]] as never, paint: { "circle-radius": 7, "circle-color": ["get", "color"], "circle-stroke-color": "#fff", "circle-stroke-width": 3 } });
+      map.addLayer({ id: "nearby-selected", type: "line", source: "nearby", filter: ["==", ["get", "key"], ""] as never, paint: { "line-color": "#f59e0b", "line-width": 13, "line-opacity": 0.55 } });
+      map.on("click", (e) => {
+        const hit = map.queryRenderedFeatures(e.point, { layers: ["nearby-line", "nearby-fill", "nearby-point"] })[0];
+        const key = hit?.properties?.key;
+        if (typeof key === "string") selectRef.current?.(key);
+      });
+    }
+    (map.getSource("nearby") as GeoJSONSource).setData({ type: "FeatureCollection", features: overlay?.features ?? [] } as never);
+    map.setFilter("nearby-selected", ["all", ["==", ["get", "key"], overlay?.selectedKey ?? ""], ["==", ["get", "kind"], "candidate"]] as never);
+    if (overlay?.selectedKey) {
+      const f = (overlay.features as { properties?: { key?: string; kind?: string }; geometry: GeometryInput }[]).find((x) => x.properties?.key === overlay.selectedKey && x.properties?.kind === "candidate");
+      const b = f ? boundsOf([f.geometry]) : null;
+      if (b) map.fitBounds(b, { padding: 80, maxZoom: 17, duration: 400 });
+    }
+  }, [overlay, ready, mapRef]);
+}
 
 /** Free OpenStreetMap raster tiles: no API key, attribution always visible. */
 const STYLE: StyleSpecification = {
@@ -88,7 +127,7 @@ function setShapes(map: MlMap | null, features: unknown[], vertices: Position[] 
 
 const STATUS_COLOR: Record<string, string> = { DRAFT: "#64748b", SUBMITTED: "#1d4ed8", PLANNED: "#0f766e", APPROVED: "#15803d", ACTIVE: "#c2410c", COMPLETED: "#334155", CANCELLED: "#9ca3af" };
 
-export function WorkMap({ features, height = 320, label, onSelect }: { features: WorkMapFeature[] | { geometry: GeometryInput }[]; height?: number | string; label: string; onSelect?: (id: string) => void }) {
+export function WorkMap({ features, height = 320, label, onSelect, overlay }: { features: WorkMapFeature[] | { geometry: GeometryInput }[]; height?: number | string; label: string; onSelect?: (id: string) => void; overlay?: NearbyOverlay | null }) {
   const container = useRef<HTMLDivElement>(null);
   const selectRef = useRef(onSelect);
   useEffect(() => { selectRef.current = onSelect; });
@@ -103,6 +142,7 @@ export function WorkMap({ features, height = 320, label, onSelect }: { features:
       map.on("mouseleave", layer, () => { map.getCanvas().style.cursor = ""; });
     }
   });
+  useNearbyOverlay(mapRef, ready, overlay);
   useEffect(() => {
     if (!ready) return;
     const list = features.map((f) => {
@@ -139,13 +179,14 @@ type PickerProps = {
   coordinates: string;
   onChange: (kind: GeometryKind, coordinates: string) => void;
   onValidity?: (valid: boolean | null) => void;
+  overlay?: NearbyOverlay | null;
 };
 
 /**
  * Click the map to add vertices of the chosen geometry type. The coordinate text stays the single value,
  * so the keyboard path (typing coordinates) and the map always agree. The server check is authoritative.
  */
-export function LocationPicker({ kind, coordinates, onChange, onValidity }: PickerProps) {
+export function LocationPicker({ kind, coordinates, onChange, onValidity, overlay }: PickerProps) {
   const container = useRef<HTMLDivElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const state = useRef({ kind, coordinates });
@@ -168,6 +209,7 @@ export function LocationPicker({ kind, coordinates, onChange, onValidity }: Pick
     });
   });
 
+  useNearbyOverlay(mapRef, ready, overlay);
   const parsed = coordinates.trim() ? parseGeometryText(kind, coordinates) : null;
   const geometry = parsed?.ok ? parsed.geometry : null;
   const geoKey = geometry ? JSON.stringify(geometry) : "";

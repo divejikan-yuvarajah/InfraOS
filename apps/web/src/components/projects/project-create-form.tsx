@@ -48,12 +48,15 @@ export function ProjectCreateForm({
   pending,
   onSubmitBody,
   onCancel,
+  agencyChoice = null,
 }: {
   copy: ProjectCopy;
   failure: CreateFailure | null;
   pending: boolean;
   onSubmitBody: (body: ProjectCreateRequest) => Promise<void>;
   onCancel: () => void;
+  /** Set only for platform administrators, who must pick the owning agency. */
+  agencyChoice?: { options: { id: string; label: string }[]; unavailable: boolean } | null;
 }) {
   const pendingRef = useRef(false);
   const bannerRef = useRef<HTMLParagraphElement>(null);
@@ -117,6 +120,11 @@ export function ProjectCreateForm({
       noValidate
       onSubmit={form.handleSubmit((values) => {
         if (pendingRef.current || pending) return;
+        if (agencyChoice && !values.agencyId) {
+          form.setError("agencyId", { type: "custom", message: "required" });
+          document.getElementById(createControlId("agencyId"))?.focus();
+          return;
+        }
         const built = buildProjectCreateBody(values);
         if (!built.ok) return;
         pendingRef.current = true;
@@ -132,6 +140,28 @@ export function ProjectCreateForm({
         <section className="auth-access-card" aria-labelledby="create-identity">
           <h2 id="create-identity" className="auth-access-section-title">{copy.sectionIdentity}</h2>
           <div className="project-create-fields">
+            {agencyChoice
+              ? field(
+                  "agencyId",
+                  copy.fieldAgency,
+                  <select
+                    id={createControlId("agencyId")}
+                    className="auth-access-input"
+                    aria-invalid={Boolean(form.formState.errors.agencyId)}
+                    aria-describedby={describedBy("agencyId", true)}
+                    disabled={agencyChoice.unavailable}
+                    {...form.register("agencyId")}
+                  >
+                    <option value="">{copy.agencyPlaceholder}</option>
+                    {agencyChoice.options.map((option) => (
+                      <option key={option.id} value={option.id}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>,
+                  agencyChoice.unavailable ? copy.agencyUnavailable : copy.agencyHint,
+                )
+              : null}
             {field(
               "projectCode",
               copy.fieldCode,

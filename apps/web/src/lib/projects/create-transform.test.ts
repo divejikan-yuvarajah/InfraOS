@@ -32,6 +32,17 @@ const blank: ProjectCreateFormValues = {
 };
 
 describe("project create transform", () => {
+  it("only sends a well-formed owning agency and omits it for roles that do not choose one", () => {
+    const filled = { ...blank, projectCode: "inf-road-1", title: "T", projectType: "ROAD", amountLkr: "100" };
+    const without = buildProjectCreateBody(filled);
+    expect(without.ok && "agencyId" in without.body).toBe(false);
+    const withAgency = buildProjectCreateBody({ ...filled, agencyId: "a".repeat(24) });
+    expect(withAgency.ok && withAgency.body.agencyId).toBe("a".repeat(24));
+    const bad = buildProjectCreateBody({ ...filled, agencyId: "not-an-id" });
+    expect(bad.ok).toBe(false);
+    if (!bad.ok) expect(bad.errors.agencyId).toBe("format");
+  });
+
   it("requires code, title, category, and budget before a request body exists", () => {
     const built = buildProjectCreateBody(blank);
     expect(built.ok).toBe(false);

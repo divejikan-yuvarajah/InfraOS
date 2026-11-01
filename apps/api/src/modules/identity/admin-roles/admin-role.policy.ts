@@ -8,11 +8,12 @@ import { SYSTEM_ROLE_PERMISSIONS } from "../seed/system-role-permissions.js";
  */
 const BLOCKED: Record<SystemRoleKey, readonly Permission[]> = {
   SUPER_ADMIN: [
-    "project.approve",
-    "finance.payment.approve",
-    "finance.payment.reject",
     "inspection.verify",
     "inspection.reject",
+    "inspection.submit",
+    "progress.submit",
+    "finance.payment.approve",
+    "finance.payment.reject",
     "roadsync.conflict.resolve",
   ],
   GOV_ADMIN: ["role.manage", "permission.manage", "system.manage", "agency.manage"],

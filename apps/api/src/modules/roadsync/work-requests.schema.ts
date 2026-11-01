@@ -24,7 +24,7 @@ export const workRequestCreateSchema = z.object({
   geometry: geometryInputSchema,
 }).strict();
 
-export const WORK_REQUEST_LIST_KEYS = ["page", "limit", "status", "workType", "priority", "projectId"] as const;
+export const WORK_REQUEST_LIST_KEYS = ["page", "limit", "status", "workType", "priority", "projectId", "hasCandidates"] as const;
 
 export const workRequestListQuerySchema = z.object({
   page: z.coerce.number().int().min(1).max(10_000).default(1),
@@ -33,6 +33,7 @@ export const workRequestListQuerySchema = z.object({
   workType: z.enum(WORK_TYPES).optional(),
   priority: z.enum(WORK_PRIORITIES).optional(),
   projectId: objectId.optional(),
+  hasCandidates: z.enum(["true"]).optional(),
 }).strict();
 
 const bboxSchema = z.string().max(120).transform((v, ctx) => {

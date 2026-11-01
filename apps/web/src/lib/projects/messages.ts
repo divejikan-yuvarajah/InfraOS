@@ -118,6 +118,10 @@ const EN = {
   fieldLongitude: "Longitude",
   fieldLatitude: "Latitude",
   typePlaceholder: "Select a category",
+  fieldAgency: "Owning agency",
+  agencyPlaceholder: "Select an agency",
+  agencyHint: "The project belongs to this agency. The server verifies it is active and keeps it as the owner.",
+  agencyUnavailable: "The agency list is unavailable right now. Try again later.",
   summaryTitle: "Draft summary",
   errors: {
     required: "This field is required.",
@@ -258,6 +262,10 @@ const SI: ProjectCopy = {
   fieldLongitude: "දේශාංශය",
   fieldLatitude: "අක්෷ාංශය",
   typePlaceholder: "ප්‍රවර්ගය තෝරන්න",
+  fieldAgency: "හිමිකම් ඇති ආයතනය",
+  agencyPlaceholder: "ආයතනයක් තෝරන්න",
+  agencyHint: "ව්‍යාපෘතිය මෙම ආයතනයට අයත් වේ. එය සක්‍රීය බව සේවාදායකය තහවුරු කරයි.",
+  agencyUnavailable: "ආයතන ලැයිස්තුව දැනට ලබාගත නොහැක. පසුව නැවත උත්සාහ කරන්න.",
   summaryTitle: "කෙටුම්පත් සාරාංශය",
   errors: {
     ...EN.errors,
@@ -390,6 +398,10 @@ const TA: ProjectCopy = {
   fieldLongitude: "தீர்க்கரேகை",
   fieldLatitude: "அட்சரேகை",
   typePlaceholder: "வகையைத் தேர்ந்தெடுக்கவும்",
+  fieldAgency: "உரிமையுள்ள நிறுவனம்",
+  agencyPlaceholder: "நிறுவனத்தைத் தேர்ந்தெடுக்கவும்",
+  agencyHint: "திட்டம் இந்த நிறுவனத்திற்குச் சொந்தமானது. அது செயலில் உள்ளதா என்பதை சேவையகம் சரிபார்க்கும்.",
+  agencyUnavailable: "நிறுவனப் பட்டியல் இப்போது கிடைக்கவில்லை. பின்னர் மீண்டும் முயலவும்.",
   summaryTitle: "வரைவு சுருக்கம்",
   errors: {
     ...EN.errors,

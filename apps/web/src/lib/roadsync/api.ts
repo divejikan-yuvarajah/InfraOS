@@ -3,9 +3,9 @@ import { getAuthEpoch, getMemoryAccessToken } from "@/lib/auth/state";
 
 import type { CreateWorkRequestBody, WorkRequestListData, WorkRequestRecord } from "./work-requests-view";
 
-type Envelope<T> = { success: true; data: T };
+export type Envelope<T> = { success: true; data: T };
 
-function guard() {
+export function guard() {
   const atEpoch = getAuthEpoch();
   const tokenAtStart = getMemoryAccessToken();
   if (!tokenAtStart) throw new ApiError("sign-in is required", 401, { code: "AUTH_REQUIRED" });
@@ -13,7 +13,7 @@ function guard() {
 }
 
 /** A response that arrives after sign-out or a user switch is discarded, never rendered. */
-function moved(atEpoch: number, tokenAtStart: string) {
+export function moved(atEpoch: number, tokenAtStart: string) {
   if (getAuthEpoch() !== atEpoch || getMemoryAccessToken() !== tokenAtStart) {
     throw new ApiError("session moved", 401, { code: "AUTH_REQUIRED" });
   }

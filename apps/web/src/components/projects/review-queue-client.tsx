@@ -28,7 +28,7 @@ import {
   type ReviewQueueState,
 } from "@/lib/projects/review-query";
 import type { ProjectSummary } from "@/lib/projects/types";
-import type { ProjectStatus } from "@/lib/projects/list-query";
+import { canHintProjectReview, type ProjectStatus } from "@/lib/projects/list-query";
 import { useWorkspaceLocale } from "@/lib/i18n/workspace-locale";
 
 function useAuthPart(read: () => string): string {
@@ -72,7 +72,7 @@ export function ReviewQueueClient() {
     queryKey: reviewQueueQueryKey(epoch, userId, roleKey, serializeReviewQueue(state)),
     queryFn: () => fetchReviewQueue(state),
     retry: false,
-    enabled: roleKey === "GOV_ADMIN",
+    enabled: canHintProjectReview(roleKey),
   });
 
   const columns = useMemo<ColumnDef<ProjectSummary, unknown>[]>(
@@ -124,7 +124,7 @@ export function ReviewQueueClient() {
     search: state.q,
   };
   const filtered = Boolean(state.q || state.status || state.agencyId);
-  const error = roleKey && roleKey !== "GOV_ADMIN"
+  const error = roleKey && !canHintProjectReview(roleKey)
     ? copy.forbidden
     : list.error instanceof ApiError
       ? reviewFailureMessage(list.error.status, copy)

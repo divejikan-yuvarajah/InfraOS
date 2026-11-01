@@ -141,6 +141,10 @@ export function WorkRequestsListClient() {
               ))}
             </select>
           </label>
+          <label className="rs-nb-check">
+            <input type="checkbox" checked={Boolean(filters.hasCandidates)} onChange={(e) => set({ hasCandidates: e.target.checked })} />
+            Has nearby activity
+          </label>
           {projects.data ? (
             <label className="rs-field">
               <span className="rs-label">Project</span>
@@ -234,7 +238,7 @@ export function WorkRequestsListClient() {
                         {WORK_TYPE_LABELS[wr.workType]}
                         <span className="mc-sr"> — open details</span>
                       </Link>
-                      <p className="rs-sub">{wr.geometry.type === "Point" ? "Point" : wr.geometry.type === "LineString" ? "Corridor" : "Area"} · {wr.agencyName ?? "Agency"}</p>
+                      <p className="rs-sub">{wr.geometry.type === "Point" ? "Point" : wr.geometry.type === "LineString" ? "Corridor" : "Area"} · {wr.agencyName ?? "Agency"}{wr.nearbyCount > 0 ? <span className="rs-nb-chip" style={{ marginLeft: "0.5rem" }}>{wr.nearbyCount} nearby</span> : null}</p>
                     </div>
                   </div>
                   <div className="rs-cell">

@@ -32,6 +32,8 @@ import {
 import { getAuthEpoch, getMemorySession, subscribeAuth } from "@/lib/auth/state";
 
 import { PriorityMark, WORK_TYPE_ICONS } from "./roadsync-shared";
+import type { NearbyOverlay } from "@/lib/roadsync/nearby";
+import { NearbyActivityPanel } from "./nearby-activity";
 import { LocationPicker } from "./work-map";
 
 function useAuthPart(read: () => string): string {
@@ -67,6 +69,7 @@ export function WorkRequestNewClient() {
   const submitting = useRef(false);
   // Step 67: the server geometry check (null = not checked yet or unavailable; the API rechecks on create).
   const [geoValid, setGeoValid] = useState<boolean | null>(null);
+  const [overlay, setOverlay] = useState<NearbyOverlay | null>(null);
 
   const projects = useQuery({
     queryKey: workRequestQueryKey(epoch, userId, roleKey, "project-options"),
@@ -227,6 +230,7 @@ export function WorkRequestNewClient() {
                 coordinates={values.coordinates}
                 onChange={(kind, text) => { setValues((c) => ({ ...c, geometryKind: kind, coordinates: text })); setErrors((c) => ({ ...c, coordinates: undefined, geometryKind: undefined })); }}
                 onValidity={setGeoValid}
+                overlay={overlay}
               />
               <div className="rs-field">
                 <label className="rs-label" htmlFor="rs-coordinates">Coordinates — longitude, latitude</label>
@@ -234,6 +238,13 @@ export function WorkRequestNewClient() {
                 <p className="rs-help">{KIND_HELP[values.geometryKind]} Longitude comes first (Sri Lanka is about 79–82, 5–10).</p>
                 {errors.coordinates ? <p id="rs-coordinates-err" className="rs-error">{errors.coordinates}</p> : null}
               </div>
+              <NearbyActivityPanel
+                mode="preview"
+                compact
+                self={{ workType: values.workType || null, plannedStart: startUtc && endUtc && new Date(endUtc) >= new Date(startUtc) ? startUtc : null, plannedEnd: startUtc && endUtc && new Date(endUtc) >= new Date(startUtc) ? endUtc : null, geometry: geometry.ok && geoValid !== false ? geometry.geometry : null }}
+                onOverlay={setOverlay}
+              />
+              <p className="rs-help">Nearby activity is advisory and never blocks saving.</p>
             </section>
 
             <section className="rs-section" aria-labelledby="rs-s3">

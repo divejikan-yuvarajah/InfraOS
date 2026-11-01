@@ -49,6 +49,8 @@ export const projectCreateSchema = z
     title: safeText(200),
     description: safeText(5000).optional(),
     projectType: z.enum(PROJECT_TYPES),
+    /** Platform administrators must name the owning agency; every other role must omit it. */
+    agencyId: z.string().regex(/^[a-f0-9]{24}$/i).optional(),
     startDate: isoDate.optional(),
     plannedEndDate: isoDate.optional(),
     location: locationSchema.optional(),

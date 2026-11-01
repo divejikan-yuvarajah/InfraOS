@@ -18,7 +18,8 @@ import type { ProjectCreateInput, ProjectListQuery, ProjectPatchInput, ProjectRe
 import { reviewNeedsReason, reviewSeparatesDuties, reviewTarget, type ReviewAction } from "./review.policy.js";
 import type { ProjectDetailDto, ProjectFailure, ProjectListDto, ProjectSummaryDto, ReviewDetailDto, ReviewQueueDto } from "./projects.types.js";
 
-const WRITE_ROLES = new Set(["GOV_ADMIN", "AGENCY_OFFICER", "PROJECT_MANAGER"]);
+const WRITE_ROLES = new Set(["SUPER_ADMIN", "GOV_ADMIN", "AGENCY_OFFICER", "PROJECT_MANAGER"]);
+const REVIEW_ROLES = new Set(["SUPER_ADMIN", "GOV_ADMIN"]);
 const PRIVATE_DENY = new Set(["CONTRACTOR", "CITIZEN"]);
 
 export const projectHooks: { beforeAudit: () => Promise<void> } = {
@@ -338,7 +339,9 @@ async function writeAudit(
         oldValue: previous ?? { status: snapshot.status, agencyId: snapshot.agencyId },
         newValue: snapshot,
         requestId: auditRequestId(requestId),
-        agencyId: new mongoose.Types.ObjectId(actor.agencyId),
+        // A platform administrator acts across agencies: audit under the record's owning agency
+        // so agency audit views see it; userId still records the real initiating actor.
+        agencyId: actor.roleKey === "SUPER_ADMIN" ? snapshot.agencyId : new mongoose.Types.ObjectId(actor.agencyId),
       },
     ],
     { session },
@@ -363,6 +366,9 @@ export async function createProject(
   if (input.startDate && input.plannedEndDate && new Date(input.plannedEndDate) < new Date(input.startDate)) {
     return fail(400, "VALIDATION_ERROR");
   }
+  // Ownership is never client-chosen except by the platform administrator, who must name the agency.
+  const onBehalfOfAgency = actor.roleKey === "SUPER_ADMIN";
+  if (onBehalfOfAgency !== Boolean(input.agencyId)) return fail(400, "VALIDATION_ERROR");
   let createdId = "";
   try {
     await seedHierarchyLock();
@@ -378,7 +384,13 @@ export async function createProject(
           if (scope.kind === "none" || (scope.kind === "agencies" && !scope.agencyIds.some((id) => id.toString() === actor.agencyId))) {
             throw new FlowControl(403, "FORBIDDEN");
           }
-        const existing = await Project.findOne({ projectCode: input.projectCode }).session(mongo).select("_id");
+          let ownerAgencyId = new mongoose.Types.ObjectId(actor.agencyId);
+          if (onBehalfOfAgency) {
+            const target = await Agency.findById(input.agencyId).session(mongo).select("status");
+            if (!target || target.status !== "ACTIVE") throw new FlowControl(409, "CONFLICT");
+            ownerAgencyId = target._id;
+          }
+          const existing = await Project.findOne({ projectCode: input.projectCode }).session(mongo).select("_id");
           if (existing) {
             const ownAudit = await AuditLog.findOne({
               resourceId: existing._id,
@@ -396,7 +408,7 @@ export async function createProject(
             title: input.title,
             description: input.description,
             projectType: input.projectType,
-            agencyId: new mongoose.Types.ObjectId(actor.agencyId),
+            agencyId: ownerAgencyId,
             managerId: actor.roleKey === "PROJECT_MANAGER" ? new mongoose.Types.ObjectId(actor.userId) : undefined,
             location: input.location,
             geometry: input.geometry,
@@ -593,6 +605,7 @@ export async function transitionProject(
 const REVIEW_QUEUE_STATUSES = ["SUBMITTED", "UNDER_REVIEW"] as const;
 
 function approvalFilter(scope: Awaited<ReturnType<typeof resolveResourceScope>>): Record<string, unknown> {
+  if (scope.kind === "platform") return { agencyId: { $exists: true, $ne: null } };
   if (scope.kind !== "agencies") return { _id: { $in: [] } };
   return { agencyId: { $in: scope.agencyIds } };
 }
@@ -700,7 +713,7 @@ async function reviewHistory(projectId: mongoose.Types.ObjectId) {
 
 async function reviewActionHints(actor: AuthenticatedActor, project: Loaded): Promise<("BEGIN_REVIEW" | "APPROVE" | "REJECT" | "RETURN_FOR_CHANGES")[]> {
   try {
-    if (actor.roleKey !== "GOV_ADMIN") return [];
+    if (!REVIEW_ROLES.has(actor.roleKey)) return [];
     await assertLive(actor, ["project.approve"]);
     const scope = await resolveResourceScope(actor);
     const match = await Project.findOne({ $and: [approvalFilter(scope), { _id: project._id }] }).select("_id");
@@ -720,7 +733,7 @@ export async function listReviewQueue(
   actor: AuthenticatedActor,
   query: ProjectReviewQueueQuery,
 ): Promise<{ ok: true; list: ReviewQueueDto } | ProjectFailure> {
-  if (actor.roleKey !== "GOV_ADMIN") return fail(403, "FORBIDDEN");
+  if (!REVIEW_ROLES.has(actor.roleKey)) return fail(403, "FORBIDDEN");
   try {
     await assertLive(actor, ["project.approve"]);
     const scope = await resolveResourceScope(actor);
@@ -768,7 +781,7 @@ export async function getReview(
   rawId: string,
 ): Promise<{ ok: true; review: ReviewDetailDto } | ProjectFailure> {
   if (!/^[a-f0-9]{24}$/i.test(rawId)) return fail(400, "VALIDATION_ERROR");
-  if (actor.roleKey !== "GOV_ADMIN") return fail(403, "FORBIDDEN");
+  if (!REVIEW_ROLES.has(actor.roleKey)) return fail(403, "FORBIDDEN");
   try {
     await assertLive(actor, ["project.approve"]);
     const scope = await resolveResourceScope(actor);
@@ -800,7 +813,7 @@ export async function reviewProject(
   requestId: string,
 ): Promise<{ ok: true; project: ProjectDetailDto } | ProjectFailure> {
   if (!/^[a-f0-9]{24}$/i.test(rawId)) return fail(400, "VALIDATION_ERROR");
-  if (actor.roleKey !== "GOV_ADMIN") return fail(403, "FORBIDDEN");
+  if (!REVIEW_ROLES.has(actor.roleKey)) return fail(403, "FORBIDDEN");
   const action = input.action as ReviewAction;
   const mongo = await mongoose.startSession();
   try {

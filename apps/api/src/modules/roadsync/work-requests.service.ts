@@ -10,6 +10,7 @@ import { Role } from "../identity/models/role.model.js";
 import { User } from "../identity/models/user.model.js";
 import { Project } from "../projects/models/project.model.js";
 import { WorkRequest } from "./models/work-request.model.js";
+import { candidateCounts, requestIdsWithCandidates } from "./candidate.counts.js";
 import { validateWorkGeometry, type GeoIssue } from "./geo.service.js";
 import type { WorkRequestCreateInput, WorkRequestListQuery } from "./work-requests.schema.js";
 
@@ -19,7 +20,7 @@ const MATCH_NONE = { _id: { $in: [] as mongoose.Types.ObjectId[] } };
 
 type Code = "VALIDATION_ERROR" | "AUTH_REQUIRED" | "FORBIDDEN" | "NOT_FOUND" | "CONFLICT" | "SERVICE_UNAVAILABLE";
 
-class FlowControl extends Error {
+export class FlowControl extends Error {
   constructor(readonly status: 400 | 401 | 403 | 404 | 409 | 503, readonly code: Code) {
     super(code);
   }
@@ -46,6 +47,8 @@ export type WorkRequestView = {
   createdAt: string;
   updatedAt: string;
   revision: number;
+  detection: { status: string; completedAt: string | null; counts: { nearby: number; candidates: number; agencies: number; truncated: boolean } | null } | null;
+  nearbyCount: number;
 };
 
 function fail(status: WorkRequestFailure["status"], code: Code): WorkRequestFailure {
@@ -57,7 +60,7 @@ function auditRequestId(requestId: string): string {
   return /^[A-Za-z0-9_-]+$/.test(trimmed) ? trimmed : "request";
 }
 
-async function assertLive(actor: AuthenticatedActor, permissions: Permission[], session?: ClientSession): Promise<void> {
+export async function assertLive(actor: AuthenticatedActor, permissions: Permission[], session?: ClientSession): Promise<void> {
   const userQuery = User.findById(actor.userId).select("roleId status emailVerified credentialEpoch agencyId");
   if (session) userQuery.session(session);
   const user = await userQuery;
@@ -74,7 +77,7 @@ async function assertLive(actor: AuthenticatedActor, permissions: Permission[], 
 }
 
 /** Server-built read filter. An unknown relationship is match-none, never {}. */
-async function readFilter(actor: AuthenticatedActor): Promise<Record<string, unknown>> {
+export async function readFilter(actor: AuthenticatedActor): Promise<Record<string, unknown>> {
   const scope = await resolveResourceScope(actor);
   if (scope.kind === "none") return MATCH_NONE;
   if (actor.roleKey === "PROJECT_MANAGER") {
@@ -99,6 +102,7 @@ type Row = {
   createdAt?: Date;
   updatedAt?: Date;
   __v?: number;
+  detection?: { status: string; completedAt?: Date; counts?: { nearby: number; candidates: number; agencies: number; truncated: boolean } } | null;
 };
 
 async function toViews(rows: Row[], session?: ClientSession): Promise<WorkRequestView[]> {
@@ -108,7 +112,7 @@ async function toViews(rows: Row[], session?: ClientSession): Promise<WorkReques
     projectQuery.session(session);
     agencyQuery.session(session);
   }
-  const [projects, agencies] = await Promise.all([projectQuery, agencyQuery]);
+  const [projects, agencies, nearby] = await Promise.all([projectQuery, agencyQuery, candidateCounts(rows.map((row) => row._id))]);
   const project = new Map(projects.map((item) => [item._id.toString(), item]));
   const agency = new Map(agencies.map((item) => [item._id.toString(), item.name]));
   return rows.map((row) => ({
@@ -127,6 +131,8 @@ async function toViews(rows: Row[], session?: ClientSession): Promise<WorkReques
     createdAt: (row.createdAt ?? row.plannedStart).toISOString(),
     updatedAt: (row.updatedAt ?? row.plannedStart).toISOString(),
     revision: row.__v ?? 0,
+    detection: row.detection ? { status: row.detection.status, completedAt: row.detection.completedAt?.toISOString() ?? null, counts: row.detection.counts ?? null } : null,
+    nearbyCount: nearby.get(row._id.toString()) ?? 0,
   }));
 }
 
@@ -139,6 +145,7 @@ export async function listWorkRequests(actor: AuthenticatedActor, query: WorkReq
     if (query.workType) narrow.workType = query.workType;
     if (query.priority) narrow.priority = query.priority;
     if (query.projectId) narrow.projectId = new mongoose.Types.ObjectId(query.projectId);
+    if (query.hasCandidates) narrow._id = { $in: await requestIdsWithCandidates() };
     const filter = { $and: [scoped, narrow] };
     const [total, rows, byStatus, byPriority] = await Promise.all([
       WorkRequest.countDocuments(filter),
@@ -206,7 +213,7 @@ export async function mapWorkRequests(actor: AuthenticatedActor, query: { status
         features: views.map((v) => ({
           type: "Feature" as const,
           geometry: v.geometry,
-          properties: { id: v.id, workType: v.workType, status: v.status, priority: v.priority, plannedStart: v.plannedStart, plannedEnd: v.plannedEnd, agencyName: v.agencyName, projectTitle: v.projectTitle, projectCode: v.projectCode },
+          properties: { id: v.id, workType: v.workType, status: v.status, priority: v.priority, plannedStart: v.plannedStart, plannedEnd: v.plannedEnd, nearbyCount: v.nearbyCount, agencyName: v.agencyName, projectTitle: v.projectTitle, projectCode: v.projectCode },
         })),
       },
     };
@@ -269,7 +276,8 @@ export async function createWorkRequest(actor: AuthenticatedActor, input: WorkRe
           oldValue: snapshot,
           newValue: snapshot,
           requestId: auditRequestId(requestId),
-          agencyId: new mongoose.Types.ObjectId(actor.agencyId),
+          // Platform admins act across agencies: audit under the owning agency, userId stays the real actor.
+          agencyId: actor.roleKey === "SUPER_ADMIN" ? project.agencyId : new mongoose.Types.ObjectId(actor.agencyId),
         }], { session: mongo });
         const views = await toViews([row as unknown as Row], mongo);
         created = views[0] ?? null;

@@ -11,7 +11,12 @@ const PROFILE = [
 
 /**
  * Seed permission sets derived from Step 4 catalog + matrix.
- * Super Admin is IAM/governance + operational **read**, not approve/pay/verify/resolve.
+ * Super Admin is platform-wide IAM/governance plus operational management and oversight.
+ * Grants cover only capabilities with implemented routes (ProjectTrace, RoadSync work requests,
+ * identity admin). It never holds inspection.submit/verify/reject (no fabricated inspection
+ * results) or progress.submit (contractor-reported field). Payment approval, conflict
+ * resolution and coordination stay ungranted until those workflows exist and are reviewed.
+ * Project approval keeps submitter separation of duties, so it can never approve its own submission.
  */
 export const SYSTEM_ROLE_PERMISSIONS: Record<
   SystemRoleKey,
@@ -33,12 +38,23 @@ export const SYSTEM_ROLE_PERMISSIONS: Record<
     "system.manage",
     "audit.read",
     "audit.export",
+    "project.create",
     "project.read",
+    "project.update",
+    "project.submit",
+    "project.approve",
+    "project.hold",
+    "project.cancel",
+    "project.complete",
     "project.dashboard.read",
     "project.timeline.read",
+    "milestone.create",
     "milestone.read",
+    "milestone.update",
     "progress.read",
+    "roadsync.work_request.create",
     "roadsync.work_request.read",
+    "roadsync.work_request.update",
     "roadsync.conflict.read",
     "roadsync.conflict.recalculate",
     "roadsync.coordination.read",
@@ -301,7 +317,7 @@ export const SYSTEM_ROLE_META: Record<
 > = {
   SUPER_ADMIN: {
     name: "Super Administrator",
-    description: "Platform IAM and governance. No operational approve/pay/verify/resolve.",
+    description: "Platform-wide administration and operational management. No inspection verification; approvals keep separation of duties.",
     scopeType: "PLATFORM",
   },
   GOV_ADMIN: {

@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   canHintProjectCreate,
+  canHintProjectReview,
   parseProjectListParams,
   PROJECT_STATUSES,
   PROJECT_TYPES,
@@ -46,7 +47,11 @@ describe("project list query", () => {
     expect(canHintProjectCreate("AGENCY_OFFICER")).toBe(true);
     expect(canHintProjectCreate("PROJECT_MANAGER")).toBe(true);
     expect(canHintProjectCreate("GOV_ADMIN")).toBe(true);
-    expect(canHintProjectCreate("SUPER_ADMIN")).toBe(false);
+    expect(canHintProjectCreate("SUPER_ADMIN")).toBe(true);
+    expect(canHintProjectReview("SUPER_ADMIN")).toBe(true);
+    expect(canHintProjectReview("GOV_ADMIN")).toBe(true);
+    expect(canHintProjectReview("AGENCY_OFFICER")).toBe(false);
+    expect(canHintProjectReview("CONTRACTOR")).toBe(false);
     expect(canHintProjectCreate("CONTRACTOR")).toBe(false);
     expect(canHintProjectCreate("INSPECTOR")).toBe(false);
     expect(canHintProjectCreate("CITIZEN")).toBe(false);

@@ -183,6 +183,19 @@ describe("step 62 project dependencies", { timeout: 120_000 }, () => {
     expect(stale.status).toBe(409);
   });
 
+  it("lets the platform administrator link dependencies and audits it under the owning agency", async () => {
+    const data = await world();
+    const graphRevision = await revision(data.manager.token, data.a.id);
+    const linked = await request(app)
+      .post(`/api/v1/projects/${data.a.id}/dependencies`)
+      .set("Authorization", `Bearer ${data.admin.token}`)
+      .send({ prerequisiteProjectId: data.b.id, graphRevision });
+    expect(linked.status).toBe(201);
+    const audit = await AuditLog.findOne({ resourceId: data.a.id, action: "project.dependency_linked" });
+    expect(audit?.userId?.toString()).toBe(data.admin.user._id.toString());
+    expect(audit?.agencyId?.toString()).toBe((await Project.findById(data.a.id))?.agencyId.toString());
+  });
+
   it("denies hidden targets and roles that must not write", async () => {
     const data = await world();
     const graphRevision = await revision(data.manager.token, data.a.id);
@@ -190,7 +203,6 @@ describe("step 62 project dependencies", { timeout: 120_000 }, () => {
     expect((await request(app).post(`/api/v1/projects/${data.a.id}/dependencies`).set("Authorization", `Bearer ${data.contractor.token}`).send({ prerequisiteProjectId: data.b.id, graphRevision })).status).toBe(403);
     expect((await request(app).post(`/api/v1/projects/${data.a.id}/dependencies`).set("Authorization", `Bearer ${data.inspector.token}`).send({ prerequisiteProjectId: data.b.id, graphRevision })).status).toBe(403);
     expect((await request(app).post(`/api/v1/projects/${data.a.id}/dependencies`).set("Authorization", `Bearer ${data.citizen.token}`).send({ prerequisiteProjectId: data.b.id, graphRevision })).status).toBe(403);
-    expect((await request(app).post(`/api/v1/projects/${data.a.id}/dependencies`).set("Authorization", `Bearer ${data.admin.token}`).send({ prerequisiteProjectId: data.b.id, graphRevision })).status).toBe(403);
     const hidden = await request(app)
       .post(`/api/v1/projects/${data.a.id}/dependencies`)
       .set("Authorization", `Bearer ${data.manager.token}`)

@@ -237,7 +237,7 @@ describe("step 58 milestones", { timeout: 120_000 }, () => {
     expect((await request(app).get(`/api/v1/projects/${data.approved.id}/milestones`).set("Authorization", `Bearer ${data.inspector.token}`)).status).toBe(404);
     expect((await request(app).get(`/api/v1/projects/${data.approved.id}/milestones`).set("Authorization", `Bearer ${data.foreign.token}`)).status).toBe(404);
     expect((await request(app).post(`/api/v1/projects/${data.approved.id}/milestones`).set("Authorization", `Bearer ${data.otherManager.token}`).send(body)).status).toBe(404);
-    expect((await request(app).post(`/api/v1/projects/${data.approved.id}/milestones`).set("Authorization", `Bearer ${data.superUser.token}`).send(body)).status).toBe(403);
+    expect((await request(app).post(`/api/v1/projects/${data.approved.id}/milestones`).set("Authorization", `Bearer ${data.superUser.token}`).send({ ...body, title: "Platform milestone" })).status).toBe(201);
     const readable = await request(app).get(`/api/v1/projects/${data.approved.id}/milestones`).set("Authorization", `Bearer ${data.superUser.token}`);
     expect(readable.status).toBe(200);
     await Inspection.create({ projectId: data.approved._id, inspectorId: data.inspector.user._id, inspectionDate: new Date("2026-11-02T00:00:00.000Z") });
