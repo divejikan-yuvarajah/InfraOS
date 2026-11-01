@@ -29,7 +29,20 @@ No schema, index, model or shared-type changes.
 | `npm run test -w @infraos/web -- src/lib/roadsync/work-requests-view.test.ts src/components/auth/workspace-nav.test.ts` | 15/15 passed |
 | `npm run type-check:api` / `type-check:web` | exit 0 / exit 0 |
 | `git diff --check` | exit 0 |
-Deferred to the phase review: full suites, lint, build.
+## Full regression (Level 4, run sequentially on this branch @ `8e282b8`, 2026-11-01)
+| Command | Result |
+|---|---|
+| `npm run test:api` | exit 0 — 45 files, 359 tests passed (243 s) |
+| `npm run test:web` | exit 0 — 48 files, 208 tests passed |
+| `npm run type-check` (web + api) | exit 0 |
+| `npm run lint` | exit 0 — 0 errors, 3 warnings, all in pre-existing files (`data-table.tsx`, `project-create-form.tsx`, `notice-api.ts`); none in Step 66 files |
+| `npm run build` | exit 0 — `/roadsync/work-requests`, `/new`, `/[id]` built |
+| `git diff --check` | exit 0 |
+
+## Step 66 closure
+Closed **as-is** by owner decision (2026-11-01): create, list and detail are in scope. **S66-12 (draft edit / submit) stays deferred** — the roadmap DOCX gives only the Step 66 title, so no edit or transition policy was invented.
+Git: G1–G3 done locally. **G4 push, G5 PR and G6 merge: NOT AUTHORIZED / NOT RUN** (owner chose local only).
+Owner visual acceptance: still **PENDING**.
 
 ## Browser demo (real API + Next dev + in-memory Mongo replset on 127.0.0.1, synthetic data)
 Verified in headless Chrome:
