@@ -6,6 +6,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 
 import { StaffWorkspaceShell } from "@/components/auth/staff-workspace-shell";
+import { WorkspaceContext } from "@/components/projects/project-record-nav";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -27,7 +28,7 @@ import { getAdminUsersCopy } from "@/lib/admin-users/messages";
 import { adminUserCreateFormSchema, type AdminUserCreateFormValues } from "@/lib/admin-users/schema";
 import type { AdminUserRecord } from "@/lib/admin-users/types";
 import { ApiError } from "@/lib/api/client";
-import type { AuthLocale } from "@/lib/auth/types";
+import { useWorkspaceLocale } from "@/lib/i18n/workspace-locale";
 
 function messageFor(error: unknown, copy: ReturnType<typeof getAdminUsersCopy>): string {
   if (error instanceof ApiError && (error.status === 401 || error.status === 403)) return copy.forbidden;
@@ -38,7 +39,7 @@ function messageFor(error: unknown, copy: ReturnType<typeof getAdminUsersCopy>):
 
 export function AdminUsersPageClient() {
   const queryClient = useQueryClient();
-  const [locale, setLocale] = useState<AuthLocale>("en");
+  const [locale] = useWorkspaceLocale();
   const copy = getAdminUsersCopy(locale);
   const [q, setQ] = useState("");
   const [page, setPage] = useState(1);
@@ -116,28 +117,8 @@ export function AdminUsersPageClient() {
   const loadError = directory.error ? messageFor(directory.error, copy) : null;
 
   return (
-    <StaffWorkspaceShell title={copy.title} description={copy.subtitle} wide>
-      <section className="auth-access-card" aria-labelledby="admin-locale">
-        <p id="admin-locale" className="auth-access-field-label">
-          View language (draft)
-        </p>
-        <div className="auth-access-locale-row" role="group" aria-label="Directory language">
-          {(["en", "si", "ta"] as const).map((code) => (
-            <button
-              key={code}
-              type="button"
-              className={locale === code ? "auth-access-chip is-active" : "auth-access-chip"}
-              onClick={() => setLocale(code)}
-            >
-              {code.toUpperCase()}
-            </button>
-          ))}
-        </div>
-        <p className="auth-access-hint">{copy.nativeReview}</p>
-        <p className="auth-access-banner error" role="status">
-          {copy.activationBlocked}
-        </p>
-      </section>
+    <StaffWorkspaceShell title={copy.title} description={copy.subtitle} wide context={<WorkspaceContext locale={locale} current={copy.title} />}>
+      {locale !== "en" ? <p className="spp-small">{copy.nativeReview}</p> : null}
 
       {banner ? (
         <p className="auth-access-banner error" role="alert">
@@ -170,7 +151,7 @@ export function AdminUsersPageClient() {
             {copy.search}
           </label>
           <Input id="staff-q" name="q" defaultValue={q} autoComplete="off" />
-          <Button type="submit">Search</Button>
+          <Button type="submit" variant="outline">Search</Button>
         </form>
         {directory.isLoading ? <p role="status">Loading…</p> : null}
         {directory.data && directory.data.users.length === 0 ? <p role="status">{copy.empty}</p> : null}

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { getDashboardCopy } from "./dashboard-messages";
-import { attentionItems, donutSegments, dashboardCards, dashboardIsEmpty, dashboardIsPartial, dashboardLinks, dashboardQueryKey, dashboardScope, statusRows, visibleDashboard, type DashboardPayload } from "./dashboard-view";
+import { attentionItems, dashboardStatusLabel, donutSegments, dashboardCards, portfolioLine, dashboardIsEmpty, dashboardIsPartial, dashboardLinks, dashboardQueryKey, dashboardScope, statusRows, visibleDashboard, type DashboardPayload } from "./dashboard-view";
 
 function payload(overrides: Partial<DashboardPayload> = {}): DashboardPayload {
   return {
@@ -107,5 +107,30 @@ describe("attention and donut helpers", () => {
     expect(segs.reduce((n, s) => n + s.fraction, 0)).toBeCloseTo(1);
     const none = payload({ counts: { ...payload().counts, byStatus: { ...payload().counts.byStatus, ACTIVE: 0, ON_HOLD: 0 } } });
     expect(donutSegments(none)).toEqual([]);
+  });
+});
+
+describe("Site Plan portfolio line", () => {
+  it("places counts on the main path and only non-empty branches", () => {
+    const line = portfolioLine(payload());
+    expect(line.main.map((n) => n.status)).toEqual(["DRAFT", "SUBMITTED", "UNDER_REVIEW", "APPROVED", "ACTIVE", "COMPLETED"]);
+    expect(line.main.find((n) => n.status === "ACTIVE")?.count).toBe(1);
+    expect(line.branches).toEqual([{ status: "ON_HOLD", count: 1, href: "/projects?status=ON_HOLD", from: "ACTIVE" }]);
+    expect(line.total).toBe(2);
+  });
+  it("states an origin only where the lifecycle policy has exactly one", () => {
+    const counts = { DRAFT: 0, SUBMITTED: 0, UNDER_REVIEW: 0, REJECTED: 1, APPROVED: 0, ACTIVE: 0, ON_HOLD: 0, DELAYED: 1, COMPLETED: 0, CANCELLED: 1 };
+    const line = portfolioLine(payload({ counts: { total: 3, byStatus: counts, active: 0, onHold: 0, delayed: 1 } }));
+    expect(line.branches.map((b) => [b.status, b.from])).toEqual([["REJECTED", null], ["DELAYED", "ACTIVE"], ["CANCELLED", null]]);
+  });
+  it("keeps reported-100% separate from completed", () => {
+    const line = portfolioLine(payload());
+    // One project is reported at 100% but no project is COMPLETED by status.
+    expect(line.main.find((n) => n.status === "COMPLETED")?.count).toBe(0);
+  });
+  it("localizes only the statuses that have translations", () => {
+    const ta = getDashboardCopy("ta");
+    expect(dashboardStatusLabel("ACTIVE", ta)).toBe(ta.active);
+    expect(dashboardStatusLabel("UNDER_REVIEW", ta)).toBe("Under review");
   });
 });

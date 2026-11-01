@@ -29,3 +29,18 @@ export function financialBarFill(ratioPercent: number): number {
 export function showsMoney(summary: FinancialSummary | undefined): summary is Extract<FinancialSummary, { availability: "provisional" }> {
   return summary?.availability === "provisional";
 }
+
+/**
+ * Financial side of the dual progress bar, from the finance API result only.
+ * 403 means this role has no finance grant (withheld). Any other failure, or an "unavailable" summary,
+ * is unavailable. A number is only ever the API's own provisional ratio.
+ */
+export function financialForBar(
+  summary: FinancialSummary | undefined,
+  errorStatus: number | null,
+): { value: number | null; withheld: boolean } {
+  if (errorStatus === 403) return { value: null, withheld: true };
+  if (errorStatus !== null) return { value: null, withheld: false };
+  if (summary && showsMoney(summary) && Number.isFinite(summary.ratioPercent)) return { value: summary.ratioPercent, withheld: false };
+  return { value: null, withheld: false };
+}

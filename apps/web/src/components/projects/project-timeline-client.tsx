@@ -1,17 +1,17 @@
 "use client";
 
 import { CalendarRange, Flag, History } from "lucide-react";
-import Link from "next/link";
 import { useState, useSyncExternalStore } from "react";
 import { useQuery } from "@tanstack/react-query";
 
 import { StaffWorkspaceShell } from "@/components/auth/staff-workspace-shell";
 import { getAuthEpoch, getMemoryAccessToken, getMemorySession, subscribeAuth } from "@/lib/auth/state";
-import type { AuthLocale } from "@/lib/auth/types";
 import { classifyEditError } from "@/lib/projects/edit-outcome";
 import { ProjectPrerequisites } from "@/components/projects/project-prerequisites";
 import { fetchProjectTimeline } from "@/lib/projects/timeline-api";
 import { getTimelineCopy, timelineTitle } from "@/lib/projects/timeline-messages";
+import { useWorkspaceLocale } from "@/lib/i18n/workspace-locale";
+import { ProjectRecordNav, RecordContext } from "./project-record-nav";
 import {
   formatTimelineWhen,
   groupByHeading,
@@ -40,7 +40,7 @@ function statusLabel(status: string | undefined, copy: ReturnType<typeof getTime
 }
 
 export function ProjectTimelineClient({ id }: { id: string }) {
-  const [locale, setLocale] = useState<AuthLocale>("en");
+  const [locale] = useWorkspaceLocale();
   const [group, setGroup] = useState<TimelineGroup>("all");
   const [sort, setSort] = useState<"asc" | "desc">("asc");
   const [page, setPage] = useState(1);
@@ -73,15 +73,8 @@ export function ProjectTimelineClient({ id }: { id: string }) {
   }
 
   return (
-    <StaffWorkspaceShell title={copy.title} description={copy.description} wide>
-      <div role="group" aria-label={copy.language}>
-        <button type="button" className="auth-access-button" aria-pressed={locale === "en"} onClick={() => setLocale("en")}>{copy.english}</button>
-        <button type="button" className="auth-access-button" aria-pressed={locale === "si"} onClick={() => setLocale("si")}>{copy.sinhala}</button>
-        <button type="button" className="auth-access-button" aria-pressed={locale === "ta"} onClick={() => setLocale("ta")}>{copy.tamil}</button>
-      </div>
-      <p role="note">{copy.nativeReview}</p>
-      <p><Link className="auth-access-button" href={`/projects/${id}/overview`}>{copy.back}</Link></p>
-      <p><Link className="auth-access-button" href={`/projects/${id}/activity`}>{copy.activityLink}</Link></p>
+    <StaffWorkspaceShell title={copy.title} description={copy.description} wide context={<RecordContext id={id} locale={locale} current={copy.title} />}>
+      <ProjectRecordNav id={id} locale={locale} />
       {timelineQuery.isLoading ? <p role="status">{copy.loading}</p> : null}
       {error ? <p role="alert">{error}</p> : null}
       {showBody && timeline ? (

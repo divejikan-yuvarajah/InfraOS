@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { financeQueryKey, financialBarFill, showsMoney, type FinancialSummary } from "./finance-summary";
+import { financeQueryKey, financialBarFill, financialForBar, showsMoney, type FinancialSummary } from "./finance-summary";
 
 const provisional: FinancialSummary = {
   availability: "provisional",
@@ -22,5 +22,17 @@ describe("financial summary display", () => {
     expect(showsMoney(provisional)).toBe(true);
     expect(showsMoney({ availability: "unavailable", basis: "recorded_paid_rows", currency: "LKR", reason: "missing_budget" })).toBe(false);
     expect(financeQueryKey("1", "user-a", "PROJECT_MANAGER", "p1")).not.toEqual(financeQueryKey("2", "user-b", "INSPECTOR", "p1"));
+  });
+});
+
+describe("financial side of the dual bar", () => {
+  it("uses only the API ratio, keeping an overrun above 100", () => {
+    expect(financialForBar(provisional, null)).toEqual({ value: 150, withheld: false });
+  });
+  it("is withheld on 403 and unavailable on other failures or unavailable summaries", () => {
+    expect(financialForBar(undefined, 403)).toEqual({ value: null, withheld: true });
+    expect(financialForBar(undefined, 503)).toEqual({ value: null, withheld: false });
+    expect(financialForBar({ availability: "unavailable", basis: "recorded_paid_rows", currency: "LKR", reason: "missing_budget" }, null)).toEqual({ value: null, withheld: false });
+    expect(financialForBar(undefined, null)).toEqual({ value: null, withheld: false });
   });
 });

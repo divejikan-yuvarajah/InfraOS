@@ -72,6 +72,7 @@ export function DataTable<TData>({
   enableSelection = false,
   pageSizeOptions = DEFAULT_PAGE_SIZES,
   tableLabel = "Data table",
+  density,
   server,
 }: {
   columns: ColumnDef<TData, unknown>[];
@@ -86,6 +87,8 @@ export function DataTable<TData>({
   enableSelection?: boolean;
   pageSizeOptions?: readonly number[];
   tableLabel?: string;
+  /** Optional Site Plan row density. Omitted keeps the original look. */
+  density?: "comfortable" | "compact";
   server?: DataTableServerState;
 }) {
   const searchInputId = useId();
@@ -181,7 +184,7 @@ export function DataTable<TData>({
   }
 
   return (
-    <div className="grid gap-3" aria-busy={loading || undefined}>
+    <div className="grid gap-3" aria-busy={loading || undefined} data-density={density}>
       {enableSearch ? (
         <div className="flex flex-wrap items-end gap-2">
           <div className="grid max-w-xs flex-1 gap-1">

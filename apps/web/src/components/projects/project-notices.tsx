@@ -5,12 +5,13 @@ import { useState, useSyncExternalStore } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { StaffWorkspaceShell } from "@/components/auth/staff-workspace-shell";
+import { WorkspaceContext } from "@/components/projects/project-record-nav";
 import { getAuthEpoch, getMemoryAccessToken, getMemorySession, subscribeAuth } from "@/lib/auth/state";
-import type { AuthLocale } from "@/lib/auth/types";
 import { fetchNotices, setNoticeRead } from "@/lib/projects/notice-api";
 import { getNoticeCopy, noticeTitle } from "@/lib/projects/notice-messages";
 import { classifyEditError } from "@/lib/projects/edit-outcome";
 import { formatActivityWhen } from "@/lib/projects/activity-view";
+import { useWorkspaceLocale } from "@/lib/i18n/workspace-locale";
 import {
   noticeHref,
   noticePageState,
@@ -27,7 +28,7 @@ function useAuthPart(read: () => string): string {
 }
 
 export function ProjectNotices() {
-  const [locale, setLocale] = useState<AuthLocale>("en");
+  const [locale] = useWorkspaceLocale();
   const [state, setState] = useState<"all" | "read" | "unread">("all");
   const [pages, setPages] = useState<NoticePageState>(() => noticePageState(""));
   const copy = getNoticeCopy(locale);
@@ -54,17 +55,10 @@ export function ProjectNotices() {
   }
 
   return (
-    <StaffWorkspaceShell title={copy.title} description={copy.description} wide>
+    <StaffWorkspaceShell title={copy.title} description={copy.description} wide context={<WorkspaceContext locale={locale} current={copy.title} />}>
       <section className="project-notices" aria-label={copy.title}>
         <p className="auth-access-status" role="status">{copy.nativeReview}</p>
         <p aria-live="polite">{copy.unreadCount}: {signedIn && query.data ? query.data.unreadCount : 0}</p>
-        <div className="project-dashboard-languages" role="group" aria-label={copy.language}>
-          {(["en", "si", "ta"] as const).map((item) => (
-            <button key={item} type="button" className="auth-access-button" aria-pressed={locale === item} onClick={() => setLocale(item)}>
-              {item === "en" ? copy.english : item === "si" ? copy.sinhala : copy.tamil}
-            </button>
-          ))}
-        </div>
         <div className="project-dashboard-languages" role="group" aria-label={copy.all}>
           {(["all", "unread", "read"] as const).map((item) => (
             <button key={item} type="button" className="auth-access-button" aria-pressed={state === item} onClick={() => { setState(item); setPages(noticePageState(scope)); }}>

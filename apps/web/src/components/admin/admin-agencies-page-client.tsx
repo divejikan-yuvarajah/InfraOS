@@ -6,6 +6,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 
 import { StaffWorkspaceShell } from "@/components/auth/staff-workspace-shell";
+import { WorkspaceContext } from "@/components/projects/project-record-nav";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -27,8 +28,8 @@ import { getAgencyCopy } from "@/lib/admin-agencies/messages";
 import { agencyCreateFormSchema, agencyManageIsPlatformHint, type AgencyCreateFormValues } from "@/lib/admin-agencies/schema";
 import type { AgencyRecord } from "@/lib/admin-agencies/types";
 import { ApiError } from "@/lib/api/client";
-import type { AuthLocale } from "@/lib/auth/types";
 import { getMemorySession } from "@/lib/auth/state";
+import { useWorkspaceLocale } from "@/lib/i18n/workspace-locale";
 
 function messageFor(error: unknown, copy: ReturnType<typeof getAgencyCopy>): string {
   if (!(error instanceof ApiError)) return copy.unavailable;
@@ -44,7 +45,7 @@ function messageFor(error: unknown, copy: ReturnType<typeof getAgencyCopy>): str
 
 export function AdminAgenciesPageClient() {
   const queryClient = useQueryClient();
-  const [locale, setLocale] = useState<AuthLocale>("en");
+  const [locale] = useWorkspaceLocale();
   const copy = getAgencyCopy(locale);
   const canManage = agencyManageIsPlatformHint(getMemorySession()?.user.roleKey);
   const [q, setQ] = useState("");
@@ -114,24 +115,8 @@ export function AdminAgenciesPageClient() {
   const byId = new Map((directory.data?.agencies ?? []).map((agency) => [agency.id, agency.code]));
 
   return (
-    <StaffWorkspaceShell title={copy.title} description={copy.subtitle} wide>
-      <section className="auth-access-card" aria-labelledby="agency-locale">
-        <p id="agency-locale" className="auth-access-field-label">View language (draft)</p>
-        <div className="auth-access-locale-row" role="group" aria-label="Agency language">
-          {(["en", "si", "ta"] as const).map((code) => (
-            <button
-              key={code}
-              type="button"
-              className={locale === code ? "auth-access-chip is-active" : "auth-access-chip"}
-              onClick={() => setLocale(code)}
-            >
-              {code.toUpperCase()}
-            </button>
-          ))}
-        </div>
-        <p className="auth-access-hint">{copy.nativeReview}</p>
-        <p className="auth-access-banner error" role="status">{copy.readOnly}</p>
-      </section>
+    <StaffWorkspaceShell title={copy.title} description={copy.subtitle} wide context={<WorkspaceContext locale={locale} current={copy.title} />}>
+      {locale !== "en" ? <p className="spp-small">{copy.nativeReview}</p> : null}
       {banner ? <p className="auth-access-banner error" role="alert">{banner}</p> : null}
       {loadError ? (
         <p className="auth-access-status" role="alert">
