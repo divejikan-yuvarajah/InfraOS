@@ -1,7 +1,6 @@
 import mongoose, { type ClientSession } from "mongoose";
 import type { Permission } from "@infraos/shared-types";
 
-import { validGeometry } from "../../shared/database/geometry.js";
 import { Agency } from "../agencies/models/agency.model.js";
 import { AuditLog } from "../audit/models/audit-log.model.js";
 import type { AuthenticatedActor } from "../identity/auth/require-authenticated.js";
@@ -11,6 +10,7 @@ import { Role } from "../identity/models/role.model.js";
 import { User } from "../identity/models/user.model.js";
 import { Project } from "../projects/models/project.model.js";
 import { WorkRequest } from "./models/work-request.model.js";
+import { validateWorkGeometry, type GeoIssue } from "./geo.service.js";
 import type { WorkRequestCreateInput, WorkRequestListQuery } from "./work-requests.schema.js";
 
 /** Draft work requests are only planned against projects that are approved and not closed (BR-PRJ-007). */
@@ -28,7 +28,7 @@ class FlowControl extends Error {
 export class WorkRequestDependencyError extends Error {}
 export const workRequestHooks: { beforeAudit: () => Promise<void> } = { beforeAudit: async () => {} };
 
-export type WorkRequestFailure = { ok: false; status: 400 | 401 | 403 | 404 | 409 | 503; code: Code };
+export type WorkRequestFailure = { ok: false; status: 400 | 401 | 403 | 404 | 409 | 503; code: Code; details?: GeoIssue[] };
 
 export type WorkRequestView = {
   id: string;
@@ -180,6 +180,42 @@ export async function getWorkRequest(actor: AuthenticatedActor, id: string) {
   }
 }
 
+const MAP_FEATURE_CAP = 1000;
+
+/** Step 67 map overview: the same RBAC read filter as list and detail, optional bbox, hard feature cap. */
+export async function mapWorkRequests(actor: AuthenticatedActor, query: { status?: string; workType?: string; priority?: string; projectId?: string; bbox?: [number, number, number, number] }) {
+  try {
+    await assertLive(actor, ["roadsync.work_request.read"]);
+    const scoped = await readFilter(actor);
+    const narrow: Record<string, unknown> = {};
+    if (query.status) narrow.status = query.status;
+    if (query.workType) narrow.workType = query.workType;
+    if (query.priority) narrow.priority = query.priority;
+    if (query.projectId) narrow.projectId = new mongoose.Types.ObjectId(query.projectId);
+    if (query.bbox) {
+      const [w, s, e, n] = query.bbox;
+      narrow.geometry = { $geoIntersects: { $geometry: { type: "Polygon", coordinates: [[[w, s], [e, s], [e, n], [w, n], [w, s]]] } } };
+    }
+    const rows = await WorkRequest.find({ $and: [scoped, narrow] }).sort({ plannedStart: 1, _id: 1 }).limit(MAP_FEATURE_CAP + 1);
+    const views = await toViews(rows.slice(0, MAP_FEATURE_CAP) as unknown as Row[]);
+    return {
+      ok: true as const,
+      map: {
+        type: "FeatureCollection" as const,
+        truncated: rows.length > MAP_FEATURE_CAP,
+        features: views.map((v) => ({
+          type: "Feature" as const,
+          geometry: v.geometry,
+          properties: { id: v.id, workType: v.workType, status: v.status, priority: v.priority, plannedStart: v.plannedStart, plannedEnd: v.plannedEnd, agencyName: v.agencyName, projectTitle: v.projectTitle, projectCode: v.projectCode },
+        })),
+      },
+    };
+  } catch (error) {
+    if (error instanceof FlowControl) return fail(error.status, error.code);
+    throw new WorkRequestDependencyError();
+  }
+}
+
 async function loadWritableProject(actor: AuthenticatedActor, projectId: string, session?: ClientSession) {
   const scope = await resolveResourceScope(actor);
   const filter = projectWriteFilter(actor, scope);
@@ -199,7 +235,9 @@ export async function createWorkRequest(actor: AuthenticatedActor, input: WorkRe
   const start = new Date(input.plannedStart);
   const end = new Date(input.plannedEnd);
   if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime()) || end < start) return fail(400, "VALIDATION_ERROR");
-  if (!validGeometry(input.geometry)) return fail(400, "VALIDATION_ERROR");
+  // Step 67: the server validates and normalizes geometry; the client shape is never stored as sent.
+  const geo = validateWorkGeometry(input.geometry);
+  if (!geo.valid) return { ...fail(400, "VALIDATION_ERROR"), details: geo.errors };
   try {
     await assertLive(actor, ["roadsync.work_request.create"]);
     await loadWritableProject(actor, input.projectId);
@@ -212,7 +250,7 @@ export async function createWorkRequest(actor: AuthenticatedActor, input: WorkRe
         const [row] = await WorkRequest.create([{
           projectId: project._id,
           agencyId: project.agencyId,
-          geometry: input.geometry,
+          geometry: geo.geometry,
           workType: input.workType,
           plannedStart: start,
           plannedEnd: end,

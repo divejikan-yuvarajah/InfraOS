@@ -19,7 +19,8 @@ import {
 } from "@/lib/roadsync/work-requests-view";
 import { getAuthEpoch, getMemorySession, subscribeAuth } from "@/lib/auth/state";
 
-import { GeometryPreview, PriorityMark, WorkTypeIcon } from "./roadsync-shared";
+import { PriorityMark, WorkTypeIcon } from "./roadsync-shared";
+import { WorkMap } from "./work-map";
 
 function useAuthPart(read: () => string): string {
   return useSyncExternalStore(subscribeAuth, read, () => "");
@@ -98,10 +99,10 @@ export function WorkRequestDetailClient({ id }: { id: string }) {
             <div className="rs-detail-grid">
               <section className="rs-section" aria-labelledby="rs-geo">
                 <h2 id="rs-geo">Location</h2>
-                <GeometryPreview geometry={wr.geometry} />
+                <WorkMap features={[{ geometry: wr.geometry }]} height={300} label="Work request location map" />
                 <p className="rs-help">
                   {geo.label} · {geo.vertices} {geo.vertices === 1 ? "vertex" : "vertices"}
-                  {geo.lengthKm !== null ? ` · about ${geo.lengthKm.toFixed(2)} km` : ""}. Schematic preview only; not a map.
+                  {geo.lengthKm !== null ? ` · about ${geo.lengthKm.toFixed(2)} km` : ""}.
                 </p>
               </section>
               <section className="rs-section" aria-labelledby="rs-coords">

@@ -2,6 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState, useSyncExternalStore } from "react";
 import { PlusIcon, RefreshCwIcon, RouteIcon } from "lucide-react";
 
@@ -9,7 +10,7 @@ import { StaffWorkspaceShell } from "@/components/auth/staff-workspace-shell";
 import { StatusChip } from "@/components/site-plan/site-plan";
 import { RouteLines } from "@/components/motif/connected-motif";
 import { fetchProjects } from "@/lib/projects/api";
-import { classifyWorkRequestError, fetchWorkRequests, FAILURE_COPY } from "@/lib/roadsync/api";
+import { classifyWorkRequestError, fetchWorkRequestMap, fetchWorkRequests, FAILURE_COPY } from "@/lib/roadsync/api";
 import {
   canHintCreate,
   ELIGIBLE_PROJECT_STATUSES,
@@ -29,6 +30,7 @@ import {
 import { getAuthEpoch, getMemorySession, subscribeAuth } from "@/lib/auth/state";
 
 import { PriorityMark, WorkTypeIcon } from "./roadsync-shared";
+import { WorkMap } from "./work-map";
 
 function useAuthPart(read: () => string): string {
   return useSyncExternalStore(subscribeAuth, read, () => "");
@@ -40,11 +42,21 @@ export function WorkRequestsListClient() {
   const epoch = useAuthPart(() => String(getAuthEpoch()));
   const [filters, setFilters] = useState<WorkRequestFilters>(EMPTY_FILTERS);
   const query = filtersToQuery(filters);
+  const router = useRouter();
+  const [view, setView] = useState<"list" | "map">("list");
+  // The map endpoint takes the same filters but no paging; it shares the list/detail RBAC scope on the server.
+  const mapQuery = new URLSearchParams(Object.entries({ status: filters.status, workType: filters.workType, priority: filters.priority, projectId: filters.projectId }).filter(([, v]) => v) as [string, string][]).toString();
 
   const list = useQuery({
     queryKey: workRequestQueryKey(epoch, userId, roleKey, query),
     queryFn: () => fetchWorkRequests(query),
     enabled: Boolean(userId),
+    retry: false,
+  });
+  const mapData = useQuery({
+    queryKey: workRequestQueryKey(epoch, userId, roleKey, "map:" + mapQuery),
+    queryFn: () => fetchWorkRequestMap(mapQuery),
+    enabled: Boolean(userId) && view === "map",
     retry: false,
   });
   const projects = useQuery({
@@ -69,6 +81,10 @@ export function WorkRequestsListClient() {
       <div className="rs-page">
         <div className="rs-eyebrow">
           <p className="rs-crumb">Operations / RoadSync</p>
+          <div className="rs-seg rs-view" role="group" aria-label="View">
+            <button type="button" className="rs-btn" aria-pressed={view === "list"} onClick={() => setView("list")}>List</button>
+            <button type="button" className="rs-btn" aria-pressed={view === "map"} onClick={() => setView("map")}>Map</button>
+          </div>
           {canHintCreate(roleKey) ? (
             <Link href="/roadsync/work-requests/new" className="rs-btn is-primary">
               <PlusIcon aria-hidden="true" />
@@ -145,7 +161,25 @@ export function WorkRequestsListClient() {
           ) : null}
         </form>
 
-        {list.isPending ? (
+        {view === "map" ? (
+          mapData.isPending ? (
+            <div className="rs-skel-row" role="status" aria-label="Loading map" style={{ height: 420 }} />
+          ) : mapData.isError ? (
+            <div className="rs-state" role="alert">
+              <h2>The map could not be loaded</h2>
+              <p>{FAILURE_COPY[classifyWorkRequestError(mapData.error)]}</p>
+              <button type="button" className="rs-btn" onClick={() => void mapData.refetch()}><RefreshCwIcon aria-hidden="true" />Try again</button>
+            </div>
+          ) : (
+            <section aria-label="Work requests map">
+              <WorkMap features={mapData.data.features} height={460} label="Map of work requests in your scope. Select a shape to open it." onSelect={(id) => router.push(`/roadsync/work-requests/${id}`)} />
+              <p className="rs-help">
+                {mapData.data.features.length} {mapData.data.features.length === 1 ? "work request" : "work requests"} on the map
+                {mapData.data.truncated ? " (first 1,000 only; narrow the filters)" : ""}. Dashed = draft. Select a shape to open it.
+              </p>
+            </section>
+          )
+        ) : list.isPending ? (
           <div className="rs-list" role="status" aria-label="Loading work requests">
             {[0, 1, 2, 3].map((i) => (
               <div key={i} className="rs-skel-row" />
