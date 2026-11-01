@@ -49,6 +49,7 @@ export type WorkRequestView = {
   revision: number;
   detection: { status: string; completedAt: string | null; counts: { nearby: number; candidates: number; agencies: number; truncated: boolean } | null } | null;
   nearbyCount: number;
+  assessment: { status: string; riskIndex: number; maxBand: string | null; conflicts: number; opportunities: number } | null;
 };
 
 function fail(status: WorkRequestFailure["status"], code: Code): WorkRequestFailure {
@@ -103,7 +104,14 @@ type Row = {
   updatedAt?: Date;
   __v?: number;
   detection?: { status: string; completedAt?: Date; counts?: { nearby: number; candidates: number; agencies: number; truncated: boolean } } | null;
+  assessment?: { status?: string; riskIndex?: number; maxBand?: string | null; ruleVersion?: string; counts?: { conflicts?: number; opportunities?: number } } | null;
 };
+
+/** Step 71 list/map summary. Null until a request has been assessed. */
+function assessmentSummary(a: Row["assessment"]) {
+  if (!a || a.status === undefined || !a.counts) return null;
+  return { status: a.status, riskIndex: a.riskIndex ?? 0, maxBand: a.maxBand ?? null, conflicts: a.counts.conflicts ?? 0, opportunities: a.counts.opportunities ?? 0 };
+}
 
 async function toViews(rows: Row[], session?: ClientSession): Promise<WorkRequestView[]> {
   const projectQuery = Project.find({ _id: { $in: rows.map((row) => row.projectId) } }).select("title projectCode");
@@ -133,6 +141,7 @@ async function toViews(rows: Row[], session?: ClientSession): Promise<WorkReques
     revision: row.__v ?? 0,
     detection: row.detection ? { status: row.detection.status, completedAt: row.detection.completedAt?.toISOString() ?? null, counts: row.detection.counts ?? null } : null,
     nearbyCount: nearby.get(row._id.toString()) ?? 0,
+    assessment: assessmentSummary(row.assessment),
   }));
 }
 
@@ -146,10 +155,13 @@ export async function listWorkRequests(actor: AuthenticatedActor, query: WorkReq
     if (query.priority) narrow.priority = query.priority;
     if (query.projectId) narrow.projectId = new mongoose.Types.ObjectId(query.projectId);
     if (query.hasCandidates) narrow._id = { $in: await requestIdsWithCandidates() };
+    if (query.band) narrow["assessment.maxBand"] = { $in: query.band };
+    if (query.hasConflicts) narrow["assessment.counts.conflicts"] = { $gt: 0 };
     const filter = { $and: [scoped, narrow] };
+    const order: Record<string, 1 | -1> = query.sort === "riskIndex" ? { "assessment.riskIndex": -1, _id: 1 } : { plannedStart: 1, _id: 1 };
     const [total, rows, byStatus, byPriority] = await Promise.all([
       WorkRequest.countDocuments(filter),
-      WorkRequest.find(filter).sort({ plannedStart: 1, _id: 1 }).skip((query.page - 1) * query.limit).limit(query.limit),
+      WorkRequest.find(filter).sort(order).skip((query.page - 1) * query.limit).limit(query.limit),
       WorkRequest.aggregate<{ _id: string; n: number }>([{ $match: scoped }, { $group: { _id: "$status", n: { $sum: 1 } } }]),
       WorkRequest.aggregate<{ _id: string; n: number }>([{ $match: scoped }, { $group: { _id: "$priority", n: { $sum: 1 } } }]),
     ]);
@@ -213,7 +225,7 @@ export async function mapWorkRequests(actor: AuthenticatedActor, query: { status
         features: views.map((v) => ({
           type: "Feature" as const,
           geometry: v.geometry,
-          properties: { id: v.id, workType: v.workType, status: v.status, priority: v.priority, plannedStart: v.plannedStart, plannedEnd: v.plannedEnd, nearbyCount: v.nearbyCount, agencyName: v.agencyName, projectTitle: v.projectTitle, projectCode: v.projectCode },
+          properties: { id: v.id, workType: v.workType, status: v.status, priority: v.priority, plannedStart: v.plannedStart, plannedEnd: v.plannedEnd, nearbyCount: v.nearbyCount, maxBand: v.assessment?.maxBand ?? null, riskIndex: v.assessment?.riskIndex ?? null, agencyName: v.agencyName, projectTitle: v.projectTitle, projectCode: v.projectCode },
         })),
       },
     };

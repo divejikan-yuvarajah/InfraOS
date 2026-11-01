@@ -12,7 +12,8 @@ import { requirePermission } from "../identity/authorization/require-permission.
 import { WorkRequest } from "./models/work-request.model.js";
 import { getDetection, getDetectionMap, registerDetectionSubscribers, runDetection, runDetectionPreview } from "./detection.service.js";
 import { validateWorkGeometry } from "./geo.service.js";
-import { DETECTION, WORKING_HOURS } from "./roadsync.constants.js";
+import { CLOSURE_TYPES, TRAFFIC_LEVEL_CODES, type TrafficLevel } from "./assessment.rules.js";
+import { DETECTION, WORK_PRIORITIES, WORK_TYPES, WORKING_HOURS } from "./roadsync.constants.js";
 import { geometryInputSchema } from "./work-requests.schema.js";
 import { assertLive, FlowControl, readFilter } from "./work-requests.service.js";
 
@@ -33,6 +34,12 @@ const previewSchema = z.object({
   }).strict().optional(),
   radiusMeters: z.number().int().min(DETECTION.MIN_PREVIEW_RADIUS_M).max(DETECTION.MAX_PREVIEW_RADIUS_M).optional(),
   excludeRequestId: objectId.optional(),
+  subject: z.object({
+    workType: z.enum(WORK_TYPES).optional(),
+    priority: z.enum(WORK_PRIORITIES).optional(),
+    isEmergency: z.boolean().optional(),
+    trafficImpact: z.object({ level: z.enum(TRAFFIC_LEVEL_CODES as [string, ...string[]]) as unknown as z.ZodType<TrafficLevel>, closureType: z.enum(CLOSURE_TYPES).nullable().optional() }).strict().optional(),
+  }).strict().optional(),
 }).strict();
 
 const list = <O extends string = string>(item: z.ZodType<string>) =>
@@ -99,6 +106,7 @@ detectionRouter.post("/detect/preview", requireAuthenticated, requirePermission(
       schedule: s ?? null,
       radiusMeters: parsed.data.radiusMeters ?? DETECTION.DEFAULT_VIEW_RADIUS_M,
       excludeRequestId: parsed.data.excludeRequestId ?? null,
+      subject: parsed.data.subject ?? null,
     });
     res.status(200).json(success(result, req.requestId));
   } catch (error) {
