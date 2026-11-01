@@ -13,7 +13,7 @@ import { getAuthEpoch, getMemoryAccessToken, getMemorySession, subscribeAuth } f
 import { lkrBudgetLabel, projectCoreQueryKey, reviewDetailQueryKey, utcDateLabel } from "@/lib/projects/overview-format";
 import { fetchReview, submitReview } from "@/lib/projects/api";
 import { getReviewCopy, reviewFailureMessage } from "@/lib/projects/review-messages";
-import type { ProjectStatus } from "@/lib/projects/list-query";
+import { canHintProjectReview, type ProjectStatus } from "@/lib/projects/list-query";
 import { useWorkspaceLocale } from "@/lib/i18n/workspace-locale";
 
 function useAuthPart(read: () => string): string {
@@ -38,7 +38,7 @@ export function ProjectReviewClient({ id }: { id: string }) {
     queryKey: reviewDetailQueryKey(epoch, userId, roleKey, id),
     queryFn: () => fetchReview(id),
     retry: false,
-    enabled: roleKey === "GOV_ADMIN",
+    enabled: canHintProjectReview(roleKey),
   });
   const decision = useMutation({
     mutationFn: (input: { action: "BEGIN_REVIEW" | "APPROVE" | "REJECT" | "RETURN_FOR_CHANGES"; reason?: string }) => {
@@ -71,7 +71,7 @@ export function ProjectReviewClient({ id }: { id: string }) {
 
   const project = review.data?.project;
   const status = project ? (project.status as ProjectStatus) : undefined;
-  const error = roleKey && roleKey !== "GOV_ADMIN"
+  const error = roleKey && !canHintProjectReview(roleKey)
     ? copy.forbidden
     : review.error instanceof ApiError
       ? reviewFailureMessage(review.error.status, copy)

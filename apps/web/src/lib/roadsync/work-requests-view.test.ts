@@ -99,7 +99,9 @@ describe("list, permissions and session isolation", () => {
   it("only hints create for roles the API grants it to", () => {
     expect(canHintCreate("AGENCY_OFFICER")).toBe(true);
     expect(canHintCreate("PROJECT_MANAGER")).toBe(true);
-    expect(canHintCreate("SUPER_ADMIN")).toBe(false);
+    expect(canHintCreate("SUPER_ADMIN")).toBe(true);
+    expect(canHintCreate("INSPECTOR")).toBe(false);
+    expect(canHintCreate("CITIZEN")).toBe(false);
     expect(canHintCreate("CONTRACTOR")).toBe(false);
   });
   it("keys the cache by epoch and user", () => {

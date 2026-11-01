@@ -17,7 +17,7 @@ import { projectCoreQueryKey } from "@/lib/projects/overview-format";
 import { useWorkspaceLocale } from "@/lib/i18n/workspace-locale";
 import { ProjectRecordNav, RecordContext } from "./project-record-nav";
 
-const WRITE_ROLES = new Set(["GOV_ADMIN", "AGENCY_OFFICER", "PROJECT_MANAGER"]);
+const WRITE_ROLES = new Set(["SUPER_ADMIN", "GOV_ADMIN", "AGENCY_OFFICER", "PROJECT_MANAGER"]);
 const ELIGIBLE = new Set(["APPROVED", "ACTIVE"]);
 
 type FormValues = { title: string; description: string; plannedStart: string; plannedEnd: string };

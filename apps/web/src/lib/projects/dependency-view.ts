@@ -15,7 +15,7 @@ export function dependencyQueryKey(epoch: string, userId: string, roleKey: strin
 }
 
 export function canEditDependencies(roleKey: string): boolean {
-  return roleKey === "PROJECT_MANAGER" || roleKey === "AGENCY_OFFICER" || roleKey === "GOV_ADMIN";
+  return roleKey === "PROJECT_MANAGER" || roleKey === "AGENCY_OFFICER" || roleKey === "GOV_ADMIN" || roleKey === "SUPER_ADMIN";
 }
 
 export function directionSentence(code: string, title: string): string {

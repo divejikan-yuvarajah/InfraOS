@@ -30,12 +30,15 @@ export type ProjectCreateFormValues = {
   locationDescription: string;
   longitude: string;
   latitude: string;
+  /** Platform administrators choose the owning agency. Every other role leaves it unset. */
+  agencyId?: string;
 };
 
 export type ProjectCreateRequest = {
   projectCode: string;
   title: string;
   projectType: ProjectTypeValue;
+  agencyId?: string;
   description?: string;
   startDate?: string;
   plannedEndDate?: string;
@@ -140,6 +143,9 @@ export function buildProjectCreateBody(
   const description = optionalText(input.description, 5000);
   if (!description.ok) errors.description = description.issue;
 
+  const agencyId = input.agencyId?.trim() ?? "";
+  if (agencyId && !/^[a-f0-9]{24}$/i.test(agencyId)) errors.agencyId = "format";
+
   const start = input.startDate.trim();
   const end = input.plannedEndDate.trim();
   const startIso = start ? dateOnlyToUtc(start) : undefined;
@@ -189,6 +195,7 @@ export function buildProjectCreateBody(
     projectType: projectType as ProjectTypeValue,
     budget: { amountMinor: money.amountMinor, currency: "LKR" },
   };
+  if (agencyId) body.agencyId = agencyId;
   if (description.value) body.description = description.value;
   if (startIso) body.startDate = startIso;
   if (endIso) body.plannedEndDate = endIso;

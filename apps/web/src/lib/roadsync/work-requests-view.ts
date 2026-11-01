@@ -263,7 +263,7 @@ export function hasActiveFilters(f: WorkRequestFilters): boolean {
 
 /** Roles whose server grant includes roadsync.work_request.create. A hint only: the API enforces it. */
 export function canHintCreate(roleKey: string): boolean {
-  return roleKey === "GOV_ADMIN" || roleKey === "AGENCY_OFFICER" || roleKey === "PROJECT_MANAGER";
+  return roleKey === "SUPER_ADMIN" || roleKey === "GOV_ADMIN" || roleKey === "AGENCY_OFFICER" || roleKey === "PROJECT_MANAGER";
 }
 
 /** Session-scoped key so one user's cached records are never shown to another. */
