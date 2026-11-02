@@ -29,12 +29,17 @@ const RANGE_OPTS: RangeKey[] = ["7d", "30d", "90d", "12m", "custom"];
 const STALE_MS = 5 * 60_000;
 
 /** Widget visibility lives in localStorage behind a tiny external store; a storage failure falls back to memory. */
-let memoryRaw = "[]";
+let memoryRaw: string | null = null;
+let storageBroken = false;
 const hiddenListeners = new Set<() => void>();
-const readRaw = () => { try { return window.localStorage.getItem(WIDGET_KEY) ?? memoryRaw; } catch { return memoryRaw; } };
+const readRaw = () => {
+  if (storageBroken && memoryRaw !== null) return memoryRaw;
+  try { const raw = window.localStorage.getItem(WIDGET_KEY); if (raw !== null) memoryRaw = raw; } catch { storageBroken = true; }
+  return memoryRaw ?? "[]";
+};
 function writeHidden(v: WidgetId[]) {
   memoryRaw = JSON.stringify(v);
-  try { window.localStorage.setItem(WIDGET_KEY, memoryRaw); } catch { /* storage may be unavailable; the page keeps working */ }
+  try { window.localStorage.setItem(WIDGET_KEY, memoryRaw); } catch { storageBroken = true; /* storage unavailable: keep the choice in memory */ }
   hiddenListeners.forEach((l) => l());
 }
 function useHidden(): WidgetId[] {
@@ -128,7 +133,7 @@ export function CommandCenter() {
         {stale ? <p className="dc-stale" role="status"><AlertTriangleIcon aria-hidden="true" />{copy.updated.stale} <button type="button" className="rz-link" onClick={() => void refresh()}>{copy.updated.refresh}</button></p> : null}
         {failed ? <p className="dc-stale" role="status">{copy.states.error}</p> : null}
         <p className="sr-only" aria-live="polite">{live}</p>
-        {!customReady(f) ? <p className="rz-empty">{copy.states.custom}</p> : ov.isError && status === 403 ? <p className="rz-empty" role="alert">{copy.states.forbidden}</p> : (
+        {!customReady(f) ? <p className="rz-empty" role="status">{copy.range.customHelp}</p> : ov.isError && status === 403 ? <p className="rz-empty" role="alert">{copy.states.forbidden}</p> : (
           <>
             {show("attention") ? <Widget id="attention" title={copy.widgets.attention} q={ov} copy={copy} bare>{(d) => <Attention d={d} copy={copy} />}</Widget> : null}
             {show("signals") ? <Widget id="signals" title={copy.widgets.signals} q={ov} copy={copy}>{(d) => <Signals d={d} copy={copy} national={d.scope.level === "national"} />}</Widget> : null}

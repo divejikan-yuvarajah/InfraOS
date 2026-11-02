@@ -61,7 +61,9 @@ export function dashQuery(f: DashFilters): string {
   if (f.district) q.set("district", f.district);
   return q.toString();
 }
-export const customReady = (f: DashFilters) => f.range !== "custom" || Boolean(f.from && f.to && f.to >= f.from);
+const MAX_CUSTOM_DAYS = 24 * 31;
+/** A custom period needs both dates, in order, spanning at most 24 months (the server enforces the same cap). */
+export const customReady = (f: DashFilters) => f.range !== "custom" || Boolean(f.from && f.to && f.to >= f.from && (Date.parse(f.to) - Date.parse(f.from)) / 86_400_000 + 1 <= MAX_CUSTOM_DAYS);
 
 /**
  * Every number links to an EXISTING page filtered by the same query the server used. The Inbox needs a preset to avoid

@@ -12,11 +12,13 @@
 .dc-band .rs-help { color: #cbd5e1; margin: 0; }
 .dc-band-top { position: relative; display: flex; flex-wrap: wrap; gap: 0.8rem; justify-content: space-between; align-items: flex-start; }
 .dc-band-actions, .dc-controls { position: relative; display: flex; flex-wrap: wrap; gap: 0.5rem 0.7rem; align-items: center; }
-.dc-band .rs-btn { color: var(--infra-text, #0f172a); }
+.dc-band .rs-btn { color: var(--dc-navy); background: #fff; border-color: #fff; min-height: 2.75rem; }
+.dc-band .rs-btn:hover { background: #eef2f7; } .dc-band .rs-btn:disabled { opacity: 0.55; }
+.dc-signals .rs-btn, .dc-pop .rs-btn, .dc-pop-menu .rs-btn { border: 1px solid #94a3b8; background: #fff; }
 .dc-scope { display: inline-flex; padding: 0.15rem 0.7rem; border: 2px solid #fbbf24; border-radius: 999px; font-weight: 700; font-size: 0.82rem; color: #fde68a; }
 .dc-updated { color: #cbd5e1; font-size: 0.8rem; }
 .dc-seg-ctl { display: inline-flex; border: 2px solid rgba(255, 255, 255, 0.4); border-radius: 10px; overflow: hidden; }
-.dc-seg-ctl button { min-height: 2.5rem; padding: 0 0.85rem; background: transparent; color: #fff; border: 0; font-weight: 600; cursor: pointer; }
+.dc-seg-ctl button { min-height: 2.75rem; padding: 0 0.85rem; background: transparent; color: #fff; border: 0; font-weight: 600; cursor: pointer; }
 .dc-seg-ctl button[aria-pressed="true"] { background: #fff; color: var(--dc-navy); }
 .dc-seg-ctl button:focus-visible, .dc-chips a:focus-visible, .dc-tile:focus-visible, .dc-kpi a:focus-visible, .dc-info:focus-visible, .dc-day:focus-visible, .dc-fstage:focus-visible, .dc-seg:focus-visible, .dc-pt:focus-visible { outline: 3px solid var(--dc-saffron); outline-offset: 2px; }
 .dc-dates, .dc-sel { display: flex; gap: 0.5rem; align-items: center; font-size: 0.82rem; }
@@ -41,6 +43,7 @@
 
 /* attention rail + signals */
 .dc-attn { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0.7rem; }
+.dc-attn li { display: grid; } .dc-tile { height: 100%; }
 .dc-tile { display: grid; gap: 0.25rem; min-height: 6rem; padding: 0.85rem 1rem; border-radius: 14px; text-decoration: none; color: var(--dc-navy); background: #fff; border: 1px solid var(--dc-line); border-top: 4px solid var(--dc-saffron); box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06); transition: transform 0.15s ease, box-shadow 0.15s ease; align-content: start; }
 .dc-tile:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(15, 23, 42, 0.1); }
 .dc-tile[data-zero="true"] { border-top-color: var(--dc-green); }

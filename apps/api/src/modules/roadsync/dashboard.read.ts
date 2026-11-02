@@ -82,7 +82,6 @@ async function agencyNames(ids: string[]): Promise<Map<string, string>> {
   const rows = ids.length ? await Agency.find({ _id: { $in: [...new Set(ids)].map(oid) } }).select("name").lean() : [];
   return new Map(rows.map((a) => [String(a._id), a.name as string]));
 }
-const nationalOf = (w: Who): Who => ({ ...w, national: true });
 
 // ---------- endpoints ----------
 type Overview = ReturnType<typeof overview>;

@@ -92,7 +92,8 @@ function ackStats(s: Scoped, r: Range, agencyId: string | undefined, now: Date) 
   const onTime = done.filter((e) => !e.a.ackDueAt || e.a.ackAt!.getTime() <= e.a.ackDueAt.getTime()).length;
   const hours = cap(done.map((e) => (e.a.ackAt!.getTime() - e.a.addedAt.getTime()) / HOUR));
   const overdue = entries.filter((e) => e.a.ackStatus === "pending" && e.a.ackDueAt && e.a.ackDueAt < now && live(e.rec)).length;
-  return { total: done.length, onTime, medianH: percentile(hours.values, 50), p90H: percentile(hours.values, 90), overdue, sampled: hours.sampled };
+  // A deadline that has passed with no acknowledgement is a miss: for periods that include today, those still pending count in the denominator.
+  return { total: done.length + (r.end.getTime() >= now.getTime() ? overdue : 0), onTime, medianH: percentile(hours.values, 50), p90H: percentile(hours.values, 90), overdue, sampled: hours.sampled };
 }
 function respStats(s: Scoped, r: Range, agencyId: string | undefined, now: Date) {
   const parts = s.reqs.flatMap((q) => q.participants.filter((p) => p.required && (!agencyId || p.agencyId === agencyId)).map((p) => ({ q, p })));
@@ -100,7 +101,7 @@ function respStats(s: Scoped, r: Range, agencyId: string | undefined, now: Date)
   const onTime = done.filter((x) => x.p.lastDecisionAt!.getTime() <= x.p.dueAt!.getTime()).length;
   const hours = cap(done.map((x) => (x.p.lastDecisionAt!.getTime() - x.q.createdAt.getTime()) / HOUR));
   const overdue = parts.filter((x) => ACTIVE_REQ.includes(x.q.status) && x.p.stance === "pending" && x.p.dueAt && x.p.dueAt < now).length;
-  return { total: done.length, onTime, medianH: percentile(hours.values, 50), overdue, sampled: hours.sampled };
+  return { total: done.length + (r.end.getTime() >= now.getTime() ? overdue : 0), onTime, medianH: percentile(hours.values, 50), overdue, sampled: hours.sampled };
 }
 function coordStats(s: Scoped, r: Range, now: Date) {
   const closedIn = (q: DReq, st: string) => q.status === st && within(q.closedAt, r);
@@ -164,10 +165,12 @@ function healthComponents(s: Scoped, r: Range, agencyId: string | undefined, now
   const ack = ackStats(s, r, agencyId, now);
   const resp = respStats(s, r, agencyId, now);
   const res = resStats(s, r);
-  const open = s.records.filter((x) => x.recordType === "conflict" && live(x));
-  const old30 = open.filter((x) => ageDays(x, now) > DASH.BACKLOG_AGING_DAYS).length;
-  const old14 = open.filter((x) => ageDays(x, now) > 14).length;
-  const cases = s.records.filter((x) => live(x) || within(x.createdAt, r) || within(x.resolvedAt, r)).length;
+  // Backlog and case counts are measured as of the period end (or now, for periods that include today), never "now" for a past period.
+  const asOf = r.end.getTime() < now.getTime() ? r.end : now;
+  const open = s.records.filter((x) => x.recordType === "conflict" && openAt(x, asOf));
+  const old30 = open.filter((x) => ageDays(x, asOf) > DASH.BACKLOG_AGING_DAYS).length;
+  const old14 = open.filter((x) => ageDays(x, asOf) > 14).length;
+  const cases = s.records.filter((x) => openAt(x, asOf) || within(x.createdAt, r) || within(x.resolvedAt, r)).length;
   const commitDen = res.commitDone + res.commitPending;
   return {
     cases, ack, resp, res, open,
@@ -243,7 +246,10 @@ function funnel(s: Scoped, r: Range) {
   const resolvedS = cohort.flatMap((x) => { const z = resBy.get(x.id); return z?.resolvedAt ? [{ at: z.resolvedAt, prev: x.createdAt }] : []; });
   const stages = [stage("recorded", recorded, recorded.length), stage("acknowledged", acked, recorded.length), stage("coordination", coord, acked.length || recorded.length), stage("agreed", agreed, coord.length), stage("resolved", resolvedS, agreed.length || recorded.length)];
   // Stage medians are measured from case creation; the per-stage step time is the difference of consecutive medians.
-  const steps = stages.map((st, i) => ({ ...st, stepDays: i === 0 || st.medianDays === null || stages[i - 1]!.medianDays === null ? (i === 0 ? null : st.medianDays) : round1(Math.max(0, st.medianDays - stages[i - 1]!.medianDays!)) }));
+  const steps = stages.map((st, i) => {
+    const before = stages.slice(0, i).reverse().find((x) => x.medianDays !== null);
+    return { ...st, stepDays: i === 0 || st.medianDays === null || !before ? null : round1(Math.max(0, st.medianDays - before.medianDays!)) };
+  });
   const candidates = steps.filter((x, i) => i > 0 && x.stepDays !== null);
   const slow = candidates.length ? candidates.reduce((a, b) => (b.stepDays! > a.stepDays! ? b : a)) : null;
   return steps.map((x) => ({ ...x, bottleneck: Boolean(slow && x.key === slow.key && slow.stepDays! > 0) }));
@@ -352,8 +358,9 @@ export function overview(d: Data, o: OverviewOpts) {
   const tr = trends(s, range, o.agencyId);
   const spark = tr.slice(-DASH.SPARK_POINTS);
   const sparkOf: Record<string, (number | null)[]> = { openConflicts: spark.map((x) => x.open), criticalHigh: spark.map((x) => x.criticalHigh), ackTimeliness: spark.map((x) => x.ackTimeliness), responseTimeliness: spark.map((x) => x.responseTimeliness) };
+  const asOf = range.end.getTime() < now.getTime() ? range.end : now;
   const buckets = DASH.AGING_BUCKETS_DAYS.map(([lo, hi]) => {
-    const inB = open.filter((x) => { const a = ageDays(x, now); return a >= lo && a <= hi; });
+    const inB = open.filter((x) => { const a = ageDays(x, asOf); return a >= lo && a <= hi; });
     const byBand: Record<string, number> = {};
     for (const x of inB) byBand[x.band] = (byBand[x.band] ?? 0) + 1;
     return { fromDays: lo, toDays: Number.isFinite(hi) ? hi : null, count: inB.length, byBand };
@@ -366,7 +373,7 @@ export function overview(d: Data, o: OverviewOpts) {
   const dig = digOnce(s, range);
   return {
     kpis: cur.map((k, i) => ({ ...k, ...(prev ? { previous: prev[i]!.value, delta: delta(k.value, prev[i]!.value) } : {}), spark: sparkOf[k.key] ?? null })),
-    funnel: funnel(s, range), trends: tr, backlogAging: { buckets, oldest: oldest ? { conflictNo: oldest.conflictNo, ageDays: ageDays(oldest, now) } : null },
+    funnel: funnel(s, range), trends: tr, backlogAging: { buckets, oldest: oldest ? { conflictNo: oldest.conflictNo, ageDays: ageDays(oldest, asOf) } : null },
     byBand, byClass, byStatus, newInRange: s.records.filter((x) => x.recordType === "conflict" && within(x.createdAt, range)).length, resolvedInRange: h.res.resolved,
     outcomes: { byOutcome: h.res.byOutcome, verification: { cleared: h.res.verifyCleared, total: h.res.verifyTotal, rate: pct(h.res.verifyCleared, h.res.verifyTotal) }, meanShiftDays: h.res.meanShiftDays, amendmentsApplied: h.res.amendmentsApplied, nationalApprovalShare: h.res.nationalShare },
     coordination: coordStats(s, range, now), timeliness: { ack: { medianHours: h.ack.medianH, p90Hours: h.ack.p90H, overdueNow: h.ack.overdue }, response: { medianHours: h.resp.medianH, overdueNow: h.resp.overdue } },

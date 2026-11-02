@@ -35,8 +35,8 @@ const EN = {
     criticalHigh: "Open conflicts whose current severity band is critical or high.",
     medianDaysToResolve: "Median of (resolved date − record created date) for conflicts resolved in the period. Nearest-rank percentile.",
     agreementRate: "Agreed requests ÷ (agreed + closed without agreement), for requests closed in the period.",
-    ackTimeliness: "Required acknowledgements completed in the period at or before their due time ÷ all required acknowledgements completed in the period.",
-    responseTimeliness: "Required coordination responses given in the period at or before their due time ÷ all required responses given in the period.",
+    ackTimeliness: "Required acknowledgements completed in the period at or before their due time ÷ (all required acknowledgements completed in the period + those still pending past their due time, when the period includes today).",
+    responseTimeliness: "Required coordination responses given in the period at or before their due time ÷ (all required responses given in the period + those still pending past their due time, when the period includes today).",
     digOnceMeters: "Sum of estimated shared trench length of dig-once opportunities realized in the period. Trench length only, not money.",
   } as Record<string, string>,
   defParts: { numerator: "Numerator", denominator: "Denominator", scope: "Scope", scopeNational: "All agencies", scopeAgency: "Your agency only", noData: "Not enough data in this period.", periodNote: "Period: {from} to {to} (Asia/Colombo).", sampled: "Computed on a sample of the first 5,000 values." },
@@ -72,7 +72,7 @@ const merge = (p: Patch): DashCopy => Object.fromEntries(Object.entries(EN).map(
 const SI = merge({
   title: "සම්බන්ධීකරණ විධාන මධ්‍යස්ථානය", subtitle: "දැන් අවධානය අවශ්‍ය දේ, ගැටුම් ගලා යන ආකාරය, අවදානම සංකේන්ද්‍රණය වන ස්ථාන සහ ආයතන සම්බන්ධීකරණය කරන ආකාරය.", nav: "උපකරණ පුවරුව",
   scope: { national: "ජාතික දසුන", agency: "ආයතන දසුන" },
-  range: { label: "කාලය", "7d": "දින 7", "30d": "දින 30", "90d": "දින 90", "12m": "මාස 12", custom: "අභිරුචි", from: "සිට", to: "දක්වා", compare: "පෙර කාලය සමඟ සසඳන්න", previous: "පෙර දින {n} සමඟ" },
+  range: { label: "කාලය", "7d": "දින 7", "30d": "දින 30", "90d": "දින 90", "12m": "මාස 12", custom: "අභිරුචි", from: "සිට", to: "දක්වා", compare: "පෙර කාලය සමඟ සසඳන්න", previous: "පෙර දින {n} සමඟ", customHelp: "දිනයන් දෙකම තෝරන්න (මාස 24ක් දක්වා)." },
   filters: { agency: "ආයතනය", allAgencies: "සියලු ආයතන", district: "දිස්ත්‍රික්කය", allDistricts: "සියලු දිස්ත්‍රික්ක" },
   updated: { now: "දැන් යාවත්කාලීන කළා", min: "මිනිත්තු {n}කට පෙර", refresh: "නැවුම් කරන්න", stale: "මෙම සංඛ්‍යා ගබඩා කර ඇති අතර මිනිත්තු 5කට වඩා පැරණිය." },
   actions: { export: "CSV අපනයනය", brief: "සාරාංශය", customize: "අභිරුචිකරණය", print: "මුද්‍රණය", back: "උපකරණ පුවරුවට", view: "බලන්න", showAll: "සියල්ල පෙන්වන්න ({n})", open: "විවෘත කරන්න" },
@@ -88,7 +88,7 @@ const SI = merge({
   def: {
     openConflicts: "ඔබේ විෂය පථයේ තත්ත්වය විවෘත, පිළිගත්, ප්‍රතිචාර බලාපොරොත්තුවෙන්, සාකච්ඡාවේ හෝ ඉහළ දැමූ ගැටුම් වාර්තා (අවස්ථා නොවේ).", criticalHigh: "වත්මන් බරපතලකම් කාණ්ඩය බරපතල හෝ ඉහළ වන විවෘත ගැටුම්.",
     medianDaysToResolve: "කාලය තුළ විසඳූ ගැටුම් සඳහා (විසඳූ දිනය − වාර්තාව සෑදූ දිනය) හි මධ්‍යස්ථය.", agreementRate: "එකඟ වූ ඉල්ලීම් ÷ (එකඟ වූ + එකඟතාවයකින් තොරව වසා දැමූ).",
-    ackTimeliness: "නියමිත වේලාවට හෝ පෙර සම්පූර්ණ කළ අවශ්‍ය පිළිගැනීම් ÷ කාලය තුළ සම්පූර්ණ කළ සියලු අවශ්‍ය පිළිගැනීම්.", responseTimeliness: "නියමිත වේලාවට හෝ පෙර දුන් අවශ්‍ය ප්‍රතිචාර ÷ කාලය තුළ දුන් සියලු අවශ්‍ය ප්‍රතිචාර.",
+    ackTimeliness: "නියමිත වේලාවට හෝ පෙර සම්පූර්ණ කළ අවශ්‍ය පිළිගැනීම් ÷ (කාලය තුළ සම්පූර්ණ කළ සියලු අවශ්‍ය පිළිගැනීම් + කාලය අද දිනය ඇතුළත් නම්, නියමිත වේලාව ඉක්මවා තවමත් පොරොත්තුවෙන් ඇති ඒවා).", responseTimeliness: "නියමිත වේලාවට හෝ පෙර දුන් අවශ්‍ය ප්‍රතිචාර ÷ (කාලය තුළ දුන් සියලු අවශ්‍ය ප්‍රතිචාර + කාලය අද දිනය ඇතුළත් නම්, නියමිත වේලාව ඉක්මවා තවමත් පොරොත්තුවෙන් ඇති ඒවා).",
     digOnceMeters: "කාලය තුළ සාක්ෂාත් කළ එක් වරක් කැණීමේ අවස්ථාවල ඇස්තමේන්තුගත හවුල් අගල් දිග. මුදල් නොව දිග පමණි.",
   },
   health: { title: "සම්බන්ධීකරණ සෞඛ්‍යය", caption: "මෙය මෙහෙයුම් දර්ශකයක් මිස කාර්ය සාධන ශ්‍රේණිගත කිරීමක් නොවේ.", insufficient: "මෙම කාලයේ අවම වශයෙන් සිද්ධි {n}ක් අවශ්‍යයි.", grade: { excellent: "විශිෂ්ට", good: "හොඳයි", needs_attention: "අවධානය අවශ්‍යයි", at_risk: "අවදානමේ" }, component: { ackTimeliness: "පිළිගැනීමේ කාලෝචිතභාවය", responseTimeliness: "ප්‍රතිචාරයේ කාලෝචිතභාවය", resolutionProgress: "විසඳුම් ප්‍රගතිය", backlogHealth: "ඉතිරි වැඩ සෞඛ්‍යය", commitmentCompletion: "බැඳීම් සම්පූර්ණ කිරීම" }, excluded: "දත්ත ප්‍රමාණවත් නැත (බැහැර කළා)", waterfall: "ලකුණු ගොඩනැගෙන ආකාරය" },
@@ -108,7 +108,7 @@ const SI = merge({
 const TA = merge({
   title: "ஒருங்கிணைப்பு கட்டளை மையம்", subtitle: "இப்போது கவனம் தேவைப்படுவது, முரண்பாடுகள் நகரும் விதம், ஆபத்து குவியும் இடங்கள் மற்றும் முகமைகள் ஒருங்கிணைக்கும் விதம்.", nav: "முகப்புப் பலகை",
   scope: { national: "தேசியப் பார்வை", agency: "முகமைப் பார்வை" },
-  range: { label: "காலம்", "7d": "7 நாட்கள்", "30d": "30 நாட்கள்", "90d": "90 நாட்கள்", "12m": "12 மாதங்கள்", custom: "தனிப்பயன்", from: "தொடக்கம்", to: "முடிவு", compare: "முந்தைய காலத்துடன் ஒப்பிடு", previous: "முந்தைய {n} நாட்களுடன்" },
+  range: { label: "காலம்", "7d": "7 நாட்கள்", "30d": "30 நாட்கள்", "90d": "90 நாட்கள்", "12m": "12 மாதங்கள்", custom: "தனிப்பயன்", from: "தொடக்கம்", to: "முடிவு", compare: "முந்தைய காலத்துடன் ஒப்பிடு", previous: "முந்தைய {n} நாட்களுடன்", customHelp: "இரு தேதிகளையும் தேர்ந்தெடுக்கவும் (24 மாதங்கள் வரை)." },
   filters: { agency: "முகமை", allAgencies: "அனைத்து முகமைகள்", district: "மாவட்டம்", allDistricts: "அனைத்து மாவட்டங்கள்" },
   updated: { now: "இப்போது புதுப்பிக்கப்பட்டது", min: "{n} நிமிடங்களுக்கு முன்", refresh: "புதுப்பி", stale: "இந்த எண்கள் தற்காலிகமாகச் சேமிக்கப்பட்டவை; 5 நிமிடங்களுக்கு மேல் பழையவை." },
   actions: { export: "CSV ஏற்றுமதி", brief: "சுருக்க அறிக்கை", customize: "தனிப்பயனாக்கு", print: "அச்சிடு", back: "பலகைக்குத் திரும்பு", view: "காண்க", showAll: "அனைத்தையும் காட்டு ({n})", open: "திற" },
@@ -124,7 +124,7 @@ const TA = merge({
   def: {
     openConflicts: "உங்கள் வரம்பில் நிலை திறந்த, ஒப்புக்கொள்ளப்பட்ட, பதிலுக்காகக் காத்திருக்கும், பேச்சுவார்த்தையில் அல்லது உயர்த்தப்பட்ட முரண்பாட்டுப் பதிவுகள் (வாய்ப்புகள் அல்ல).", criticalHigh: "தற்போதைய தீவிர வகை மிக முக்கிய அல்லது உயர் என்ற திறந்த முரண்பாடுகள்.",
     medianDaysToResolve: "காலத்தில் தீர்க்கப்பட்ட முரண்பாடுகளுக்கு (தீர்வு தேதி − பதிவு உருவான தேதி) இடைநிலை.", agreementRate: "உடன்பட்ட கோரிக்கைகள் ÷ (உடன்பட்டவை + உடன்பாடின்றி மூடியவை).",
-    ackTimeliness: "குறித்த நேரத்தில் அல்லது முன் முடிக்கப்பட்ட தேவையான ஒப்புகைகள் ÷ காலத்தில் முடிக்கப்பட்ட அனைத்து தேவையான ஒப்புகைகள்.", responseTimeliness: "குறித்த நேரத்தில் அல்லது முன் அளிக்கப்பட்ட தேவையான பதில்கள் ÷ காலத்தில் அளிக்கப்பட்ட அனைத்து தேவையான பதில்கள்.",
+    ackTimeliness: "குறித்த நேரத்தில் அல்லது முன் முடிக்கப்பட்ட தேவையான ஒப்புகைகள் ÷ (காலத்தில் முடிக்கப்பட்ட அனைத்து தேவையான ஒப்புகைகளும் + காலம் இன்றை உள்ளடக்கினால், குறித்த நேரம் கடந்தும் நிலுவையில் உள்ளவையும்).", responseTimeliness: "குறித்த நேரத்தில் அல்லது முன் அளிக்கப்பட்ட தேவையான பதில்கள் ÷ (காலத்தில் அளிக்கப்பட்ட அனைத்து தேவையான பதில்களும் + காலம் இன்றை உள்ளடக்கினால், குறித்த நேரம் கடந்தும் நிலுவையில் உள்ளவையும்).",
     digOnceMeters: "காலத்தில் நிறைவேற்றிய ஒருமுறை தோண்டும் வாய்ப்புகளின் மதிப்பிடப்பட்ட பகிர்ந்த அகழி நீளம். பணம் அல்ல, நீளம் மட்டுமே.",
   },
   health: { title: "ஒருங்கிணைப்பு ஆரோக்கியம்", caption: "இது செயல்பாட்டுக் குறிகாட்டி; செயல்திறன் மதிப்பீடு அல்ல.", insufficient: "இந்தக் காலத்தில் குறைந்தது {n} வழக்குகள் தேவை.", grade: { excellent: "மிகச் சிறப்பு", good: "நன்று", needs_attention: "கவனம் தேவை", at_risk: "ஆபத்தில்" }, component: { ackTimeliness: "ஒப்புகை நேரம் தவறாமை", responseTimeliness: "பதில் நேரம் தவறாமை", resolutionProgress: "தீர்வு முன்னேற்றம்", backlogHealth: "நிலுவை ஆரோக்கியம்", commitmentCompletion: "உறுதிமொழி நிறைவு" }, excluded: "போதிய தரவு இல்லை (நீக்கப்பட்டது)", waterfall: "மதிப்பெண் உருவாகும் விதம்" },
