@@ -14,7 +14,7 @@ import { Resolution } from "./models/resolution.model.js";
 import { WorkRequest } from "./models/work-request.model.js";
 import { amendmentActions, isOfficer, shiftDays, termsToPlan, verificationDelayed } from "./resolution.engine.js";
 import { IN_FLIGHT, RES } from "./resolution.rules.js";
-import { isParty, loadAms, loadForViewer, requiredAgencies, viewerOf, type AmPlain, type ResPlain } from "./resolution.service.js";
+import { isParty, loadAms, loadForViewer, requiredAgencies, shiftOf, viewerOf, type AmPlain, type ResPlain } from "./resolution.service.js";
 
 const oid = (id: string) => new mongoose.Types.ObjectId(id);
 const iso = (d: Date | null | undefined) => (d ? new Date(d).toISOString() : null);
@@ -51,7 +51,7 @@ export async function viewResolution(w: Who, rec: RecordPlain, res: ResPlain, am
     approvals: res.approvals.map((s) => ({ id: s.id, step: s.step, agencyId: s.agencyId ?? null, agencyName: s.agencyId ? nm.get(s.agencyId) ?? null : null, amendmentId: s.amendmentId ?? null, status: s.status, at: iso(s.at), byMe: s.by === w.actor.userId, ...(party && s.note ? { note: s.note } : {}), dueAt: iso(s.dueAt), overdue: s.status === "pending" && now > new Date(s.dueAt), soloApproval: Boolean(s.soloApproval), routedNoSecondAdmin: Boolean(s.routedNoSecondAdmin), onBehalf: Boolean(s.onBehalf) })),
     commitments: res.commitments.map((c) => ({ id: c.id, agencyId: c.agencyId, agencyName: nm.get(c.agencyId) ?? null, code: c.code, status: c.status, ...(party && c.text ? { text: c.text } : {}), doneAt: iso(c.doneAt ?? null) })),
     verification, outcome: res.outcome ? { ...res.outcome, resolvedAt: iso(res.outcome.resolvedAt) } : null,
-    amendments: ams.map((a) => ({ id: String(a._id), amendmentNo: a.amendmentNo, workRequestId: String(a.workRequestId), agencyId: String(a.agencyId), agencyName: nm.get(String(a.agencyId)) ?? null, status: a.status, mandated: a.mandated, source: a.source, mine: mineAgency(String(a.agencyId)), changes: { schedule: { before: { plannedStart: iso(a.changes.schedule.before.plannedStart), plannedEnd: iso(a.changes.schedule.before.plannedEnd) }, after: { plannedStart: iso(a.changes.schedule.after.plannedStart), plannedEnd: iso(a.changes.schedule.after.plannedEnd) }, shiftDays: shiftDays(a.changes.schedule.before.plannedStart, a.changes.schedule.after.plannedStart) } }, impact: a.impact, appliedAt: iso(a.appliedAt), allowed: amendmentActions({ id: String(a._id), agencyId: String(a.agencyId), status: a.status as never, createdByUserId: a.createdBy.userId, mandated: a.mandated }, ctx, v) })),
+    amendments: ams.map((a) => ({ id: String(a._id), amendmentNo: a.amendmentNo, workRequestId: String(a.workRequestId), agencyId: String(a.agencyId), agencyName: nm.get(String(a.agencyId)) ?? null, status: a.status, mandated: a.mandated, source: a.source, mine: mineAgency(String(a.agencyId)), changes: { schedule: a.changes.schedule ? { before: { plannedStart: iso(a.changes.schedule.before.plannedStart), plannedEnd: iso(a.changes.schedule.before.plannedEnd) }, after: { plannedStart: iso(a.changes.schedule.after.plannedStart), plannedEnd: iso(a.changes.schedule.after.plannedEnd) }, shiftDays: shiftOf(a) } : null, workingHours: a.changes.workingHours ?? null }, impact: a.impact, appliedAt: iso(a.appliedAt), allowed: amendmentActions({ id: String(a._id), agencyId: String(a.agencyId), status: a.status as never, createdByUserId: a.createdBy.userId, mandated: a.mandated }, ctx, v) })),
     allowed,
   };
 }
@@ -92,7 +92,7 @@ export async function suggestions(w: Who, conflictId: string) {
   };
 }
 
-export async function previewImpact(w: Who, body: { conflictId: string; changes: { targetRequestId: string; schedule: { plannedStart: string; plannedEnd: string } }[] }) {
+export async function previewImpact(w: Who, body: { conflictId: string; changes: { targetRequestId: string; schedule?: { plannedStart: string; plannedEnd: string }; workingHours?: "day" | "night" | "24h" }[] }) {
   const rec = await loadReadable(w, body.conflictId);
   if (!rec) return null;
   const out = [];
@@ -101,10 +101,11 @@ export async function previewImpact(w: Who, body: { conflictId: string; changes:
     if (!side) return "invalid_target" as const;
     const wr = await WorkRequest.findById(oid(c.targetRequestId)).select("plannedStart plannedEnd").lean();
     if (!wr) return "invalid_target" as const;
-    const start = new Date(c.schedule.plannedStart);
-    const end = new Date(c.schedule.plannedEnd);
-    if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime()) || end < start) return "invalid_dates" as const;
-    out.push({ targetRequestId: c.targetRequestId, shiftDays: shiftDays(wr.plannedStart, start), impact: await computeAmendmentImpact(c.targetRequestId, String(rec.candidateId), { start, end }) });
+    if (!c.schedule && !c.workingHours) return "invalid_dates" as const;
+    const start = c.schedule ? new Date(c.schedule.plannedStart) : null;
+    const end = c.schedule ? new Date(c.schedule.plannedEnd) : null;
+    if (start && end && (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime()) || end < start)) return "invalid_dates" as const;
+    out.push({ targetRequestId: c.targetRequestId, shiftDays: start ? shiftDays(wr.plannedStart, start) : 0, impact: await computeAmendmentImpact(c.targetRequestId, String(rec.candidateId), { ...(start && end ? { start, end } : {}), ...(c.workingHours ? { workingHours: c.workingHours } : {}) }) });
   }
   return { items: out, combined: { newConflicts: out.reduce((n, o) => n + o.impact.thirdParty.newConflicts, 0), worsened: out.reduce((n, o) => n + o.impact.thirdParty.worsened, 0), cleared: out.reduce((n, o) => n + o.impact.thirdParty.cleared, 0) } };
 }
@@ -129,7 +130,7 @@ export async function approvalsQueue(w: Who, q: QueueQuery, now = new Date()) {
       if (q.step && s.step !== q.step) continue;
       const overdue = now > new Date(s.dueAt);
       if (q.overdue && !overdue) continue;
-      out.push({ resolutionId: String(res._id), resolutionNo: res.resolutionNo, amendmentNo: am?.amendmentNo ?? null, conflictId: String(res.conflictId), conflictNo: res.conflictNo, type: res.type, step: s.step, stepId: s.id, severityAtDetection: rec.severity.atDetection.band, dueAt: iso(s.dueAt), overdue, fourEyesOk: submitter !== v.userId || Boolean(s.soloApproval), assigned, version: res.version, requestedByAgencyId: res.initiator.agencyId, changes: am ? { before: { plannedStart: iso(am.changes.schedule.before.plannedStart), plannedEnd: iso(am.changes.schedule.before.plannedEnd) }, after: { plannedStart: iso(am.changes.schedule.after.plannedStart), plannedEnd: iso(am.changes.schedule.after.plannedEnd) } } : null, impact: am?.impact ? { pair: am.impact.pair, thirdParty: am.impact.thirdParty } : null });
+      out.push({ resolutionId: String(res._id), resolutionNo: res.resolutionNo, amendmentNo: am?.amendmentNo ?? null, conflictId: String(res.conflictId), conflictNo: res.conflictNo, type: res.type, step: s.step, stepId: s.id, severityAtDetection: rec.severity.atDetection.band, dueAt: iso(s.dueAt), overdue, fourEyesOk: submitter !== v.userId || Boolean(s.soloApproval), assigned, version: res.version, requestedByAgencyId: res.initiator.agencyId, changes: am ? { before: { plannedStart: iso(am.changes.schedule?.before.plannedStart), plannedEnd: iso(am.changes.schedule?.before.plannedEnd) }, after: { plannedStart: iso(am.changes.schedule?.after.plannedStart), plannedEnd: iso(am.changes.schedule?.after.plannedEnd) }, workingHours: am.changes.workingHours ?? null } : null, impact: am?.impact ? { pair: am.impact.pair, thirdParty: am.impact.thirdParty } : null });
     }
   }
   const nm = await names(out.map((o) => o.requestedByAgencyId));

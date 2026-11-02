@@ -13,11 +13,11 @@ const rank = (b: Band) => BAND_CODES.indexOf(b);
 
 export type AgreedLike = { proposal: { type: string; before: Record<string, unknown>; after: Record<string, unknown>; derived?: Record<string, unknown> }; conditions: { agencyId: string; code: string; text?: string }[]; acceptedBy: { agencyId: string }[] };
 export type PairIds = { aId: string; bId: string; aType: string; bType: string; aAgencyId: string; bAgencyId: string };
-export type PlannedAmendment = { workRequestId: string; agencyId: string; schedule: { plannedStart: string; plannedEnd: string } };
+export type PlannedAmendment = { workRequestId: string; agencyId: string; schedule?: { plannedStart: string; plannedEnd: string }; workingHours?: "day" | "night" | "24h" };
 export type Commitment = { agencyId: string; code: string; text?: string };
 export type Plan = { amendments: PlannedAmendment[]; opportunity: { leadAgencyId: string | null } | null; commitments: Commitment[]; unsupported: string[] };
 
-/** Only owner-agency requests are targeted; work requests carry no working-hours field, so hours agreements become commitments. */
+/** Only owner-agency requests are targeted; schedule shifts and working-hours agreements both become real amendments. */
 export function termsToPlan(agreed: AgreedLike, p: PairIds): Plan {
   const out: Plan = { amendments: [], opportunity: null, commitments: [], unsupported: [] };
   const ownerOf = (id: unknown) => (id === p.aId && p.aType === "work_request" ? p.aAgencyId : id === p.bId && p.bType === "work_request" ? p.bAgencyId : null);
@@ -26,7 +26,7 @@ export function termsToPlan(agreed: AgreedLike, p: PairIds): Plan {
   const owner = ownerOf(target);
   if (type === "schedule_shift" && owner) out.amendments.push({ workRequestId: String(target), agencyId: owner, schedule: { plannedStart: String(after.start), plannedEnd: String(after.end) } });
   else if (type === "sequence_order" && owner && derived?.newStart && derived?.newEnd) out.amendments.push({ workRequestId: String(target), agencyId: owner, schedule: { plannedStart: String(derived.newStart), plannedEnd: String(derived.newEnd) } });
-  else if (type === "working_hours" && owner) { out.unsupported.push("working_hours"); out.commitments.push({ agencyId: owner, code: `working_hours_${String(after.workingHours)}` }); }
+  else if (type === "working_hours" && owner && ["day", "night", "24h"].includes(String(after.workingHours))) out.amendments.push({ workRequestId: String(target), agencyId: owner, workingHours: after.workingHours as "day" | "night" | "24h" });
   else if (type === "joint_works") out.opportunity = { leadAgencyId: typeof after.leadAgencyId === "string" ? after.leadAgencyId : null };
   else if (type === "traffic_management" && Array.isArray(after.measures)) {
     const first = agreed.acceptedBy[0]?.agencyId ?? p.aAgencyId;

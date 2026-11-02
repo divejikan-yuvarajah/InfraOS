@@ -196,7 +196,6 @@ export function registerAssessmentSubscribers(): void {
 
 // ---------- reads ----------
 
-type ItemAssessment = ReturnType<typeof outputAssessment>;
 function outputAssessment(s: Stored, full: boolean, national: boolean, isA: boolean) {
   return {
     kind: s.kind,

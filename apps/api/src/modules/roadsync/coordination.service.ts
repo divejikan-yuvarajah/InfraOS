@@ -348,8 +348,8 @@ const DECISION_SET = new Set<string>(["accepted", "accepted_with_conditions", "c
 function sideSync(rec: RecordPlain): { a: SideCtx; b: SideCtx } {
   const dates = (s: RecordPlain["sides"]["a"]) => ({ start: s.plannedStart ? new Date(s.plannedStart) : null, end: s.plannedEnd ? new Date(s.plannedEnd) : null });
   return {
-    a: { id: String(rec.aId), type: rec.aType, agencyId: rec.sides.a.agencyId, ...dates(rec.sides.a), workingHours: "day", isEmergency: false },
-    b: { id: String(rec.bId), type: rec.bType, agencyId: rec.sides.b.agencyId, ...dates(rec.sides.b), workingHours: "day", isEmergency: false },
+    a: { id: String(rec.aId), type: rec.aType, agencyId: rec.sides.a.agencyId, ...dates(rec.sides.a), workingHours: rec.sides.a.workingHours ?? "day", isEmergency: false },
+    b: { id: String(rec.bId), type: rec.bType, agencyId: rec.sides.b.agencyId, ...dates(rec.sides.b), workingHours: rec.sides.b.workingHours ?? "day", isEmergency: false },
   };
 }
 

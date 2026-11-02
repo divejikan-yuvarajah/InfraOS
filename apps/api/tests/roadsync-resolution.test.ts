@@ -19,6 +19,7 @@ import { ConflictRead, ConflictRecord } from "../src/modules/roadsync/models/con
 import { CoordinationMessage, CoordinationRead, CoordinationRequest } from "../src/modules/roadsync/models/coordination.model.js";
 import { Amendment, LedgerEntry, Resolution } from "../src/modules/roadsync/models/resolution.model.js";
 import { WorkRequest } from "../src/modules/roadsync/models/work-request.model.js";
+import { applyAmendmentToRequest } from "../src/modules/roadsync/work-requests.service.js";
 import { buildApprovals, canApprove, deriveStatus, nationalReasons, termsToPlan, verifyResult, type Approval, type Viewer } from "../src/modules/roadsync/resolution.engine.js";
 import { clearCoreCollections, startIsolatedMongo, stopIsolatedMongo } from "./helpers/mongo-memory.js";
 import type { SystemRoleKey } from "@infraos/shared-types";
@@ -71,6 +72,8 @@ describe("step 76 approval policy and derivation", () => {
     const plan = termsToPlan({ proposal: { type: "schedule_shift", before: {}, after: { targetRequestId: "a1", start: "2026-08-01T00:00:00Z", end: "2026-08-10T00:00:00Z" } }, conditions: [{ agencyId: "AG2", code: "night_work_only" }], acceptedBy: [{ agencyId: "AG2" }] }, pair);
     expect(plan.amendments).toEqual([{ workRequestId: "a1", agencyId: "AG1", schedule: { plannedStart: "2026-08-01T00:00:00Z", plannedEnd: "2026-08-10T00:00:00Z" } }]);
     expect(plan.commitments).toEqual([{ agencyId: "AG2", code: "night_work_only" }]);
+    const hours = termsToPlan({ proposal: { type: "working_hours", before: {}, after: { targetRequestId: "b1", workingHours: "night" } }, conditions: [], acceptedBy: [] }, pair);
+    expect(hours.amendments).toEqual([{ workRequestId: "b1", agencyId: "AG2", workingHours: "night" }]);
     const foreign = termsToPlan({ proposal: { type: "schedule_shift", before: {}, after: { targetRequestId: "zzz", start: "x", end: "y" } }, conditions: [], acceptedBy: [] }, pair);
     expect(foreign.amendments).toHaveLength(0);
   });
@@ -162,6 +165,20 @@ describe("steps 76-77 resolution, approval and ledger", { timeout: 240_000 }, ()
   }
   const view = async (token: string, rid: string) => (await request(app).get(`/api/v1/roadsync/conflicts/${rid}/resolution`).set(auth(token))).body.data.resolution;
   const manual = (d: { subject: { id: string } }) => ({ type: "amendment", manual: { targetRequestId: d.subject.id, schedule: { plannedStart: at(50).toISOString(), plannedEnd: at(60).toISOString() } } });
+
+  it("applies a working-hours amendment through the controlled path with a revision entry and refuses a stale replay", async () => {
+    const d = await ready();
+    const base = { amendmentId: "a".repeat(24), resolutionId: "b".repeat(24), workRequestId: d.subject.id, workingHours: "night" as const };
+    const before = (await WorkRequest.findById(d.subject.id).lean())!;
+    const done = await applyAmendmentToRequest({ ...base, baseVersion: (before as { __v: number }).__v }, { userId: d.officerA.user.id, agencyId: d.agA.id });
+    expect(done.ok).toBe(true);
+    const after = (await WorkRequest.findById(d.subject.id).lean())!;
+    expect(after.schedule).toEqual({ workingHours: "night" });
+    expect(after.plannedStart.toISOString()).toBe(before.plannedStart.toISOString());
+    expect((after.revisions as { before: { workingHours: string }; after: { workingHours: string } }[])[0]).toMatchObject({ before: { workingHours: "day" }, after: { workingHours: "night" } });
+    expect((after.originalSchedule as { workingHours: string }).workingHours).toBe("day");
+    expect(await applyAmendmentToRequest({ ...base, baseVersion: (before as { __v: number }).__v }, { userId: d.officerA.user.id, agencyId: d.agA.id })).toMatchObject({ ok: false, code: "stale" });
+  });
 
   it("blocks unauthenticated and foreign-agency starts", async () => {
     const d = await ready();

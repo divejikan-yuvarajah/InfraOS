@@ -1,7 +1,7 @@
 import mongoose, { Schema } from "mongoose";
 import { dateOrder, reference } from "../../../shared/database/fields.js";
 import { geometryField } from "../../../shared/database/geometry.js";
-import { WORK_PRIORITIES, WORK_STATUSES, WORK_TYPES } from "../roadsync.constants.js";
+import { WORKING_HOURS, WORK_PRIORITIES, WORK_STATUSES, WORK_TYPES } from "../roadsync.constants.js";
 
 /** Server-owned detection summary (Steps 68-69). Never accepted from clients. */
 const detectionSchema = new Schema({
@@ -35,6 +35,8 @@ const workRequestSchema = new Schema({
   conflictRecords: { type: Schema.Types.Mixed, default: undefined },
   /** Step 74-75, server-owned: { active, needsMyResponse } for the owning agency. */
   coordination: { type: Schema.Types.Mixed, default: undefined },
+  /** Optional on existing documents (no migration): absent reads as "day". Changed after submit only by applyAmendmentToRequest. */
+  schedule: { type: new Schema({ workingHours: { type: String, enum: WORKING_HOURS, default: "day" } }, { _id: false, strict: "throw" }), default: undefined },
   /** Step 76, server-owned (never client-accepted): written ONLY by applyAmendmentToRequest. */
   originalSchedule: { type: Schema.Types.Mixed, default: undefined },
   revisions: { type: [Schema.Types.Mixed], default: undefined },

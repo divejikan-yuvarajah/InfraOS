@@ -44,6 +44,7 @@ export type WorkRequestView = {
   priority: string;
   plannedStart: string;
   plannedEnd: string;
+  workingHours: "day" | "night" | "24h";
   geometry: { type: string; coordinates: unknown };
   createdAt: string;
   updatedAt: string;
@@ -103,6 +104,7 @@ type Row = {
   priority: string;
   plannedStart: Date;
   plannedEnd: Date;
+  schedule?: { workingHours?: "day" | "night" | "24h" } | null;
   geometry: { type: string; coordinates: unknown };
   createdAt?: Date;
   updatedAt?: Date;
@@ -141,6 +143,7 @@ async function toViews(rows: Row[], session?: ClientSession): Promise<WorkReques
     priority: row.priority,
     plannedStart: row.plannedStart.toISOString(),
     plannedEnd: row.plannedEnd.toISOString(),
+    workingHours: row.schedule?.workingHours ?? "day",
     geometry: { type: row.geometry.type, coordinates: row.geometry.coordinates },
     createdAt: (row.createdAt ?? row.plannedStart).toISOString(),
     updatedAt: (row.updatedAt ?? row.plannedStart).toISOString(),
@@ -282,6 +285,7 @@ export async function createWorkRequest(actor: AuthenticatedActor, input: WorkRe
           workType: input.workType,
           plannedStart: start,
           plannedEnd: end,
+          schedule: { workingHours: input.workingHours ?? "day" },
           status: "DRAFT",
           priority: input.priority ?? "NORMAL",
         }], { session: mongo });
@@ -318,33 +322,38 @@ export async function createWorkRequest(actor: AuthenticatedActor, input: WorkRe
 
 const AMENDABLE = ["SUBMITTED", "PLANNED", "APPROVED"] as const;
 const REVISIONS_CAP = 20;
-export type AmendInput = { amendmentId: string; resolutionId: string; workRequestId: string; baseVersion: number; plannedStart: Date; plannedEnd: Date };
-export type AmendResult = { ok: true; version: number; before: { plannedStart: Date; plannedEnd: Date } } | { ok: false; code: "not_found" | "stale" | "not_amendable" | "invalid" };
+export type AmendInput = { amendmentId: string; resolutionId: string; workRequestId: string; baseVersion: number; plannedStart?: Date; plannedEnd?: Date; workingHours?: "day" | "night" | "24h" };
+export type AmendResult = { ok: true; version: number; before: { plannedStart: Date; plannedEnd: Date; workingHours: "day" | "night" | "24h" } } | { ok: false; code: "not_found" | "stale" | "not_amendable" | "invalid" };
 
 /**
  * Atomic compare-and-set on the request version: a stale or already-applied amendment matches nothing. The Step 66-67
  * create path and its whitelist are untouched; nothing else may mutate schedule fields of a submitted request.
+ * Changes dates and/or working hours; the revision records both sides of every change.
  */
 export async function applyAmendmentToRequest(a: AmendInput, by: { userId: string; agencyId: string }): Promise<AmendResult> {
-  if (Number.isNaN(a.plannedStart.getTime()) || Number.isNaN(a.plannedEnd.getTime()) || a.plannedEnd < a.plannedStart) return { ok: false, code: "invalid" };
+  if (!a.plannedStart !== !a.plannedEnd || (!a.plannedStart && !a.workingHours)) return { ok: false, code: "invalid" };
+  if (a.plannedStart && a.plannedEnd && (Number.isNaN(a.plannedStart.getTime()) || Number.isNaN(a.plannedEnd.getTime()) || a.plannedEnd < a.plannedStart)) return { ok: false, code: "invalid" };
   const id = new mongoose.Types.ObjectId(a.workRequestId);
-  const current = await WorkRequest.findById(id).select("plannedStart plannedEnd status __v").lean();
+  const current = await WorkRequest.findById(id).select("plannedStart plannedEnd schedule status __v").lean();
   if (!current) return { ok: false, code: "not_found" };
   if (!(AMENDABLE as readonly string[]).includes(current.status)) return { ok: false, code: "not_amendable" };
   if ((current as { __v?: number }).__v !== a.baseVersion) return { ok: false, code: "stale" };
   const now = new Date();
+  const hours = { $ifNull: ["$schedule.workingHours", "day"] };
   const rev = {
     n: { $add: [{ $ifNull: ["$amendedCount", 0] }, 1] }, at: { $literal: now }, by: { $literal: { userId: by.userId, agencyId: by.agencyId } }, via: { $literal: { amendmentId: a.amendmentId, resolutionId: a.resolutionId } },
-    before: { plannedStart: "$plannedStart", plannedEnd: "$plannedEnd" }, after: { plannedStart: { $literal: a.plannedStart }, plannedEnd: { $literal: a.plannedEnd } },
+    before: { plannedStart: "$plannedStart", plannedEnd: "$plannedEnd", workingHours: hours },
+    after: { plannedStart: a.plannedStart ? { $literal: a.plannedStart } : "$plannedStart", plannedEnd: a.plannedEnd ? { $literal: a.plannedEnd } : "$plannedEnd", workingHours: a.workingHours ? { $literal: a.workingHours } : hours },
   };
   const res = await WorkRequest.findOneAndUpdate(
     { _id: id, __v: a.baseVersion, status: { $in: [...AMENDABLE] } },
     [{ $set: {
-      originalSchedule: { $ifNull: ["$originalSchedule", { plannedStart: "$plannedStart", plannedEnd: "$plannedEnd" }] },
+      originalSchedule: { $ifNull: ["$originalSchedule", { plannedStart: "$plannedStart", plannedEnd: "$plannedEnd", workingHours: hours }] },
       revisions: { $slice: [{ $concatArrays: [{ $ifNull: ["$revisions", []] }, [rev]] }, -REVISIONS_CAP] },
       amendedCount: { $add: [{ $ifNull: ["$amendedCount", 0] }, 1] },
       lastAmendedAt: { $literal: now }, updatedAt: { $literal: now },
-      plannedStart: { $literal: a.plannedStart }, plannedEnd: { $literal: a.plannedEnd },
+      ...(a.plannedStart && a.plannedEnd ? { plannedStart: { $literal: a.plannedStart }, plannedEnd: { $literal: a.plannedEnd } } : {}),
+      ...(a.workingHours ? { "schedule.workingHours": { $literal: a.workingHours } } : {}),
       "detection.status": "pending", __v: { $add: ["$__v", 1] },
     } }] as never,
     { new: true, timestamps: false },
@@ -354,5 +363,5 @@ export async function applyAmendmentToRequest(a: AmendInput, by: { userId: strin
     await AuditLog.create({ userId: new mongoose.Types.ObjectId(by.userId), action: "work_request.amended", resourceType: "WORK_REQUEST", resourceId: id, newValue: { status: String(res.status), agencyId: res.agencyId }, requestId: "amendment", agencyId: new mongoose.Types.ObjectId(by.agencyId) });
   } catch { /* the revision on the request keeps the fact */ }
   roadsyncEvents.emit("workRequestAmended", { requestId: a.workRequestId, amendmentId: a.amendmentId, resolutionId: a.resolutionId });
-  return { ok: true, version: (res as { __v?: number }).__v ?? a.baseVersion + 1, before: { plannedStart: current.plannedStart, plannedEnd: current.plannedEnd } };
+  return { ok: true, version: (res as { __v?: number }).__v ?? a.baseVersion + 1, before: { plannedStart: current.plannedStart, plannedEnd: current.plannedEnd, workingHours: (current as { schedule?: { workingHours?: "day" | "night" | "24h" } }).schedule?.workingHours ?? "day" } };
 }

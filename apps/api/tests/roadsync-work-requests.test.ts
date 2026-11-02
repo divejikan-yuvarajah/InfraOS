@@ -127,6 +127,7 @@ describe("step 66 roadsync work requests", { timeout: 120_000 }, () => {
     expect(wr.priority).toBe("NORMAL");
     expect(wr.agencyId).toBe(d.agency.id);
     expect(wr.projectCode).toBe("INF-RS-1");
+    expect(wr.workingHours).toBe("day"); // default when the client sends none
     expect(await AuditLog.countDocuments({ resourceType: "WORK_REQUEST", action: "work_request.created" })).toBe(1);
 
     const list = await get(d.officer.token);
@@ -137,6 +138,10 @@ describe("step 66 roadsync work requests", { timeout: 120_000 }, () => {
     expect(detail.status).toBe(200);
     expect(detail.body.data.workRequest.geometry).toEqual(point);
     expect(await AuditLog.countDocuments({})).toBe(1); // GET performed no writes
+    const night = await post(d.officer.token, body(d.approved.id, { workingHours: "night" }));
+    expect(night.body.data.workRequest.workingHours).toBe("night");
+    expect((await post(d.officer.token, body(d.approved.id, { workingHours: "evening" }))).status).toBe(400);
+    await WorkRequest.deleteOne({ _id: night.body.data.workRequest.id });
   });
 
   it("scopes by agency and manager; foreign and unassigned get 404 with no leak", async () => {

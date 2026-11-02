@@ -75,7 +75,7 @@ const MIN = 40;
 const BANDS: Band[] = ["info", "low", "medium", "high", "critical"];
 
 /** Schedule override applied to the subject request on every stored pair; pure math, never persisted. Scores, bands and counts only. */
-export async function computeAmendmentImpact(subjectId: string, pairCandidateId: string, o: { start?: Date; end?: Date }): Promise<AmendmentImpact> {
+export async function computeAmendmentImpact(subjectId: string, pairCandidateId: string, o: { start?: Date; end?: Date; workingHours?: "day" | "night" | "24h" }): Promise<AmendmentImpact> {
   const docs = (await Candidate.find({ status: "active", $or: [{ aType: "work_request", aId: oid(subjectId) }, { bType: "work_request", bId: oid(subjectId) }] }).limit(200).lean()) as unknown as PairDoc[];
   const refs = new Map<string, { type: "work_request" | "project" | "asset"; id: string }>();
   for (const d of docs) { refs.set(`${d.aType}:${d.aId}`, { type: d.aType, id: String(d.aId) }); refs.set(`${d.bType}:${d.bId}`, { type: d.bType, id: String(d.bId) }); }
@@ -84,7 +84,7 @@ export async function computeAmendmentImpact(subjectId: string, pairCandidateId:
     const a = items.get(`${d.aType}:${d.aId}`);
     const b = items.get(`${d.bType}:${d.bId}`);
     if (!a || !b) return null;
-    const side = (item: SourceItem) => { const base = itemSide(item); return apply && item.type === "work_request" && item.id === subjectId ? { ...base, start: o.start ?? base.start, end: o.end ?? base.end } : base; };
+    const side = (item: SourceItem) => { const base = itemSide(item); return apply && item.type === "work_request" && item.id === subjectId ? { ...base, start: o.start ?? base.start, end: o.end ?? base.end, workingHours: o.workingHours ?? base.workingHours } : base; };
     const sa = side(a);
     const sb = side(b);
     let temporal = d.temporal;

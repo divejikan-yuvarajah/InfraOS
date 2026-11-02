@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 import { BAND_CODES, type Band } from "./assessment.rules.js";
-import { WORK_PRIORITIES, WORK_STATUSES, WORK_TYPES } from "./roadsync.constants.js";
+import { WORKING_HOURS, WORK_PRIORITIES, WORK_STATUSES, WORK_TYPES } from "./roadsync.constants.js";
 
 const objectId = z.string().regex(/^[a-f0-9]{24}$/i);
 /** Explicit instant only: a Z or numeric offset is mandatory so no server-local zone is guessed. */
@@ -22,6 +22,7 @@ export const workRequestCreateSchema = z.object({
   priority: z.enum(WORK_PRIORITIES).optional(),
   plannedStart: instant,
   plannedEnd: instant,
+  workingHours: z.enum(WORKING_HOURS).optional(),
   geometry: geometryInputSchema,
 }).strict();
 

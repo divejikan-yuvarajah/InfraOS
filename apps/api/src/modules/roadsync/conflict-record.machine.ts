@@ -56,6 +56,8 @@ export type ReconcileInput = {
   inFlight?: boolean;
   /** Step 76: set when status is `resolved`. */
   resolved?: { outcome: string; band: Band } | null;
+  /** Step 76: the pair is still a conflict-kind pair (an opportunity left over after a cleared conflict must not reopen it). */
+  conflictKind?: boolean;
 };
 export type ReconcileResult = {
   status: RecordStatus;
@@ -84,7 +86,7 @@ export function reconcile(i: ReconcileInput): ReconcileResult {
   if (i.status === "resolved" && i.resolved) {
     const rose = bandRank(i.band) >= bandRank(i.resolved.band) + RECORD.DISMISS_REOPEN_BAND_STEPS;
     const accepted = i.resolved.outcome === "risk_accepted" || i.resolved.outcome === "no_action";
-    if (i.pairActive && i.qualifies && (accepted ? rose : true)) return { status: syncAck("open", i.agencies), belowThreshold: false, event: "reopened", reason: "severity_increased" };
+    if (i.pairActive && i.qualifies && (accepted ? rose : i.conflictKind !== false)) return { status: syncAck("open", i.agencies), belowThreshold: false, event: "reopened", reason: "severity_increased" };
     return keep("resolved");
   }
   if (i.status === "auto_closed" && i.pairActive && i.qualifies) return { status: syncAck("open", i.agencies), belowThreshold: false, event: "redetected", reason: null };
