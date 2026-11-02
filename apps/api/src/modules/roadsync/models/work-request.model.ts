@@ -35,6 +35,8 @@ const workRequestSchema = new Schema({
   conflictRecords: { type: Schema.Types.Mixed, default: undefined },
   /** Step 74-75, server-owned: { active, needsMyResponse } for the owning agency. */
   coordination: { type: Schema.Types.Mixed, default: undefined },
+  /** Optional, default false (absent reads as false); drafts only after create. Feeds assessment and the Step 76 national-approval rule (c). */
+  isEmergency: { type: Boolean, default: undefined },
   /** Optional on existing documents (no migration): absent reads as "day". Changed after submit only by applyAmendmentToRequest. */
   schedule: { type: new Schema({ workingHours: { type: String, enum: WORKING_HOURS, default: "day" } }, { _id: false, strict: "throw" }), default: undefined },
   /** Step 76, server-owned (never client-accepted): written ONLY by applyAmendmentToRequest. */

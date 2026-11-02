@@ -14,6 +14,8 @@ import { Notification } from "../src/modules/notifications/models/notification.m
 import { Project } from "../src/modules/projects/models/project.model.js";
 import { canonical, entryHash, genesisHash, redact, verifyChain, type Entry } from "../src/modules/roadsync/ledger.engine.js";
 import { cleanData } from "../src/modules/roadsync/ledger.service.js";
+import { itemSide, workItem } from "../src/modules/roadsync/detection.service.js";
+import { startDateAllowed } from "../src/modules/roadsync/work-requests.schema.js";
 import { Candidate } from "../src/modules/roadsync/models/candidate.model.js";
 import { ConflictRead, ConflictRecord } from "../src/modules/roadsync/models/conflict-record.model.js";
 import { CoordinationMessage, CoordinationRead, CoordinationRequest } from "../src/modules/roadsync/models/coordination.model.js";
@@ -65,6 +67,17 @@ describe("step 76 approval policy and derivation", () => {
     expect(verifyResult({ score: 70, band: "high" }, { active: true, kind: "conflict", score: 20, band: "low" })).toBe("cleared");
     expect(verifyResult({ score: 70, band: "high" }, { active: true, kind: "conflict", score: 55, band: "medium" })).toBe("reduced");
     expect(verifyResult({ score: 70, band: "high" }, { active: true, kind: "conflict", score: 85, band: "critical" })).toBe("worse");
+  });
+
+  it("reads isEmergency into assessment sides, fires national rule (c) and applies the 48 h backdate rule only to emergencies", () => {
+    const row = { _id: { toString: () => "a".repeat(24) }, agencyId: { toString: () => "AG1" }, projectId: { toString: () => "P" }, workType: "ROAD_RESURFACING", status: "SUBMITTED", priority: "NORMAL", plannedStart: T, plannedEnd: T, geometry: { type: "Point", coordinates: [79.8, 6.9] } };
+    expect(itemSide(workItem({ ...row, isEmergency: true } as never)).isEmergency).toBe(true);
+    expect(itemSide(workItem(row as never)).isEmergency).toBe(false);
+    expect(nationalReasons({ type: "amendment", thirdParty: null, severityAtDetection: "low", shiftDays: 1, band: "low", emergency: true })).toEqual(["emergency_work"]);
+    const now = new Date("2026-06-10T10:00:00Z");
+    expect(startDateAllowed(new Date("2026-06-09T10:00:00Z"), false, now)).toBe(false);
+    expect(startDateAllowed(new Date("2026-06-09T10:00:00Z"), true, now)).toBe(true);
+    expect(startDateAllowed(new Date("2026-06-07T09:00:00Z"), true, now)).toBe(false);
   });
 
   it("maps agreed terms to owner-only amendments and commitments", () => {

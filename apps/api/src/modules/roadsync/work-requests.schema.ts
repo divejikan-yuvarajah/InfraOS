@@ -23,6 +23,7 @@ export const workRequestCreateSchema = z.object({
   plannedStart: instant,
   plannedEnd: instant,
   workingHours: z.enum(WORKING_HOURS).optional(),
+  isEmergency: z.boolean().optional(),
   geometry: geometryInputSchema,
 }).strict();
 
@@ -63,3 +64,11 @@ export const workRequestMapQuerySchema = z.object({
 
 export type WorkRequestCreateInput = z.infer<typeof workRequestCreateSchema>;
 export type WorkRequestListQuery = z.infer<typeof workRequestListQuerySchema>;
+
+export const EMERGENCY_BACKDATE_MS = 48 * 3_600_000;
+const COLOMBO_OFFSET_MS = 19_800_000;
+/** Submission rule: a normal request may not start before today (Colombo); an emergency one may start up to 48 h in the past. */
+export function startDateAllowed(start: Date, isEmergency: boolean, now = new Date()): boolean {
+  const dayStart = Math.floor((now.getTime() + COLOMBO_OFFSET_MS) / 86_400_000) * 86_400_000 - COLOMBO_OFFSET_MS;
+  return start.getTime() >= (isEmergency ? now.getTime() - EMERGENCY_BACKDATE_MS : dayStart);
+}

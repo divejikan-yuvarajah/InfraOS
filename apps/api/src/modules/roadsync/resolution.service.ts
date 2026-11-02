@@ -167,6 +167,12 @@ async function syncRecord(res: ResPlain, now = new Date()): Promise<void> {
   if (resolved) await autoWithdrawForRecord(String(res.conflictId), "conflict_resolved").catch(() => 0);
 }
 
+/** Rule (c): either side of the pair is an emergency work request. */
+async function emergencyOf(rec: Pick<RecordPlain, "aType" | "aId" | "bType" | "bId">): Promise<boolean> {
+  const ids = [rec.aType === "work_request" ? rec.aId : null, rec.bType === "work_request" ? rec.bId : null].filter((x): x is Oid => Boolean(x));
+  return ids.length ? Boolean(await WorkRequest.exists({ _id: { $in: ids }, isEmergency: true })) : false;
+}
+
 const OUTCOME: Record<ResolutionType, OutcomeCode> = { amendment: "amendment_cleared", directive: "directive_cleared", risk_acceptance: "risk_accepted", no_action: "no_action", opportunity: "opportunity_realized" };
 
 /** The single derive-and-persist path. Safe to call after any partial operation. */
@@ -314,7 +320,7 @@ export async function createResolution(w: Who, conflictId: string, input: Create
   const fresh = resolved ?? res;
   // Non-amendment types submit immediately: their approvals are the whole workflow.
   if (input.type === "risk_acceptance" || input.type === "no_action" || input.type === "opportunity") {
-    const reasons = nationalReasons({ type: input.type, thirdParty: null, severityAtDetection: rec.severity.atDetection.band, shiftDays: 0, band: rec.severity.current.band });
+    const reasons = nationalReasons({ emergency: await emergencyOf(rec), type: input.type, thirdParty: null, severityAtDetection: rec.severity.atDetection.band, shiftDays: 0, band: rec.severity.current.band });
     const approvals = input.type === "risk_acceptance" ? buildApprovals({ kind: "risk", hasSecondNational: await hasSecond("SUPER_ADMIN", undefined, w.actor.userId), now }) : buildApprovals({ kind: "confirm", requiredAgencyIds: required, nationalNeeded: reasons.includes("no_action_high_band"), now });
     await updateRes(res._id, (r) => { r.approvals = approvals; r.status = "pending_approval"; });
   }
@@ -352,7 +358,7 @@ export async function submitAmendment(w: Who, resId: string, amId: string, input
   const wr = await WorkRequest.findById(a.workRequestId).select("__v status").lean();
   if (!wr || (wr as { __v?: number }).__v !== a.baseVersion || !AMENDABLE.includes(wr.status)) { await saveAm(a, { status: "stale" }); await led(rec, res.conflictId, "amendment_stale", sysActor, { type: "amendment", id: amId, no: a.amendmentNo }, {}); await recomputeResolution(res._id); return no(409, "stale_amendment"); }
   if (!a.impact) return no(409, "impact_missing");
-  const reasons = nationalReasons({ type: res.type, thirdParty: a.impact.thirdParty, severityAtDetection: rec.severity.atDetection.band, shiftDays: shiftOf(a), band: rec.severity.current.band });
+  const reasons = nationalReasons({ emergency: await emergencyOf(rec), type: res.type, thirdParty: a.impact.thirdParty, severityAtDetection: rec.severity.atDetection.band, shiftDays: shiftOf(a), band: rec.severity.current.band });
   const now = new Date();
   const steps = buildApprovals({ kind: "amendment", amendmentId: amId, ownerAgencyId: String(a.agencyId), hasSecondAdmin: await hasSecond("GOV_ADMIN", String(a.agencyId), w.actor.userId), nationalNeeded: reasons.length > 0, now });
   if (!(await saveAm(a, { status: "pending_approval", submittedBy: { userId: w.actor.userId, agencyId: w.actor.agencyId } }))) return no(409, "stale");
@@ -424,7 +430,7 @@ export async function preflight(res: ResPlain, a: AmPlain, rec: RecordPlain, now
   if (!a.mandated && a.impact) {
     const now2 = await computeAmendmentImpact(String(a.workRequestId), String(rec.candidateId), overrideOf(a));
     const worse = bandRank(now2.pair.after.band) > bandRank(a.impact.pair.after.band);
-    const national = nationalReasons({ type: res.type, thirdParty: now2.thirdParty, severityAtDetection: rec.severity.atDetection.band, shiftDays: shiftOf(a), band: rec.severity.current.band }).length > 0;
+    const national = nationalReasons({ emergency: await emergencyOf(rec), type: res.type, thirdParty: now2.thirdParty, severityAtDetection: rec.severity.atDetection.band, shiftDays: shiftOf(a), band: rec.severity.current.band }).length > 0;
     const nationalDone = stepsOf(res, String(a._id)).some((s) => s.step === "national" && s.status === "approved");
     checks.push({ code: "impact_unchanged", ok: !worse && (!national || nationalDone) && now2.thirdParty.newConflicts <= a.impact.thirdParty.newConflicts });
   }

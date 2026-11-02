@@ -40,12 +40,13 @@ export function termsToPlan(agreed: AgreedLike, p: PairIds): Plan {
 // ---------- national approval policy ----------
 
 export type ThirdParty = { newConflicts: number; worsened: number; cleared: number };
-/** Reasons are i18n codes. Evaluated at submission AND again at apply time. Emergency work is not modelled on work requests, so rule (c) cannot fire. */
-export function nationalReasons(i: { type: ResolutionType; thirdParty: ThirdParty | null; severityAtDetection: Band; shiftDays: number; band: Band }): string[] {
+/** Reasons are i18n codes. Evaluated at submission AND again at apply time. Rule (c): either side is flagged isEmergency. */
+export function nationalReasons(i: { type: ResolutionType; thirdParty: ThirdParty | null; severityAtDetection: Band; shiftDays: number; band: Band; emergency?: boolean }): string[] {
   const r: string[] = [];
   if (i.thirdParty && i.thirdParty.newConflicts > 0) r.push("third_party_new_conflicts");
   if (i.thirdParty && i.thirdParty.worsened > 0) r.push("third_party_worsened");
   if (i.severityAtDetection === "critical") r.push("critical_severity");
+  if (i.emergency) r.push("emergency_work");
   if (Math.abs(i.shiftDays) > RES.NATIONAL_APPROVAL_SHIFT_DAYS) r.push("large_shift");
   if (i.type === "risk_acceptance") r.push("risk_acceptance");
   if (i.type === "no_action" && rank(i.band) >= rank("high")) r.push("no_action_high_band");

@@ -42,6 +42,7 @@ export type SourceItem = {
   start: Date | null;
   end: Date | null;
   workingHours: WorkingHours;
+  isEmergency?: boolean;
   geometry: AnyGeometry;
   updatedAt: Date | null;
   /** Only ever exposed to same-agency and national users. */
@@ -63,7 +64,7 @@ export type SubjectInput = {
 /** Engine view of a stored/normalized item. Traffic impact is not captured by any source yet, so it is null. */
 export function itemSide(item: SourceItem): AssessSide {
   const priority = item.type === "work_request" && typeof item.detail.priority === "string" ? item.detail.priority : null;
-  return { sourceType: item.type, workType: item.workType, infrastructureType: item.infrastructureType, traffic: null, priority, isEmergency: false, workingHours: item.workingHours, start: item.start, end: item.end };
+  return { sourceType: item.type, workType: item.workType, infrastructureType: item.infrastructureType, traffic: null, priority, isEmergency: item.isEmergency ?? false, workingHours: item.workingHours, start: item.start, end: item.end };
 }
 const subjectSide = (s: SubjectInput): AssessSide => ({
   sourceType: "work_request", workType: s.workType ?? null, infrastructureType: s.infrastructureType, traffic: null, priority: s.priority ?? null,
@@ -88,15 +89,15 @@ const scheduleOf = (item: SourceItem): ScheduleSide | null =>
 async function fetchWorkRequests(area: unknown, excludeId: string | null): Promise<SourceItem[]> {
   const filter: Record<string, unknown> = { status: { $in: [...DETECTION_ACTIVE_WORK_STATUSES] }, geometry: { $geoIntersects: { $geometry: area } } };
   if (excludeId) filter._id = { $ne: oid(excludeId) };
-  const rows = await WorkRequest.find(filter).select("agencyId projectId workType status priority plannedStart plannedEnd schedule geometry updatedAt").limit(SOURCE_FETCH_CAP).lean();
+  const rows = await WorkRequest.find(filter).select("agencyId projectId workType status priority plannedStart plannedEnd schedule isEmergency geometry updatedAt").limit(SOURCE_FETCH_CAP).lean();
   return rows.map((r) => workItem(r as unknown as WorkRow));
 }
-type WorkRow = { _id: Oid; agencyId: Oid; projectId: Oid; workType: string; status: string; priority: string; plannedStart: Date; plannedEnd: Date; schedule?: { workingHours?: WorkingHours } | null; geometry: AnyGeometry; updatedAt?: Date };
+type WorkRow = { _id: Oid; agencyId: Oid; projectId: Oid; workType: string; status: string; priority: string; plannedStart: Date; plannedEnd: Date; schedule?: { workingHours?: WorkingHours } | null; isEmergency?: boolean; geometry: AnyGeometry; updatedAt?: Date };
 export function workItem(r: WorkRow): SourceItem {
   const id = r._id.toString();
   return {
     type: "work_request", id, agencyId: r.agencyId.toString(), infrastructureType: INFRA_OF_WORK[r.workType] ?? "OTHER", workType: r.workType, status: r.status,
-    ref: `WR-${id.slice(-8).toUpperCase()}`, title: r.workType.replaceAll("_", " ").toLowerCase(), start: r.plannedStart, end: r.plannedEnd, workingHours: r.schedule?.workingHours ?? "day",
+    ref: `WR-${id.slice(-8).toUpperCase()}`, title: r.workType.replaceAll("_", " ").toLowerCase(), start: r.plannedStart, end: r.plannedEnd, workingHours: r.schedule?.workingHours ?? "day", isEmergency: r.isEmergency ?? false,
     geometry: r.geometry, updatedAt: r.updatedAt ?? null, detail: { priority: r.priority, projectId: r.projectId.toString() },
   };
 }
@@ -134,7 +135,7 @@ function assetItem(r: AssetRow): SourceItem {
 export async function loadItems(refs: { type: SourceType; id: string }[]): Promise<Map<string, SourceItem>> {
   const ids = (t: SourceType) => refs.filter((r) => r.type === t).map((r) => oid(r.id));
   const [w, p, a] = await Promise.all([
-    ids("work_request").length ? WorkRequest.find({ _id: { $in: ids("work_request") } }).select("agencyId projectId workType status priority plannedStart plannedEnd schedule geometry updatedAt").lean() : [],
+    ids("work_request").length ? WorkRequest.find({ _id: { $in: ids("work_request") } }).select("agencyId projectId workType status priority plannedStart plannedEnd schedule isEmergency geometry updatedAt").lean() : [],
     ids("project").length ? Project.find({ _id: { $in: ids("project") } }).select("projectCode title description projectType agencyId status startDate plannedEndDate geometry updatedAt").lean() : [],
     ids("asset").length ? Asset.find({ _id: { $in: ids("asset") } }).select("name assetType agencyId condition geometry updatedAt").lean() : [],
   ]);
@@ -379,7 +380,7 @@ export async function runDetection(requestId: string, opts: { runBy: string; rad
   try {
     const subject: SubjectInput = {
       id: requestId, agencyId: String(claimed.agencyId), projectId: String(claimed.projectId), geometry: claimed.geometry as unknown as AnyGeometry, bufferMeters: DETECTION.DEFAULT_BUFFER_M,
-      schedule: { start: claimed.plannedStart, end: claimed.plannedEnd, workingHours: (claimed.schedule?.workingHours as WorkingHours | undefined) ?? "day", flexibleDays: 0, isEmergency: false }, infrastructureType: INFRA_OF_WORK[claimed.workType] ?? "OTHER",
+      schedule: { start: claimed.plannedStart, end: claimed.plannedEnd, workingHours: (claimed.schedule?.workingHours as WorkingHours | undefined) ?? "day", flexibleDays: 0, isEmergency: claimed.isEmergency ?? false }, infrastructureType: INFRA_OF_WORK[claimed.workType] ?? "OTHER",
       workType: claimed.workType, priority: claimed.priority,
     };
     const found = await collect(subject, radius, DETECTION.MAX_CANDIDATES_PERSISTED);

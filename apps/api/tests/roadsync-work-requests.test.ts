@@ -141,6 +141,10 @@ describe("step 66 roadsync work requests", { timeout: 120_000 }, () => {
     const night = await post(d.officer.token, body(d.approved.id, { workingHours: "night" }));
     expect(night.body.data.workRequest.workingHours).toBe("night");
     expect((await post(d.officer.token, body(d.approved.id, { workingHours: "evening" }))).status).toBe(400);
+    expect(wr.isEmergency).toBe(false); // default
+    const urgent = await post(d.officer.token, body(d.approved.id, { isEmergency: true }));
+    expect(urgent.body.data.workRequest.isEmergency).toBe(true);
+    await WorkRequest.deleteOne({ _id: urgent.body.data.workRequest.id });
     await WorkRequest.deleteOne({ _id: night.body.data.workRequest.id });
   });
 

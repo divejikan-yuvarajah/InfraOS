@@ -45,6 +45,7 @@ export type WorkRequestView = {
   plannedStart: string;
   plannedEnd: string;
   workingHours: "day" | "night" | "24h";
+  isEmergency: boolean;
   geometry: { type: string; coordinates: unknown };
   createdAt: string;
   updatedAt: string;
@@ -105,6 +106,7 @@ type Row = {
   plannedStart: Date;
   plannedEnd: Date;
   schedule?: { workingHours?: "day" | "night" | "24h" } | null;
+  isEmergency?: boolean;
   geometry: { type: string; coordinates: unknown };
   createdAt?: Date;
   updatedAt?: Date;
@@ -144,6 +146,7 @@ async function toViews(rows: Row[], session?: ClientSession): Promise<WorkReques
     plannedStart: row.plannedStart.toISOString(),
     plannedEnd: row.plannedEnd.toISOString(),
     workingHours: row.schedule?.workingHours ?? "day",
+    isEmergency: row.isEmergency ?? false,
     geometry: { type: row.geometry.type, coordinates: row.geometry.coordinates },
     createdAt: (row.createdAt ?? row.plannedStart).toISOString(),
     updatedAt: (row.updatedAt ?? row.plannedStart).toISOString(),
@@ -286,6 +289,7 @@ export async function createWorkRequest(actor: AuthenticatedActor, input: WorkRe
           plannedStart: start,
           plannedEnd: end,
           schedule: { workingHours: input.workingHours ?? "day" },
+          isEmergency: input.isEmergency ?? false,
           status: "DRAFT",
           priority: input.priority ?? "NORMAL",
         }], { session: mongo });

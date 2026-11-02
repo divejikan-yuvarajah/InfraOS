@@ -196,7 +196,7 @@ async function sideContext(rec: RecordPlain): Promise<{ a: SideCtx; b: SideCtx; 
   const items = await loadItems([{ type: rec.aType, id: String(rec.aId) }, { type: rec.bType, id: String(rec.bId) }]);
   const side = (type: RecordPlain["aType"], id: Oid, agencyId: string): SideCtx => {
     const i = items.get(`${type}:${id}`);
-    return { id: String(id), type, agencyId, start: i?.start ?? null, end: i?.end ?? null, workingHours: i?.workingHours ?? "day", isEmergency: false };
+    return { id: String(id), type, agencyId, start: i?.start ?? null, end: i?.end ?? null, workingHours: i?.workingHours ?? "day", isEmergency: i?.isEmergency ?? false };
   };
   return { a: side(rec.aType, rec.aId, rec.sides.a.agencyId), b: side(rec.bType, rec.bId, rec.sides.b.agencyId), items };
 }
