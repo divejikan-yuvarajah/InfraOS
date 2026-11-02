@@ -15,6 +15,7 @@ import { getAssessmentCopy } from "@/lib/roadsync/assessment-copy";
 import { apiQuery, csvOf, FILTER_KEYS, presetOf, type Preset, type RecordRow } from "@/lib/roadsync/conflict-records";
 import { acknowledgeBulk, acknowledgeRecord, downloadFile, exportCsvPath, fetchRecords, fetchRecordSummary, setWatching } from "@/lib/roadsync/conflict-records-api";
 import { getConflictCopy } from "@/lib/roadsync/conflict-records-copy";
+import { getCoordCopy } from "@/lib/roadsync/coordination-copy";
 import { workRequestQueryKey } from "@/lib/roadsync/work-requests-view";
 
 import { ConflictMap } from "./conflict-map";
@@ -266,6 +267,7 @@ function Row({ row, index, active, selected, copy, ac, locale, now, onFocus, onO
           <code className="cr-no">{row.conflictNo}</code>
           <StatusPill status={row.status} copy={copy} belowThreshold={row.belowThreshold} />
           {row.internal ? <span className="rs-nb-chip">{copy.internalChip}</span> : null}
+          {row.coordination && row.coordination.activeCount > 0 ? <Link className="rs-nb-chip" href={`/roadsync/coordination?preset=all&conflictId=${row.id}`} onClick={(e) => e.stopPropagation()}>{getCoordCopy(locale as never).integrations.stateLabel[row.coordination.state] ?? ""}</Link> : null}
           {classes.slice(0, 2).map((c) => <span key={c} className="rs-nb-chip">{ac.classes[c]}</span>)}
           {classes.length > 2 ? <span className="rs-nb-chip">{fmt(copy.row.more, { n: classes.length - 2 })}</span> : null}
           {row.lead && row.myAgency?.agencyId === row.lead.agencyId ? <CrownIcon className="cr-crown" aria-label={copy.lead.crown} /> : null}

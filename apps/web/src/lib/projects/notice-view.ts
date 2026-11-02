@@ -1,6 +1,6 @@
 export type NoticeItem = {
   id: string;
-  type: "APPROVAL" | "MILESTONE" | "SYSTEM" | "CONFLICT";
+  type: "APPROVAL" | "MILESTONE" | "SYSTEM" | "CONFLICT" | "COORDINATION";
   titleKey: string;
   isRead: boolean;
   createdAt: string;
@@ -45,6 +45,7 @@ export function rememberNoticePage(state: NoticePageState, scope: string, shown:
 }
 
 export function noticeHref(item: NoticeItem): string | null {
+  if (item.conflict && item.type === "COORDINATION") return item.conflict.id ? `/roadsync/coordination/${item.conflict.id}` : "/roadsync/coordination?preset=needs";
   if (item.conflict) return item.conflict.id ? `/roadsync/conflicts/${item.conflict.id}` : "/roadsync/conflicts?preset=needsMyAck";
   return item.project ? `/projects/${item.project.id}` : null;
 }

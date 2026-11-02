@@ -32,6 +32,8 @@ const recordSchema = new Schema({
   affectedAgencies: { type: [Schema.Types.Mixed], default: [] },
   agencyIds: { type: [Schema.Types.ObjectId], default: [] },
   lead: { type: Schema.Types.Mixed, default: null },
+  /** Step 74-75, server-owned summary: { activeCount, agreedCount, noAgreementCount, lastActivityAt, state }. */
+  coordination: { type: Schema.Types.Mixed, default: undefined },
   watchers: { type: [Schema.Types.ObjectId], default: [] },
   notes: { type: [Schema.Types.Mixed], default: [] },
   events: { type: [Schema.Types.Mixed], default: [] },

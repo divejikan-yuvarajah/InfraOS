@@ -41,6 +41,7 @@ export type ListQuery = {
   q?: string;
   watching?: boolean;
   internal?: boolean;
+  hasActiveCoordination?: boolean;
   sort: "severity" | "timeToImpact" | "ackDue" | "createdAt" | "updatedAt";
   page: number;
   limit: number;
@@ -60,7 +61,7 @@ export function myEntry(w: Who, rec: Pick<RecordPlain, "affectedAgencies">): Aff
   return live.find((a) => a.agencyId === w.actor.agencyId) ?? live.find((a) => w.scopeIds.has(a.agencyId)) ?? null;
 }
 const isOverdue = (e: Affected | null, rec: RecordPlain, now: Date) => Boolean(e && e.ack.status === "pending" && e.ackDueAt && new Date(e.ackDueAt) < now && OPEN_LIKE.includes(rec.status));
-const needsAck = (e: Affected | null, rec: RecordPlain) => Boolean(e && e.ack.status === "pending" && rec.status === "open");
+const needsAck = (e: Affected | null, rec: RecordPlain) => Boolean(e && e.ack.status === "pending" && OPEN_LIKE.includes(rec.status));
 
 export function timeToImpact(win: RecordPlain["overlapWindow"], now = new Date()) {
   if (!win) return { state: "none" as const, days: null, dayIndex: null, totalDays: null };
@@ -139,6 +140,7 @@ function rowOf(v: View, rec: RecordPlain) {
     createdAt: iso(rec.createdAt),
     updatedAt: iso(rec.updatedAt),
     version: rec.version,
+    coordination: rec.coordination ?? { activeCount: 0, agreedCount: 0, noAgreementCount: 0, lastActivityAt: null, state: "none" as const },
   };
 }
 export type RecordRow = ReturnType<typeof rowOf>;
@@ -154,6 +156,7 @@ function mongoFilter(w: Who, q: Partial<ListQuery>): Record<string, unknown> {
   if (q.agencyId?.length) and.push({ agencyIds: { $in: q.agencyId.map(oid) } });
   if (q.leadAgencyId) and.push({ "lead.agencyId": q.leadAgencyId });
   if (q.requestId) and.push({ $or: [{ aType: "work_request", aId: oid(q.requestId) }, { bType: "work_request", bId: oid(q.requestId) }] });
+  if (q.hasActiveCoordination) and.push({ "coordination.activeCount": { $gt: 0 } });
   if (q.watching) and.push({ watchers: oid(w.actor.userId) });
   if (q.internal !== undefined) and.push({ internal: q.internal });
   if (q.startsWithinDays !== undefined) and.push({ "overlapWindow.start": { $lte: new Date(Date.now() + q.startsWithinDays * DAY_MS) }, "overlapWindow.end": { $gte: new Date(Date.now() - DAY_MS) } });

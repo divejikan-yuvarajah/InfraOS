@@ -4,7 +4,7 @@
  * Steps 74-77 and has NO transition here, so adding them means adding rows to TRANSITIONS.
  */
 import { BAND_CODES, type Band } from "./assessment.rules.js";
-import { ACK_SLA_HOURS, OPEN_LIKE, RECORD, type EventType, type RecordStatus } from "./conflict-record.rules.js";
+import { ACK_DRIVEN, ACK_SLA_HOURS, OPEN_LIKE, RECORD, type EventType, type RecordStatus } from "./conflict-record.rules.js";
 
 export type AckEntry = { agencyId: string; required: boolean; active: boolean; excluded: unknown | null; ack: { status: "pending" | "acknowledged" } };
 
@@ -36,7 +36,7 @@ export const hasAnyAck = (agencies: AckEntry[]) => agencies.some((a) => counts(a
 
 /** open <-> acknowledged is automatic and derived from the acknowledgements; other statuses are untouched. */
 export function syncAck(status: RecordStatus, agencies: AckEntry[]): RecordStatus {
-  if (!OPEN_LIKE.includes(status)) return status;
+  if (!ACK_DRIVEN.includes(status)) return status;
   return allRequiredAcked(agencies) ? "acknowledged" : "open";
 }
 

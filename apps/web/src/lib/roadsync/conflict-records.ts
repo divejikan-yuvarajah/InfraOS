@@ -46,6 +46,7 @@ export type RecordRow = {
   createdAt: string | null;
   updatedAt: string | null;
   version: number;
+  coordination?: { activeCount: number; agreedCount: number; noAgreementCount: number; lastActivityAt: string | null; state: "none" | "awaiting_response" | "negotiating" | "escalated" | "agreed" };
 };
 export type RecordList = { items: RecordRow[]; total: number; page: number; limit: number };
 export type RecordSummary = { needsMyAck: number; overdue: number; byBand: Record<Band, number>; byStatus: Record<string, number>; startingIn14d: number; opportunities: number; watching: number; criticalHigh: number; capped: boolean };
@@ -94,7 +95,7 @@ export type BulkResult = { id: string; result: "ok" | "already" | "forbidden" | 
 
 export const HOUR = 3_600_000;
 export const DAY = 24 * HOUR;
-export const IMPLEMENTED_LIFECYCLE: RecordStatus[] = ["open", "acknowledged"];
+export const IMPLEMENTED_LIFECYCLE: RecordStatus[] = ["open", "acknowledged", "awaiting_response", "negotiating", "escalated"];
 export const SIDE_EXITS: RecordStatus[] = ["dismissed", "auto_closed"];
 
 export type SlaState = { kind: "none" } | { kind: "later"; hours: number } | { kind: "today" } | { kind: "overdue"; days: number; hours: number };

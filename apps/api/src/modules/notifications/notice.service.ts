@@ -40,8 +40,8 @@ export type NoticeFailure = { ok: false; status: FlowControl["status"]; code: Fl
 
 export type NoticeItem = {
   id: string;
-  type: "APPROVAL" | "MILESTONE" | "SYSTEM" | "CONFLICT";
-  titleKey: NoticeAction | `roadsync.notifications.${string}`;
+  type: "APPROVAL" | "MILESTONE" | "SYSTEM" | "CONFLICT" | "COORDINATION";
+  titleKey: NoticeAction | `roadsync.${string}`;
   isRead: boolean;
   createdAt: string;
   readAt: string | null;
@@ -195,10 +195,10 @@ export async function listNotices(actor: AuthenticatedActor, query: NoticeListQu
       ? new Map<string, { projectCode: string; title: string; status: string }>()
       : new Map((await Project.find({ $and: [scoped.filter, { _id: { $in: ids } }] }).select("projectCode title status")).map((project) => [project._id.toString(), project]));
     const notices: NoticeItem[] = page.flatMap((row): NoticeItem[] => {
-      if (row.type === "CONFLICT" && row.title.startsWith("roadsync.notifications.")) {
+      if ((row.type === "CONFLICT" || row.type === "COORDINATION") && row.title.startsWith("roadsync.")) {
         let params: Record<string, unknown> = {};
         try { const parsed: unknown = JSON.parse(row.message); if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) params = parsed as Record<string, unknown>; } catch { /* keep empty */ }
-        return [{ id: row._id.toString(), type: "CONFLICT", titleKey: row.title as NoticeItem["titleKey"], isRead: row.isRead, createdAt: row.createdAt ? row.createdAt.toISOString() : new Date(0).toISOString(), readAt: iso(row.readAt), project: null, conflict: { id: row.resourceId ? row.resourceId.toString() : null, params } }];
+        return [{ id: row._id.toString(), type: row.type, titleKey: row.title as NoticeItem["titleKey"], isRead: row.isRead, createdAt: row.createdAt ? row.createdAt.toISOString() : new Date(0).toISOString(), readAt: iso(row.readAt), project: null, conflict: { id: row.resourceId ? row.resourceId.toString() : null, params } }];
       }
       if (!isNoticeAction(row.title)) return [];
       const project = row.resourceId ? visible.get(row.resourceId.toString()) : undefined;
