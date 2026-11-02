@@ -55,7 +55,7 @@ export type Affected = {
 };
 export type RecEvent = { id: string; at: Date; type: EventType; actorType: "system" | "user"; actorId: string | null; actorAgencyId: string | null; data: Record<string, unknown> };
 export type Note = { id: string; agencyId: string; authorId: string; text: string; createdAt: Date };
-export type SideSnap = { ref: string; title: string; agencyId: string; infrastructureType: string; workType: string | null; plannedStart: Date | null; plannedEnd: Date | null };
+export type SideSnap = { ref: string; title: string; agencyId: string; infrastructureType: string; workType: string | null; plannedStart: Date | null; plannedEnd: Date | null; workingHours?: "day" | "night" | "24h" };
 export type RecordPlain = {
   _id: Oid;
   conflictNo: string;
@@ -136,7 +136,7 @@ export function qualifies(doc: Pick<PairDoc, "assessment">): boolean {
   return false;
 }
 
-const sideSnap = (i: SourceItem): SideSnap => ({ ref: i.ref, title: i.title, agencyId: i.agencyId, infrastructureType: i.infrastructureType, workType: i.workType, plannedStart: i.start, plannedEnd: i.end });
+const sideSnap = (i: SourceItem): SideSnap => ({ ref: i.ref, title: i.title, agencyId: i.agencyId, infrastructureType: i.infrastructureType, workType: i.workType, plannedStart: i.start, plannedEnd: i.end, workingHours: i.workingHours });
 const itemLive = (i: SourceItem | undefined): i is SourceItem => {
   if (!i) return false;
   if (i.type === "work_request") return (DETECTION_ACTIVE_WORK_STATUSES as readonly string[]).includes(i.status);
@@ -437,7 +437,7 @@ async function processPair(doc: PairDoc, items: Map<string, SourceItem>, pending
         rec.ruleVersion = RULE_VERSION;
       }
     }
-    const rc = reconcile({ status: rec.status, belowThreshold: rec.belowThreshold, qualifies: wants, pairActive: live, band: rec.severity.current.band, dismissedBand: rec.dismissedAt?.band ?? null, agencies: rec.affectedAgencies, inFlight: rec.resolution?.state === "applying" || rec.resolution?.state === "verifying", resolved: rec.status === "resolved" && rec.resolution?.outcome ? { outcome: rec.resolution.outcome, band: rec.resolution.resolvedBand ?? rec.severity.current.band } : null });
+    const rc = reconcile({ status: rec.status, belowThreshold: rec.belowThreshold, qualifies: wants, pairActive: live, band: rec.severity.current.band, dismissedBand: rec.dismissedAt?.band ?? null, agencies: rec.affectedAgencies, conflictKind: doc.assessment?.kind === "conflict", inFlight: rec.resolution?.state === "applying" || rec.resolution?.state === "verifying", resolved: rec.status === "resolved" && rec.resolution?.outcome ? { outcome: rec.resolution.outcome, band: rec.resolution.resolvedBand ?? rec.severity.current.band } : null });
     rec.belowThreshold = rc.belowThreshold;
     if (rc.status !== rec.status) {
       rec.status = rc.status;

@@ -2,7 +2,7 @@ import mongoose, { Schema } from "mongoose";
 import { reference } from "../../../shared/database/fields.js";
 import { RECORD_STATUSES } from "../conflict-record.rules.js";
 
-const side = { ref: String, title: String, agencyId: String, infrastructureType: String, workType: { type: String, default: null }, plannedStart: { type: Date, default: null }, plannedEnd: { type: Date, default: null } };
+const side = { ref: String, title: String, agencyId: String, infrastructureType: String, workType: { type: String, default: null }, plannedStart: { type: Date, default: null }, plannedEnd: { type: Date, default: null }, workingHours: { type: String, enum: ["day", "night", "24h"], default: "day" } };
 
 /**
  * Steps 72-73: one formal, numbered record per assessed pair. Server-owned; nothing here is accepted from clients.

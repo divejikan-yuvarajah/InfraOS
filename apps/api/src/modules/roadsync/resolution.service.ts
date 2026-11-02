@@ -44,7 +44,7 @@ export type ResPlain = {
 };
 export type AmPlain = {
   _id: Oid; amendmentNo: string; resolutionId: Oid; conflictId: Oid; workRequestId: Oid; agencyId: Oid; source: { type: string; coordinationRequestId?: string; round?: number }; mandated: boolean; baseVersion: number;
-  changes: { schedule: { before: { plannedStart: Date; plannedEnd: Date }; after: { plannedStart: Date; plannedEnd: Date } } }; impact: AmendmentImpact | null; status: string;
+  changes: { schedule?: { before: { plannedStart: Date; plannedEnd: Date }; after: { plannedStart: Date; plannedEnd: Date } }; workingHours?: { before: "day" | "night" | "24h"; after: "day" | "night" | "24h" } }; impact: AmendmentImpact | null; status: string;
   createdBy: { userId: string; agencyId: string }; submittedBy: { userId: string; agencyId: string } | null; appliedAt: Date | null; appliedBy: { userId: string; agencyId: string } | null; appliedVersion: number | null; version: number; createdAt: Date;
 };
 
@@ -167,6 +167,12 @@ async function syncRecord(res: ResPlain, now = new Date()): Promise<void> {
   if (resolved) await autoWithdrawForRecord(String(res.conflictId), "conflict_resolved").catch(() => 0);
 }
 
+/** Rule (c): either side of the pair is an emergency work request. */
+async function emergencyOf(rec: Pick<RecordPlain, "aType" | "aId" | "bType" | "bId">): Promise<boolean> {
+  const ids = [rec.aType === "work_request" ? rec.aId : null, rec.bType === "work_request" ? rec.bId : null].filter((x): x is Oid => Boolean(x));
+  return ids.length ? Boolean(await WorkRequest.exists({ _id: { $in: ids }, isEmergency: true })) : false;
+}
+
 const OUTCOME: Record<ResolutionType, OutcomeCode> = { amendment: "amendment_cleared", directive: "directive_cleared", risk_acceptance: "risk_accepted", no_action: "no_action", opportunity: "opportunity_realized" };
 
 /** The single derive-and-persist path. Safe to call after any partial operation. */
@@ -204,26 +210,36 @@ export async function recomputeResolution(id: Oid | string): Promise<ResPlain | 
 // ---------- create ----------
 
 export type CreateInput = {
-  type: ResolutionType; source?: { coordinationRequestId?: string }; manual?: { targetRequestId: string; schedule: { plannedStart: string; plannedEnd: string } };
+  type: ResolutionType; source?: { coordinationRequestId?: string }; manual?: { targetRequestId: string; schedule?: { plannedStart: string; plannedEnd: string }; workingHours?: "day" | "night" | "24h" };
   noAction?: { reasonCode: string; note?: string }; riskAcceptance?: { justification: string; mitigations: { code: string; text?: string }[] };
-  directive?: { justification: string; deadlineAt?: string; targets: { targetRequestId: string; schedule: { plannedStart: string; plannedEnd: string } }[] };
+  directive?: { justification: string; deadlineAt?: string; targets: { targetRequestId: string; schedule?: { plannedStart: string; plannedEnd: string }; workingHours?: "day" | "night" | "24h" }[] };
   opportunity?: { leadAgencyId?: string; note?: string }; onBehalfOfAgencyId?: string; reason?: string;
 };
 
-type Target = { workRequestId: string; agencyId: string; schedule: { plannedStart: string; plannedEnd: string }; source: AmPlain["source"] };
+type Target = { workRequestId: string; agencyId: string; schedule?: { plannedStart: string; plannedEnd: string }; workingHours?: "day" | "night" | "24h"; source: AmPlain["source"] };
+export const shiftOf = (a: Pick<AmPlain, "changes">): number => (a.changes.schedule ? shiftDays(a.changes.schedule.before.plannedStart, a.changes.schedule.after.plannedStart) : 0);
+/** The same override object feeds the impact preview, the apply-time re-check and the controlled apply. */
+export const overrideOf = (a: Pick<AmPlain, "changes">) => ({ ...(a.changes.schedule ? { start: a.changes.schedule.after.plannedStart, end: a.changes.schedule.after.plannedEnd } : {}), ...(a.changes.workingHours ? { workingHours: a.changes.workingHours.after } : {}) });
 
 async function buildAmendment(res: { _id: Oid; conflictId: Oid }, rec: RecordPlain, t: Target, w: Who, mandated: boolean, now: Date): Promise<AmPlain | Fail> {
-  const wr = await WorkRequest.findById(oid(t.workRequestId)).select("agencyId plannedStart plannedEnd status __v").lean();
+  const wr = await WorkRequest.findById(oid(t.workRequestId)).select("agencyId plannedStart plannedEnd schedule status __v").lean();
   if (!wr || !AMENDABLE.includes(wr.status)) return no(409, "request_not_amendable");
   if (String(wr.agencyId) !== t.agencyId) return no(403, "forbidden");
-  const start = new Date(t.schedule.plannedStart);
-  const end = new Date(t.schedule.plannedEnd);
-  if (!validateDates(start, end, now).every((c) => c.code === "start_not_past" || c.ok)) return no(400, "invalid_dates");
-  if (start.getTime() === wr.plannedStart.getTime() && end.getTime() === wr.plannedEnd.getTime()) return no(400, "no_change");
-  const impact = await computeAmendmentImpact(t.workRequestId, String(rec.candidateId), { start, end });
+  if (!t.schedule && !t.workingHours) return no(400, "invalid");
+  const hoursBefore = (wr as { schedule?: { workingHours?: "day" | "night" | "24h" } }).schedule?.workingHours ?? "day";
+  const changes: AmPlain["changes"] = {};
+  if (t.schedule) {
+    const start = new Date(t.schedule.plannedStart);
+    const end = new Date(t.schedule.plannedEnd);
+    if (!validateDates(start, end, now).every((c) => c.code === "start_not_past" || c.ok)) return no(400, "invalid_dates");
+    if (!(start.getTime() === wr.plannedStart.getTime() && end.getTime() === wr.plannedEnd.getTime())) changes.schedule = { before: { plannedStart: wr.plannedStart, plannedEnd: wr.plannedEnd }, after: { plannedStart: start, plannedEnd: end } };
+  }
+  if (t.workingHours && t.workingHours !== hoursBefore) changes.workingHours = { before: hoursBefore, after: t.workingHours };
+  if (!changes.schedule && !changes.workingHours) return no(400, "no_change");
+  const impact = await computeAmendmentImpact(t.workRequestId, String(rec.candidateId), overrideOf({ changes }));
   const doc = await Amendment.create({
     amendmentNo: await nextNo("RSA", now), resolutionId: res._id, conflictId: res.conflictId, workRequestId: oid(t.workRequestId), agencyId: oid(t.agencyId), source: t.source, mandated, baseVersion: (wr as { __v?: number }).__v ?? 0,
-    changes: { schedule: { before: { plannedStart: wr.plannedStart, plannedEnd: wr.plannedEnd }, after: { plannedStart: start, plannedEnd: end } } }, impact, status: mandated ? "approved" : "draft", createdBy: { userId: w.actor.userId, agencyId: w.actor.agencyId },
+    changes, impact, status: mandated ? "approved" : "draft", createdBy: { userId: w.actor.userId, agencyId: w.actor.agencyId },
   });
   return doc.toObject() as unknown as AmPlain;
 }
@@ -256,14 +272,14 @@ export async function createResolution(w: Who, conflictId: string, input: Create
       const cr = (await CoordinationRequest.findById(oid(input.source.coordinationRequestId)).lean()) as unknown as { conflictId: Oid; status: string; agreedTerms: Parameters<typeof termsToPlan>[0] & { round: number } } | null;
       if (!cr || String(cr.conflictId) !== conflictId || cr.status !== "agreed" || !cr.agreedTerms) return no(409, "terms_not_agreed");
       const plan = termsToPlan(cr.agreedTerms, pair);
-      targets = plan.amendments.map((a) => ({ workRequestId: a.workRequestId, agencyId: a.agencyId, schedule: a.schedule, source: { type: "agreed_terms", coordinationRequestId: input.source!.coordinationRequestId, round: cr.agreedTerms.round } }));
+      targets = plan.amendments.map((a) => ({ workRequestId: a.workRequestId, agencyId: a.agencyId, ...(a.schedule ? { schedule: a.schedule } : {}), ...(a.workingHours ? { workingHours: a.workingHours } : {}), source: { type: "agreed_terms", coordinationRequestId: input.source!.coordinationRequestId, round: cr.agreedTerms.round } }));
       commitments = plan.commitments;
       source = { coordinationRequestId: input.source.coordinationRequestId, round: cr.agreedTerms.round };
       if (!targets.length) return no(400, "terms_have_no_amendment");
     } else if (input.manual) {
       const side = [pair.aId === input.manual.targetRequestId && pair.aType === "work_request" ? pair.aAgencyId : null, pair.bId === input.manual.targetRequestId && pair.bType === "work_request" ? pair.bAgencyId : null].find(Boolean);
       if (!side || (!w.national && side !== w.actor.agencyId) || (w.national && side !== onBehalf)) return no(403, "forbidden");
-      targets = [{ workRequestId: input.manual.targetRequestId, agencyId: side, schedule: input.manual.schedule, source: { type: "manual" } }];
+      targets = [{ workRequestId: input.manual.targetRequestId, agencyId: side, ...(input.manual.schedule ? { schedule: input.manual.schedule } : {}), ...(input.manual.workingHours ? { workingHours: input.manual.workingHours } : {}), source: { type: "manual" } }];
     } else return no(400, "invalid");
     if (targets.length > RES.MAX_AMENDMENTS) return no(400, "too_many_amendments");
   } else if (input.type === "directive") {
@@ -271,7 +287,7 @@ export async function createResolution(w: Who, conflictId: string, input: Create
     for (const t of d.targets) {
       const agencyId = [pair.aId === t.targetRequestId && pair.aType === "work_request" ? pair.aAgencyId : null, pair.bId === t.targetRequestId && pair.bType === "work_request" ? pair.bAgencyId : null].find(Boolean);
       if (!agencyId) return no(400, "invalid_target");
-      targets.push({ workRequestId: t.targetRequestId, agencyId, schedule: t.schedule, source: { type: "directive" } });
+      targets.push({ workRequestId: t.targetRequestId, agencyId, ...(t.schedule ? { schedule: t.schedule } : {}), ...(t.workingHours ? { workingHours: t.workingHours } : {}), source: { type: "directive" } });
     }
     source = { directiveBy: w.actor.userId };
   } else if (input.type === "opportunity") opportunity = { leadAgencyId: input.opportunity?.leadAgencyId ?? rec.lead?.agencyId ?? null, ...(input.opportunity?.note ? { note: input.opportunity.note } : {}) };
@@ -304,14 +320,14 @@ export async function createResolution(w: Who, conflictId: string, input: Create
   const fresh = resolved ?? res;
   // Non-amendment types submit immediately: their approvals are the whole workflow.
   if (input.type === "risk_acceptance" || input.type === "no_action" || input.type === "opportunity") {
-    const reasons = nationalReasons({ type: input.type, thirdParty: null, severityAtDetection: rec.severity.atDetection.band, shiftDays: 0, band: rec.severity.current.band });
+    const reasons = nationalReasons({ emergency: await emergencyOf(rec), type: input.type, thirdParty: null, severityAtDetection: rec.severity.atDetection.band, shiftDays: 0, band: rec.severity.current.band });
     const approvals = input.type === "risk_acceptance" ? buildApprovals({ kind: "risk", hasSecondNational: await hasSecond("SUPER_ADMIN", undefined, w.actor.userId), now }) : buildApprovals({ kind: "confirm", requiredAgencyIds: required, nationalNeeded: reasons.includes("no_action_high_band"), now });
     await updateRes(res._id, (r) => { r.approvals = approvals; r.status = "pending_approval"; });
   }
   await syncRecord((await loadRes(String(res._id))) ?? fresh);
   const actor = ledgerActor(w, onBehalf);
   await led(rec, conflictId, "resolution_started", actor, { type: "resolution", id: String(res._id), no: resNo }, { type: input.type, amendments: made.length });
-  for (const a of made) await led(rec, conflictId, "amendment_created", actor, { type: "amendment", id: String(a._id), no: a.amendmentNo }, { resolutionNo: resNo, mandated: a.mandated, shiftDays: shiftDays(a.changes.schedule.before.plannedStart, a.changes.schedule.after.plannedStart) });
+  for (const a of made) await led(rec, conflictId, "amendment_created", actor, { type: "amendment", id: String(a._id), no: a.amendmentNo }, { resolutionNo: resNo, mandated: a.mandated, shiftDays: shiftOf(a) });
   if (input.type === "directive") {
     await led(rec, conflictId, "directive_issued", actor, { type: "resolution", id: String(res._id), no: resNo }, { targets: made.length });
     await notifyRes(fresh, rec, "directive_issued", [...new Set(made.map((a) => String(a.agencyId)))], { amendmentNo: made[0]?.amendmentNo }, w.actor.userId);
@@ -342,7 +358,7 @@ export async function submitAmendment(w: Who, resId: string, amId: string, input
   const wr = await WorkRequest.findById(a.workRequestId).select("__v status").lean();
   if (!wr || (wr as { __v?: number }).__v !== a.baseVersion || !AMENDABLE.includes(wr.status)) { await saveAm(a, { status: "stale" }); await led(rec, res.conflictId, "amendment_stale", sysActor, { type: "amendment", id: amId, no: a.amendmentNo }, {}); await recomputeResolution(res._id); return no(409, "stale_amendment"); }
   if (!a.impact) return no(409, "impact_missing");
-  const reasons = nationalReasons({ type: res.type, thirdParty: a.impact.thirdParty, severityAtDetection: rec.severity.atDetection.band, shiftDays: shiftDays(a.changes.schedule.before.plannedStart, a.changes.schedule.after.plannedStart), band: rec.severity.current.band });
+  const reasons = nationalReasons({ emergency: await emergencyOf(rec), type: res.type, thirdParty: a.impact.thirdParty, severityAtDetection: rec.severity.atDetection.band, shiftDays: shiftOf(a), band: rec.severity.current.band });
   const now = new Date();
   const steps = buildApprovals({ kind: "amendment", amendmentId: amId, ownerAgencyId: String(a.agencyId), hasSecondAdmin: await hasSecond("GOV_ADMIN", String(a.agencyId), w.actor.userId), nationalNeeded: reasons.length > 0, now });
   if (!(await saveAm(a, { status: "pending_approval", submittedBy: { userId: w.actor.userId, agencyId: w.actor.agencyId } }))) return no(409, "stale");
@@ -406,15 +422,15 @@ export async function preflight(res: ResPlain, a: AmPlain, rec: RecordPlain, now
   const checks: { code: string; ok: boolean }[] = [
     { code: "request_active", ok: Boolean(wr && AMENDABLE.includes(wr.status)) },
     { code: "version_unchanged", ok: Boolean(wr && (wr as { __v?: number }).__v === a.baseVersion) },
-    ...validateDates(a.changes.schedule.after.plannedStart, a.changes.schedule.after.plannedEnd, now).map((c) => (c.code === "start_not_past" && a.mandated ? { ...c, ok: true } : c)),
+    ...(a.changes.schedule ? validateDates(a.changes.schedule.after.plannedStart, a.changes.schedule.after.plannedEnd, now) : []).map((c) => (c.code === "start_not_past" && a.mandated ? { ...c, ok: true } : c)),
     { code: "approvals_complete", ok: a.mandated || stepsOf(res, String(a._id)).every((s) => s.status === "approved") },
     { code: "resolution_active", ok: res.status !== "cancelled" && res.status !== "resolved" },
   ];
   if (a.source.type === "agreed_terms" && a.source.coordinationRequestId) checks.push({ code: "terms_still_agreed", ok: Boolean(await CoordinationRequest.exists({ _id: oid(a.source.coordinationRequestId), status: "agreed" })) });
   if (!a.mandated && a.impact) {
-    const now2 = await computeAmendmentImpact(String(a.workRequestId), String(rec.candidateId), { start: a.changes.schedule.after.plannedStart, end: a.changes.schedule.after.plannedEnd });
+    const now2 = await computeAmendmentImpact(String(a.workRequestId), String(rec.candidateId), overrideOf(a));
     const worse = bandRank(now2.pair.after.band) > bandRank(a.impact.pair.after.band);
-    const national = nationalReasons({ type: res.type, thirdParty: now2.thirdParty, severityAtDetection: rec.severity.atDetection.band, shiftDays: shiftDays(a.changes.schedule.before.plannedStart, a.changes.schedule.after.plannedStart), band: rec.severity.current.band }).length > 0;
+    const national = nationalReasons({ emergency: await emergencyOf(rec), type: res.type, thirdParty: now2.thirdParty, severityAtDetection: rec.severity.atDetection.band, shiftDays: shiftOf(a), band: rec.severity.current.band }).length > 0;
     const nationalDone = stepsOf(res, String(a._id)).some((s) => s.step === "national" && s.status === "approved");
     checks.push({ code: "impact_unchanged", ok: !worse && (!national || nationalDone) && now2.thirdParty.newConflicts <= a.impact.thirdParty.newConflicts });
   }
@@ -445,7 +461,7 @@ export async function applyAmendment(w: Who, resId: string, amId: string, input:
     if (pf.checks.find((c) => c.code === "version_unchanged" && !c.ok)) { await saveAm(a, { status: "stale" }); await led(rec, res.conflictId, "amendment_stale", sysActor, { type: "amendment", id: amId, no: a.amendmentNo }, {}); await recomputeResolution(res._id); }
     return no(409, "preflight_failed", pf.checks);
   }
-  const done = await applyAmendmentToRequest({ amendmentId: amId, resolutionId: String(res._id), workRequestId: String(a.workRequestId), baseVersion: a.baseVersion, plannedStart: a.changes.schedule.after.plannedStart, plannedEnd: a.changes.schedule.after.plannedEnd }, { userId: w.actor.userId, agencyId: onBehalf ?? w.actor.agencyId });
+  const done = await applyAmendmentToRequest({ amendmentId: amId, resolutionId: String(res._id), workRequestId: String(a.workRequestId), baseVersion: a.baseVersion, ...(a.changes.schedule ? { plannedStart: a.changes.schedule.after.plannedStart, plannedEnd: a.changes.schedule.after.plannedEnd } : {}), ...(a.changes.workingHours ? { workingHours: a.changes.workingHours.after } : {}) }, { userId: w.actor.userId, agencyId: onBehalf ?? w.actor.agencyId });
   if (!done.ok) return no(409, done.code);
   await saveAm(a, { status: "applied", appliedAt: now, appliedBy: { userId: w.actor.userId, agencyId: w.actor.agencyId }, appliedVersion: done.version, preflightLast: { at: now, checks: pf.checks } }).then((ok) => ok || saveAm({ ...a, version: a.version + 1 }, { status: "applied", appliedAt: now }));
   const all = await loadAms(res._id);
@@ -455,7 +471,7 @@ export async function applyAmendment(w: Who, resId: string, amId: string, input:
     if (live.every((x) => x.status === "applied") && !r.verification) r.verification = { requestedAt: now, assessedAt: null, assessedRequestIds: [], before: { score: rec.severity.current.score, band: rec.severity.current.band, pairActive: pair?.status === "active" }, after: null, thirdParty: all.length === 1 ? { ...(a.impact?.thirdParty ?? { newConflicts: 0, worsened: 0, cleared: 0 }), source: "preview" as const } : null, result: "pending" };
     pushRes(r, "amendment_applied", evActor(w), { amendmentNo: a.amendmentNo }, now);
   });
-  await led(rec, res.conflictId, "amendment_applied", ledgerActor(w, onBehalf), { type: "amendment", id: amId, no: a.amendmentNo }, { resolutionNo: res.resolutionNo, workRequestVersion: done.version, shiftDays: shiftDays(a.changes.schedule.before.plannedStart, a.changes.schedule.after.plannedStart) }, { amendmentStatus: "applied" });
+  await led(rec, res.conflictId, "amendment_applied", ledgerActor(w, onBehalf), { type: "amendment", id: amId, no: a.amendmentNo }, { resolutionNo: res.resolutionNo, workRequestVersion: done.version, shiftDays: shiftOf(a) }, { amendmentStatus: "applied" });
   await notifyRes(updated ?? res, rec, "amendment_applied", [...requiredAgencies(rec), "national"], { amendmentNo: a.amendmentNo }, w.actor.userId);
   await audit(w, "amendment_applied", res, "applied");
   return { ok: true, res: (await recomputeResolution(res._id)) ?? res };

@@ -4,73 +4,44 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useRef, useState, useSyncExternalStore } from "react";
-import { Loader2Icon } from "lucide-react";
 
 import { StaffWorkspaceShell } from "@/components/auth/staff-workspace-shell";
 import { fetchProjects } from "@/lib/projects/api";
-import { classifyWorkRequestError, createWorkRequest, FAILURE_COPY } from "@/lib/roadsync/api";
-import {
-  buildCreateBody,
-  canHintCreate,
-  ELIGIBLE_PROJECT_STATUSES,
-  EMPTY_FORM,
-  firstInvalidField,
-  formatColombo,
-  formatPosition,
-  parseGeometryText,
-  PRIORITY_LABELS,
-  summarizeGeometry,
-  WORK_PRIORITIES,
-  WORK_TYPE_LABELS,
-  WORK_TYPES,
-  workRequestQueryKey,
-  colomboLocalToUtc,
-  type GeometryKind,
-  type WorkRequestFormErrors,
-  type WorkRequestFormValues,
-} from "@/lib/roadsync/work-requests-view";
+import { classifyWorkRequestError, createWorkRequest, submitWorkRequest, type WorkRequestFailureKind } from "@/lib/roadsync/api";
+import { buildCreateBody, canHintCreate, ELIGIBLE_PROJECT_STATUSES, EMPTY_FORM, workRequestQueryKey, type WorkRequestFormErrors, type WorkRequestFormValues } from "@/lib/roadsync/work-requests-view";
+import { getWorkRequestCopy, type WorkRequestCopy } from "@/lib/roadsync/work-request-copy";
+import { fmt } from "@/lib/roadsync/assessment";
 import { getAuthEpoch, getMemorySession, subscribeAuth } from "@/lib/auth/state";
+import { useWorkspaceLocale } from "@/lib/i18n/workspace-locale";
 
-import { PriorityMark, WORK_TYPE_ICONS } from "./roadsync-shared";
-import type { NearbyOverlay } from "@/lib/roadsync/nearby";
-import { ConflictPreview } from "./conflict-preview";
-import { NearbyActivityPanel } from "./nearby-activity";
-import { LocationPicker } from "./work-map";
+import { WorkRequestWizard, type Pending } from "./work-request-wizard";
 
 function useAuthPart(read: () => string): string {
   return useSyncExternalStore(subscribeAuth, read, () => "");
 }
 
-const FIELD_LABEL: Record<keyof WorkRequestFormValues, string> = {
-  projectId: "Project",
-  workType: "Work type",
-  priority: "Priority",
-  geometryKind: "Geometry type",
-  coordinates: "Coordinates",
-  plannedStart: "Planned start",
-  plannedEnd: "Planned end",
-};
+export const failureText = (copy: WorkRequestCopy, kind: WorkRequestFailureKind): string =>
+  ({ forbidden: copy.failures.forbidden, "not-found": copy.failures.notFound, conflict: copy.failures.conflict, invalid: copy.failures.invalid, auth: copy.failures.auth, unavailable: copy.failures.unavailable })[kind];
 
-const KIND_HELP: Record<GeometryKind, string> = {
-  Point: "One location. Enter a single line.",
-  LineString: "A corridor. Enter two or more vertices in order, one per line.",
-  Polygon: "A work area. Enter three or more corners; the shape closes automatically.",
-};
-
+/**
+ * Create flow: one shared form state across four stages. "Save Draft" creates a draft. "Submit for Coordination" is
+ * an explicit save-then-submit: if the draft is saved but the submit fails, the draft is kept and the user lands on
+ * its detail page with the reason instead of losing the work or being told nothing was saved.
+ */
 export function WorkRequestNewClient() {
   const router = useRouter();
   const queryClient = useQueryClient();
+  const [locale] = useWorkspaceLocale();
+  const copy = getWorkRequestCopy(locale);
   const roleKey = useAuthPart(() => getMemorySession()?.user.roleKey ?? "");
   const userId = useAuthPart(() => getMemorySession()?.user.id ?? "");
   const epoch = useAuthPart(() => String(getAuthEpoch()));
   const [values, setValues] = useState<WorkRequestFormValues>(EMPTY_FORM);
   const [errors, setErrors] = useState<WorkRequestFormErrors>({});
   const [serverError, setServerError] = useState<string | null>(null);
+  const [pending, setPending] = useState<Pending>(false);
   const summaryRef = useRef<HTMLDivElement>(null);
-  const submitting = useRef(false);
-  // Step 67: the server geometry check (null = not checked yet or unavailable; the API rechecks on create).
-  const [geoValid, setGeoValid] = useState<boolean | null>(null);
-  const [overlay, setOverlay] = useState<NearbyOverlay | null>(null);
+  const busy = useRef(false);
 
   const projects = useQuery({
     queryKey: workRequestQueryKey(epoch, userId, roleKey, "project-options"),
@@ -78,228 +49,78 @@ export function WorkRequestNewClient() {
     enabled: Boolean(userId),
     retry: false,
   });
-  const eligible = useMemo(
-    () => (projects.data?.projects ?? []).filter((p) => (ELIGIBLE_PROJECT_STATUSES as readonly string[]).includes(p.status)),
-    [projects.data],
-  );
-  const project = eligible.find((p) => p.id === values.projectId);
+  const options = useMemo(() => (projects.data?.projects ?? []).filter((p) => (ELIGIBLE_PROJECT_STATUSES as readonly string[]).includes(p.status)), [projects.data]);
 
-  const mutation = useMutation({
-    mutationFn: createWorkRequest,
-    retry: false,
-    onSuccess: (record) => {
-      void queryClient.invalidateQueries({ queryKey: ["roadsync", "work-requests"] });
-      router.push(`/roadsync/work-requests/${record.id}?created=1`);
-    },
-    onError: (error) => {
-      submitting.current = false;
-      const kind = classifyWorkRequestError(error);
-      setServerError(FAILURE_COPY[kind]);
-      queryClient.removeQueries({ queryKey: ["roadsync", "work-requests"], type: "inactive" });
-      window.setTimeout(() => summaryRef.current?.focus(), 0);
-    },
-  });
+  const mutation = useMutation({ mutationFn: createWorkRequest, retry: false });
 
-  const set = <K extends keyof WorkRequestFormValues>(key: K, value: WorkRequestFormValues[K]) => {
-    setValues((c) => ({ ...c, [key]: value }));
-    setErrors((c) => ({ ...c, [key]: undefined }));
-  };
-
-  const geometry = parseGeometryText(values.geometryKind, values.coordinates);
-  const geoSummary = geometry.ok ? summarizeGeometry(geometry.geometry) : null;
-  const startUtc = colomboLocalToUtc(values.plannedStart);
-  const endUtc = colomboLocalToUtc(values.plannedEnd);
-  const datesOk = Boolean(startUtc && endUtc && new Date(endUtc) >= new Date(startUtc));
-  const previewGeometry = geometry.ok && geoValid !== false ? geometry.geometry : null;
-  const previewStart = datesOk ? startUtc : null;
-  const previewEnd = datesOk ? endUtc : null;
-
-  function onSubmit(event: React.FormEvent) {
-    event.preventDefault();
-    if (submitting.current || mutation.isPending) return;
-    setServerError(null);
+  async function run(kind: Exclude<Pending, false>) {
+    if (busy.current) return;
     const built = buildCreateBody(values);
-    if (!built.ok) {
-      setErrors(built.errors);
-      const first = firstInvalidField(built.errors);
-      window.setTimeout(() => {
-        summaryRef.current?.focus();
-        if (first) document.getElementById(`rs-${first}`)?.setAttribute("data-first-invalid", "true");
-      }, 0);
-      return;
-    }
-    if (geoValid === false) {
-      setErrors({ coordinates: "Fix the location problems shown under the map." });
+    if (!built.ok) return;
+    busy.current = true;
+    setPending(kind);
+    setServerError(null);
+    let created;
+    try {
+      created = await mutation.mutateAsync(built.body);
+    } catch (error) {
+      busy.current = false;
+      setPending(false);
+      setServerError(failureText(copy, classifyWorkRequestError(error)));
       window.setTimeout(() => summaryRef.current?.focus(), 0);
       return;
     }
-    setErrors({});
-    submitting.current = true;
-    mutation.mutate(built.body);
+    void queryClient.invalidateQueries({ queryKey: ["roadsync", "work-requests"] });
+    if (kind === "save") return router.push(`/roadsync/work-requests/${created.id}?created=1`);
+    try {
+      const submitted = await submitWorkRequest(created.id, created.revision);
+      router.push(`/roadsync/work-requests/${submitted.id}?submitted=1`);
+    } catch (error) {
+      // Partial success: the draft exists. Say so plainly and hand over to the detail page.
+      const kindOfError = classifyWorkRequestError(error);
+      const reason = kindOfError === "invalid" ? copy.failures.submitDate : failureText(copy, kindOfError);
+      router.push(`/roadsync/work-requests/${created.id}?created=1&submitFailed=${encodeURIComponent(reason)}`);
+    }
   }
 
   const errorEntries = (Object.keys(errors) as (keyof WorkRequestFormValues)[]).filter((k) => errors[k]);
-  const aria = (k: keyof WorkRequestFormValues) => ({ "aria-invalid": errors[k] ? true : undefined, "aria-describedby": errors[k] ? `rs-${k}-err` : undefined });
 
   if (roleKey && !canHintCreate(roleKey)) {
     return (
-      <StaffWorkspaceShell title="Create work request" description="Draft a planned work request linked to one of your projects." wide>
+      <StaffWorkspaceShell title={copy.create.title} description={copy.create.description} wide>
         <div className="rs-state" role="alert">
-          <h2>Your role cannot create work requests</h2>
-          <p>{FAILURE_COPY.forbidden}</p>
-          <Link href="/roadsync/work-requests" className="rs-btn">Back to work requests</Link>
+          <h2>{copy.create.roleDenied}</h2>
+          <p>{copy.create.roleDeniedBody}</p>
+          <Link href="/roadsync/work-requests" className="rs-btn">{copy.create.back}</Link>
         </div>
       </StaffWorkspaceShell>
     );
   }
 
   return (
-    <StaffWorkspaceShell title="Create work request" description="Draft a planned work request linked to one of your projects. It is saved as a draft; nothing is submitted. The conflict preview is advisory." wide>
+    <StaffWorkspaceShell title={copy.create.title} description={copy.create.description} wide>
       <div className="rs-page">
-        <p className="rs-crumb">Operations / RoadSync / New</p>
+        <p className="rs-crumb">{copy.create.crumb}</p>
         {errorEntries.length > 0 || serverError ? (
           <div ref={summaryRef} className="rs-errsum" role="alert" tabIndex={-1}>
-            <h2>{serverError ? "The work request was not created" : `Fix ${errorEntries.length} ${errorEntries.length === 1 ? "field" : "fields"} to continue`}</h2>
+            <h2>{serverError ? copy.create.errSummaryServer : fmt(copy.create.errSummary, { n: errorEntries.length })}</h2>
             {serverError ? <p style={{ margin: 0 }}>{serverError}</p> : null}
-            <ul>
-              {errorEntries.map((k) => (
-                <li key={k}>
-                  <a href={`#rs-${k}`} onClick={(e) => { e.preventDefault(); document.getElementById(`rs-${k}`)?.focus(); }}>{FIELD_LABEL[k]}</a>: {errors[k]}
-                </li>
-              ))}
-            </ul>
+            <ul>{errorEntries.map((k) => <li key={k}>{errors[k]}</li>)}</ul>
           </div>
         ) : null}
-
-        <form className="rs-create" onSubmit={onSubmit} noValidate>
-          <div className="rs-form">
-            <section className="rs-section" aria-labelledby="rs-s1">
-              <div className="rs-section-head"><span className="rs-step" aria-hidden="true">1</span><h2 id="rs-s1">Project and work</h2></div>
-              <div className="rs-field">
-                <label className="rs-label" htmlFor="rs-projectId">Project</label>
-                <select id="rs-projectId" className="rs-input" value={values.projectId} onChange={(e) => set("projectId", e.target.value)} {...aria("projectId")}>
-                  <option value="">{projects.isPending ? "Loading projects…" : "Choose a project"}</option>
-                  {eligible.map((p) => (
-                    <option key={p.id} value={p.id}>{p.projectCode} · {p.title}</option>
-                  ))}
-                </select>
-                {projects.isError ? <p className="rs-error">Projects could not be loaded. Reload the page to retry.</p> : null}
-                {!projects.isPending && !projects.isError && eligible.length === 0 ? <p className="rs-help">No approved or active projects are available to you yet.</p> : null}
-                {project ? <p className="rs-help">Agency (from the project): <strong>{project.agencyCode ?? "—"}</strong>. It cannot be changed here.</p> : <p className="rs-help">Only approved, active, on-hold or delayed projects you can manage are listed.</p>}
-                {errors.projectId ? <p id="rs-projectId-err" className="rs-error">{errors.projectId}</p> : null}
-              </div>
-              <fieldset style={{ border: 0, padding: 0, margin: 0 }} className="rs-field">
-                <legend className="rs-label" id="rs-workType">Work type</legend>
-                <div className="rs-cards" role="radiogroup" aria-labelledby="rs-workType" {...aria("workType")}>
-                  {WORK_TYPES.map((t, i) => {
-                    const Icon = WORK_TYPE_ICONS[t];
-                    return (
-                      <label key={t} className="rs-card-pick">
-                        <input type="radio" name="workType" value={t} id={i === 0 ? "rs-workType-first" : undefined} checked={values.workType === t} onChange={() => set("workType", t)} />
-                        <span className="rs-icon" aria-hidden="true"><Icon /></span>
-                        {WORK_TYPE_LABELS[t]}
-                      </label>
-                    );
-                  })}
-                </div>
-                {errors.workType ? <p id="rs-workType-err" className="rs-error">{errors.workType}</p> : null}
-              </fieldset>
-              <fieldset style={{ border: 0, padding: 0, margin: 0 }} className="rs-field">
-                <legend className="rs-label" id="rs-priority">Priority</legend>
-                <div className="rs-seg" role="radiogroup" aria-labelledby="rs-priority">
-                  {WORK_PRIORITIES.map((p) => (
-                    <label key={p} className="rs-card-pick">
-                      <input type="radio" name="priority" value={p} checked={values.priority === p} onChange={() => set("priority", p)} />
-                      <PriorityMark priority={p} />
-                    </label>
-                  ))}
-                </div>
-              </fieldset>
-            </section>
-
-            <section className="rs-section" aria-labelledby="rs-s2">
-              <div className="rs-section-head"><span className="rs-step" aria-hidden="true">2</span><h2 id="rs-s2">Location geometry</h2></div>
-              <fieldset style={{ border: 0, padding: 0, margin: 0 }} className="rs-field">
-                <legend className="rs-label">Geometry type</legend>
-                <div className="rs-seg" role="radiogroup" aria-label="Geometry type">
-                  {(["Point", "LineString", "Polygon"] as const).map((k) => (
-                    <label key={k} className="rs-card-pick">
-                      <input type="radio" name="geometryKind" value={k} checked={values.geometryKind === k} onChange={() => set("geometryKind", k)} />
-                      {k === "Point" ? "Point" : k === "LineString" ? "Line (corridor)" : "Area (polygon)"}
-                    </label>
-                  ))}
-                </div>
-              </fieldset>
-              <LocationPicker
-                kind={values.geometryKind}
-                coordinates={values.coordinates}
-                onChange={(kind, text) => { setValues((c) => ({ ...c, geometryKind: kind, coordinates: text })); setErrors((c) => ({ ...c, coordinates: undefined, geometryKind: undefined })); }}
-                onValidity={setGeoValid}
-                overlay={overlay}
-              />
-              <div className="rs-field">
-                <label className="rs-label" htmlFor="rs-coordinates">Coordinates — longitude, latitude</label>
-                <textarea id="rs-coordinates" className="rs-input" value={values.coordinates} onChange={(e) => set("coordinates", e.target.value)} spellCheck={false} placeholder={"79.8612, 6.9271\n79.8650, 6.9302"} {...aria("coordinates")} />
-                <p className="rs-help">{KIND_HELP[values.geometryKind]} Longitude comes first (Sri Lanka is about 79–82, 5–10).</p>
-                {errors.coordinates ? <p id="rs-coordinates-err" className="rs-error">{errors.coordinates}</p> : null}
-              </div>
-              <NearbyActivityPanel
-                mode="preview"
-                compact
-                self={{ workType: values.workType || null, plannedStart: startUtc && endUtc && new Date(endUtc) >= new Date(startUtc) ? startUtc : null, plannedEnd: startUtc && endUtc && new Date(endUtc) >= new Date(startUtc) ? endUtc : null, geometry: geometry.ok && geoValid !== false ? geometry.geometry : null }}
-                onOverlay={setOverlay}
-              />
-              <ConflictPreview variant="compact" geometry={previewGeometry} plannedStart={previewStart} plannedEnd={previewEnd} workType={values.workType} priority={values.priority} />
-              <p className="rs-help">Nearby activity is advisory and never blocks saving.</p>
-            </section>
-
-            <section className="rs-section" aria-labelledby="rs-s3">
-              <div className="rs-section-head"><span className="rs-step" aria-hidden="true">3</span><h2 id="rs-s3">Planned dates</h2></div>
-              <div className="rs-two">
-                <div className="rs-field">
-                  <label className="rs-label" htmlFor="rs-plannedStart">Planned start (Colombo time)</label>
-                  <input id="rs-plannedStart" type="datetime-local" className="rs-input" value={values.plannedStart} onChange={(e) => set("plannedStart", e.target.value)} {...aria("plannedStart")} />
-                  {errors.plannedStart ? <p id="rs-plannedStart-err" className="rs-error">{errors.plannedStart}</p> : null}
-                </div>
-                <div className="rs-field">
-                  <label className="rs-label" htmlFor="rs-plannedEnd">Planned end (Colombo time)</label>
-                  <input id="rs-plannedEnd" type="datetime-local" className="rs-input" value={values.plannedEnd} onChange={(e) => set("plannedEnd", e.target.value)} {...aria("plannedEnd")} />
-                  {errors.plannedEnd ? <p id="rs-plannedEnd-err" className="rs-error">{errors.plannedEnd}</p> : null}
-                </div>
-              </div>
-              <p className="rs-help">Times are read as Sri Lanka time (UTC+05:30) and stored as UTC.</p>
-            </section>
-
-            <div className="rs-actions">
-              <button type="submit" className="rs-btn is-primary" disabled={mutation.isPending} aria-busy={mutation.isPending}>
-                {mutation.isPending ? <Loader2Icon aria-hidden="true" className="animate-spin" /> : null}
-                {mutation.isPending ? "Creating draft…" : "Create draft"}
-              </button>
-              <Link href="/roadsync/work-requests" className="rs-btn" aria-disabled={mutation.isPending}>Cancel</Link>
-            </div>
-          </div>
-
-          <aside className="rs-summary" aria-label="Draft summary">
-            <h2>Draft summary</h2>
-            <dl className="rs-dl">
-              <div><dt>Project</dt><dd>{project ? `${project.projectCode} · ${project.title}` : "Not chosen"}</dd></div>
-              <div><dt>Agency</dt><dd>{project?.agencyCode ?? "Set from the project"}</dd></div>
-              <div><dt>Work</dt><dd>{values.workType ? WORK_TYPE_LABELS[values.workType as keyof typeof WORK_TYPE_LABELS] : "Not chosen"} · {PRIORITY_LABELS[values.priority as keyof typeof PRIORITY_LABELS] ?? "—"}</dd></div>
-              <div>
-                <dt>Geometry</dt>
-                <dd>
-                  {geoSummary
-                    ? `${geoSummary.label}, ${geoSummary.vertices} ${geoSummary.vertices === 1 ? "vertex" : "vertices"}${geoSummary.lengthKm !== null ? `, about ${geoSummary.lengthKm.toFixed(2)} km` : ""}`
-                    : "Not entered"}
-                  {geoSummary?.outline[0] ? <><br />{formatPosition(geoSummary.outline[0])}</> : null}
-                </dd>
-              </div>
-              <div><dt>Window</dt><dd>{startUtc && endUtc ? `${formatColombo(startUtc)} → ${formatColombo(endUtc)}` : "Not set"}</dd></div>
-              <div><dt>Status on save</dt><dd>Draft</dd></div>
-            </dl>
-            <ConflictPreview variant="review" geometry={previewGeometry} plannedStart={previewStart} plannedEnd={previewEnd} workType={values.workType} priority={values.priority} />
-          </aside>
-        </form>
+        <WorkRequestWizard
+          mode="create"
+          copy={copy}
+          values={values}
+          setValues={setValues}
+          errors={errors}
+          setErrors={setErrors}
+          projects={{ options, pending: projects.isPending, error: projects.isError }}
+          pending={pending}
+          onSave={() => void run("save")}
+          onSubmit={() => void run("submit")}
+        />
+        <p className="rs-help"><Link href="/roadsync/work-requests">{copy.actions.cancel}</Link></p>
       </div>
     </StaffWorkspaceShell>
   );

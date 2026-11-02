@@ -184,3 +184,43 @@ textarea.rs-input { min-height: 8rem; font-family: var(--font-geist-mono), ui-mo
 @media (max-width: 767px) {
   .mc-root .rs-nb-drawer { top: auto; left: 0; width: 100vw; max-height: 85vh; border-left: 0; border-top: 1px solid var(--infra-border); border-radius: 16px 16px 0 0; }
 }
+
+/* ---- Step 66 work-request workflow: stepper, checklist, emergency, dialog ---- */
+.rs-wiz { display: grid; gap: 1.1rem; }
+.rs-stepper { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.6rem; counter-reset: none; }
+.rs-stepper-item { position: relative; }
+.rs-stepper-item::after { content: ""; position: absolute; top: 1.2rem; left: calc(50% + 1.4rem); right: calc(-50% + 1.4rem); height: 2px; background: var(--infra-border); }
+.rs-stepper-item:last-child::after { display: none; }
+.rs-stepper-item.is-done::after { background: var(--infra-orange); }
+.rs-stepper-btn { all: unset; box-sizing: border-box; width: 100%; display: grid; justify-items: center; gap: 0.35rem; text-align: center; cursor: pointer; padding: 0.2rem; border-radius: 0.6rem; }
+.rs-stepper-btn:disabled { cursor: default; opacity: 0.7; }
+.rs-stepper-btn:focus-visible { outline: 2px solid var(--infra-orange); outline-offset: 2px; }
+.rs-stepper-dot { display: grid; place-items: center; width: 2.4rem; height: 2.4rem; border-radius: 50%; border: 2px solid var(--infra-border); background: #fff; font-weight: 700; color: var(--infra-text); }
+.rs-stepper-dot svg { width: 1.1rem; height: 1.1rem; }
+.rs-stepper-item.is-current .rs-stepper-dot { background: var(--infra-text); border-color: var(--infra-text); color: #fff; box-shadow: 0 0 0 4px color-mix(in srgb, var(--infra-orange) 30%, transparent); }
+.rs-stepper-item.is-done .rs-stepper-dot { border-color: var(--infra-orange); background: color-mix(in srgb, var(--infra-orange) 18%, #fff); }
+.rs-stepper-item.is-bad .rs-stepper-dot { border-color: var(--infra-maroon); color: var(--infra-maroon); }
+.rs-stepper-text { display: grid; gap: 0.1rem; }
+.rs-stepper-text small { color: var(--infra-text-muted, #5b6472); font-size: 0.75rem; line-height: 1.3; }
+.rs-wiz-bar { position: sticky; bottom: 0; z-index: 5; padding: 0.75rem 0; background: linear-gradient(to top, var(--mc-canvas, #f5f6f8) 70%, transparent); }
+.rs-checklist { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.5rem; }
+.rs-checklist li { display: grid; grid-template-columns: auto 1fr auto auto; align-items: center; gap: 0.6rem; padding: 0.6rem 0.8rem; border: 1px solid var(--infra-border); border-radius: 0.7rem; background: #fff; }
+.rs-checklist li svg { width: 1.1rem; height: 1.1rem; }
+.rs-checklist li.is-ok { border-left: 4px solid #2f8f5b; }
+.rs-checklist li.is-bad { border-left: 4px solid var(--infra-maroon); }
+.rs-checklist li em { font-style: normal; font-size: 0.8rem; font-weight: 600; }
+.rs-emergency { display: grid; grid-template-columns: auto auto 1fr; align-items: start; gap: 0.7rem; padding: 0.8rem 0.9rem; border: 1px solid var(--infra-border); border-radius: 0.8rem; background: #fff; cursor: pointer; }
+.rs-emergency small { display: block; color: var(--infra-text-muted, #5b6472); font-weight: 400; }
+.rs-emergency svg { width: 1.25rem; height: 1.25rem; color: var(--infra-maroon); }
+.rs-emergency.is-on { border-color: var(--infra-maroon); background: color-mix(in srgb, var(--infra-maroon) 6%, #fff); }
+.rs-hero-actions { padding-top: 0.5rem; }
+.rs-btn.is-danger { background: var(--infra-maroon); border-color: var(--infra-maroon); color: #fff; }
+.rs-btn.is-danger-quiet { color: var(--infra-maroon); border-color: color-mix(in srgb, var(--infra-maroon) 40%, var(--infra-border)); }
+.rs-overlay { position: fixed; inset: 0; z-index: 90; background: rgb(15 23 42 / 0.5); }
+.rs-dialog { position: fixed; z-index: 91; top: 50%; left: 50%; transform: translate(-50%, -50%); width: min(30rem, calc(100vw - 2rem)); max-height: 90vh; overflow: auto; display: grid; gap: 0.9rem; padding: 1.25rem; background: #fff; border-radius: 1rem; box-shadow: 0 24px 60px -20px rgb(0 0 0 / 0.5); }
+.rs-dialog h2, .rs-dialog [role="dialog"] > h2 { margin: 0; font-size: 1.1rem; }
+.rs-dialog p { margin: 0; color: var(--infra-text-muted, #5b6472); }
+.rs-dialog-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0.6rem; }
+@media (max-width: 900px) { .rs-stepper-text small { display: none; } .rs-checklist li { grid-template-columns: auto 1fr auto; } .rs-checklist li .rs-btn { grid-column: 1 / -1; } }
+@media (max-width: 767px) { .rs-stepper { gap: 0.25rem; } .rs-stepper-item::after { left: calc(50% + 1.2rem); right: calc(-50% + 1.2rem); } .rs-btn { min-height: 2.75rem; } .rs-emergency { grid-template-columns: auto 1fr; } .rs-emergency svg { display: none; } }
+@media (prefers-reduced-motion: reduce) { .rs-stepper-dot, .rs-stepper-item::after { transition: none; } }

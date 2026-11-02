@@ -85,7 +85,7 @@ export function WorkRequestsListClient() {
   const pages = data ? Math.max(1, Math.ceil(data.total / data.limit)) : 1;
 
   return (
-    <StaffWorkspaceShell title="Work Requests" description="Planned road and utility works in your authorised scope. Requests start as drafts; conflict detection is not available yet." wide>
+    <StaffWorkspaceShell title="Work Requests" description="Planned road and utility works in your authorised scope. Requests start as drafts; submitting one starts conflict detection." wide>
       <div className="rs-page">
         <div className="rs-eyebrow">
           <p className="rs-crumb">Operations / RoadSync</p>

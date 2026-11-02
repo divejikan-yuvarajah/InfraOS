@@ -236,7 +236,7 @@ export async function previewImpact(w: Who, body: { conflictId: string; type: Pr
   const rec = await loadRecord(w, body.conflictId);
   if (!rec) return null;
   const items = await loadItems([{ type: rec.aType, id: String(rec.aId) }, { type: rec.bType, id: String(rec.bId) }]);
-  const side = (type: RecordPlain["aType"], id: mongoose.Types.ObjectId, agencyId: string) => { const i = items.get(`${type}:${id}`); return { id: String(id), type, agencyId, start: i?.start ?? null, end: i?.end ?? null, workingHours: i?.workingHours ?? ("day" as const), isEmergency: false }; };
+  const side = (type: RecordPlain["aType"], id: mongoose.Types.ObjectId, agencyId: string) => { const i = items.get(`${type}:${id}`); return { id: String(id), type, agencyId, start: i?.start ?? null, end: i?.end ?? null, workingHours: i?.workingHours ?? ("day" as const), isEmergency: i?.isEmergency ?? false }; };
   const a = side(rec.aType, rec.aId, rec.sides.a.agencyId);
   const b = side(rec.bType, rec.bId, rec.sides.b.agencyId);
   const v = validateProposal(body.type, body.proposal, { a, b, recordType: rec.recordType, classes: rec.severity.current.classes, now: new Date() });

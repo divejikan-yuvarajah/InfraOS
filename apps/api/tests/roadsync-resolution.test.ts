@@ -14,11 +14,14 @@ import { Notification } from "../src/modules/notifications/models/notification.m
 import { Project } from "../src/modules/projects/models/project.model.js";
 import { canonical, entryHash, genesisHash, redact, verifyChain, type Entry } from "../src/modules/roadsync/ledger.engine.js";
 import { cleanData } from "../src/modules/roadsync/ledger.service.js";
+import { itemSide, workItem } from "../src/modules/roadsync/detection.service.js";
+import { startDateAllowed } from "../src/modules/roadsync/work-requests.schema.js";
 import { Candidate } from "../src/modules/roadsync/models/candidate.model.js";
 import { ConflictRead, ConflictRecord } from "../src/modules/roadsync/models/conflict-record.model.js";
 import { CoordinationMessage, CoordinationRead, CoordinationRequest } from "../src/modules/roadsync/models/coordination.model.js";
 import { Amendment, LedgerEntry, Resolution } from "../src/modules/roadsync/models/resolution.model.js";
 import { WorkRequest } from "../src/modules/roadsync/models/work-request.model.js";
+import { applyAmendmentToRequest } from "../src/modules/roadsync/work-requests.service.js";
 import { buildApprovals, canApprove, deriveStatus, nationalReasons, termsToPlan, verifyResult, type Approval, type Viewer } from "../src/modules/roadsync/resolution.engine.js";
 import { clearCoreCollections, startIsolatedMongo, stopIsolatedMongo } from "./helpers/mongo-memory.js";
 import type { SystemRoleKey } from "@infraos/shared-types";
@@ -66,11 +69,24 @@ describe("step 76 approval policy and derivation", () => {
     expect(verifyResult({ score: 70, band: "high" }, { active: true, kind: "conflict", score: 85, band: "critical" })).toBe("worse");
   });
 
+  it("reads isEmergency into assessment sides, fires national rule (c) and applies the 48 h backdate rule only to emergencies", () => {
+    const row = { _id: { toString: () => "a".repeat(24) }, agencyId: { toString: () => "AG1" }, projectId: { toString: () => "P" }, workType: "ROAD_RESURFACING", status: "SUBMITTED", priority: "NORMAL", plannedStart: T, plannedEnd: T, geometry: { type: "Point", coordinates: [79.8, 6.9] } };
+    expect(itemSide(workItem({ ...row, isEmergency: true } as never)).isEmergency).toBe(true);
+    expect(itemSide(workItem(row as never)).isEmergency).toBe(false);
+    expect(nationalReasons({ type: "amendment", thirdParty: null, severityAtDetection: "low", shiftDays: 1, band: "low", emergency: true })).toEqual(["emergency_work"]);
+    const now = new Date("2026-06-10T10:00:00Z");
+    expect(startDateAllowed(new Date("2026-06-09T10:00:00Z"), false, now)).toBe(false);
+    expect(startDateAllowed(new Date("2026-06-09T10:00:00Z"), true, now)).toBe(true);
+    expect(startDateAllowed(new Date("2026-06-07T09:00:00Z"), true, now)).toBe(false);
+  });
+
   it("maps agreed terms to owner-only amendments and commitments", () => {
     const pair = { aId: "a1", bId: "b1", aType: "work_request", bType: "work_request", aAgencyId: "AG1", bAgencyId: "AG2" };
     const plan = termsToPlan({ proposal: { type: "schedule_shift", before: {}, after: { targetRequestId: "a1", start: "2026-08-01T00:00:00Z", end: "2026-08-10T00:00:00Z" } }, conditions: [{ agencyId: "AG2", code: "night_work_only" }], acceptedBy: [{ agencyId: "AG2" }] }, pair);
     expect(plan.amendments).toEqual([{ workRequestId: "a1", agencyId: "AG1", schedule: { plannedStart: "2026-08-01T00:00:00Z", plannedEnd: "2026-08-10T00:00:00Z" } }]);
     expect(plan.commitments).toEqual([{ agencyId: "AG2", code: "night_work_only" }]);
+    const hours = termsToPlan({ proposal: { type: "working_hours", before: {}, after: { targetRequestId: "b1", workingHours: "night" } }, conditions: [], acceptedBy: [] }, pair);
+    expect(hours.amendments).toEqual([{ workRequestId: "b1", agencyId: "AG2", workingHours: "night" }]);
     const foreign = termsToPlan({ proposal: { type: "schedule_shift", before: {}, after: { targetRequestId: "zzz", start: "x", end: "y" } }, conditions: [], acceptedBy: [] }, pair);
     expect(foreign.amendments).toHaveLength(0);
   });
@@ -162,6 +178,20 @@ describe("steps 76-77 resolution, approval and ledger", { timeout: 240_000 }, ()
   }
   const view = async (token: string, rid: string) => (await request(app).get(`/api/v1/roadsync/conflicts/${rid}/resolution`).set(auth(token))).body.data.resolution;
   const manual = (d: { subject: { id: string } }) => ({ type: "amendment", manual: { targetRequestId: d.subject.id, schedule: { plannedStart: at(50).toISOString(), plannedEnd: at(60).toISOString() } } });
+
+  it("applies a working-hours amendment through the controlled path with a revision entry and refuses a stale replay", async () => {
+    const d = await ready();
+    const base = { amendmentId: "a".repeat(24), resolutionId: "b".repeat(24), workRequestId: d.subject.id, workingHours: "night" as const };
+    const before = (await WorkRequest.findById(d.subject.id).lean())!;
+    const done = await applyAmendmentToRequest({ ...base, baseVersion: (before as { __v: number }).__v }, { userId: d.officerA.user.id, agencyId: d.agA.id });
+    expect(done.ok).toBe(true);
+    const after = (await WorkRequest.findById(d.subject.id).lean())!;
+    expect(after.schedule).toEqual({ workingHours: "night" });
+    expect(after.plannedStart.toISOString()).toBe(before.plannedStart.toISOString());
+    expect((after.revisions as { before: { workingHours: string }; after: { workingHours: string } }[])[0]).toMatchObject({ before: { workingHours: "day" }, after: { workingHours: "night" } });
+    expect((after.originalSchedule as { workingHours: string }).workingHours).toBe("day");
+    expect(await applyAmendmentToRequest({ ...base, baseVersion: (before as { __v: number }).__v }, { userId: d.officerA.user.id, agencyId: d.agA.id })).toMatchObject({ ok: false, code: "stale" });
+  });
 
   it("blocks unauthenticated and foreign-agency starts", async () => {
     const d = await ready();

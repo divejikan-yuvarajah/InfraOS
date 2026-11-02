@@ -12,6 +12,7 @@ import { chronicle, registerLedgerSubscribers, stateAtTime, verifyCase } from ".
 import { approvalsQueue, approvalsSummary, forConflict, getOne, previewImpact, suggestions } from "./resolution.read.js";
 import { applyAmendment, approve, cancelAmendment, cancelResolution, commitmentAction, confirmParty, contest, createResolution, loadAms, loadForViewer, preflight, reassess, registerResolutionSubscribers, reject, reopenResolved, submitAmendment, whoIs, type Result } from "./resolution.service.js";
 import type { Who } from "./conflict-record.service.js";
+import { WORKING_HOURS } from "./roadsync.constants.js";
 import { LEDGER, MITIGATION_CODES, NO_ACTION_CODES, RES, RESOLUTION_TYPES } from "./resolution.rules.js";
 import { assertLive, FlowControl } from "./work-requests.service.js";
 
@@ -27,17 +28,20 @@ const version = z.number().int().min(1);
 const csv = z.string().max(300).transform((v) => v.split(",").filter(Boolean).slice(0, 12));
 const date = z.string().datetime({ offset: true }).transform((v) => new Date(v));
 const schedule = z.object({ plannedStart: z.string().datetime({ offset: true }), plannedEnd: z.string().datetime({ offset: true }) }).strict();
+/** A change set: new dates, new working hours, or both (at least one). */
+const change = { targetRequestId: objectId, schedule: schedule.optional(), workingHours: z.enum(WORKING_HOURS).optional() };
+const hasChange = (v: { schedule?: unknown; workingHours?: unknown }) => Boolean(v.schedule || v.workingHours);
 
 const createSchema = z.object({
   type: z.enum(RESOLUTION_TYPES), source: z.object({ coordinationRequestId: objectId }).strict().optional(),
-  manual: z.object({ targetRequestId: objectId, schedule }).strict().optional(),
+  manual: z.object(change).strict().refine(hasChange).optional(),
   noAction: z.object({ reasonCode: z.enum(NO_ACTION_CODES), note: text(300).optional() }).strict().optional(),
   riskAcceptance: z.object({ justification, mitigations: z.array(z.object({ code: z.enum(MITIGATION_CODES), text: text(RES.MITIGATION_TEXT_MAX).optional() }).strict()).min(1).max(8) }).strict().optional(),
-  directive: z.object({ justification, deadlineAt: z.string().datetime({ offset: true }).optional(), targets: z.array(z.object({ targetRequestId: objectId, schedule }).strict()).min(1).max(RES.MAX_AMENDMENTS) }).strict().optional(),
+  directive: z.object({ justification, deadlineAt: z.string().datetime({ offset: true }).optional(), targets: z.array(z.object(change).strict().refine(hasChange)).min(1).max(RES.MAX_AMENDMENTS) }).strict().optional(),
   opportunity: z.object({ leadAgencyId: objectId.optional(), note: text(300).optional() }).strict().optional(),
   onBehalfOfAgencyId: objectId.optional(), reason: reasonText.optional(),
 }).strict();
-const previewSchema = z.object({ conflictId: objectId, changes: z.array(z.object({ targetRequestId: objectId, schedule }).strict()).min(1).max(RES.MAX_AMENDMENTS) }).strict();
+const previewSchema = z.object({ conflictId: objectId, changes: z.array(z.object(change).strict().refine(hasChange)).min(1).max(RES.MAX_AMENDMENTS) }).strict();
 const behalf = z.object({ onBehalfOfAgencyId: objectId.optional(), reason: reasonText.optional() }).strict();
 const decideSchema = z.object({ version, note: text(500).optional(), onBehalfOfAgencyId: objectId.optional(), reason: reasonText.optional() }).strict();
 const rejectSchema = z.object({ version, note: reasonText, onBehalfOfAgencyId: objectId.optional(), reason: reasonText.optional() }).strict();
