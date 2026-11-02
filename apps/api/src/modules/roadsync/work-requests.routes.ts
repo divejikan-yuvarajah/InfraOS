@@ -10,6 +10,7 @@ import { extractCandidates, validateWorkGeometry } from "./geo.service.js";
 import { workRequestMapQuerySchema } from "./work-requests.schema.js";
 import { assessmentRouter } from "./assessment.routes.js";
 import { detectionRouter } from "./detection.routes.js";
+import { conflictRecordRouter } from "./conflict-record.routes.js";
 
 type Res = { status: (code: number) => { json: (body: unknown) => void }; setHeader: (name: string, value: string) => void };
 
@@ -30,6 +31,7 @@ function unavailable(res: Res, req: { requestId: string }): void {
 export const roadsyncRouter = Router();
 roadsyncRouter.use(detectionRouter);
 roadsyncRouter.use(assessmentRouter);
+roadsyncRouter.use(conflictRecordRouter);
 
 roadsyncRouter.get("/work-requests", requireAuthenticated, requirePermission("roadsync.work_request.read"), async (req, res) => {
   try {

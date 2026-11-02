@@ -26,6 +26,6 @@ describe("nav labels", () => {
   it("falls back to English for missing keys and never drops a link", () => {
     if (!work) throw new Error("missing");
     expect(navLabel(work, "ta")).toBe("Work Requests");
-    expect(all).toHaveLength(10);
+    expect(all).toHaveLength(11);
   });
 });

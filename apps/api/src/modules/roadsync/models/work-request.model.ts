@@ -31,6 +31,8 @@ const workRequestSchema = new Schema({
   detection: { type: detectionSchema },
   /** Steps 70-71, server-owned (never accepted from clients): status, counts, riskIndex, maxBand, corridorProfile. */
   assessment: { type: Schema.Types.Mixed, default: undefined },
+  /** Step 73, server-owned: { total, open, acknowledged, needsAck } of related conflict records. */
+  conflictRecords: { type: Schema.Types.Mixed, default: undefined },
 },{ timestamps: true, strict: "throw", collection: "workRequests" });
 
 dateOrder(workRequestSchema, "plannedStart", "plannedEnd");

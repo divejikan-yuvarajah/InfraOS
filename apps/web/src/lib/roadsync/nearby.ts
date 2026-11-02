@@ -44,7 +44,7 @@ export type NearbyOther = {
   canOpen: boolean;
 };
 export type NearbyView = { key: string; candidateId: string | null; other: NearbyOther; spatial: SpatialFacts; temporal: TemporalFacts; isCandidate: boolean; canOpen: boolean; stale: boolean; assessment?: PreviewItemAssessment };
-export type NearbySummary = { nearby: number; candidates: number; overlapping: number; nearInTime: number; agencies: number; closestMeters: number | null; assessment?: PreviewAssessment };
+export type NearbySummary = { nearby: number; candidates: number; overlapping: number; nearInTime: number; agencies: number; closestMeters: number | null; assessment?: PreviewAssessment; /** Step 72 advisory preview; never persisted. */ agenciesToCoordinate?: { agencyId: string; name: string | null; roles: string[]; required: boolean }[] };
 export type SourceCheck = { source: "work_request" | "project" | "asset"; ok: boolean; error?: string };
 export type DetectionState = {
   status: "pending" | "running" | "completed" | "failed";

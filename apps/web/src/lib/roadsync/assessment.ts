@@ -41,7 +41,7 @@ export type ItemAssessment = {
   overrideStale: boolean;
   override?: { band: Band; reason: string; by: string; at: string };
 };
-export type AssessmentItem = { candidateId: string; key: string; other: NearbyOther; spatial: SpatialFacts; temporal: TemporalFacts; assessment: ItemAssessment; stale: boolean; canOpen: boolean };
+export type AssessmentItem = { candidateId: string; key: string; other: NearbyOther; spatial: SpatialFacts; temporal: TemporalFacts; assessment: ItemAssessment; stale: boolean; canOpen: boolean; conflictRecord?: { id: string; no: string; status: string } | null };
 export type ProfileBin = { fromM: number; toM: number; score: number; topCandidateIds: string[] };
 export type AssessmentCounts = { conflicts: number; opportunities: number; advisories: number; byBand: Record<Band, number>; byClass: Record<string, number> };
 export type AssessmentSummary = {

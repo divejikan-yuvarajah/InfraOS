@@ -31,6 +31,9 @@ export type WorkRequestRecord = {
   nearbyCount: number;
   /** Steps 70-71 summary. Null until the request has been assessed. */
   assessment?: { status: string; riskIndex: number; maxBand: Band | null; conflicts: number; opportunities: number } | null;
+  /** Step 73 server-owned aggregate of formal conflict records. */
+  conflictRecords?: { total: number; open: number; acknowledged: number; needsAck: number } | null;
+  hasConflictRecords?: boolean;
 };
 
 export type WorkRequestListData = {

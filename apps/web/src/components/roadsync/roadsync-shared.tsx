@@ -16,6 +16,7 @@ import { PRIORITY_LABELS, summarizeGeometry, type GeometryInput } from "@/lib/ro
 
 import "@/styles/mission-control-roadsync.css";
 import "@/styles/mission-control-roadsync-risk.css";
+import "@/styles/mission-control-roadsync-records.css";
 
 export const WORK_TYPE_ICONS: Record<WorkType, LucideIcon> = {
   ROAD_RESURFACING: RouteIcon,

@@ -14,9 +14,12 @@ import {
 import { fetchAssessment, fetchAssessmentMap, fetchRules, runAssessmentNow } from "@/lib/roadsync/assessment-api";
 import { factorSentence, getAssessmentCopy, type AssessmentCopy } from "@/lib/roadsync/assessment-copy";
 import { INFRA_COLOR, MUTED_COLOR, SOURCE_LABEL, type NearbyOverlay } from "@/lib/roadsync/nearby";
+import type { RecordRow } from "@/lib/roadsync/conflict-records";
+import { fetchRequestRecords } from "@/lib/roadsync/conflict-records-api";
 import { WORK_TYPE_LABELS, workRequestQueryKey } from "@/lib/roadsync/work-requests-view";
 
 import { ConflictLens, type LensSelf } from "./conflict-lens";
+import { RecordChip } from "./conflict-record-chip";
 import { InfraIcon, infraLabel } from "./nearby-activity";
 import { BandBar, CorridorStrip, KindPill, RiskGauge, ScoreRing, SeverityDNA } from "./risk-visuals";
 import { TimeShiftExplorer } from "./time-shift-explorer";
@@ -62,7 +65,7 @@ function factorText(copy: AssessmentCopy, item: AssessmentItem, key: string): st
   return f && f.points > 0 ? factorSentence(copy, f) : null;
 }
 
-function ConflictCard({ item, copy, selected, onOpen, onHover }: { item: AssessmentItem; copy: AssessmentCopy; selected: boolean; onOpen: (id: string, el: HTMLButtonElement) => void; onHover: (id: string | null) => void }) {
+function ConflictCard({ item, copy, selected, onOpen, onHover, record }: { item: AssessmentItem; copy: AssessmentCopy; record?: RecordRow | null; selected: boolean; onOpen: (id: string, el: HTMLButtonElement) => void; onHover: (id: string | null) => void }) {
   const a = item.assessment;
   const color = INFRA_COLOR[item.other.infrastructureType] ?? MUTED_COLOR;
   const spatial = factorText(copy, item, "spatial");
@@ -107,6 +110,7 @@ function ConflictCard({ item, copy, selected, onOpen, onHover }: { item: Assessm
         </span>
         {hint ? <span className="rs-cc-hint">{hint}</span> : null}
       </button>
+      {item.conflictRecord ? <RecordChip link={item.conflictRecord} row={record ?? null} /> : null}
     </li>
   );
 }
@@ -142,6 +146,8 @@ export function ConflictsPanel({ requestId, self, canRun, national, onOverlay }:
   const copy = getAssessmentCopy(locale);
   const queryClient = useQueryClient();
   const { query, key } = useAssessment(requestId, true);
+  const records = useQuery({ queryKey: [...key, "records"], queryFn: () => fetchRequestRecords(requestId), enabled: Boolean(query.data), retry: false });
+  const recordById = useMemo(() => new Map((records.data?.items ?? []).map((r) => [r.id, r])), [records.data]);
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
   const [selected, setSelected] = useState<string | null>(null);
   const [hover, setHover] = useState<string | null>(null);
@@ -322,12 +328,12 @@ export function ConflictsPanel({ requestId, self, canRun, national, onOverlay }:
               {groups.map((g) => (
                 <details key={g.band} open className="rs-group" data-band={g.band}>
                   <summary><span className="rs-group-head"><KindPill kind="conflict" band={g.band} copy={copy} /><span className="rs-help">{fmt(copy.groupItems, { n: g.items.length })}</span></span></summary>
-                  <ul className="rs-nb-list">{g.items.map((i) => <ConflictCard key={i.candidateId} item={i} copy={copy} selected={selected === i.candidateId} onOpen={openCard} onHover={setHover} />)}</ul>
+                  <ul className="rs-nb-list">{g.items.map((i) => <ConflictCard key={i.candidateId} item={i} copy={copy} record={recordById.get(i.conflictRecord?.id ?? "")} selected={selected === i.candidateId} onOpen={openCard} onHover={setHover} />)}</ul>
                 </details>
               ))}
             </div>
           ) : (
-            <ul className="rs-nb-list" onKeyDown={onListKey}>{visible.map((i) => <ConflictCard key={i.candidateId} item={i} copy={copy} selected={selected === i.candidateId} onOpen={openCard} onHover={setHover} />)}</ul>
+            <ul className="rs-nb-list" onKeyDown={onListKey}>{visible.map((i) => <ConflictCard key={i.candidateId} item={i} copy={copy} record={recordById.get(i.conflictRecord?.id ?? "")} selected={selected === i.candidateId} onOpen={openCard} onHover={setHover} />)}</ul>
           )}
           {data && data.total > (items?.length ?? 0) ? <p className="rs-help">{(items?.length ?? 0)} / {data.total}</p> : null}
           <table className="mc-sr">
@@ -340,7 +346,7 @@ export function ConflictsPanel({ requestId, self, canRun, national, onOverlay }:
         </>
       )}
       {selectedItem ? (
-        <ConflictLens item={selectedItem} self={self} copy={copy} allConflictScores={conflictScores} national={national} onClose={closeLens}
+        <ConflictLens item={selectedItem} recordHref={selectedItem.conflictRecord ? `/roadsync/conflicts/${selectedItem.conflictRecord.id}` : null} self={self} copy={copy} allConflictScores={conflictScores} national={national} onClose={closeLens}
           onLocate={(id) => setSelected(id)} onChanged={() => void queryClient.invalidateQueries({ queryKey: key })} />
       ) : null}
     </section>

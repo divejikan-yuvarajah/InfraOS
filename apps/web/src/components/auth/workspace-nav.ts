@@ -8,6 +8,7 @@ import {
   LayoutDashboardIcon,
   ShieldCheckIcon,
   SlidersHorizontalIcon,
+  SwordsIcon,
   UserCircleIcon,
   UsersIcon,
 } from "lucide-react";
@@ -31,6 +32,7 @@ export const WORKSPACE_NAV: readonly WorkspaceNavGroup[] = [
       { href: "/projects", label: "Projects", icon: FolderKanbanIcon, i18n: { si: "ව්‍යාපෘති", ta: "திட்டங்கள்" } },
       { href: "/projects/reviews", label: "Reviews", icon: ClipboardCheckIcon, i18n: { si: "ව්‍යාපෘති සමාලෝචන", ta: "திட்ட மதிப்பாய்வுகள்" } },
       { href: "/roadsync/work-requests", label: "Work Requests", icon: RouteIcon },
+      { href: "/roadsync/conflicts", label: "Conflicts", icon: SwordsIcon, i18n: { si: "ගැටුම්", ta: "முரண்பாடுகள்" } },
     ],
   },
   {
