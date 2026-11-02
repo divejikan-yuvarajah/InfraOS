@@ -48,6 +48,8 @@ export type Affected = {
   ackDueAt: Date | null;
   notifiedAt: Date | null;
   addedAt: Date;
+  /** Items that caused the agency to be involved. Internal only; never sent to clients. */
+  via: { type: string; id: string }[];
 };
 export type RecEvent = { id: string; at: Date; type: EventType; actorType: "system" | "user"; actorId: string | null; actorAgencyId: string | null; data: Record<string, unknown> };
 export type Note = { id: string; agencyId: string; authorId: string; text: string; createdAt: Date };
@@ -159,7 +161,14 @@ export async function saveRecord(before: RecordPlain, after: RecordPlain): Promi
   return res.matchedCount === 1;
 }
 
-const clone = <T>(v: T): T => structuredClone(v);
+/** Deep copy that keeps Dates and ObjectIds intact (structuredClone would strip the ObjectId prototype). */
+function clone<T>(v: T): T {
+  if (v instanceof Date) return new Date(v.getTime()) as T;
+  if (v instanceof mongoose.Types.ObjectId) return new mongoose.Types.ObjectId(v.toHexString()) as T;
+  if (Array.isArray(v)) return v.map((x) => clone(x)) as T;
+  if (v && typeof v === "object") return Object.fromEntries(Object.entries(v as object).map(([k, x]) => [k, clone(x)])) as T;
+  return v;
+}
 const plain = (r: unknown) => r as RecordPlain;
 
 /** Load -> mutate -> save with up to three optimistic retries. `fn` returns false to abort without writing. */
@@ -453,13 +462,13 @@ export function mergeAgencies(rec: RecordPlain, det: Detection, now: Date, band:
     seen.add(d.agencyId);
     const e = rec.affectedAgencies.find((x) => x.agencyId === d.agencyId);
     if (!e) {
-      rec.affectedAgencies.push({ agencyId: d.agencyId, roles: d.roles, reasons: d.reasons, required: d.required, source: "auto", active: true, inactiveReason: null, excluded: null, ack: { status: "pending", by: null, at: null }, ackDueAt: ackDueAt(now, band, null), notifiedAt: null, addedAt: now });
+      rec.affectedAgencies.push({ agencyId: d.agencyId, roles: d.roles, reasons: d.reasons, required: d.required, source: "auto", active: true, inactiveReason: null, excluded: null, ack: { status: "pending", by: null, at: null }, ackDueAt: ackDueAt(now, band, null), notifiedAt: null, addedAt: now, via: d.via });
       pushEvent(rec, "agency_added", actor, { agencyId: d.agencyId, roles: d.roles, required: d.required }, now);
       added.push(d.agencyId);
       continue;
     }
     if (e.source === "manual") continue;
-    e.roles = d.roles; e.reasons = d.reasons; e.required = d.required;
+    e.roles = d.roles; e.reasons = d.reasons; e.required = d.required; e.via = d.via;
     if (!e.active) {
       e.active = true; e.inactiveReason = null;
       if (!e.ackDueAt) e.ackDueAt = ackDueAt(now, band, null);
@@ -496,7 +505,7 @@ async function createRecord(doc: PairDoc, a: SourceItem, b: SourceItem, pending:
     overlapWindow: ctx.overlapWindow, internal: det.internal,
     severity: { current: snap, atDetection: { ...snap, ruleVersion: assessment.ruleVersion, assessedAt: now, factorsSnapshot: assessment.factors, agencyCount: det.agencies.length }, history: [{ at: now, score: snap.score, band: snap.band, ruleVersion: assessment.ruleVersion, reason: "detected" }] },
     belowThreshold: false, status: "open" as RecordStatus, statusReason: null, statusChangedAt: now, statusChangedBy: null, dismissedAt: null,
-    affectedAgencies: det.agencies.map((d): Affected => ({ agencyId: d.agencyId, roles: d.roles, reasons: d.reasons, required: d.required, source: "auto", active: true, inactiveReason: null, excluded: null, ack: { status: "pending", by: null, at: null }, ackDueAt: ackDueAt(now, snap.band, null), notifiedAt: now, addedAt: now })),
+    affectedAgencies: det.agencies.map((d): Affected => ({ agencyId: d.agencyId, roles: d.roles, reasons: d.reasons, required: d.required, source: "auto", active: true, inactiveReason: null, excluded: null, ack: { status: "pending", by: null, at: null }, ackDueAt: ackDueAt(now, snap.band, null), notifiedAt: now, addedAt: now, via: d.via })),
     agencyIds: det.agencies.map((d) => oid(d.agencyId)),
     lead: det.suggestedLead ? { agencyId: det.suggestedLead.agencyId, source: "suggested", setBy: null, setAt: now, reasonCode: det.suggestedLead.reasonCode } : null,
     watchers: [], notes: [], events: [] as RecEvent[], inputsHash: doc.inputsHash, ruleVersion: RULE_VERSION, version: 1, closedAt: null,
@@ -521,7 +530,7 @@ export type Mutation =
   | { ok: true; rec: RecordPlain; value?: unknown }
   | { ok: false; status: 403 | 404 | 409 | 400; code: "forbidden" | "not_found" | "stale" | "invalid_transition" | "pair_inactive" | "invalid" | "already" };
 
-type Who = { actor: AuthenticatedActor; national: boolean; scopeIds: Set<string> };
+export type Who = { actor: AuthenticatedActor; national: boolean; scopeIds: Set<string> };
 export async function whoIs(actor: AuthenticatedActor): Promise<Who> {
   const scope = await resolveResourceScope(actor);
   return { actor, national: scope.kind === "platform", scopeIds: new Set(scope.kind === "agencies" ? scope.agencyIds.map(String) : []) };
@@ -636,7 +645,7 @@ export async function addAgency(w: Who, id: string, input: { version: number; ag
     const prev = rec.affectedAgencies.find((a) => a.agencyId === input.agencyId);
     if (prev?.active && !prev.excluded) return "already";
     if (prev) { prev.active = true; prev.inactiveReason = null; prev.excluded = null; prev.source = "manual"; if (!prev.roles.length) prev.roles = ["third_party"]; prev.reasons.push({ code: "manually_added", params: {} }); }
-    else rec.affectedAgencies.push({ agencyId: input.agencyId, roles: ["third_party"], reasons: [{ code: "manually_added", params: {} }], required: false, source: "manual", active: true, inactiveReason: null, excluded: null, ack: { status: "pending", by: null, at: null }, ackDueAt: ackDueAt(now, rec.severity.current.band, null), notifiedAt: null, addedAt: now });
+    else rec.affectedAgencies.push({ agencyId: input.agencyId, roles: ["third_party"], reasons: [{ code: "manually_added", params: {} }], required: false, source: "manual", active: true, inactiveReason: null, excluded: null, ack: { status: "pending", by: null, at: null }, ackDueAt: ackDueAt(now, rec.severity.current.band, null), notifiedAt: null, addedAt: now, via: [] });
     pushEvent(rec, "agency_added", asActor(w), { agencyId: input.agencyId, manual: true }, now);
     const next = syncAck(rec.status, rec.affectedAgencies);
     if (next !== rec.status) { rec.status = next; rec.statusChangedAt = now; }

@@ -10,6 +10,7 @@ import { requireAuthenticated } from "../identity/auth/require-authenticated.js"
 import mongoose from "mongoose";
 import { requirePermission } from "../identity/authorization/require-permission.js";
 import { WorkRequest } from "./models/work-request.model.js";
+import { augmentPreview } from "./conflict-record.read.js";
 import { getDetection, getDetectionMap, registerDetectionSubscribers, runDetection, runDetectionPreview } from "./detection.service.js";
 import { validateWorkGeometry } from "./geo.service.js";
 import { CLOSURE_TYPES, TRAFFIC_LEVEL_CODES, type TrafficLevel } from "./assessment.rules.js";
@@ -108,7 +109,9 @@ detectionRouter.post("/detect/preview", requireAuthenticated, requirePermission(
       excludeRequestId: parsed.data.excludeRequestId ?? null,
       subject: parsed.data.subject ?? null,
     });
-    res.status(200).json(success(result, req.requestId));
+    // Step 72 advisory: who would need to coordinate. Not persisted, no notifications.
+    const extended = await augmentPreview(actor, { geometry: geo.geometry, excludeRequestId: parsed.data.excludeRequestId ?? null, workType: parsed.data.subject?.workType ?? null, schedule: s ?? null }, result as never).catch(() => result);
+    res.status(200).json(success(extended, req.requestId));
   } catch (error) {
     if (error instanceof FlowControl) return void res.status(error.status).json(failure(error.code, "request could not be completed", req.requestId));
     unavailable(res, req);

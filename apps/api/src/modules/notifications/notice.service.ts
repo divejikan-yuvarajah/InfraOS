@@ -40,12 +40,14 @@ export type NoticeFailure = { ok: false; status: FlowControl["status"]; code: Fl
 
 export type NoticeItem = {
   id: string;
-  type: "APPROVAL" | "MILESTONE" | "SYSTEM";
-  titleKey: NoticeAction;
+  type: "APPROVAL" | "MILESTONE" | "SYSTEM" | "CONFLICT";
+  titleKey: NoticeAction | `roadsync.notifications.${string}`;
   isRead: boolean;
   createdAt: string;
   readAt: string | null;
   project: null | { id: string; projectCode: string; title: string; status: string };
+  /** Step 73: RoadSync conflict-record notices carry a key + params only; the client composes the sentence. */
+  conflict?: { id: string | null; params: Record<string, unknown> };
 };
 
 function fail(status: NoticeFailure["status"], code: NoticeFailure["code"]): NoticeFailure {
@@ -185,14 +187,19 @@ export async function listNotices(actor: AuthenticatedActor, query: NoticeListQu
       const createdAt = new Date(decoded.t);
       parts.push({ $or: [{ createdAt: { $lt: createdAt } }, { createdAt, _id: { $lt: new mongoose.Types.ObjectId(decoded.id) } }] });
     }
-    const rows = await Notification.find({ $and: parts }).sort({ createdAt: -1, _id: -1 }).limit(query.limit + 1).select("type title isRead createdAt readAt resourceType resourceId");
+    const rows = await Notification.find({ $and: parts }).sort({ createdAt: -1, _id: -1 }).limit(query.limit + 1).select("type title message isRead createdAt readAt resourceType resourceId");
     const page = rows.slice(0, query.limit);
     const ids = page.flatMap((row) => row.resourceType === "PROJECT" && row.resourceId ? [row.resourceId] : []);
     const scoped = await readFilter(actor);
     const visible = scoped.denied || ids.length === 0
       ? new Map<string, { projectCode: string; title: string; status: string }>()
       : new Map((await Project.find({ $and: [scoped.filter, { _id: { $in: ids } }] }).select("projectCode title status")).map((project) => [project._id.toString(), project]));
-    const notices: NoticeItem[] = page.flatMap((row) => {
+    const notices: NoticeItem[] = page.flatMap((row): NoticeItem[] => {
+      if (row.type === "CONFLICT" && row.title.startsWith("roadsync.notifications.")) {
+        let params: Record<string, unknown> = {};
+        try { const parsed: unknown = JSON.parse(row.message); if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) params = parsed as Record<string, unknown>; } catch { /* keep empty */ }
+        return [{ id: row._id.toString(), type: "CONFLICT", titleKey: row.title as NoticeItem["titleKey"], isRead: row.isRead, createdAt: row.createdAt ? row.createdAt.toISOString() : new Date(0).toISOString(), readAt: iso(row.readAt), project: null, conflict: { id: row.resourceId ? row.resourceId.toString() : null, params } }];
+      }
       if (!isNoticeAction(row.title)) return [];
       const project = row.resourceId ? visible.get(row.resourceId.toString()) : undefined;
       return [{
