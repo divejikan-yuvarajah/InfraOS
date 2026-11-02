@@ -10,9 +10,11 @@ import { Role } from "../identity/models/role.model.js";
 import { User } from "../identity/models/user.model.js";
 import { Project } from "../projects/models/project.model.js";
 import { WorkRequest } from "./models/work-request.model.js";
+import { roadsyncEvents } from "./roadsync.events.js";
 import { candidateCounts, requestIdsWithCandidates } from "./candidate.counts.js";
 import { validateWorkGeometry, type GeoIssue } from "./geo.service.js";
-import type { WorkRequestCreateInput, WorkRequestListQuery } from "./work-requests.schema.js";
+import { startDateAllowed, type WorkRequestCreateInput, type WorkRequestListQuery } from "./work-requests.schema.js";
+import { RoadsyncCounter } from "./models/conflict-record.model.js";
 
 /** Draft work requests are only planned against projects that are approved and not closed (BR-PRJ-007). */
 const PROJECT_ELIGIBLE = new Set(["APPROVED", "ACTIVE", "ON_HOLD", "DELAYED"]);
@@ -43,6 +45,9 @@ export type WorkRequestView = {
   priority: string;
   plannedStart: string;
   plannedEnd: string;
+  workingHours: "day" | "night" | "24h";
+  isEmergency: boolean;
+  referenceNo: string | null;
   geometry: { type: string; coordinates: unknown };
   createdAt: string;
   updatedAt: string;
@@ -50,6 +55,9 @@ export type WorkRequestView = {
   detection: { status: string; completedAt: string | null; counts: { nearby: number; candidates: number; agencies: number; truncated: boolean } | null } | null;
   nearbyCount: number;
   assessment: { status: string; riskIndex: number; maxBand: string | null; conflicts: number; opportunities: number } | null;
+  conflictRecords: { total: number; open: number; acknowledged: number; needsAck: number } | null;
+  hasConflictRecords: boolean;
+  coordination: { active: number; needsMyResponse: number } | null;
 };
 
 function fail(status: WorkRequestFailure["status"], code: Code): WorkRequestFailure {
@@ -99,12 +107,17 @@ type Row = {
   priority: string;
   plannedStart: Date;
   plannedEnd: Date;
+  schedule?: { workingHours?: "day" | "night" | "24h" } | null;
+  isEmergency?: boolean;
+  referenceNo?: string | null;
   geometry: { type: string; coordinates: unknown };
   createdAt?: Date;
   updatedAt?: Date;
   __v?: number;
   detection?: { status: string; completedAt?: Date; counts?: { nearby: number; candidates: number; agencies: number; truncated: boolean } } | null;
   assessment?: { status?: string; riskIndex?: number; maxBand?: string | null; ruleVersion?: string; counts?: { conflicts?: number; opportunities?: number } } | null;
+  conflictRecords?: { total?: number; open?: number; acknowledged?: number; needsAck?: number } | null;
+  coordination?: { active?: number; needsMyResponse?: number } | null;
 };
 
 /** Step 71 list/map summary. Null until a request has been assessed. */
@@ -135,6 +148,9 @@ async function toViews(rows: Row[], session?: ClientSession): Promise<WorkReques
     priority: row.priority,
     plannedStart: row.plannedStart.toISOString(),
     plannedEnd: row.plannedEnd.toISOString(),
+    workingHours: row.schedule?.workingHours ?? "day",
+    isEmergency: row.isEmergency ?? false,
+    referenceNo: row.referenceNo ?? null,
     geometry: { type: row.geometry.type, coordinates: row.geometry.coordinates },
     createdAt: (row.createdAt ?? row.plannedStart).toISOString(),
     updatedAt: (row.updatedAt ?? row.plannedStart).toISOString(),
@@ -142,6 +158,9 @@ async function toViews(rows: Row[], session?: ClientSession): Promise<WorkReques
     detection: row.detection ? { status: row.detection.status, completedAt: row.detection.completedAt?.toISOString() ?? null, counts: row.detection.counts ?? null } : null,
     nearbyCount: nearby.get(row._id.toString()) ?? 0,
     assessment: assessmentSummary(row.assessment),
+    conflictRecords: row.conflictRecords ? { total: row.conflictRecords.total ?? 0, open: row.conflictRecords.open ?? 0, acknowledged: row.conflictRecords.acknowledged ?? 0, needsAck: row.conflictRecords.needsAck ?? 0 } : null,
+    hasConflictRecords: (row.conflictRecords?.total ?? 0) > 0,
+    coordination: row.coordination ? { active: row.coordination.active ?? 0, needsMyResponse: row.coordination.needsMyResponse ?? 0 } : null,
   }));
 }
 
@@ -273,6 +292,8 @@ export async function createWorkRequest(actor: AuthenticatedActor, input: WorkRe
           workType: input.workType,
           plannedStart: start,
           plannedEnd: end,
+          schedule: { workingHours: input.workingHours ?? "day" },
+          isEmergency: input.isEmergency ?? false,
           status: "DRAFT",
           priority: input.priority ?? "NORMAL",
         }], { session: mongo });
@@ -299,6 +320,172 @@ export async function createWorkRequest(actor: AuthenticatedActor, input: WorkRe
     }
     if (!created) throw new WorkRequestDependencyError();
     return { ok: true as const, workRequest: created as WorkRequestView };
+  } catch (error) {
+    if (error instanceof FlowControl) return fail(error.status, error.code);
+    throw new WorkRequestDependencyError();
+  }
+}
+
+// ---------- Step 76: the ONE controlled path that changes a submitted request's schedule ----------
+
+const AMENDABLE = ["SUBMITTED", "PLANNED", "APPROVED"] as const;
+const REVISIONS_CAP = 20;
+export type AmendInput = { amendmentId: string; resolutionId: string; workRequestId: string; baseVersion: number; plannedStart?: Date; plannedEnd?: Date; workingHours?: "day" | "night" | "24h" };
+export type AmendResult = { ok: true; version: number; before: { plannedStart: Date; plannedEnd: Date; workingHours: "day" | "night" | "24h" } } | { ok: false; code: "not_found" | "stale" | "not_amendable" | "invalid" };
+
+/**
+ * Atomic compare-and-set on the request version: a stale or already-applied amendment matches nothing. The Step 66-67
+ * create path and its whitelist are untouched; nothing else may mutate schedule fields of a submitted request.
+ * Changes dates and/or working hours; the revision records both sides of every change.
+ */
+export async function applyAmendmentToRequest(a: AmendInput, by: { userId: string; agencyId: string }): Promise<AmendResult> {
+  if (!a.plannedStart !== !a.plannedEnd || (!a.plannedStart && !a.workingHours)) return { ok: false, code: "invalid" };
+  if (a.plannedStart && a.plannedEnd && (Number.isNaN(a.plannedStart.getTime()) || Number.isNaN(a.plannedEnd.getTime()) || a.plannedEnd < a.plannedStart)) return { ok: false, code: "invalid" };
+  const id = new mongoose.Types.ObjectId(a.workRequestId);
+  const current = await WorkRequest.findById(id).select("plannedStart plannedEnd schedule status __v").lean();
+  if (!current) return { ok: false, code: "not_found" };
+  if (!(AMENDABLE as readonly string[]).includes(current.status)) return { ok: false, code: "not_amendable" };
+  if ((current as { __v?: number }).__v !== a.baseVersion) return { ok: false, code: "stale" };
+  const now = new Date();
+  const hours = { $ifNull: ["$schedule.workingHours", "day"] };
+  const rev = {
+    n: { $add: [{ $ifNull: ["$amendedCount", 0] }, 1] }, at: { $literal: now }, by: { $literal: { userId: by.userId, agencyId: by.agencyId } }, via: { $literal: { amendmentId: a.amendmentId, resolutionId: a.resolutionId } },
+    before: { plannedStart: "$plannedStart", plannedEnd: "$plannedEnd", workingHours: hours },
+    after: { plannedStart: a.plannedStart ? { $literal: a.plannedStart } : "$plannedStart", plannedEnd: a.plannedEnd ? { $literal: a.plannedEnd } : "$plannedEnd", workingHours: a.workingHours ? { $literal: a.workingHours } : hours },
+  };
+  const res = await WorkRequest.findOneAndUpdate(
+    { _id: id, __v: a.baseVersion, status: { $in: [...AMENDABLE] } },
+    [{ $set: {
+      originalSchedule: { $ifNull: ["$originalSchedule", { plannedStart: "$plannedStart", plannedEnd: "$plannedEnd", workingHours: hours }] },
+      revisions: { $slice: [{ $concatArrays: [{ $ifNull: ["$revisions", []] }, [rev]] }, -REVISIONS_CAP] },
+      amendedCount: { $add: [{ $ifNull: ["$amendedCount", 0] }, 1] },
+      lastAmendedAt: { $literal: now }, updatedAt: { $literal: now },
+      ...(a.plannedStart && a.plannedEnd ? { plannedStart: { $literal: a.plannedStart }, plannedEnd: { $literal: a.plannedEnd } } : {}),
+      ...(a.workingHours ? { "schedule.workingHours": { $literal: a.workingHours } } : {}),
+      "detection.status": "pending", __v: { $add: ["$__v", 1] },
+    } }] as never,
+    { new: true, timestamps: false },
+  ).lean();
+  if (!res) return { ok: false, code: "stale" };
+  try {
+    await AuditLog.create({ userId: new mongoose.Types.ObjectId(by.userId), action: "work_request.amended", resourceType: "WORK_REQUEST", resourceId: id, newValue: { status: String(res.status), agencyId: res.agencyId }, requestId: "amendment", agencyId: new mongoose.Types.ObjectId(by.agencyId) });
+  } catch { /* the revision on the request keeps the fact */ }
+  roadsyncEvents.emit("workRequestAmended", { requestId: a.workRequestId, amendmentId: a.amendmentId, resolutionId: a.resolutionId });
+  return { ok: true, version: (res as { __v?: number }).__v ?? a.baseVersion + 1, before: { plannedStart: current.plannedStart, plannedEnd: current.plannedEnd, workingHours: (current as { schedule?: { workingHours?: "day" | "night" | "24h" } }).schedule?.workingHours ?? "day" } };
+}
+
+// ---------- Step 66 lifecycle: edit draft, submit, cancel, delete draft ----------
+
+export type LifecycleInput = { version: number };
+type Loaded = { row: Row & { status: string; __v?: number }; id: mongoose.Types.ObjectId };
+
+/** Read scope (404 when unknown to the caller) plus project write scope (403 when readable but not writable). */
+async function loadWritable(actor: AuthenticatedActor, perms: Permission[], id: string): Promise<Loaded> {
+  if (!/^[a-f0-9]{24}$/i.test(id)) throw new FlowControl(404, "NOT_FOUND");
+  await assertLive(actor, perms);
+  const row = await WorkRequest.findOne({ $and: [await readFilter(actor), { _id: id }] }).lean();
+  if (!row) throw new FlowControl(404, "NOT_FOUND");
+  const scope = await resolveResourceScope(actor);
+  if (!(await Project.exists({ $and: [projectWriteFilter(actor, scope), { _id: row.projectId }] }))) throw new FlowControl(403, "FORBIDDEN");
+  return { row: row as unknown as Loaded["row"], id: row._id };
+}
+
+async function auditLifecycle(actor: AuthenticatedActor, action: string, id: mongoose.Types.ObjectId, status: string, agencyId: mongoose.Types.ObjectId, requestId: string): Promise<void> {
+  try {
+    await AuditLog.create({ userId: new mongoose.Types.ObjectId(actor.userId), action: `work_request.${action}`, resourceType: "WORK_REQUEST", resourceId: id, newValue: { status, agencyId }, requestId: auditRequestId(requestId), agencyId: actor.roleKey === "SUPER_ADMIN" ? agencyId : new mongoose.Types.ObjectId(actor.agencyId) });
+  } catch { /* the status history on the request keeps the fact */ }
+}
+
+const history = (from: string, to: string, by: string, extra: Record<string, unknown> = {}) => ({ from, to, at: new Date(), by, ...extra });
+
+export async function updateWorkRequestDraft(actor: AuthenticatedActor, id: string, input: { version: number; workType?: string; priority?: string; plannedStart?: string; plannedEnd?: string; workingHours?: string; isEmergency?: boolean; geometry?: unknown }, requestId: string) {
+  try {
+    const { row, id: oid } = await loadWritable(actor, ["roadsync.work_request.update"], id);
+    if (row.status !== "DRAFT") return fail(409, "CONFLICT");
+    if ((row.__v ?? 0) !== input.version) return fail(409, "CONFLICT");
+    const start = input.plannedStart ? new Date(input.plannedStart) : row.plannedStart;
+    const end = input.plannedEnd ? new Date(input.plannedEnd) : row.plannedEnd;
+    if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime()) || end < start) return fail(400, "VALIDATION_ERROR");
+    const set: Record<string, unknown> = { plannedStart: start, plannedEnd: end };
+    if (input.workType) set.workType = input.workType;
+    if (input.priority) set.priority = input.priority;
+    if (input.workingHours) set["schedule.workingHours"] = input.workingHours;
+    if (input.isEmergency !== undefined) set.isEmergency = input.isEmergency;
+    if (input.geometry) {
+      const geo = validateWorkGeometry(input.geometry as never);
+      if (!geo.valid) return { ...fail(400, "VALIDATION_ERROR"), details: geo.errors };
+      set.geometry = geo.geometry;
+    }
+    const updated = await WorkRequest.findOneAndUpdate({ _id: oid, __v: input.version, status: "DRAFT" }, { $set: set, $inc: { __v: 1 } }, { new: true }).lean();
+    if (!updated) return fail(409, "CONFLICT");
+    await auditLifecycle(actor, "updated", oid, "DRAFT", row.agencyId, requestId);
+    const [view] = await toViews([updated as unknown as Row]);
+    return { ok: true as const, workRequest: view as WorkRequestView };
+  } catch (error) {
+    if (error instanceof FlowControl) return fail(error.status, error.code);
+    throw new WorkRequestDependencyError();
+  }
+}
+
+async function nextReference(now = new Date()): Promise<string> {
+  const year = now.getUTCFullYear();
+  const r = await RoadsyncCounter.findOneAndUpdate({ _id: `WR-${year}` }, { $inc: { seq: 1 } }, { upsert: true, new: true }).lean();
+  return `WR-${year}-${String(r!.seq).padStart(6, "0")}`;
+}
+
+/** DRAFT -> SUBMITTED. Assigns the reference once, records history and starts detection through the event. */
+export async function submitWorkRequest(actor: AuthenticatedActor, id: string, input: LifecycleInput, requestId: string) {
+  try {
+    const { row, id: oid } = await loadWritable(actor, ["roadsync.work_request.update"], id);
+    if (row.status !== "DRAFT" || (row.__v ?? 0) !== input.version) return fail(409, "CONFLICT");
+    await loadWritableProject(actor, String(row.projectId)); // project must still be approved/active and its agency active
+    const emergency = (row as { isEmergency?: boolean }).isEmergency === true;
+    if (!startDateAllowed(row.plannedStart, emergency) || row.plannedEnd < row.plannedStart || !row.geometry) return fail(400, "VALIDATION_ERROR");
+    const updated = await WorkRequest.findOneAndUpdate(
+      { _id: oid, __v: input.version, status: "DRAFT" },
+      { $set: { status: "SUBMITTED", referenceNo: row.referenceNo ?? (await nextReference()), "detection.status": "pending" }, $push: { statusHistory: history("DRAFT", "SUBMITTED", actor.userId) }, $inc: { __v: 1 } },
+      { new: true },
+    ).lean();
+    if (!updated) return fail(409, "CONFLICT");
+    await auditLifecycle(actor, "submitted", oid, "SUBMITTED", row.agencyId, requestId);
+    roadsyncEvents.emit("workRequestSubmitted", { requestId: String(oid), runBy: "submit" });
+    const [view] = await toViews([updated as unknown as Row]);
+    return { ok: true as const, workRequest: view as WorkRequestView };
+  } catch (error) {
+    if (error instanceof FlowControl) return fail(error.status, error.code);
+    throw new WorkRequestDependencyError();
+  }
+}
+
+/** Submitted -> CANCELLED. The reason is validated but stored only as its length; detection deactivates the pairs. */
+export async function cancelWorkRequest(actor: AuthenticatedActor, id: string, input: { version: number; reason: string }, requestId: string) {
+  try {
+    const { row, id: oid } = await loadWritable(actor, ["roadsync.work_request.cancel"], id);
+    if (!["SUBMITTED", "PLANNED", "APPROVED", "ACTIVE"].includes(row.status) || (row.__v ?? 0) !== input.version) return fail(409, "CONFLICT");
+    const updated = await WorkRequest.findOneAndUpdate(
+      { _id: oid, __v: input.version, status: row.status },
+      { $set: { status: "CANCELLED" }, $push: { statusHistory: history(row.status, "CANCELLED", actor.userId, { reasonLength: input.reason.length }) }, $inc: { __v: 1 } },
+      { new: true },
+    ).lean();
+    if (!updated) return fail(409, "CONFLICT");
+    await auditLifecycle(actor, "cancelled", oid, "CANCELLED", row.agencyId, requestId);
+    roadsyncEvents.emit("workRequestCancelled", { requestId: String(oid) });
+    const [view] = await toViews([updated as unknown as Row]);
+    return { ok: true as const, workRequest: view as WorkRequestView };
+  } catch (error) {
+    if (error instanceof FlowControl) return fail(error.status, error.code);
+    throw new WorkRequestDependencyError();
+  }
+}
+
+export async function deleteWorkRequestDraft(actor: AuthenticatedActor, id: string, requestId: string) {
+  try {
+    const { row, id: oid } = await loadWritable(actor, ["roadsync.work_request.update"], id);
+    if (row.status !== "DRAFT") return fail(409, "CONFLICT");
+    const res = await WorkRequest.deleteOne({ _id: oid, status: "DRAFT" });
+    if (res.deletedCount !== 1) return fail(409, "CONFLICT");
+    await auditLifecycle(actor, "deleted", oid, "DELETED", row.agencyId, requestId);
+    return { ok: true as const };
   } catch (error) {
     if (error instanceof FlowControl) return fail(error.status, error.code);
     throw new WorkRequestDependencyError();

@@ -46,6 +46,7 @@ type PairDoc = {
   temporal: TemporalResult;
   inputsHash: string;
   assessment?: Stored;
+  conflictRecord?: { id: string; no: string; status: string } | null;
 };
 
 /** An override pins the band; the score is clamped into that band so the two never disagree. */
@@ -234,14 +235,14 @@ async function loadAssessed(actor: AuthenticatedActor, requestId: string) {
   if (!wr) return null;
   const [views, scope] = await Promise.all([loadPairViews(actor, requestId), resolveResourceScope(actor)]);
   const ids = views.flatMap((v) => (v.candidateId ? [oid(v.candidateId)] : []));
-  const docs = (await Candidate.find({ _id: { $in: ids } }).select("aType aId assessment inputsHash").lean()) as unknown as PairDoc[];
+  const docs = (await Candidate.find({ _id: { $in: ids } }).select("aType aId assessment inputsHash conflictRecord").lean()) as unknown as PairDoc[];
   const byId = new Map(docs.map((d) => [String(d._id), d]));
   const national = scope.kind === "platform";
   const items = views.flatMap((v) => {
     const doc = v.candidateId ? byId.get(v.candidateId) : undefined;
     if (!doc?.assessment) return [];
     const isA = subjectIsA(doc, requestId);
-    return [{ candidateId: v.candidateId!, key: v.key, other: v.other, spatial: v.spatial, temporal: v.temporal, assessment: outputAssessment(doc.assessment, v.other.detailLevel === "full", national, isA), stale: v.stale, canOpen: v.canOpen }];
+    return [{ candidateId: v.candidateId!, key: v.key, other: v.other, spatial: v.spatial, temporal: v.temporal, assessment: outputAssessment(doc.assessment, v.other.detailLevel === "full", national, isA), stale: v.stale, canOpen: v.canOpen, conflictRecord: doc.conflictRecord ?? null }];
   });
   return { wr, items, national };
 }
@@ -351,6 +352,8 @@ export async function setOverride(actor: AuthenticatedActor, candidateId: string
     newValue: { status: (input?.band ?? doc.assessment.band).toUpperCase(), ...(input ? { reason: input.reason } : {}), agencyId: doc.agencyIds[0] }, requestId: "assessment", agencyId: doc.agencyIds[0],
   });
   await aggregateSides(doc);
+  // Step 73: the record pipeline refreshes severity so the override flows into conflict records.
+  roadsyncEvents.emit("roadsyncOverrideChanged", { requestId: String(doc.aId), candidateId: String(doc._id) });
   return "ok";
 }
 

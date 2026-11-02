@@ -1,5 +1,8 @@
 "use client";
 
+import { getAssessmentCopy } from "@/lib/roadsync/assessment-copy";
+import { conflictNoticeText, getConflictCopy } from "@/lib/roadsync/conflict-records-copy";
+import { coordNoticeText, getCoordCopy } from "@/lib/roadsync/coordination-copy";
 import Link from "next/link";
 import { useState, useSyncExternalStore } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -83,9 +86,9 @@ export function ProjectNotices() {
                 <div className="mc-notice-main">
                   <p className="mc-notice-title">
                     {item.isRead ? null : <span className="mc-sr">{copy.unread}: </span>}
-                    {noticeTitle(copy, item.titleKey)}
+                    {item.conflict ? (item.type === "COORDINATION" ? coordNoticeText(getCoordCopy(locale), item.titleKey, item.conflict.params) : conflictNoticeText(getConflictCopy(locale), item.titleKey, item.conflict.params, getAssessmentCopy(locale).bands)) : noticeTitle(copy, item.titleKey)}
                   </p>
-                  {href && item.project ? <Link href={href}>{copy.openProject}: {item.project.projectCode} {item.project.title}</Link> : <p>{copy.restricted}</p>}
+                  {item.conflict && href ? <Link href={href}>{item.type === "COORDINATION" ? getCoordCopy(locale).room.back : getConflictCopy(locale).integrations.openRecord}</Link> : href && item.project ? <Link href={href}>{copy.openProject}: {item.project.projectCode} {item.project.title}</Link> : <p>{copy.restricted}</p>}
                   <time dateTime={item.createdAt}>{formatActivityWhen(item.createdAt, locale)}</time>
                 </div>
                 <button type="button" className="auth-access-button mc-notice-action" onClick={() => void mark(item.id, !item.isRead)}>

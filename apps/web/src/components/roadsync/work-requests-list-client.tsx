@@ -32,6 +32,7 @@ import { getAuthEpoch, getMemorySession, subscribeAuth } from "@/lib/auth/state"
 import { useWorkspaceLocale } from "@/lib/i18n/workspace-locale";
 import { BANDS_DESC, fmt, type Band } from "@/lib/roadsync/assessment";
 import { getAssessmentCopy } from "@/lib/roadsync/assessment-copy";
+import { getConflictCopy } from "@/lib/roadsync/conflict-records-copy";
 
 import { BandPill } from "./risk-visuals";
 import { PriorityMark, WorkTypeIcon } from "./roadsync-shared";
@@ -84,7 +85,7 @@ export function WorkRequestsListClient() {
   const pages = data ? Math.max(1, Math.ceil(data.total / data.limit)) : 1;
 
   return (
-    <StaffWorkspaceShell title="Work Requests" description="Planned road and utility works in your authorised scope. Requests start as drafts; conflict detection is not available yet." wide>
+    <StaffWorkspaceShell title="Work Requests" description="Planned road and utility works in your authorised scope. Requests start as drafts; submitting one starts conflict detection." wide>
       <div className="rs-page">
         <div className="rs-eyebrow">
           <p className="rs-crumb">Operations / RoadSync</p>
@@ -263,7 +264,7 @@ export function WorkRequestsListClient() {
                         {WORK_TYPE_LABELS[wr.workType]}
                         <span className="mc-sr"> — open details</span>
                       </Link>
-                      <p className="rs-sub">{wr.geometry.type === "Point" ? "Point" : wr.geometry.type === "LineString" ? "Corridor" : "Area"} · {wr.agencyName ?? "Agency"}{wr.nearbyCount > 0 ? <span className="rs-nb-chip" style={{ marginLeft: "0.5rem" }}>{wr.assessment?.maxBand ? fmt(risk.list.risk, { n: wr.nearbyCount, band: risk.bands[wr.assessment.maxBand as Band] }) : fmt(risk.list.nearbyOnly, { n: wr.nearbyCount })}</span> : null}{wr.assessment?.maxBand ? <span style={{ marginLeft: "0.5rem" }} title={`${risk.riskIndex}: ${wr.assessment.riskIndex}`}><BandPill band={wr.assessment.maxBand as Band} copy={risk} /></span> : null}</p>
+                      <p className="rs-sub">{wr.geometry.type === "Point" ? "Point" : wr.geometry.type === "LineString" ? "Corridor" : "Area"} · {wr.agencyName ?? "Agency"}{wr.nearbyCount > 0 ? <span className="rs-nb-chip" style={{ marginLeft: "0.5rem" }}>{wr.assessment?.maxBand ? fmt(risk.list.risk, { n: wr.nearbyCount, band: risk.bands[wr.assessment.maxBand as Band] }) : fmt(risk.list.nearbyOnly, { n: wr.nearbyCount })}</span> : null}{wr.assessment?.maxBand ? <span style={{ marginLeft: "0.5rem" }} title={`${risk.riskIndex}: ${wr.assessment.riskIndex}`}><BandPill band={wr.assessment.maxBand as Band} copy={risk} /></span> : null}{wr.conflictRecords && wr.conflictRecords.total > 0 ? <Link href={`/roadsync/conflicts?requestId=${wr.id}`} className="rs-nb-chip" style={{ marginLeft: "0.5rem" }}>{fmt(getConflictCopy(locale).integrations.records, { n: wr.conflictRecords.total })}{wr.conflictRecords.needsAck > 0 ? ` · ${getConflictCopy(locale).integrations.needsAck}` : ""}</Link> : null}</p>
                     </div>
                   </div>
                   <div className="rs-cell">

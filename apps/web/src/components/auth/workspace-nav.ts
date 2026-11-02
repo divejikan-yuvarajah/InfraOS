@@ -8,6 +8,10 @@ import {
   LayoutDashboardIcon,
   ShieldCheckIcon,
   SlidersHorizontalIcon,
+  HandshakeIcon,
+  FileCheck2Icon,
+  ArchiveIcon,
+  SwordsIcon,
   UserCircleIcon,
   UsersIcon,
 } from "lucide-react";
@@ -30,7 +34,11 @@ export const WORKSPACE_NAV: readonly WorkspaceNavGroup[] = [
     items: [
       { href: "/projects", label: "Projects", icon: FolderKanbanIcon, i18n: { si: "ව්‍යාපෘති", ta: "திட்டங்கள்" } },
       { href: "/projects/reviews", label: "Reviews", icon: ClipboardCheckIcon, i18n: { si: "ව්‍යාපෘති සමාලෝචන", ta: "திட்ட மதிப்பாய்வுகள்" } },
-      { href: "/roadsync/work-requests", label: "Work Requests", icon: RouteIcon },
+      { href: "/roadsync/work-requests", label: "Work Requests", icon: RouteIcon, i18n: { si: "වැඩ ඉල්ලීම්", ta: "பணி கோரிக்கைகள்" } },
+      { href: "/roadsync/conflicts", label: "Conflicts", icon: SwordsIcon, i18n: { si: "ගැටුම්", ta: "முரண்பாடுகள்" } },
+      { href: "/roadsync/coordination", label: "Coordination", icon: HandshakeIcon, i18n: { si: "සම්බන්ධීකරණය", ta: "ஒருங்கிணைப்பு" } },
+      { href: "/roadsync/approvals", label: "Approvals", icon: FileCheck2Icon, i18n: { si: "අනුමැතීන්", ta: "ஒப்புதல்கள்" } },
+      { href: "/roadsync/history", label: "History", icon: ArchiveIcon, i18n: { si: "ඉතිහාසය", ta: "வரலாறு" } },
     ],
   },
   {

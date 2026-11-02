@@ -1,7 +1,7 @@
 import mongoose, { Schema } from "mongoose";
 import { dateOrder, reference } from "../../../shared/database/fields.js";
 import { geometryField } from "../../../shared/database/geometry.js";
-import { WORK_PRIORITIES, WORK_STATUSES, WORK_TYPES } from "../roadsync.constants.js";
+import { WORKING_HOURS, WORK_PRIORITIES, WORK_STATUSES, WORK_TYPES } from "../roadsync.constants.js";
 
 /** Server-owned detection summary (Steps 68-69). Never accepted from clients. */
 const detectionSchema = new Schema({
@@ -31,10 +31,28 @@ const workRequestSchema = new Schema({
   detection: { type: detectionSchema },
   /** Steps 70-71, server-owned (never accepted from clients): status, counts, riskIndex, maxBand, corridorProfile. */
   assessment: { type: Schema.Types.Mixed, default: undefined },
+  /** Step 73, server-owned: { total, open, acknowledged, needsAck } of related conflict records. */
+  conflictRecords: { type: Schema.Types.Mixed, default: undefined },
+  /** Step 74-75, server-owned: { active, needsMyResponse } for the owning agency. */
+  coordination: { type: Schema.Types.Mixed, default: undefined },
+  /** Assigned once, at submit (atomic counter WR-YYYY). Absent on drafts and on rows created before this field existed. */
+  referenceNo: { type: String, match: /^WR-\d{4}-\d{6}$/, default: undefined },
+  /** Server-owned: [{ from, to, at, by, reasonLength? }]; never free text. */
+  statusHistory: { type: [Schema.Types.Mixed], default: undefined },
+  /** Optional, default false (absent reads as false); drafts only after create. Feeds assessment and the Step 76 national-approval rule (c). */
+  isEmergency: { type: Boolean, default: undefined },
+  /** Optional on existing documents (no migration): absent reads as "day". Changed after submit only by applyAmendmentToRequest. */
+  schedule: { type: new Schema({ workingHours: { type: String, enum: WORKING_HOURS, default: "day" } }, { _id: false, strict: "throw" }), default: undefined },
+  /** Step 76, server-owned (never client-accepted): written ONLY by applyAmendmentToRequest. */
+  originalSchedule: { type: Schema.Types.Mixed, default: undefined },
+  revisions: { type: [Schema.Types.Mixed], default: undefined },
+  amendedCount: { type: Number, default: undefined },
+  lastAmendedAt: { type: Date, default: undefined },
 },{ timestamps: true, strict: "throw", collection: "workRequests" });
 
 dateOrder(workRequestSchema, "plannedStart", "plannedEnd");
 
+workRequestSchema.index({ referenceNo: 1 }, { unique: true, partialFilterExpression: { referenceNo: { $type: "string" } } });
 workRequestSchema.index({ agencyId: 1, status: 1, plannedStart: 1, plannedEnd: 1 });
 workRequestSchema.index({ geometry: "2dsphere", status: 1, plannedStart: 1, plannedEnd: 1 });
 

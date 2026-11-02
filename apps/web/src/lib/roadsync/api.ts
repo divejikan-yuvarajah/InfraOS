@@ -1,7 +1,7 @@
 import { ApiError, apiClient } from "@/lib/api/client";
 import { getAuthEpoch, getMemoryAccessToken } from "@/lib/auth/state";
 
-import type { CreateWorkRequestBody, WorkRequestListData, WorkRequestRecord } from "./work-requests-view";
+import type { CreateWorkRequestBody, PatchWorkRequestBody, WorkRequestListData, WorkRequestRecord } from "./work-requests-view";
 
 export type Envelope<T> = { success: true; data: T };
 
@@ -38,6 +38,36 @@ export async function createWorkRequest(body: CreateWorkRequestBody): Promise<Wo
   const payload = await apiClient<Envelope<{ workRequest: WorkRequestRecord }>>("/api/v1/roadsync/work-requests", { method: "POST", authenticated: true, body });
   moved(atEpoch, tokenAtStart);
   return payload.data.workRequest;
+}
+
+const wr = (id: string, tail = "") => `/api/v1/roadsync/work-requests/${encodeURIComponent(id)}${tail}`;
+
+/** Draft edit: the server requires the current `version` and refuses anything but a draft. */
+export async function updateWorkRequest(id: string, body: PatchWorkRequestBody): Promise<WorkRequestRecord> {
+  const { atEpoch, tokenAtStart } = guard();
+  const payload = await apiClient<Envelope<{ workRequest: WorkRequestRecord }>>(wr(id), { method: "PATCH", authenticated: true, body });
+  moved(atEpoch, tokenAtStart);
+  return payload.data.workRequest;
+}
+
+export async function submitWorkRequest(id: string, version: number): Promise<WorkRequestRecord> {
+  const { atEpoch, tokenAtStart } = guard();
+  const payload = await apiClient<Envelope<{ workRequest: WorkRequestRecord }>>(wr(id, "/submit"), { method: "POST", authenticated: true, body: { version } });
+  moved(atEpoch, tokenAtStart);
+  return payload.data.workRequest;
+}
+
+export async function cancelWorkRequest(id: string, body: { version: number; reason: string }): Promise<WorkRequestRecord> {
+  const { atEpoch, tokenAtStart } = guard();
+  const payload = await apiClient<Envelope<{ workRequest: WorkRequestRecord }>>(wr(id, "/cancel"), { method: "POST", authenticated: true, body });
+  moved(atEpoch, tokenAtStart);
+  return payload.data.workRequest;
+}
+
+export async function deleteWorkRequest(id: string): Promise<void> {
+  const { atEpoch, tokenAtStart } = guard();
+  await apiClient<Envelope<{ deleted: true }>>(wr(id), { method: "DELETE", authenticated: true });
+  moved(atEpoch, tokenAtStart);
 }
 
 export type WorkRequestFailureKind = "forbidden" | "not-found" | "conflict" | "invalid" | "auth" | "unavailable";

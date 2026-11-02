@@ -9,6 +9,9 @@ import type { Band } from "./assessment";
 export const WORK_TYPES = ["ROAD_RESURFACING", "ROAD_EXCAVATION", "PIPELINE_INSTALLATION", "ELECTRIC_CABLE_WORK", "TELECOM_CABLE_WORK", "DRAINAGE_WORK", "UTILITY_REPAIR", "BRIDGE_WORK", "OTHER"] as const satisfies readonly WorkType[];
 export const WORK_STATUSES = ["DRAFT", "SUBMITTED", "PLANNED", "APPROVED", "ACTIVE", "COMPLETED", "CANCELLED"] as const satisfies readonly WorkStatus[];
 export const WORK_PRIORITIES = ["LOW", "NORMAL", "HIGH", "CRITICAL"] as const satisfies readonly WorkPriority[];
+/** Mirrors the API enum (roadsync.constants WORKING_HOURS). */
+export const WORKING_HOURS = ["day", "night", "24h"] as const;
+export type WorkingHours = (typeof WORKING_HOURS)[number];
 
 /** Wire shape returned by /api/v1/roadsync/work-requests: WorkRequestDto plus read-only display context. */
 export type WorkRequestRecord = {
@@ -23,6 +26,10 @@ export type WorkRequestRecord = {
   priority: WorkPriority;
   plannedStart: string;
   plannedEnd: string;
+  workingHours?: WorkingHours;
+  isEmergency?: boolean;
+  /** Assigned by the server at submit (WR-YYYY-nnnnnn); null on drafts. */
+  referenceNo?: string | null;
   geometry: GeometryInput;
   createdAt: string;
   updatedAt: string;
@@ -31,6 +38,11 @@ export type WorkRequestRecord = {
   nearbyCount: number;
   /** Steps 70-71 summary. Null until the request has been assessed. */
   assessment?: { status: string; riskIndex: number; maxBand: Band | null; conflicts: number; opportunities: number } | null;
+  /** Step 73 server-owned aggregate of formal conflict records. */
+  conflictRecords?: { total: number; open: number; acknowledged: number; needsAck: number } | null;
+  hasConflictRecords?: boolean;
+  /** Step 74-75 server-owned aggregate of active coordination. */
+  coordination?: { active: number; needsMyResponse: number } | null;
 };
 
 export type WorkRequestListData = {
@@ -191,6 +203,8 @@ export type WorkRequestFormValues = {
   coordinates: string;
   plannedStart: string;
   plannedEnd: string;
+  workingHours: WorkingHours;
+  isEmergency: boolean;
 };
 
 export type WorkRequestFormErrors = Partial<Record<keyof WorkRequestFormValues, string>>;
@@ -201,6 +215,8 @@ export type CreateWorkRequestBody = {
   priority: WorkPriority;
   plannedStart: string;
   plannedEnd: string;
+  workingHours: WorkingHours;
+  isEmergency: boolean;
   geometry: GeometryInput;
 };
 
@@ -214,6 +230,8 @@ export const EMPTY_FORM: WorkRequestFormValues = {
   coordinates: "",
   plannedStart: "",
   plannedEnd: "",
+  workingHours: "day",
+  isEmergency: false,
 };
 
 export function buildCreateBody(values: WorkRequestFormValues): { ok: true; body: CreateWorkRequestBody } | { ok: false; errors: WorkRequestFormErrors } {
@@ -237,9 +255,65 @@ export function buildCreateBody(values: WorkRequestFormValues): { ok: true; body
       priority: values.priority as WorkPriority,
       plannedStart: start,
       plannedEnd: end,
+      workingHours: values.workingHours,
+      isEmergency: values.isEmergency,
       geometry: geometry.geometry,
     },
   };
+}
+
+/** The draft edit body: the server whitelist only (never project, agency, status or reference), plus the required version. */
+export type PatchWorkRequestBody = Omit<CreateWorkRequestBody, "projectId"> & { version: number };
+export function buildPatchBody(values: WorkRequestFormValues, version: number): { ok: true; body: PatchWorkRequestBody } | { ok: false; errors: WorkRequestFormErrors } {
+  const built = buildCreateBody(values);
+  if (!built.ok) return built;
+  const { projectId: _project, ...rest } = built.body;
+  void _project;
+  return { ok: true, body: { ...rest, version } };
+}
+
+/** Colombo wall-clock value for a datetime-local input, from a stored UTC instant. */
+export function utcToColomboLocal(iso: string): string {
+  const date = new Date(iso);
+  return Number.isNaN(date.getTime()) ? "" : new Date(date.getTime() + 5.5 * 3_600_000).toISOString().slice(0, 16);
+}
+
+export function geometryToText(geometry: GeometryInput): string {
+  const points = geometry.type === "Point" ? [geometry.coordinates] : geometry.type === "LineString" ? geometry.coordinates : (geometry.coordinates[0] ?? []).slice(0, -1);
+  return points.map((p) => `${p[0]}, ${p[1]}`).join("\n");
+}
+
+export function valuesFromRecord(wr: WorkRequestRecord): WorkRequestFormValues {
+  return {
+    projectId: wr.projectId, workType: wr.workType, priority: wr.priority, geometryKind: wr.geometry.type, coordinates: geometryToText(wr.geometry),
+    plannedStart: utcToColomboLocal(wr.plannedStart), plannedEnd: utcToColomboLocal(wr.plannedEnd), workingHours: wr.workingHours ?? "day", isEmergency: wr.isEmergency ?? false,
+  };
+}
+
+/** Client hint of the server submit rule (the API stays authoritative): today (Colombo) or later, or up to 48 h back for emergencies. */
+export type StartRule = "ok" | "past" | "emergency_too_old";
+export const EMERGENCY_BACKDATE_HOURS = 48;
+export function startRule(startUtc: string | null, isEmergency: boolean, now = new Date()): StartRule {
+  if (!startUtc) return "ok";
+  const start = new Date(startUtc).getTime();
+  if (isEmergency) return start >= now.getTime() - EMERGENCY_BACKDATE_HOURS * 3_600_000 ? "ok" : "emergency_too_old";
+  const dayStart = Math.floor((now.getTime() + 19_800_000) / 86_400_000) * 86_400_000 - 19_800_000;
+  return start >= dayStart ? "ok" : "past";
+}
+
+/** Wizard stages and the fields each one owns, so one shared validation feeds every stage and the review. */
+export const STAGES = ["basics", "location", "schedule", "review"] as const;
+export type Stage = (typeof STAGES)[number];
+export const STAGE_FIELDS: Record<Exclude<Stage, "review">, (keyof WorkRequestFormValues)[]> = {
+  basics: ["projectId", "workType", "priority"],
+  location: ["geometryKind", "coordinates"],
+  schedule: ["plannedStart", "plannedEnd", "workingHours", "isEmergency"],
+};
+export function stageOfField(field: keyof WorkRequestFormValues): Exclude<Stage, "review"> {
+  return (Object.keys(STAGE_FIELDS) as (keyof typeof STAGE_FIELDS)[]).find((s) => STAGE_FIELDS[s].includes(field)) ?? "basics";
+}
+export function stageHasErrors(stage: Stage, errors: WorkRequestFormErrors): boolean {
+  return stage === "review" ? Object.keys(errors).length > 0 : STAGE_FIELDS[stage].some((f) => errors[f]);
 }
 
 export function firstInvalidField(errors: WorkRequestFormErrors): keyof WorkRequestFormValues | null {
