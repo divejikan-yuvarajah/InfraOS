@@ -112,8 +112,8 @@ function EntryRow({ e, open, onToggle, locale }: { e: Entry; open: boolean; onTo
           <dl className="rz-tl-detail">
             <dt>{h.recorded}</dt><dd>{whenFmt(locale, e.recordedAt)}</dd>
             <dt>{h.stateAfter}</dt><dd>{h.rec}: {e.stateAfter.recordStatus}{e.stateAfter.coordinationState ? ` · ${h.coord}: ${e.stateAfter.coordinationState}` : ""}{e.stateAfter.resolutionState ? ` · ${h.res}: ${e.stateAfter.resolutionState}` : ""}{e.stateAfter.severity ? ` · ${h.sev}: ${e.stateAfter.severity.band} (${e.stateAfter.severity.score})` : ""}</dd>
-            <dt>{h.hash}</dt><dd><code>{e.hash.slice(0, 16)}…</code></dd>
-            <dt>{h.prev}</dt><dd><code>{e.prevHash.slice(0, 16)}…</code></dd>
+            <dt>{h.hash}</dt><dd><code>{e.hash ? `${e.hash.slice(0, 16)}…` : e.short}</code></dd>
+            {e.prevHash ? <><dt>{h.prev}</dt><dd><code>{e.prevHash.slice(0, 16)}…</code></dd></> : null}
           </dl>
         ) : null}
       </div>

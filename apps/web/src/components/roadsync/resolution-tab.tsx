@@ -22,6 +22,10 @@ import type { AuthLocale } from "@/lib/auth/types";
 import { ConfirmDialog } from "./work-request-dialogs";
 import "@/styles/mission-control-roadsync-resolution.css";
 
+/** Readable names for work requests, taken from the already-authorized dossier parties; falls back to an id suffix. */
+export type PartyLabel = { id: string; ref: string; agencyName: string | null };
+const labelOf = (parties: PartyLabel[], id: string) => { const p = parties.find((x) => x.id === id); return p ? `${p.ref}${p.agencyName ? ` · ${p.agencyName}` : ""}` : `…${id.slice(-6)}`; };
+
 export function useRoadsyncKeys() {
   const roleKey = useSyncExternalStore(subscribeAuth, () => getMemorySession()?.user.roleKey ?? "", () => "");
   const userId = useSyncExternalStore(subscribeAuth, () => getMemorySession()?.user.id ?? "", () => "");
@@ -45,8 +49,8 @@ type Dlg =
   | { kind: "approve"; step: ApprovalView; am: AmendmentView | null } | { kind: "reject"; step: ApprovalView; am: AmendmentView | null }
   | { kind: "waive"; id: string } | { kind: "cancelAm"; am: AmendmentView } | { kind: "submitAm"; am: AmendmentView } | { kind: "applyAm"; am: AmendmentView } | null;
 
-/** `recordVersion` and `national` come from the dossier; reopen is national-only and the server re-checks both. */
-export function ResolutionTab({ conflictId, locale, recordVersion, national }: { conflictId: string; locale: AuthLocale; recordVersion: number; national: boolean }) {
+/** Reopen is offered only when the server says `canReopen` (national, resolved record); the server re-checks on write. */
+export function ResolutionTab({ conflictId, locale, parties }: { conflictId: string; locale: AuthLocale; parties: PartyLabel[] }) {
   const copy = getResolutionCopy(locale);
   const qc = useQueryClient();
   const keys = useRoadsyncKeys();
@@ -80,20 +84,21 @@ export function ResolutionTab({ conflictId, locale, recordVersion, national }: {
     <div className="rz">
       <p className="rs-help">{copy.demoNote}</p>
       {toast ? <p className="rz-toast" role="status">{toast}</p> : null}
-      {res ? <Workspace res={res} copy={copy} locale={locale} busy={busy} setDlg={setDlg} run={run} /> : data.canStart ? <StartForm conflictId={conflictId} copy={copy} onCreated={(m) => { setToast(m); refresh(); }} /> : <p className="rz-empty">{data.recordStatus === "resolved" || data.recordStatus === "dismissed" ? copy.start.closedRecord : copy.start.unavailable}</p>}
-      {national && data.recordStatus === "resolved" ? <button type="button" className="rs-btn" onClick={() => setDlg({ kind: "reopen" })}>{copy.actions.reopen}</button> : null}
+      {res && isClosed(res.status) && data.canStart ? <StartForm conflictId={conflictId} copy={copy} parties={parties} onCreated={(m) => { setToast(m); refresh(); }} /> : null}
+      {res ? <Workspace res={res} copy={copy} locale={locale} busy={busy} setDlg={setDlg} run={run} /> : data.canStart ? <StartForm conflictId={conflictId} copy={copy} parties={parties} onCreated={(m) => { setToast(m); refresh(); }} /> : <p className="rz-empty">{data.recordStatus === "resolved" || data.recordStatus === "dismissed" ? copy.start.closedRecord : copy.start.unavailable}</p>}
+      {data.canReopen ? <button type="button" className="rs-btn" onClick={() => setDlg({ kind: "reopen" })}>{copy.actions.reopen}</button> : null}
       <section className="rz-sec"><h3>{copy.sec.past}</h3>
         {data.history.length === 0 ? <p className="rs-help">{copy.f.noPast}</p> : (
           <ul className="rz-past">{data.history.map((h) => <li key={h.id}><code>{h.resolutionNo}</code><span className="rs-nb-chip">{copy.types[h.type]}</span><span className="rz-chip" data-status={h.status}>{copy.status[h.status]}</span>{h.outcome ? <span className="rs-help">{copy.outcome[h.outcome] ?? h.outcome}</span> : null}<span className="rs-help">{dayFmt(locale, h.closedAt)}</span></li>)}</ul>
         )}
       </section>
-      {dlg ? <Dialogs dlg={dlg} res={res} recordVersion={recordVersion} conflictId={conflictId} copy={copy} busy={busy} onClose={() => setDlg(null)} run={run} /> : null}
+      {dlg ? <Dialogs dlg={dlg} res={res} recordVersion={data.recordVersion} national={data.national} conflictId={conflictId} copy={copy} busy={busy} onClose={() => setDlg(null)} run={run} /> : null}
     </div>
   );
 }
 
 // ---------- dialogs: every one re-checks on the server; the UI only collects input ----------
-function Dialogs({ dlg, res, recordVersion, conflictId, copy, busy, onClose, run }: { dlg: NonNullable<Dlg>; res: ResolutionView | null; recordVersion: number; conflictId: string; copy: ResolutionCopy; busy: boolean; onClose: () => void; run: (fn: () => Promise<unknown>, ok?: string) => Promise<void> }) {
+function Dialogs({ dlg, res, recordVersion, national, conflictId, copy, busy, onClose, run }: { dlg: NonNullable<Dlg>; res: ResolutionView | null; recordVersion: number; national: boolean; conflictId: string; copy: ResolutionCopy; busy: boolean; onClose: () => void; run: (fn: () => Promise<unknown>, ok?: string) => Promise<void> }) {
   const v = res?.version ?? 1;
   const reasonSpec = (label: string) => ({ label, help: copy.dlg.reasonLabel.replace("{n}", String(REASON_MIN)), min: REASON_MIN });
   const common = { keepLabel: copy.close, pending: busy, onClose };
@@ -105,7 +110,8 @@ function Dialogs({ dlg, res, recordVersion, conflictId, copy, busy, onClose, run
   if (dlg.kind === "waive" && res) { const id = dlg.id; return <ConfirmDialog {...common} title={copy.dlg.waiveTitle} body={copy.dlg.waiveTitle} confirmLabel={copy.actions.waive} reason={reasonSpec(copy.f.reason)} onConfirm={(reason) => void run(() => commitmentAction(res.id, id, { action: "waive", reason }))} />; }
   if ((dlg.kind === "approve" || dlg.kind === "reject") && res) {
     const { step, am } = dlg;
-    const onBehalf = am && !am.mine && step.agencyId ? { onBehalfOfAgencyId: step.agencyId } : {};
+    // National acts on behalf of the owning agency for agency-level steps; the server requires and records the reason.
+    const onBehalf = national && step.agencyId ? { onBehalfOfAgencyId: step.agencyId } : {};
     const behalfNeeded = Object.keys(onBehalf).length > 0;
     if (dlg.kind === "reject") return <ConfirmDialog {...common} title={copy.dlg.rejectTitle} body={am?.amendmentNo ?? res.resolutionNo} confirmLabel={copy.actions.reject} tone="danger" reason={{ label: copy.dlg.rejectNote.replace("{n}", String(REASON_MIN)), help: behalfNeeded ? copy.start.behalfNote : copy.dlg.reasonLabel.replace("{n}", String(REASON_MIN)), min: REASON_MIN }} onConfirm={(t) => void run(() => rejectStep(res.id, step.id, { version: v, note: t, ...onBehalf, ...(behalfNeeded ? { reason: t } : {}) }))} />;
     return behalfNeeded
@@ -114,7 +120,7 @@ function Dialogs({ dlg, res, recordVersion, conflictId, copy, busy, onClose, run
   }
   if ((dlg.kind === "cancelAm" || dlg.kind === "submitAm" || dlg.kind === "applyAm") && res) {
     const am = dlg.am;
-    const behalf = !am.mine;
+    const behalf = national || !am.mine;
     const spec = behalf ? reasonSpec(copy.start.behalfNote) : undefined;
     const withB = (t: string) => (behalf ? { onBehalfOfAgencyId: am.agencyId, reason: t } : {});
     if (dlg.kind === "cancelAm") return <ConfirmDialog {...common} title={copy.actions.cancelAm} body={am.amendmentNo} confirmLabel={copy.actions.cancelAm} tone="danger" onConfirm={() => void run(() => cancelAmendment(res.id, am.id))} />;
@@ -279,7 +285,7 @@ function ApprovalRow({ s, copy, locale }: { s: ApprovalView; copy: ResolutionCop
 }
 
 // ---------- start form ----------
-function StartForm({ conflictId, copy, onCreated }: { conflictId: string; copy: ResolutionCopy; onCreated: (m: string) => void }) {
+function StartForm({ conflictId, copy, parties, onCreated }: { conflictId: string; copy: ResolutionCopy; parties: PartyLabel[]; onCreated: (m: string) => void }) {
   const keys = useRoadsyncKeys();
   const sg = useQuery({ queryKey: keys.key("resolution-suggestions", conflictId), queryFn: () => fetchResolutionSuggestions(conflictId), enabled: Boolean(keys.userId), retry: false });
   const [type, setType] = useState<ResolutionType | null>(null);
@@ -302,16 +308,16 @@ function StartForm({ conflictId, copy, onCreated }: { conflictId: string; copy: 
           </button>
         ))}
       </div>
-      {type ? <StartBody key={type} type={type} s={s} conflictId={conflictId} copy={copy} onCreated={onCreated} /> : null}
+      {type ? <StartBody key={type} type={type} s={s} conflictId={conflictId} copy={copy} parties={parties} onCreated={onCreated} /> : null}
     </section>
   );
 }
 
-function ChangeFields({ s, copy, value, onChange, idp }: { s: ResolutionSuggestions; copy: ResolutionCopy; value: { target: string; start: string; end: string; hours: "" | WorkingHours }; onChange: (v: { target: string; start: string; end: string; hours: "" | WorkingHours }) => void; idp: string }) {
+function ChangeFields({ targets, parties, copy, value, onChange, idp }: { targets: ResolutionSuggestions["targets"]; parties: PartyLabel[]; copy: ResolutionCopy; value: { target: string; start: string; end: string; hours: "" | WorkingHours }; onChange: (v: { target: string; start: string; end: string; hours: "" | WorkingHours }) => void; idp: string }) {
   return (
     <div className="rz-fields">
       <div className="rs-field"><label className="rs-label" htmlFor={`${idp}-t`}>{copy.start.target}</label>
-        <select id={`${idp}-t`} className="rs-input" value={value.target} onChange={(e) => onChange({ ...value, target: e.target.value })}>{s.targets.map((t) => <option key={t.requestId} value={t.requestId}>…{t.requestId.slice(-6)}</option>)}</select></div>
+        <select id={`${idp}-t`} className="rs-input" value={value.target} onChange={(e) => onChange({ ...value, target: e.target.value })}>{targets.map((t) => <option key={t.requestId} value={t.requestId}>{labelOf(parties, t.requestId)}</option>)}</select></div>
       <div className="rs-field"><label className="rs-label" htmlFor={`${idp}-s`}>{copy.start.newStart}</label><input id={`${idp}-s`} className="rs-input" type="datetime-local" value={value.start} onChange={(e) => onChange({ ...value, start: e.target.value })} /></div>
       <div className="rs-field"><label className="rs-label" htmlFor={`${idp}-e`}>{copy.start.newEnd}</label><input id={`${idp}-e`} className="rs-input" type="datetime-local" value={value.end} onChange={(e) => onChange({ ...value, end: e.target.value })} /></div>
       <div className="rs-field"><label className="rs-label" htmlFor={`${idp}-h`}>{copy.start.hoursLabel}</label>
@@ -327,8 +333,10 @@ const toChange = (c: ChangeState): ChangeInput | null => {
   return { targetRequestId: c.target, ...(hasDates ? { schedule: { plannedStart: toIso(c.start), plannedEnd: toIso(c.end) } } : {}), ...(c.hours ? { workingHours: c.hours } : {}) };
 };
 
-function StartBody({ type, s, conflictId, copy, onCreated }: { type: ResolutionType; s: ResolutionSuggestions; conflictId: string; copy: ResolutionCopy; onCreated: (m: string) => void }) {
-  const mineTarget = s.targets.find((t) => t.mine) ?? s.targets[0];
+function StartBody({ type, s, conflictId, copy, parties, onCreated }: { type: ResolutionType; s: ResolutionSuggestions; conflictId: string; copy: ResolutionCopy; parties: PartyLabel[]; onCreated: (m: string) => void }) {
+  // Manual amendments may only change the viewer's own requests; directives (national) may target any side.
+  const targets = type === "directive" ? s.targets : s.targets.filter((t) => t.mine);
+  const mineTarget = targets[0];
   const [mode, setMode] = useState<"agreed" | "manual">(s.paths.agreedTerms ? "agreed" : "manual");
   const [agreedId, setAgreedId] = useState(s.agreed[0]?.coordinationRequestId ?? "");
   const [change, setChange] = useState<ChangeState>({ target: mineTarget?.requestId ?? "", start: "", end: "", hours: "" });
@@ -382,7 +390,7 @@ function StartBody({ type, s, conflictId, copy, onCreated }: { type: ResolutionT
         <div className="rs-field"><label className="rs-label" htmlFor="rz-agreed">{copy.start.agreed}</label>
           <select id="rz-agreed" className="rs-input" value={agreedId} onChange={(e) => setAgreedId(e.target.value)}>{s.agreed.map((a) => <option key={a.coordinationRequestId} value={a.coordinationRequestId}>{a.requestNo}</option>)}</select></div>
       ) : null}
-      {needsChange ? <ChangeFields s={s} copy={copy} value={change} onChange={setChange} idp="rz-ch" /> : null}
+      {needsChange ? <ChangeFields targets={targets} parties={parties} copy={copy} value={change} onChange={setChange} idp="rz-ch" /> : null}
       {datesBad ? <p className="rz-warn" role="alert">{copy.start.datesInvalid}</p> : null}
       {needsChange ? <button type="button" className="rs-btn" disabled={working || !change1 || datesBad} onClick={() => void doPreview()}>{working ? copy.start.previewing : copy.start.preview}</button> : null}
       {preview ? (
