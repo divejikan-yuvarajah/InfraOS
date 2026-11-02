@@ -55,6 +55,8 @@ recordSchema.index({ "affectedAgencies.agencyId": 1, "affectedAgencies.ack.statu
 recordSchema.index({ aId: 1 });
 recordSchema.index({ bId: 1 });
 recordSchema.index({ "overlapWindow.start": 1 });
+recordSchema.index({ status: 1, createdAt: 1 });
+recordSchema.index({ "resolution.resolvedAt": 1 });
 recordSchema.index({ hotspot: "2dsphere" });
 recordSchema.index({ "lead.agencyId": 1 });
 

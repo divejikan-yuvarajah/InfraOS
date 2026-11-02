@@ -29,6 +29,6 @@ describe("nav labels", () => {
     expect(navLabel(settings, "ta")).toBe("Settings"); // no translation yet: falls back to English
     expect(navLabel(work, "ta")).toBe("பணி கோரிக்கைகள்");
     expect(navLabel(work, "si")).toBe("වැඩ ඉල්ලීම්");
-    expect(all).toHaveLength(12);
+    expect(all).toHaveLength(15); // includes RoadSync Dashboard (Step 78) and Approvals / History (Steps 76-77)
   });
 });
