@@ -31,7 +31,7 @@ export function layoutNodes(affected: AffectedView[]): Placed[] {
 
 type Handlers = { onSetLead: (agencyId: string) => void; onExclude: (agencyId: string) => void; onRestore: (agencyId: string) => void; onAdd: () => void };
 
-export function StakeholderConstellation({ d, copy, locale, now, bandLabel, canManage, handlers }: { d: Dossier; copy: ConflictCopy; locale: string; now: number; bandLabel: string; canManage: boolean; handlers: Handlers }) {
+export function StakeholderConstellation({ d, copy, locale, now, bandLabel, canManage, handlers, stances }: { stances?: Record<string, { stance: string; label: string }> | null; d: Dossier; copy: ConflictCopy; locale: string; now: number; bandLabel: string; canManage: boolean; handlers: Handlers }) {
   const nodes = useMemo(() => layoutNodes(d.affected), [d.affected]);
   const [sel, setSel] = useState<string | null>(null);
   const selected = nodes.find((n) => n.agencyId === sel) ?? null;
@@ -43,7 +43,7 @@ export function StakeholderConstellation({ d, copy, locale, now, bandLabel, canM
     else if (e.key === "ArrowLeft" || e.key === "ArrowUp") { e.preventDefault(); setSel(nodes[(i - 1 + nodes.length) % nodes.length]!.agencyId); }
     else if (e.key === "Escape") setSel(null);
   };
-  const ackLabel = (n: AffectedView) => (n.excluded ? copy.ack.excluded : copy.ack[n.ack.status === "acknowledged" ? "acknowledged" : "pending"]);
+  const ackLabel = (n: AffectedView) => (stances?.[n.agencyId]?.label ?? (n.excluded ? copy.ack.excluded : copy.ack[n.ack.status === "acknowledged" ? "acknowledged" : "pending"]));
   const roleNames = (n: AffectedView) => n.roles.map((r) => copy.roles[r]).join(", ");
   const fmtDate = (v: string | null) => (v ? new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Colombo" }).format(new Date(v)) : "—");
 
@@ -82,7 +82,7 @@ export function StakeholderConstellation({ d, copy, locale, now, bandLabel, canM
             const label = `${n.agencyName ?? ""}, ${roleNames(n)}, ${ackLabel(n)}`;
             const lead = d.lead?.agencyId === n.agencyId;
             return (
-              <g key={n.agencyId} className="cr-node" data-state={n.excluded ? "excluded" : n.ack.status} data-selected={sel === n.agencyId} tabIndex={0} role="button" aria-pressed={sel === n.agencyId} aria-label={label} style={{ animationDelay: `${Math.min(i, 8) * 40}ms` }}
+              <g key={n.agencyId} className="cr-node" data-stance={stances?.[n.agencyId]?.stance} data-state={n.excluded ? "excluded" : n.ack.status} data-selected={sel === n.agencyId} tabIndex={0} role="button" aria-pressed={sel === n.agencyId} aria-label={label} style={{ animationDelay: `${Math.min(i, 8) * 40}ms` }}
                 transform={`translate(${n.x} ${n.y})`} onClick={() => setSel(n.agencyId)} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setSel(n.agencyId); } }}>
                 <circle r={n.r + 5} fill="none" stroke="currentColor" strokeWidth="3" strokeDasharray={n.excluded ? "4 3" : undefined} opacity={n.ack.status === "acknowledged" && !n.excluded ? 1 : 0.7} />
                 {n.ack.status === "acknowledged" && !n.excluded ? <circle r={n.r + 5} fill="currentColor" opacity="0.15" /> : null}

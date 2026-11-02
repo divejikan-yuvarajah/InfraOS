@@ -16,6 +16,7 @@ import type { AuthLocale } from "@/lib/auth/types";
 import { LOCALE_NAME, LOCALE_SHORT, WORKSPACE_LOCALES, useWorkspaceLocale } from "@/lib/i18n/workspace-locale";
 import { fetchUnreadCount } from "@/lib/projects/notice-api";
 import { fetchRecordSummary } from "@/lib/roadsync/conflict-records-api";
+import { fetchHubSummary } from "@/lib/roadsync/coordination-api";
 import { classifyEditError } from "@/lib/projects/edit-outcome";
 
 import { ROLE_LABELS, WORKSPACE_NAV, initialsOf, navCurrent, navLabel } from "./workspace-nav";
@@ -30,6 +31,7 @@ function SidebarNav({
   pathname,
   unread,
   conflicts,
+  coordination,
   hideNotices,
   locale,
   onNavigate,
@@ -38,6 +40,8 @@ function SidebarNav({
   unread: number | undefined;
   /** Step 73: needs-my-acknowledgement count, with a maroon dot when any is overdue. */
   conflicts?: { count: number; overdue: boolean };
+  /** Step 75: needs-my-response count, with a maroon dot when any is overdue. */
+  coordination?: { count: number; overdue: boolean };
   hideNotices: boolean;
   locale: AuthLocale;
   onNavigate?: () => void;
@@ -66,6 +70,9 @@ function SidebarNav({
                       <span className="mc-nav-text">{label}</span>
                       {href === "/notifications" && typeof unread === "number" && unread > 0 ? (
                         <span className="mc-nav-count">{unread}</span>
+                      ) : null}
+                      {href === "/roadsync/coordination" && coordination && coordination.count > 0 ? (
+                        <span className="mc-nav-count" data-overdue={coordination.overdue ? "true" : undefined}>{coordination.count}{coordination.overdue ? <span className="sr-only"> overdue</span> : null}</span>
                       ) : null}
                       {href === "/roadsync/conflicts" && conflicts && conflicts.count > 0 ? (
                         <span className="mc-nav-count" data-overdue={conflicts.overdue ? "true" : undefined}>{conflicts.count}{conflicts.overdue ? <span className="sr-only"> overdue</span> : null}</span>
@@ -139,6 +146,14 @@ export function StaffWorkspaceShell({
     refetchOnWindowFocus: true,
   });
   const conflictBadge = conflictSummary.data ? { count: conflictSummary.data.needsMyAck, overdue: conflictSummary.data.overdue > 0 } : undefined;
+  const coordSummary = useQuery({
+    queryKey: ["roadsync", "coord-nav", epoch, userId, roleKey],
+    enabled: signedIn && hasAgency,
+    queryFn: () => fetchHubSummary(),
+    retry: false,
+    refetchOnWindowFocus: true,
+  });
+  const coordBadge = coordSummary.data ? { count: coordSummary.data.needsMyResponse, overdue: coordSummary.data.overdueForMe > 0 } : undefined;
   const hideNotices = !signedIn || (unread.error ? classifyEditError(unread.error) === "denied" : false);
   const unreadCount = typeof unread.data === "number" ? unread.data : undefined;
   const roleLabel = ROLE_LABELS[roleKey] ?? roleKey;
@@ -158,7 +173,7 @@ export function StaffWorkspaceShell({
       </a>
       <aside className="mc-sidebar" aria-label="Sidebar">
         <SidebarBrand scopeLabel={scopeLabel} />
-        <SidebarNav pathname={pathname} unread={unreadCount} conflicts={conflictBadge} hideNotices={hideNotices} locale={locale} />
+        <SidebarNav pathname={pathname} unread={unreadCount} conflicts={conflictBadge} coordination={coordBadge} hideNotices={hideNotices} locale={locale} />
         <p className="mc-sidebar-foot">{kicker}</p>
       </aside>
 
@@ -180,6 +195,7 @@ export function StaffWorkspaceShell({
                   pathname={pathname}
                   unread={unreadCount}
                   conflicts={conflictBadge}
+                  coordination={coordBadge}
                   hideNotices={hideNotices}
                   locale={locale}
                   onNavigate={() => setDrawer(false)}

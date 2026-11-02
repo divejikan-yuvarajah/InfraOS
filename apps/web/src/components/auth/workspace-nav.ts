@@ -8,6 +8,7 @@ import {
   LayoutDashboardIcon,
   ShieldCheckIcon,
   SlidersHorizontalIcon,
+  HandshakeIcon,
   SwordsIcon,
   UserCircleIcon,
   UsersIcon,
@@ -33,6 +34,7 @@ export const WORKSPACE_NAV: readonly WorkspaceNavGroup[] = [
       { href: "/projects/reviews", label: "Reviews", icon: ClipboardCheckIcon, i18n: { si: "ව්‍යාපෘති සමාලෝචන", ta: "திட்ட மதிப்பாய்வுகள்" } },
       { href: "/roadsync/work-requests", label: "Work Requests", icon: RouteIcon },
       { href: "/roadsync/conflicts", label: "Conflicts", icon: SwordsIcon, i18n: { si: "ගැටුම්", ta: "முரண்பாடுகள்" } },
+      { href: "/roadsync/coordination", label: "Coordination", icon: HandshakeIcon, i18n: { si: "සම්බන්ධීකරණය", ta: "ஒருங்கிணைப்பு" } },
     ],
   },
   {

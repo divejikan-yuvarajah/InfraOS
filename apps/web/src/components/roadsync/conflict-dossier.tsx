@@ -24,17 +24,21 @@ import { AckSegments, SlaChip, StatusPill, TimeRing, useNow } from "./conflict-p
 import { ScheduleOverlapChart } from "./nearby-activity";
 import { BandPill, ScoreRing, SeverityDNA } from "./risk-visuals";
 import { StakeholderConstellation } from "./stakeholder-constellation";
+import { CoordinationTab } from "./dossier-coordination";
+import { fetchConflictCoordination } from "@/lib/roadsync/coordination-api";
+import { getCoordCopy } from "@/lib/roadsync/coordination-copy";
 
 function useAuthPart(read: () => string): string {
   return useSyncExternalStore(subscribeAuth, read, () => "");
 }
-type Tab = "overview" | "stakeholders" | "timeline" | "notes" | "related" | "evidence";
-const TABS: Tab[] = ["overview", "stakeholders", "timeline", "notes", "related", "evidence"];
+type Tab = "overview" | "stakeholders" | "coordination" | "timeline" | "notes" | "related" | "evidence";
+const TABS: Tab[] = ["overview", "stakeholders", "coordination", "timeline", "notes", "related", "evidence"];
 type DialogKind = { kind: "ack" } | { kind: "dismiss" } | { kind: "reopen" } | { kind: "lead"; agencyId: string } | { kind: "exclude"; agencyId: string } | { kind: "add" } | null;
 
 export function ConflictDossier({ id }: { id: string }) {
   const [locale] = useWorkspaceLocale();
   const copy = getConflictCopy(locale);
+  const cc = getCoordCopy(locale);
   const ac = getAssessmentCopy(locale);
   const qc = useQueryClient();
   const router = useRouter();
@@ -54,6 +58,8 @@ export function ConflictDossier({ id }: { id: string }) {
   const q = useQuery({ queryKey: key, queryFn: () => fetchDossier(id), enabled: Boolean(userId), retry: false, refetchOnWindowFocus: true });
   const map = useQuery({ queryKey: workRequestQueryKey(epoch, userId, roleKey, "conflict-map", id), queryFn: () => fetchRecordMap(id), enabled: Boolean(userId) && Boolean(q.data), retry: false });
   const d = q.data;
+  const coord = useQuery({ queryKey: workRequestQueryKey(epoch, userId, roleKey, "conflict-coordination", id), queryFn: () => fetchConflictCoordination(id), enabled: Boolean(userId) && Boolean(d), retry: false, refetchOnWindowFocus: true });
+  const [stanceMode, setStanceMode] = useState(false);
 
   const refresh = useCallback(() => { void qc.invalidateQueries({ queryKey: ["roadsync"] }); void q.refetch(); }, [qc, q]);
   const failure = (error: unknown) => {
@@ -116,6 +122,7 @@ export function ConflictDossier({ id }: { id: string }) {
             <p>{fmt(copy.dossier.ackSummary, d.ackProgress)}</p><AckSegments row={d} copy={copy} />
             {myAgency && myAgency.ack.status === "pending" ? <SlaChip due={myAgency.ackDueAt} now={now} copy={copy} locale={locale} /> : null}
             <p className="cr-lead"><CrownIcon aria-hidden="true" /> {sentenceLead}</p>
+            {coord.data && coord.data.coordination.activeCount > 0 ? <Link className="rs-nb-chip" href={`/roadsync/coordination?preset=all&conflictId=${id}`}>{coord.data.items.filter((x) => x.myParticipation?.mustRespond).length > 0 ? fmt(cc.integrations.activeChip, { active: coord.data.coordination.activeCount, needs: coord.data.items.filter((x) => x.myParticipation?.mustRespond).length }) : fmt(cc.integrations.activeChipNone, { active: coord.data.coordination.activeCount })}</Link> : null}
           </div>
           <div className="cr-hero-actions">
             {d.canAct.acknowledge ? <button type="button" className="rs-btn is-primary" onClick={() => setDialog({ kind: "ack" })}>{copy.dossier.acknowledge}</button> : null}
@@ -137,12 +144,13 @@ export function ConflictDossier({ id }: { id: string }) {
           <section className="cr-tabs">
             <div role="tablist" className="cr-tablist" aria-label={copy.title}>
               {TABS.map((t) => <button key={t} id={`cr-tab-${t}`} role="tab" type="button" aria-selected={tab === t} aria-controls={`cr-panel-${t}`} tabIndex={tab === t ? 0 : -1} onClick={() => setTab(t)}
-                onKeyDown={(e) => { const i = TABS.indexOf(t); const next = e.key === "ArrowRight" ? TABS[(i + 1) % TABS.length] : e.key === "ArrowLeft" ? TABS[(i - 1 + TABS.length) % TABS.length] : null; if (next) { e.preventDefault(); setTab(next); document.getElementById(`cr-tab-${next}`)?.focus(); } }}>{copy.dossier.tabs[t]}</button>)}
+                onKeyDown={(e) => { const i = TABS.indexOf(t); const next = e.key === "ArrowRight" ? TABS[(i + 1) % TABS.length] : e.key === "ArrowLeft" ? TABS[(i - 1 + TABS.length) % TABS.length] : null; if (next) { e.preventDefault(); setTab(next); document.getElementById(`cr-tab-${next}`)?.focus(); } }}>{t === "coordination" ? <>{cc.integrations.tab}{coord.data && coord.data.coordination.activeCount > 0 ? <span className="cr-tabcount"> ({coord.data.coordination.activeCount})</span> : null}</> : copy.dossier.tabs[t]}</button>)}
             </div>
             <div role="tabpanel" id={`cr-panel-${tab}`} aria-labelledby={`cr-tab-${tab}`} className="cr-panel">
               {tab === "overview" ? <Overview d={d} copy={copy} /> : null}
-              {tab === "stakeholders" ? <StakeholderConstellation d={d} copy={copy} locale={locale} now={now} bandLabel={ac.bands[d.severity.band]} canManage={d.canAct.manageAgencies}
-                handlers={{ onSetLead: (agencyId) => setDialog({ kind: "lead", agencyId }), onExclude: (agencyId) => setDialog({ kind: "exclude", agencyId }), onRestore: (agencyId) => restore.mutate(agencyId), onAdd: () => setDialog({ kind: "add" }) }} /> : null}
+              {tab === "coordination" ? <CoordinationTab d={d} data={coord.data ?? null} loading={coord.isPending} copy={cc} locale={locale} /> : null}
+              {tab === "stakeholders" ? <><label className="cr-toggle"><input type="checkbox" checked={stanceMode && Boolean(coord.data?.items[0])} disabled={!coord.data?.items[0]} onChange={(e) => setStanceMode(e.target.checked)} /> {cc.integrations.stanceMode}</label>{stanceMode && coord.data?.items[0] ? <p className="rs-help">{cc.integrations.stanceLegend}</p> : null}<StakeholderConstellation stances={stanceMode && coord.data?.items[0] ? Object.fromEntries(coord.data.items[0].participants.map((p) => [p.agencyId, { stance: p.stance, label: cc.stance[p.stance] }])) : null} d={d} copy={copy} locale={locale} now={now} bandLabel={ac.bands[d.severity.band]} canManage={d.canAct.manageAgencies}
+                handlers={{ onSetLead: (agencyId) => setDialog({ kind: "lead", agencyId }), onExclude: (agencyId) => setDialog({ kind: "exclude", agencyId }), onRestore: (agencyId) => restore.mutate(agencyId), onAdd: () => setDialog({ kind: "add" }) }} /></> : null}
               {tab === "timeline" ? <Timeline d={d} copy={copy} locale={locale} /> : null}
               {tab === "notes" ? <Notes d={d} copy={copy} national={d.canAct.dismiss || d.canAct.reopen} onChanged={refresh} onError={failure} /> : null}
               {tab === "related" ? <Related d={d} copy={copy} /> : null}

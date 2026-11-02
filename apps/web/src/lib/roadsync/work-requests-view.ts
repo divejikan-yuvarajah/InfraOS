@@ -34,6 +34,8 @@ export type WorkRequestRecord = {
   /** Step 73 server-owned aggregate of formal conflict records. */
   conflictRecords?: { total: number; open: number; acknowledged: number; needsAck: number } | null;
   hasConflictRecords?: boolean;
+  /** Step 74-75 server-owned aggregate of active coordination. */
+  coordination?: { active: number; needsMyResponse: number } | null;
 };
 
 export type WorkRequestListData = {

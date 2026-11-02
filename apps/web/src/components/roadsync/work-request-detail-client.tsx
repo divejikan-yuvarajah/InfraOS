@@ -26,6 +26,7 @@ import { useWorkspaceLocale } from "@/lib/i18n/workspace-locale";
 import { ConflictsPanel, useAssessment } from "./conflicts-panel";
 import { NearbyActivityPanel } from "./nearby-activity";
 import { getConflictCopy } from "@/lib/roadsync/conflict-records-copy";
+import { getCoordCopy } from "@/lib/roadsync/coordination-copy";
 import { fmt } from "@/lib/roadsync/assessment";
 import { RiskChip } from "./risk-visuals";
 import { PriorityMark, WorkTypeIcon } from "./roadsync-shared";
@@ -105,6 +106,7 @@ export function WorkRequestDetailClient({ id }: { id: string }) {
                 ) : null}
                 {wr.status !== "DRAFT" && assessed?.summary.status === "completed" ? <a href="#conflicts" className="rs-listrisk" aria-label={`${risk.riskIndex}: ${assessed.summary.riskIndex}`}><RiskChip value={assessed.summary.riskIndex} band={assessed.summary.maxBand} copy={risk} /></a> : null}
                 {wr.status !== "DRAFT" && wr.conflictRecords && wr.conflictRecords.total > 0 ? <Link href={`/roadsync/conflicts?requestId=${wr.id}`} className="rs-nb-chip">{wr.conflictRecords.needsAck > 0 ? fmt(cc.integrations.heroChip, { total: wr.conflictRecords.total, needs: wr.conflictRecords.needsAck }) : fmt(cc.integrations.heroChipNone, { total: wr.conflictRecords.total })}</Link> : null}
+                {wr.status !== "DRAFT" && wr.coordination && wr.coordination.active > 0 ? <Link href="/roadsync/coordination?preset=all" className="rs-nb-chip">{getCoordCopy(locale).integrations.coordination}{wr.coordination.needsMyResponse > 0 ? ` · ${getCoordCopy(locale).integrations.needsResponse}` : ""}</Link> : null}
               </div>
               <dl className="rs-facts">
                 <div><dt>Project</dt><dd>{wr.projectTitle ?? "—"}{wr.projectCode ? ` (${wr.projectCode})` : ""}</dd></div>
