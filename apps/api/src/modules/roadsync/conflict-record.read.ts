@@ -10,15 +10,13 @@ import { Agency } from "../agencies/models/agency.model.js";
 import { User } from "../identity/models/user.model.js";
 import { redactFactors } from "./assessment.engine.js";
 import { BAND_CODES, type Band } from "./assessment.rules.js";
-import { bandRank } from "./conflict-record.machine.js";
 import { RECORD, OPEN_LIKE, type RecordStatus } from "./conflict-record.rules.js";
 import { canRead, previewAgencies, type Affected, type RecEvent, type RecordPlain, type SideSnap } from "./conflict-record.service.js";
 import { buildAccess, loadItems, projectOther, type Access, type SourceItem } from "./detection.service.js";
 import { Candidate } from "./models/candidate.model.js";
 import { ConflictRead, ConflictRecord } from "./models/conflict-record.model.js";
-import { WorkRequest } from "./models/work-request.model.js";
 import { colomboDay } from "./schedule.analysis.js";
-import { hotspotOf, simplifyForTransport, type AnyGeometry } from "./spatial.analysis.js";
+import { hotspotOf, type AnyGeometry } from "./spatial.analysis.js";
 import type { AuthenticatedActor } from "../identity/auth/require-authenticated.js";
 import type { Who } from "./conflict-record.service.js";
 
@@ -381,7 +379,7 @@ export async function exportCsv(w: Who, q: ListQuery): Promise<{ body: string; c
     `${row.parties.a.ref} / ${row.parties.b.ref}`, rec.affectedAgencies.filter((a) => a.active && !a.excluded).map((a) => v.names.get(a.agencyId) ?? "").join("; "),
     `${row.ackProgress.done}/${row.ackProgress.required}`, row.overlapWindow?.start?.slice(0, 10) ?? "", row.overlapWindow?.end?.slice(0, 10) ?? "", rec.district ?? "", row.createdAt ?? "",
   ].map(csvCell).join(","));
-  return { body: `﻿${COLUMNS.join(",")}\r\n${lines.join("\r\n")}${lines.length ? "\r\n" : ""}`, count: lines.length };
+  return { body: `\uFEFF${COLUMNS.join(",")}\r\n${lines.join("\r\n")}${lines.length ? "\r\n" : ""}`, count: lines.length };
 }
 
 // ---------- per-request list ----------
@@ -431,4 +429,3 @@ export async function augmentPreview<T extends PreviewShape>(actor: Authenticate
   return { ...result, candidates: candidates as T["candidates"], summary: { ...result.summary, agenciesToCoordinate } };
 }
 
-export { bandRank, simplifyForTransport, WorkRequest };

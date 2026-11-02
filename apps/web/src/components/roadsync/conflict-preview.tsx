@@ -11,6 +11,8 @@ import { getAssessmentCopy } from "@/lib/roadsync/assessment-copy";
 import { previewNearby } from "@/lib/roadsync/nearby-api";
 import { workRequestQueryKey, type GeometryInput } from "@/lib/roadsync/work-requests-view";
 
+import { getConflictCopy } from "@/lib/roadsync/conflict-records-copy";
+import { initials } from "@/lib/roadsync/conflict-records";
 import { KindPill, RiskChip } from "./risk-visuals";
 
 function useAuthPart(read: () => string): string {
@@ -54,6 +56,8 @@ export function ConflictPreview({ variant, geometry, plannedStart, plannedEnd, w
     enabled: Boolean(userId) && Boolean(geoKey),
     retry: false,
   });
+  const cc = getConflictCopy(locale);
+  const agencies = query.data?.summary.agenciesToCoordinate ?? [];
   const w = copy.wizard;
   const a = query.data?.summary.assessment ?? null;
   const top = (query.data?.candidates ?? [])
@@ -88,6 +92,13 @@ export function ConflictPreview({ variant, geometry, plannedStart, plannedEnd, w
             ))}
           </ul>
         </>
+      ) : null}
+      {agencies.length > 0 ? (
+        <div className="cr-coord" aria-label={cc.integrations.agenciesTitle}>
+          <p className="rs-help"><strong>{cc.integrations.agenciesTitle}</strong></p>
+          <ul>{agencies.map((x) => <li key={x.agencyId} title={x.roles.map((r) => cc.roles[r] ?? r).join(", ")}><span className="cr-disc" data-state={x.required ? "pending" : "excluded"} style={{ width: 30, height: 30 }}>{initials(x.name)}</span><span>{x.name}<small>{x.required ? cc.integrations.required : cc.integrations.informed}</small></span></li>)}</ul>
+          <p className="rs-help">{cc.integrations.agenciesNote}</p>
+        </div>
       ) : null}
       {a && a.incompleteInputs.length > 0 && workType ? <p className="rs-help"><InfoIcon aria-hidden="true" style={{ width: "0.9rem", verticalAlign: "-0.15em" }} /> {copy.states.traffic}</p> : null}
       {a && !workType ? <p className="rs-help"><InfoIcon aria-hidden="true" style={{ width: "0.9rem", verticalAlign: "-0.15em" }} /> {w.nudge}</p> : null}

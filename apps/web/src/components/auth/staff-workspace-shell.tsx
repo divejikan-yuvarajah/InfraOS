@@ -15,6 +15,7 @@ import { getAuthEpoch, getMemoryAccessToken, getMemorySession, subscribeAuth } f
 import type { AuthLocale } from "@/lib/auth/types";
 import { LOCALE_NAME, LOCALE_SHORT, WORKSPACE_LOCALES, useWorkspaceLocale } from "@/lib/i18n/workspace-locale";
 import { fetchUnreadCount } from "@/lib/projects/notice-api";
+import { fetchRecordSummary } from "@/lib/roadsync/conflict-records-api";
 import { classifyEditError } from "@/lib/projects/edit-outcome";
 
 import { ROLE_LABELS, WORKSPACE_NAV, initialsOf, navCurrent, navLabel } from "./workspace-nav";
@@ -28,12 +29,15 @@ function useAuthPart(read: () => string): string {
 function SidebarNav({
   pathname,
   unread,
+  conflicts,
   hideNotices,
   locale,
   onNavigate,
 }: {
   pathname: string;
   unread: number | undefined;
+  /** Step 73: needs-my-acknowledgement count, with a maroon dot when any is overdue. */
+  conflicts?: { count: number; overdue: boolean };
   hideNotices: boolean;
   locale: AuthLocale;
   onNavigate?: () => void;
@@ -62,6 +66,9 @@ function SidebarNav({
                       <span className="mc-nav-text">{label}</span>
                       {href === "/notifications" && typeof unread === "number" && unread > 0 ? (
                         <span className="mc-nav-count">{unread}</span>
+                      ) : null}
+                      {href === "/roadsync/conflicts" && conflicts && conflicts.count > 0 ? (
+                        <span className="mc-nav-count" data-overdue={conflicts.overdue ? "true" : undefined}>{conflicts.count}{conflicts.overdue ? <span className="sr-only"> overdue</span> : null}</span>
                       ) : null}
                     </Link>
                   </li>
@@ -124,6 +131,14 @@ export function StaffWorkspaceShell({
     enabled: signedIn,
     queryFn: () => fetchUnreadCount(),
   });
+  const conflictSummary = useQuery({
+    queryKey: ["roadsync", "conflict-nav", epoch, userId, roleKey],
+    enabled: signedIn && hasAgency,
+    queryFn: () => fetchRecordSummary(),
+    retry: false,
+    refetchOnWindowFocus: true,
+  });
+  const conflictBadge = conflictSummary.data ? { count: conflictSummary.data.needsMyAck, overdue: conflictSummary.data.overdue > 0 } : undefined;
   const hideNotices = !signedIn || (unread.error ? classifyEditError(unread.error) === "denied" : false);
   const unreadCount = typeof unread.data === "number" ? unread.data : undefined;
   const roleLabel = ROLE_LABELS[roleKey] ?? roleKey;
@@ -143,7 +158,7 @@ export function StaffWorkspaceShell({
       </a>
       <aside className="mc-sidebar" aria-label="Sidebar">
         <SidebarBrand scopeLabel={scopeLabel} />
-        <SidebarNav pathname={pathname} unread={unreadCount} hideNotices={hideNotices} locale={locale} />
+        <SidebarNav pathname={pathname} unread={unreadCount} conflicts={conflictBadge} hideNotices={hideNotices} locale={locale} />
         <p className="mc-sidebar-foot">{kicker}</p>
       </aside>
 
@@ -164,6 +179,7 @@ export function StaffWorkspaceShell({
                 <SidebarNav
                   pathname={pathname}
                   unread={unreadCount}
+                  conflicts={conflictBadge}
                   hideNotices={hideNotices}
                   locale={locale}
                   onNavigate={() => setDrawer(false)}

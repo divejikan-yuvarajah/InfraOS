@@ -15,7 +15,7 @@ import { User } from "../identity/models/user.model.js";
 import { Notification } from "../notifications/models/notification.model.js";
 import type { AuthenticatedActor } from "../identity/auth/require-authenticated.js";
 import { detectAffectedAgencies, type Detection, type PairContext } from "./affected-agencies.js";
-import { bandOf, BAND_CODES, RULE_VERSION, type Band } from "./assessment.rules.js";
+import { RULE_VERSION, type Band } from "./assessment.rules.js";
 import { appendHistory, ackDueAt, allRequiredAcked, bandRank, guardAction, reconcile, syncAck, trimEvents, type HistoryPoint } from "./conflict-record.machine.js";
 import { RECORD, type AgencyRole, type EventType, type ReasonCode, type RecordStatus } from "./conflict-record.rules.js";
 import { loadItems, type SourceItem } from "./detection.service.js";
@@ -722,4 +722,3 @@ export async function deleteNote(w: Who, id: string, noteId: string): Promise<Mu
   });
 }
 
-export { BAND_CODES, bandOf };

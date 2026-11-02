@@ -12,6 +12,8 @@ import { factorSentence, mitigationSentence, type AssessmentCopy } from "@/lib/r
 import { INFRA_COLOR, MUTED_COLOR, SOURCE_LABEL } from "@/lib/roadsync/nearby";
 import { WORK_TYPE_LABELS, type GeometryInput, type Position } from "@/lib/roadsync/work-requests-view";
 
+import { getConflictCopy } from "@/lib/roadsync/conflict-records-copy";
+import { useWorkspaceLocale } from "@/lib/i18n/workspace-locale";
 import { ScheduleOverlapChart, type ChartBar } from "./nearby-activity";
 import { BandPill, KindPill, ScoreRing } from "./risk-visuals";
 
@@ -71,9 +73,11 @@ function MiniShapes({ self, other, hotspot, connector, label }: { self: Geometry
 }
 
 export function ConflictLens({
-  item, self, copy, allConflictScores, national, onClose, onLocate, onChanged,
+  item, self, copy, allConflictScores, national, onClose, onLocate, onChanged, recordHref,
 }: {
   item: AssessmentItem;
+  /** Step 73: link to the formal conflict record for this pair, when one exists. */
+  recordHref?: string | null;
   self: LensSelf;
   copy: AssessmentCopy;
   /** Effective scores of every conflict-kind pair, to preview an override's effect on the Risk Index. */
@@ -84,6 +88,7 @@ export function ConflictLens({
   onChanged: () => void;
 }) {
   const ref = useRef<HTMLElement>(null);
+  const [locale] = useWorkspaceLocale();
   const a = item.assessment;
   const [editing, setEditing] = useState(false);
   const [band, setBand] = useState<Band>(a.override?.band ?? a.effective.band);
@@ -203,6 +208,7 @@ export function ConflictLens({
 
       <div className="rs-lens-actions">
         <button type="button" className="rs-btn" onClick={() => onLocate(item.candidateId)}><MapPinIcon aria-hidden="true" />{lens.locate}</button>
+        {recordHref ? <Link href={recordHref} className="rs-btn">{getConflictCopy(locale).integrations.openRecord}</Link> : null}
         {href && item.canOpen ? <Link href={href} className="rs-btn is-primary"><ExternalLinkIcon aria-hidden="true" />{fmt(lens.open, { kind: kindLabel })}</Link> : <p className="rs-help">{lens.noAccess}</p>}
       </div>
 

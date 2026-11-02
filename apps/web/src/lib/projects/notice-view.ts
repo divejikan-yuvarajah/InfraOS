@@ -1,11 +1,13 @@
 export type NoticeItem = {
   id: string;
-  type: "APPROVAL" | "MILESTONE" | "SYSTEM";
+  type: "APPROVAL" | "MILESTONE" | "SYSTEM" | "CONFLICT";
   titleKey: string;
   isRead: boolean;
   createdAt: string;
   readAt: string | null;
   project: null | { id: string; projectCode: string; title: string; status: string };
+  /** Step 73: RoadSync conflict notices carry key + params only; the sentence is composed client-side. */
+  conflict?: { id: string | null; params: Record<string, unknown> };
 };
 
 export type NoticePage = {
@@ -43,5 +45,6 @@ export function rememberNoticePage(state: NoticePageState, scope: string, shown:
 }
 
 export function noticeHref(item: NoticeItem): string | null {
+  if (item.conflict) return item.conflict.id ? `/roadsync/conflicts/${item.conflict.id}` : "/roadsync/conflicts?preset=needsMyAck";
   return item.project ? `/projects/${item.project.id}` : null;
 }
