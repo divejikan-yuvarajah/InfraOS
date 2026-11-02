@@ -52,6 +52,7 @@ export type WorkRequestView = {
   assessment: { status: string; riskIndex: number; maxBand: string | null; conflicts: number; opportunities: number } | null;
   conflictRecords: { total: number; open: number; acknowledged: number; needsAck: number } | null;
   hasConflictRecords: boolean;
+  coordination: { active: number; needsMyResponse: number } | null;
 };
 
 function fail(status: WorkRequestFailure["status"], code: Code): WorkRequestFailure {
@@ -108,6 +109,7 @@ type Row = {
   detection?: { status: string; completedAt?: Date; counts?: { nearby: number; candidates: number; agencies: number; truncated: boolean } } | null;
   assessment?: { status?: string; riskIndex?: number; maxBand?: string | null; ruleVersion?: string; counts?: { conflicts?: number; opportunities?: number } } | null;
   conflictRecords?: { total?: number; open?: number; acknowledged?: number; needsAck?: number } | null;
+  coordination?: { active?: number; needsMyResponse?: number } | null;
 };
 
 /** Step 71 list/map summary. Null until a request has been assessed. */
@@ -147,6 +149,7 @@ async function toViews(rows: Row[], session?: ClientSession): Promise<WorkReques
     assessment: assessmentSummary(row.assessment),
     conflictRecords: row.conflictRecords ? { total: row.conflictRecords.total ?? 0, open: row.conflictRecords.open ?? 0, acknowledged: row.conflictRecords.acknowledged ?? 0, needsAck: row.conflictRecords.needsAck ?? 0 } : null,
     hasConflictRecords: (row.conflictRecords?.total ?? 0) > 0,
+    coordination: row.coordination ? { active: row.coordination.active ?? 0, needsMyResponse: row.coordination.needsMyResponse ?? 0 } : null,
   }));
 }
 

@@ -112,10 +112,10 @@ export type ReqState = { status: RequestStatus; escalated: boolean; currentRound
 export const isTerminal = (s: RequestStatus) => s === "agreed" || s === "no_agreement" || s === "withdrawn";
 
 /** Status is DERIVED from the current round's stances. Consulted agencies never block; conditional blocks until confirmed. */
-export function deriveStatus(participants: Participant[]): "awaiting_response" | "negotiating" | "agreed" {
+export function deriveStatus(participants: Participant[], round = 1): "awaiting_response" | "negotiating" | "agreed" {
   const required = participants.filter((p) => p.required && p.stance !== "proposer" && p.role !== "consulted");
   if (required.length && required.every((p) => p.stance === "accepted")) return "agreed";
-  if (required.some((p) => ["conditional", "countered", "needs_info", "declined"].includes(p.stance))) return "negotiating";
+  if (required.some((p) => ["conditional", "countered", "needs_info", "declined"].includes(p.stance)) || round > 1) return "negotiating";
   return "awaiting_response";
 }
 
@@ -134,7 +134,7 @@ export function applyDecision(r: ReqState, response: Response): EngineError | "o
   round.responses = [...round.responses.filter((x) => x.agencyId !== response.agencyId), response];
   part.stance = STANCE_OF[response.decision];
   part.lastDecisionAt = response.at;
-  r.status = deriveStatus(r.participants);
+  r.status = deriveStatus(r.participants, r.currentRound);
   return "ok";
 }
 
@@ -147,7 +147,7 @@ export function openNextRound(r: ReqState, by: { agencyId: string; userId: strin
   for (const p of r.participants) p.stance = p.agencyId === by.agencyId ? "proposer" : "pending";
   r.currentRound += 1;
   r.rounds.push({ n: r.currentRound, proposal, proposedBy: by, note, createdAt: now, responses: [], impact: null });
-  r.status = "awaiting_response";
+  r.status = "negotiating"; // a request past round 1 is, by definition, being negotiated
   return "ok";
 }
 
@@ -157,7 +157,7 @@ export function confirmConditions(r: ReqState, agencyIds: string[] | "all", now:
   const targets = r.participants.filter((p) => p.stance === "conditional" && (agencyIds === "all" || agencyIds.includes(p.agencyId)));
   if (!targets.length) return "nothing_to_confirm";
   for (const p of targets) { p.stance = "accepted"; p.lastDecisionAt = now; }
-  r.status = deriveStatus(r.participants);
+  r.status = deriveStatus(r.participants, r.currentRound);
   return "ok";
 }
 

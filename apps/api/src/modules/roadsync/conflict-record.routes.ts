@@ -23,7 +23,7 @@ const csv = <T extends string>(allowed: readonly T[]) =>
 const csvIds = z.string().max(300).transform((v) => v.split(",").filter(Boolean).slice(0, 10)).refine((arr) => arr.every((v) => objectId.safeParse(v).success));
 const bool = z.enum(["true", "false"]).transform((v) => v === "true");
 
-const LIST_KEYS = ["status", "band", "recordType", "class", "agencyId", "leadAgencyId", "needsMyAck", "ackOverdue", "startsWithinDays", "requestId", "q", "watching", "internal", "sort", "page", "limit"] as const;
+const LIST_KEYS = ["status", "band", "recordType", "class", "agencyId", "leadAgencyId", "needsMyAck", "ackOverdue", "startsWithinDays", "requestId", "q", "watching", "internal", "hasActiveCoordination", "sort", "page", "limit"] as const;
 const listSchema = z.object({
   status: csv(RECORD_STATUSES).optional(),
   band: csv(BAND_CODES).optional(),
@@ -38,6 +38,7 @@ const listSchema = z.object({
   q: z.string().trim().min(1).max(60).optional(),
   watching: bool.optional(),
   internal: bool.optional(),
+  hasActiveCoordination: bool.optional(),
   sort: z.enum(["severity", "timeToImpact", "ackDue", "createdAt", "updatedAt"]).default("severity"),
   page: z.coerce.number().int().min(1).max(1000).default(1),
   limit: z.coerce.number().int().min(1).max(RECORD.LIST_MAX).default(20),

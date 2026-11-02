@@ -41,6 +41,7 @@ export type ListQuery = {
   q?: string;
   watching?: boolean;
   internal?: boolean;
+  hasActiveCoordination?: boolean;
   sort: "severity" | "timeToImpact" | "ackDue" | "createdAt" | "updatedAt";
   page: number;
   limit: number;
@@ -155,6 +156,7 @@ function mongoFilter(w: Who, q: Partial<ListQuery>): Record<string, unknown> {
   if (q.agencyId?.length) and.push({ agencyIds: { $in: q.agencyId.map(oid) } });
   if (q.leadAgencyId) and.push({ "lead.agencyId": q.leadAgencyId });
   if (q.requestId) and.push({ $or: [{ aType: "work_request", aId: oid(q.requestId) }, { bType: "work_request", bId: oid(q.requestId) }] });
+  if (q.hasActiveCoordination) and.push({ "coordination.activeCount": { $gt: 0 } });
   if (q.watching) and.push({ watchers: oid(w.actor.userId) });
   if (q.internal !== undefined) and.push({ internal: q.internal });
   if (q.startsWithinDays !== undefined) and.push({ "overlapWindow.start": { $lte: new Date(Date.now() + q.startsWithinDays * DAY_MS) }, "overlapWindow.end": { $gte: new Date(Date.now() - DAY_MS) } });
