@@ -453,13 +453,13 @@ export async function extendDeadline(w: Who, id: string, input: { version: numbe
 }
 
 /** System: a cancelled source closes the record, which withdraws every active request on it. */
-export async function autoWithdrawForRecord(conflictId: string): Promise<number> {
+export async function autoWithdrawForRecord(conflictId: string, reason: "source_cancelled" | "conflict_resolved" = "source_cancelled"): Promise<number> {
   const active = (await CoordinationRequest.find({ conflictId: oid(conflictId), status: { $in: [...ACTIVE_REQUEST] } }).lean()) as unknown as ReqPlain[];
   for (const before of active) {
     const after = clone(before);
     after.status = "withdrawn";
     after.closedAt = new Date();
-    pushReqEvent(after, "auto_withdrawn", { type: "system" }, { reason: "source_cancelled" });
+    pushReqEvent(after, "auto_withdrawn", { type: "system" }, { reason });
     if (await saveReq(before, after)) { after.version += 1; await notifyCoord(after, after.participants.map((p) => ({ agencyId: p.agencyId, kind: "withdrawn" as const }))); }
   }
   if (active.length) await recomputeRecordCoordination(conflictId);
