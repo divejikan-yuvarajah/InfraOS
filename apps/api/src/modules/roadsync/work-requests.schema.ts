@@ -72,3 +72,19 @@ export function startDateAllowed(start: Date, isEmergency: boolean, now = new Da
   const dayStart = Math.floor((now.getTime() + COLOMBO_OFFSET_MS) / 86_400_000) * 86_400_000 - COLOMBO_OFFSET_MS;
   return start.getTime() >= (isEmergency ? now.getTime() - EMERGENCY_BACKDATE_MS : dayStart);
 }
+
+const version = z.number().int().min(0);
+const noControl = (v: string) => ![...v].some((c) => c.charCodeAt(0) <= 31 || c.charCodeAt(0) === 127);
+/** Draft edit: optimistic `version` is mandatory; status, agency, project, referenceNo and history are never accepted. */
+export const workRequestPatchSchema = z.object({
+  version,
+  workType: z.enum(WORK_TYPES).optional(),
+  priority: z.enum(WORK_PRIORITIES).optional(),
+  plannedStart: instant.optional(),
+  plannedEnd: instant.optional(),
+  workingHours: z.enum(WORKING_HOURS).optional(),
+  isEmergency: z.boolean().optional(),
+  geometry: geometryInputSchema.optional(),
+}).strict().refine((v) => Object.keys(v).length > 1, "no changes");
+export const workRequestVersionSchema = z.object({ version }).strict();
+export const workRequestCancelSchema = z.object({ version, reason: z.string().trim().min(10).max(500).refine((v) => noControl(v) && !v.includes("$"), "unsafe text") }).strict();

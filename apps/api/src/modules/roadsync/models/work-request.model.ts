@@ -35,6 +35,10 @@ const workRequestSchema = new Schema({
   conflictRecords: { type: Schema.Types.Mixed, default: undefined },
   /** Step 74-75, server-owned: { active, needsMyResponse } for the owning agency. */
   coordination: { type: Schema.Types.Mixed, default: undefined },
+  /** Assigned once, at submit (atomic counter WR-YYYY). Absent on drafts and on rows created before this field existed. */
+  referenceNo: { type: String, match: /^WR-\d{4}-\d{6}$/, default: undefined },
+  /** Server-owned: [{ from, to, at, by, reasonLength? }]; never free text. */
+  statusHistory: { type: [Schema.Types.Mixed], default: undefined },
   /** Optional, default false (absent reads as false); drafts only after create. Feeds assessment and the Step 76 national-approval rule (c). */
   isEmergency: { type: Boolean, default: undefined },
   /** Optional on existing documents (no migration): absent reads as "day". Changed after submit only by applyAmendmentToRequest. */
@@ -48,6 +52,7 @@ const workRequestSchema = new Schema({
 
 dateOrder(workRequestSchema, "plannedStart", "plannedEnd");
 
+workRequestSchema.index({ referenceNo: 1 }, { unique: true, partialFilterExpression: { referenceNo: { $type: "string" } } });
 workRequestSchema.index({ agencyId: 1, status: 1, plannedStart: 1, plannedEnd: 1 });
 workRequestSchema.index({ geometry: "2dsphere", status: 1, plannedStart: 1, plannedEnd: 1 });
 

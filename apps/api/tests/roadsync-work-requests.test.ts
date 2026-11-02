@@ -148,6 +148,51 @@ describe("step 66 roadsync work requests", { timeout: 120_000 }, () => {
     await WorkRequest.deleteOne({ _id: night.body.data.workRequest.id });
   });
 
+  it("edits a draft with an optimistic version, submits once with a reference, and freezes it afterwards", async () => {
+    const d = await world();
+    const day = (n: number) => new Date(Date.now() + n * 86_400_000).toISOString();
+    const created = (await post(d.officer.token, body(d.approved.id, { plannedStart: day(10), plannedEnd: day(12) }))).body.data.workRequest;
+    const url = `/api/v1/roadsync/work-requests/${created.id}`;
+    const send = (method: "patch" | "post" | "delete", path: string, token: string, payload?: object) => request(app)[method](`${url}${path}`).set("Authorization", `Bearer ${token}`).send(payload as object);
+
+    // Whitelisted edit succeeds and bumps the version; a stale version is refused; server-owned fields are rejected.
+    const edited = await send("patch", "", d.officer.token, { version: created.revision, workingHours: "night", isEmergency: true });
+    expect(edited.status).toBe(200);
+    expect(edited.body.data.workRequest).toMatchObject({ workingHours: "night", isEmergency: true, revision: created.revision + 1 });
+    expect((await send("patch", "", d.officer.token, { version: created.revision, workType: "OTHER" })).status).toBe(409);
+    for (const bad of [{ status: "SUBMITTED" }, { agencyId: d.agency.id }, { referenceNo: "WR-2026-000001" }, { createdBy: "x" }]) {
+      expect((await send("patch", "", d.officer.token, { version: edited.body.data.workRequest.revision, ...bad })).status).toBe(400);
+    }
+    // A foreign agency cannot see it (404); an unauthenticated caller gets 401.
+    expect((await send("patch", "", d.foreign.token, { version: 1, workType: "OTHER" })).status).toBe(404);
+    expect((await request(app).patch(url).send({ version: 1, workType: "OTHER" })).status).toBe(401);
+
+    // Submit assigns the reference once and moves to SUBMITTED; a replay with the old version is a 409.
+    const v = edited.body.data.workRequest.revision as number;
+    const sub = await send("post", "/submit", d.officer.token, { version: v });
+    expect(sub.status).toBe(200);
+    expect(sub.body.data.workRequest).toMatchObject({ status: "SUBMITTED" });
+    expect(sub.body.data.workRequest.referenceNo).toMatch(/^WR-\d{4}-000001$/);
+    expect((await send("post", "/submit", d.officer.token, { version: v })).status).toBe(409);
+    // Submitted requests are immutable through PATCH and cannot be deleted.
+    expect((await send("patch", "", d.officer.token, { version: sub.body.data.workRequest.revision, workType: "OTHER" })).status).toBe(409);
+    expect((await send("delete", "", d.officer.token)).status).toBe(409);
+    // Cancel needs a real reason, then records history and the audit trail.
+    expect((await send("post", "/cancel", d.officer.token, { version: sub.body.data.workRequest.revision, reason: "short" })).status).toBe(400);
+    const cancelled = await send("post", "/cancel", d.officer.token, { version: sub.body.data.workRequest.revision, reason: "Replaced by the revised scope" });
+    expect(cancelled.body.data.workRequest.status).toBe("CANCELLED");
+    const row = (await WorkRequest.findById(created.id).lean())!;
+    expect((row.statusHistory as { from: string; to: string }[]).map((h) => `${h.from}>${h.to}`)).toEqual(["DRAFT>SUBMITTED", "SUBMITTED>CANCELLED"]);
+    expect(JSON.stringify(row.statusHistory)).not.toContain("Replaced by");
+    expect(await AuditLog.countDocuments({ action: { $in: ["work_request.updated", "work_request.submitted", "work_request.cancelled"] } })).toBe(3);
+
+    // A draft can be deleted by its owner; a past start is refused at submit unless it is an emergency within 48 h.
+    const draft = (await post(d.officer.token, body(d.approved.id, { plannedStart: day(-10), plannedEnd: day(-8) }))).body.data.workRequest;
+    expect((await request(app).post(`/api/v1/roadsync/work-requests/${draft.id}/submit`).set("Authorization", `Bearer ${d.officer.token}`).send({ version: draft.revision })).status).toBe(400);
+    expect((await request(app).delete(`/api/v1/roadsync/work-requests/${draft.id}`).set("Authorization", `Bearer ${d.officer.token}`)).status).toBe(200);
+    expect(await WorkRequest.countDocuments({ _id: draft.id })).toBe(0);
+  });
+
   it("scopes by agency and manager; foreign and unassigned get 404 with no leak", async () => {
     const d = await world();
     const created = (await post(d.officer.token, body(d.approved.id))).body.data.workRequest;
