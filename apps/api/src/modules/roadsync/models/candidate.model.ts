@@ -24,6 +24,8 @@ const candidateSchema = new Schema({
   inputsHash: { type: String, required: true, maxlength: 64 },
   /** Steps 70-71, server-owned: kind, classes, score, band, factors, hotspot, override and effective result. */
   assessment: { type: Schema.Types.Mixed, default: undefined },
+  /** Step 73, server-owned: denormalized { id, no, status } of the formal conflict record. */
+  conflictRecord: { type: Schema.Types.Mixed, default: undefined },
 },{ timestamps: { createdAt: false, updatedAt: true }, strict: "throw", collection: "roadsync_candidates" });
 
 candidateSchema.index({ aType: 1, aId: 1, bType: 1, bId: 1 }, { unique: true });

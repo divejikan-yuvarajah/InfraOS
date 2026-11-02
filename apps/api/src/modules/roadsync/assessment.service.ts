@@ -352,6 +352,8 @@ export async function setOverride(actor: AuthenticatedActor, candidateId: string
     newValue: { status: (input?.band ?? doc.assessment.band).toUpperCase(), ...(input ? { reason: input.reason } : {}), agencyId: doc.agencyIds[0] }, requestId: "assessment", agencyId: doc.agencyIds[0],
   });
   await aggregateSides(doc);
+  // Step 73: the record pipeline refreshes severity so the override flows into conflict records.
+  roadsyncEvents.emit("roadsyncOverrideChanged", { requestId: String(doc.aId), candidateId: String(doc._id) });
   return "ok";
 }
 
