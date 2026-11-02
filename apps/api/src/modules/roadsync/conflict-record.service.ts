@@ -17,9 +17,11 @@ import type { AuthenticatedActor } from "../identity/auth/require-authenticated.
 import { detectAffectedAgencies, type Detection, type PairContext } from "./affected-agencies.js";
 import { RULE_VERSION, type Band } from "./assessment.rules.js";
 import { appendHistory, ackDueAt, allRequiredAcked, bandRank, guardAction, reconcile, syncAck, trimEvents, type HistoryPoint } from "./conflict-record.machine.js";
-import { RECORD, type AgencyRole, type EventType, type ReasonCode, type RecordStatus } from "./conflict-record.rules.js";
+import { OPEN_LIKE, RECORD, type AgencyRole, type EventType, type ReasonCode, type RecordStatus } from "./conflict-record.rules.js";
 import { loadItems, type SourceItem } from "./detection.service.js";
 import { Candidate } from "./models/candidate.model.js";
+import { CoordinationRequest } from "./models/coordination.model.js";
+import { ACTIVE_REQUEST } from "./coordination.rules.js";
 import { ConflictRecord, nextConflictNo } from "./models/conflict-record.model.js";
 import { WorkRequest } from "./models/work-request.model.js";
 import { DETECTION_ACTIVE_PROJECT_STATUSES, DETECTION_ACTIVE_WORK_STATUSES } from "./roadsync.constants.js";
@@ -86,6 +88,7 @@ export type RecordPlain = {
   ruleVersion: string;
   version: number;
   closedAt: Date | null;
+  coordination?: { activeCount: number; agreedCount: number; noAgreementCount: number; lastActivityAt: Date | null; state: "none" | "awaiting_response" | "negotiating" | "escalated" | "agreed" };
   createdAt: Date;
   updatedAt: Date;
 };
@@ -150,7 +153,7 @@ const syncAgencyIds = (rec: RecordPlain) => {
 
 // ---------- persistence ----------
 
-const SAVED_KEYS = ["recordType", "sides", "hotspot", "district", "overlapWindow", "internal", "severity", "belowThreshold", "status", "statusReason", "statusChangedAt", "statusChangedBy", "dismissedAt", "affectedAgencies", "agencyIds", "lead", "watchers", "notes", "events", "inputsHash", "ruleVersion", "closedAt"] as const;
+const SAVED_KEYS = ["recordType", "sides", "hotspot", "district", "overlapWindow", "internal", "severity", "belowThreshold", "status", "statusReason", "statusChangedAt", "statusChangedBy", "dismissedAt", "affectedAgencies", "agencyIds", "lead", "watchers", "notes", "events", "inputsHash", "ruleVersion", "closedAt", "coordination"] as const;
 
 /** Writes changed top-level fields with an optimistic version guard. False means someone else saved first. */
 export async function saveRecord(before: RecordPlain, after: RecordPlain): Promise<boolean> {
@@ -193,7 +196,7 @@ type Brief = { ref: string; title: string; agencyId: string; agencyName: string 
 
 const RECIPIENT_ROLES = ["GOV_ADMIN", "AGENCY_OFFICER", "PROJECT_MANAGER"];
 const RECIPIENT_CAP = 50;
-const hash = (s: string) => createHash("sha1").update(s).digest("hex").slice(0, 40);
+export const hash = (s: string) => createHash("sha1").update(s).digest("hex").slice(0, 40);
 
 async function agencyNameMap(ids: string[]): Promise<Map<string, string>> {
   const rows = ids.length ? await Agency.find({ _id: { $in: [...new Set(ids)].map(oid) } }).select("name").lean() : [];
@@ -204,6 +207,12 @@ async function pendingFor(rec: RecordPlain, agencyId: string, kind: NotifyKind):
   const names = await agencyNameMap([rec.sides.a.agencyId, rec.sides.b.agencyId]);
   const brief = (s: SideSnap): Brief => ({ ref: s.ref, title: s.title, agencyId: s.agencyId, agencyName: names.get(s.agencyId) ?? null });
   return { agencyId, kind, conflictId: String(rec._id), conflictNo: rec.conflictNo, band: rec.severity.current.band, primaryClass: rec.severity.current.primaryClass, sides: { a: brief(rec.sides.a), b: brief(rec.sides.b) }, start: iso(rec.overlapWindow?.start), end: iso(rec.overlapWindow?.end) };
+}
+
+/** Active recipients of in-app notices for an agency: admins and officers; viewers are excluded. */
+export async function recipientIds(agencyId: string): Promise<string[]> {
+  const users = await User.find({ agencyId: oid(agencyId), status: "ACTIVE" }).populate({ path: "roleId", select: "key" }).select("_id roleId").limit(RECIPIENT_CAP * 2).lean();
+  return users.filter((u) => RECIPIENT_ROLES.includes((u.roleId as unknown as { key?: string } | null)?.key ?? "")).slice(0, RECIPIENT_CAP).map((u) => String(u._id));
 }
 
 /** One batched notification per (agency, run) for new records; individual ones for everything else. Deduped by key. */
@@ -274,10 +283,10 @@ export function emitChanged(rec: RecordPlain, change: string, from: RecordStatus
 async function refreshRequestAggregate(requestId: string): Promise<void> {
   const wr = await WorkRequest.findById(requestId).select("agencyId").lean();
   if (!wr) return;
-  const rows = plainList(await ConflictRecord.find({ status: { $in: ["open", "acknowledged"] }, $or: [{ aType: "work_request", aId: oid(requestId) }, { bType: "work_request", bId: oid(requestId) }] }).select("status affectedAgencies").lean());
+  const rows = plainList(await ConflictRecord.find({ status: { $in: [...OPEN_LIKE] }, $or: [{ aType: "work_request", aId: oid(requestId) }, { bType: "work_request", bId: oid(requestId) }] }).select("status affectedAgencies").lean());
   const owner = String(wr.agencyId);
-  const needsAck = rows.filter((r) => r.status === "open" && r.affectedAgencies.some((a) => a.agencyId === owner && a.active && !a.excluded && a.required && a.ack.status === "pending")).length;
-  await WorkRequest.updateOne({ _id: oid(requestId) }, { $set: { conflictRecords: { total: rows.length, open: rows.filter((r) => r.status === "open").length, acknowledged: rows.filter((r) => r.status === "acknowledged").length, needsAck } } });
+  const needsAck = rows.filter((r) => r.affectedAgencies.some((a) => a.agencyId === owner && a.active && !a.excluded && a.required && a.ack.status === "pending")).length;
+  await WorkRequest.updateOne({ _id: oid(requestId) }, { $set: { conflictRecords: { total: rows.length, open: rows.filter((r) => r.status !== "acknowledged").length, acknowledged: rows.filter((r) => r.status === "acknowledged").length, needsAck } } });
 }
 const plainList = (rows: unknown[]) => rows as RecordPlain[];
 
@@ -528,7 +537,7 @@ async function createRecord(doc: PairDoc, a: SourceItem, b: SourceItem, pending:
 
 export type Mutation =
   | { ok: true; rec: RecordPlain; value?: unknown }
-  | { ok: false; status: 403 | 404 | 409 | 400; code: "forbidden" | "not_found" | "stale" | "invalid_transition" | "pair_inactive" | "invalid" | "already" };
+  | { ok: false; status: 403 | 404 | 409 | 400; code: "forbidden" | "not_found" | "stale" | "invalid_transition" | "pair_inactive" | "invalid" | "already" | "active_coordination" };
 
 export type Who = { actor: AuthenticatedActor; national: boolean; scopeIds: Set<string> };
 export async function whoIs(actor: AuthenticatedActor): Promise<Who> {
@@ -577,7 +586,7 @@ export async function acknowledge(w: Who, id: string, input: { version: number; 
     } else if (input.agencyId && input.agencyId !== w.actor.agencyId) return "forbidden";
     const entry = rec.affectedAgencies.find((a) => a.agencyId === agencyId && a.active && !a.excluded);
     if (!entry) return "forbidden";
-    if (!["open", "acknowledged"].includes(rec.status)) return "invalid_transition";
+    if (!OPEN_LIKE.includes(rec.status)) return "invalid_transition";
     if (entry.ack.status === "acknowledged") return "already";
     entry.ack = { status: "acknowledged", by: w.actor.userId, at: now, byRole: w.actor.roleKey, onBehalf };
     pushEvent(rec, "acknowledged", asActor(w), { agencyId, ...(onBehalf ? { onBehalf: true } : {}), hasNote: Boolean(input.note) }, now);
@@ -602,6 +611,8 @@ export async function acknowledgeBulk(w: Who, ids: string[]): Promise<BulkResult
 }
 
 export async function dismiss(w: Who, id: string, input: { version: number; reason: string }): Promise<Mutation> {
+  // A record with live coordination must have its requests withdrawn or closed first.
+  if (/^[a-f0-9]{24}$/i.test(id) && (await CoordinationRequest.exists({ conflictId: oid(id), status: { $in: [...ACTIVE_REQUEST] } }))) return { ok: false, status: 409, code: "active_coordination" };
   return mutate(w, id, input.version, (rec, now) => {
     const g = guardAction("dismiss", rec.status, { national: w.national, pairActive: true });
     if (!g.ok) return g.code;
@@ -640,7 +651,7 @@ export async function addAgency(w: Who, id: string, input: { version: number; ag
   const exists = await Agency.exists({ _id: oid(input.agencyId), status: "ACTIVE" });
   return mutate(w, id, input.version, (rec, now) => {
     if (!w.national) return "forbidden";
-    if (!exists || !requireReason(input.reason) || !["open", "acknowledged"].includes(rec.status)) return "invalid";
+    if (!exists || !requireReason(input.reason) || !OPEN_LIKE.includes(rec.status)) return "invalid";
     if (rec.affectedAgencies.length >= RECORD.MAX_AFFECTED_AGENCIES * 2) return "invalid";
     const prev = rec.affectedAgencies.find((a) => a.agencyId === input.agencyId);
     if (prev?.active && !prev.excluded) return "already";

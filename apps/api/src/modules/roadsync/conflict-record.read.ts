@@ -60,7 +60,7 @@ export function myEntry(w: Who, rec: Pick<RecordPlain, "affectedAgencies">): Aff
   return live.find((a) => a.agencyId === w.actor.agencyId) ?? live.find((a) => w.scopeIds.has(a.agencyId)) ?? null;
 }
 const isOverdue = (e: Affected | null, rec: RecordPlain, now: Date) => Boolean(e && e.ack.status === "pending" && e.ackDueAt && new Date(e.ackDueAt) < now && OPEN_LIKE.includes(rec.status));
-const needsAck = (e: Affected | null, rec: RecordPlain) => Boolean(e && e.ack.status === "pending" && rec.status === "open");
+const needsAck = (e: Affected | null, rec: RecordPlain) => Boolean(e && e.ack.status === "pending" && OPEN_LIKE.includes(rec.status));
 
 export function timeToImpact(win: RecordPlain["overlapWindow"], now = new Date()) {
   if (!win) return { state: "none" as const, days: null, dayIndex: null, totalDays: null };
@@ -139,6 +139,7 @@ function rowOf(v: View, rec: RecordPlain) {
     createdAt: iso(rec.createdAt),
     updatedAt: iso(rec.updatedAt),
     version: rec.version,
+    coordination: rec.coordination ?? { activeCount: 0, agreedCount: 0, noAgreementCount: 0, lastActivityAt: null, state: "none" as const },
   };
 }
 export type RecordRow = ReturnType<typeof rowOf>;
