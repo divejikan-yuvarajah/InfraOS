@@ -2,6 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { DownloadIcon, ArchiveIcon } from "lucide-react";
 
@@ -22,7 +23,8 @@ export function ResolutionArchive() {
   const copy = getResolutionCopy(locale);
   const ar = copy.archive;
   const keys = useRoadsyncKeys();
-  const [outcome, setOutcome] = useState("");
+  const initial = useSearchParams();
+  const [outcome, setOutcome] = useState(() => (OUTCOMES as readonly string[]).includes(initial.get("outcome") ?? "") ? initial.get("outcome")! : "");
   const [page, setPage] = useState(1);
   const [failed, setFailed] = useState(false);
   const qs = new URLSearchParams({ page: String(page), limit: "20", sort: "resolvedAt" });

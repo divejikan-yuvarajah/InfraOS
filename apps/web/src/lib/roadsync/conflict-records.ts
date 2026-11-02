@@ -132,7 +132,7 @@ export const PRESET_QUERY: Record<Preset, Record<string, string>> = {
   autoClosed: { status: "auto_closed" },
   all: {},
 };
-export const FILTER_KEYS = ["status", "band", "class", "recordType", "agencyId", "q", "internal", "needsMyAck", "ackOverdue", "startsWithinDays", "watching", "requestId", "sort"] as const;
+export const FILTER_KEYS = ["status", "band", "class", "recordType", "agencyId", "q", "internal", "needsMyAck", "ackOverdue", "startsWithinDays", "watching", "requestId", "resolutionState", "sort"] as const;
 
 export function presetOf(params: URLSearchParams): Preset | null {
   const p = params.get("preset");

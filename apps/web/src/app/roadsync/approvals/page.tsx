@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 
 import { ApprovalsQueue } from "@/components/roadsync/approvals-queue";
 
@@ -8,5 +9,9 @@ export const metadata: Metadata = {
 };
 
 export default function ApprovalsPage() {
-  return <ApprovalsQueue />;
+  return (
+    <Suspense fallback={<p role="status">Loading</p>}>
+      <ApprovalsQueue />
+    </Suspense>
+  );
 }
