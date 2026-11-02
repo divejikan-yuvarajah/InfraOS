@@ -38,7 +38,7 @@ export type ResolutionView = {
   amendments: AmendmentView[]; allowed: string[];
 };
 export type ResolutionHistoryRow = { id: string; resolutionNo: string; type: ResolutionType; status: ResolutionStatus; outcome: string | null; closedAt: string | null };
-export type ConflictResolution = { resolution: ResolutionView | null; history: ResolutionHistoryRow[]; recordStatus: string; canStart: boolean };
+export type ConflictResolution = { resolution: ResolutionView | null; history: ResolutionHistoryRow[]; recordStatus: string; recordVersion: number; national: boolean; canReopen: boolean; canStart: boolean };
 export type ResolutionSuggestions = {
   open: boolean;
   agreed: { coordinationRequestId: string; requestNo: string; type: string; plan: unknown }[];

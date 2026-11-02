@@ -64,7 +64,7 @@ export async function forConflict(w: Who, conflictId: string) {
   return {
     resolution: current ? await viewResolution(w, rec, current, await loadAms(current._id)) : null,
     history: all.filter((r) => r !== current).map((r) => ({ id: String(r._id), resolutionNo: r.resolutionNo, type: r.type, status: r.status, outcome: r.outcome?.code ?? null, closedAt: iso(r.closedAt) })),
-    recordStatus: rec.status, canStart: OPEN_LIKE.includes(rec.status) && !all.some((r) => r.active),
+    recordStatus: rec.status, recordVersion: rec.version, national: w.national, canReopen: w.national && rec.status === "resolved", canStart: OPEN_LIKE.includes(rec.status) && !all.some((r) => r.active),
   };
 }
 
