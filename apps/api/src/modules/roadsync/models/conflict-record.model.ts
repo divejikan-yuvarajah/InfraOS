@@ -34,6 +34,10 @@ const recordSchema = new Schema({
   lead: { type: Schema.Types.Mixed, default: null },
   /** Step 74-75, server-owned summary: { activeCount, agreedCount, noAgreementCount, lastActivityAt, state }. */
   coordination: { type: Schema.Types.Mixed, default: undefined },
+  /** Step 76, server-owned summary: { state, id, no, type, outcome, resolvedAt, openCommitments }. */
+  resolution: { type: Schema.Types.Mixed, default: undefined },
+  /** Step 77, server-owned: head of the hash-chained case ledger. Advanced only by appendLedger. */
+  ledgerHead: { type: Schema.Types.Mixed, default: undefined },
   watchers: { type: [Schema.Types.ObjectId], default: [] },
   notes: { type: [Schema.Types.Mixed], default: [] },
   events: { type: [Schema.Types.Mixed], default: [] },
