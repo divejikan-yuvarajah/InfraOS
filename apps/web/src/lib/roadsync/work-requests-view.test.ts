@@ -4,15 +4,22 @@ import { WORK_PRIORITIES as SHARED_PRIORITIES, WORK_STATUSES as SHARED_STATUSES,
 import { ApiError } from "@/lib/api/errors";
 
 import { classifyWorkRequestError } from "./api";
+import { getWorkRequestCopy } from "./work-request-copy";
 import {
   buildCreateBody,
+  buildPatchBody,
   canHintCreate,
   colomboLocalToUtc,
   EMPTY_FORM,
   filtersToQuery,
   firstInvalidField,
   parseGeometryText,
+  stageOfField,
+  startRule,
   summarizeGeometry,
+  utcToColomboLocal,
+  valuesFromRecord,
+  type WorkRequestRecord,
   WORK_PRIORITIES,
   WORK_STATUSES,
   WORK_TYPES,
@@ -79,7 +86,8 @@ describe("create body", () => {
   it("transforms a valid form and never carries agency, status or ids of the caller", () => {
     const built = buildCreateBody(valid);
     if (!built.ok) throw new Error("expected ok");
-    expect(Object.keys(built.body).sort()).toEqual(["geometry", "plannedEnd", "plannedStart", "priority", "projectId", "workType"]);
+    expect(Object.keys(built.body).sort()).toEqual(["geometry", "isEmergency", "plannedEnd", "plannedStart", "priority", "projectId", "workType", "workingHours"]);
+    expect(built.body).toMatchObject({ workingHours: "day", isEmergency: false });
     expect(built.body.plannedStart).toBe("2026-11-10T03:30:00.000Z");
   });
   it("reports ordered field errors, including reversed dates", () => {
@@ -113,5 +121,42 @@ describe("list, permissions and session isolation", () => {
     expect(classifyWorkRequestError(new ApiError("x", 404, { code: "NOT_FOUND" }))).toBe("not-found");
     expect(classifyWorkRequestError(new ApiError("x", 503, { code: "SERVICE_UNAVAILABLE" }))).toBe("unavailable");
     expect(classifyWorkRequestError(new Error("net"))).toBe("unavailable");
+  });
+});
+
+describe("step 66 draft editing and submission hints", () => {
+  const record = {
+    id: "b".repeat(24), projectId: "a".repeat(24), agencyId: "c".repeat(24), workType: "ROAD_RESURFACING", status: "DRAFT", priority: "HIGH", workingHours: "night", isEmergency: true,
+    plannedStart: "2026-11-10T03:30:00.000Z", plannedEnd: "2026-11-12T11:30:00.000Z", geometry: { type: "LineString", coordinates: [[79.86, 6.93], [79.87, 6.94]] }, revision: 3,
+  } as unknown as WorkRequestRecord;
+
+  it("round-trips a stored draft through the form and builds a whitelisted PATCH body with the version", () => {
+    const values = valuesFromRecord(record);
+    expect(values).toMatchObject({ plannedStart: "2026-11-10T09:00", plannedEnd: "2026-11-12T17:00", workingHours: "night", isEmergency: true, coordinates: "79.86, 6.93\n79.87, 6.94" });
+    expect(utcToColomboLocal("2026-11-10T03:30:00.000Z")).toBe("2026-11-10T09:00");
+    const built = buildPatchBody(values, 3);
+    if (!built.ok) throw new Error("expected ok");
+    expect(Object.keys(built.body).sort()).toEqual(["geometry", "isEmergency", "plannedEnd", "plannedStart", "priority", "version", "workType", "workingHours"]);
+    expect(built.body.version).toBe(3);
+    expect(JSON.stringify(built.body)).not.toMatch(/projectId|agencyId|status|referenceNo/);
+  });
+
+  it("mirrors the server start rule: today (Colombo) for normal work, 48 hours back for emergencies", () => {
+    const now = new Date("2026-06-10T10:00:00Z");
+    expect(startRule("2026-06-10T01:00:00Z", false, now)).toBe("ok"); // 06:30 Colombo, same day
+    expect(startRule("2026-06-09T10:00:00Z", false, now)).toBe("past");
+    expect(startRule("2026-06-09T10:00:00Z", true, now)).toBe("ok");
+    expect(startRule("2026-06-07T09:00:00Z", true, now)).toBe("emergency_too_old");
+    expect(startRule(null, false, now)).toBe("ok");
+  });
+
+  it("maps each field to its wizard stage and keeps en/si/ta copy structurally identical", () => {
+    expect(stageOfField("workType")).toBe("basics");
+    expect(stageOfField("coordinates")).toBe("location");
+    expect(stageOfField("workingHours")).toBe("schedule");
+    const keys = (o: unknown, prefix = ""): string[] => (o && typeof o === "object" && !Array.isArray(o) ? Object.entries(o).flatMap(([k, v]) => keys(v, `${prefix}${k}.`)) : [prefix]);
+    const en = keys(getWorkRequestCopy("en")).sort();
+    expect(keys(getWorkRequestCopy("si")).sort()).toEqual(en);
+    expect(keys(getWorkRequestCopy("ta")).sort()).toEqual(en);
   });
 });
