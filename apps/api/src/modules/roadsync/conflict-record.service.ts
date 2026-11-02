@@ -89,6 +89,8 @@ export type RecordPlain = {
   version: number;
   closedAt: Date | null;
   coordination?: { activeCount: number; agreedCount: number; noAgreementCount: number; lastActivityAt: Date | null; state: "none" | "awaiting_response" | "negotiating" | "escalated" | "agreed" };
+  resolution?: { state: string; id: string; no: string; type: string; outcome: string | null; resolvedAt: Date | null; openCommitments: number; resolvedBand?: Band | null; reopened?: boolean };
+  ledgerHead?: { seq: number; hash: string };
   createdAt: Date;
   updatedAt: Date;
 };
@@ -153,7 +155,7 @@ const syncAgencyIds = (rec: RecordPlain) => {
 
 // ---------- persistence ----------
 
-const SAVED_KEYS = ["recordType", "sides", "hotspot", "district", "overlapWindow", "internal", "severity", "belowThreshold", "status", "statusReason", "statusChangedAt", "statusChangedBy", "dismissedAt", "affectedAgencies", "agencyIds", "lead", "watchers", "notes", "events", "inputsHash", "ruleVersion", "closedAt", "coordination"] as const;
+const SAVED_KEYS = ["recordType", "sides", "hotspot", "district", "overlapWindow", "internal", "severity", "belowThreshold", "status", "statusReason", "statusChangedAt", "statusChangedBy", "dismissedAt", "affectedAgencies", "agencyIds", "lead", "watchers", "notes", "events", "inputsHash", "ruleVersion", "closedAt", "coordination", "resolution"] as const;
 
 /** Writes changed top-level fields with an optimistic version guard. False means someone else saved first. */
 export async function saveRecord(before: RecordPlain, after: RecordPlain): Promise<boolean> {
@@ -435,7 +437,7 @@ async function processPair(doc: PairDoc, items: Map<string, SourceItem>, pending
         rec.ruleVersion = RULE_VERSION;
       }
     }
-    const rc = reconcile({ status: rec.status, belowThreshold: rec.belowThreshold, qualifies: wants, pairActive: live, band: rec.severity.current.band, dismissedBand: rec.dismissedAt?.band ?? null, agencies: rec.affectedAgencies });
+    const rc = reconcile({ status: rec.status, belowThreshold: rec.belowThreshold, qualifies: wants, pairActive: live, band: rec.severity.current.band, dismissedBand: rec.dismissedAt?.band ?? null, agencies: rec.affectedAgencies, inFlight: rec.resolution?.state === "applying" || rec.resolution?.state === "verifying", resolved: rec.status === "resolved" && rec.resolution?.outcome ? { outcome: rec.resolution.outcome, band: rec.resolution.resolvedBand ?? rec.severity.current.band } : null });
     rec.belowThreshold = rc.belowThreshold;
     if (rc.status !== rec.status) {
       rec.status = rc.status;
@@ -445,6 +447,7 @@ async function processPair(doc: PairDoc, items: Map<string, SourceItem>, pending
       rec.closedAt = rc.status === "auto_closed" || rc.status === "dismissed" ? now : null;
     }
     if (rc.event) pushEvent(rec, rc.event, sys, rc.reason ? { reason: rc.reason } : {}, now);
+    if (wasStatus === "resolved" && rc.status !== "resolved" && rec.resolution) rec.resolution = { ...rec.resolution, reopened: true };
     syncAgencyIds(rec);
     return { wasStatus, escalated: bandRank(rec.severity.current.band) > bandRank(bandBefore), added, rc };
   });

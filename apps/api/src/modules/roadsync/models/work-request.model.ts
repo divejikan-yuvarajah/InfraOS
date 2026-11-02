@@ -35,6 +35,11 @@ const workRequestSchema = new Schema({
   conflictRecords: { type: Schema.Types.Mixed, default: undefined },
   /** Step 74-75, server-owned: { active, needsMyResponse } for the owning agency. */
   coordination: { type: Schema.Types.Mixed, default: undefined },
+  /** Step 76, server-owned (never client-accepted): written ONLY by applyAmendmentToRequest. */
+  originalSchedule: { type: Schema.Types.Mixed, default: undefined },
+  revisions: { type: [Schema.Types.Mixed], default: undefined },
+  amendedCount: { type: Number, default: undefined },
+  lastAmendedAt: { type: Date, default: undefined },
 },{ timestamps: true, strict: "throw", collection: "workRequests" });
 
 dateOrder(workRequestSchema, "plannedStart", "plannedEnd");

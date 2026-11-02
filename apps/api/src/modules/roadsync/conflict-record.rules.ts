@@ -40,10 +40,10 @@ export type ReasonCode = (typeof REASON_CODES)[number];
 export const RECORD_STATUSES = ["open", "acknowledged", "awaiting_response", "negotiating", "escalated", "resolved", "dismissed", "auto_closed", "withdrawn"] as const;
 export type RecordStatus = (typeof RECORD_STATUSES)[number];
 /** Only these are reachable in Steps 72-73; the rest are reserved enum values for Steps 74-77. */
-export const IMPLEMENTED_STATUSES: readonly RecordStatus[] = ["open", "acknowledged", "dismissed", "auto_closed"];
+export const IMPLEMENTED_STATUSES: readonly RecordStatus[] = ["open", "acknowledged", "dismissed", "auto_closed", "resolved"];
 export const OPEN_LIKE: readonly RecordStatus[] = ["open", "acknowledged", "awaiting_response", "negotiating", "escalated"];
 /** Statuses driven by the acknowledgement rule; the coordination states are driven by recomputeRecordCoordination. */
 export const ACK_DRIVEN: readonly RecordStatus[] = ["open", "acknowledged"];
 
-export const EVENT_TYPES = ["detected", "agency_added", "agency_removed", "agency_excluded", "agency_restored", "severity_changed", "acknowledged", "lead_set", "dismissed", "reopened", "auto_closed", "redetected", "note_added", "override_applied", "coordination_started", "coordination_state_changed"] as const;
+export const EVENT_TYPES = ["detected", "agency_added", "agency_removed", "agency_excluded", "agency_restored", "severity_changed", "acknowledged", "lead_set", "dismissed", "reopened", "auto_closed", "redetected", "note_added", "override_applied", "coordination_started", "coordination_state_changed", "resolved"] as const;
 export type EventType = (typeof EVENT_TYPES)[number];

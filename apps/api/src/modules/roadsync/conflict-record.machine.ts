@@ -8,11 +8,13 @@ import { ACK_DRIVEN, ACK_SLA_HOURS, OPEN_LIKE, RECORD, type EventType, type Reco
 
 export type AckEntry = { agencyId: string; required: boolean; active: boolean; excluded: unknown | null; ack: { status: "pending" | "acknowledged" } };
 
-export type UserAction = "dismiss" | "reopen";
+export type UserAction = "dismiss" | "reopen" | "reopen_resolved";
 /** The data-driven transition table. Steps 74-77 extend it; nothing else changes. */
 export const TRANSITIONS: Record<UserAction, { from: readonly RecordStatus[]; to: RecordStatus; nationalOnly: boolean }> = {
   dismiss: { from: OPEN_LIKE, to: "dismissed", nationalOnly: true },
   reopen: { from: ["dismissed", "auto_closed"], to: "open", nationalOnly: true },
+  /** Step 76: `resolved` is entered ONLY by a resolved resolution (system); a national user may reopen it. */
+  reopen_resolved: { from: ["resolved"], to: "open", nationalOnly: true },
 };
 
 export type GuardResult = { ok: true; to: RecordStatus } | { ok: false; code: "forbidden" | "invalid_transition" | "pair_inactive" };
@@ -50,6 +52,10 @@ export type ReconcileInput = {
   band: Band;
   dismissedBand: Band | null;
   agencies: AckEntry[];
+  /** Step 76: a resolution is applying/verifying, so only severity may change; verification decides the rest. */
+  inFlight?: boolean;
+  /** Step 76: set when status is `resolved`. */
+  resolved?: { outcome: string; band: Band } | null;
 };
 export type ReconcileResult = {
   status: RecordStatus;
@@ -62,6 +68,7 @@ export type ReconcileResult = {
 export function reconcile(i: ReconcileInput): ReconcileResult {
   const keep = (status: RecordStatus, belowThreshold = i.belowThreshold): ReconcileResult => ({ status, belowThreshold, event: null, reason: null });
   if (OPEN_LIKE.includes(i.status)) {
+    if (i.inFlight) return keep(i.status);
     if (!i.pairActive) return { status: "auto_closed", belowThreshold: i.belowThreshold, event: "auto_closed", reason: "pair_inactive" };
     if (!i.qualifies) {
       if (!hasAnyAck(i.agencies)) return { status: "auto_closed", belowThreshold: true, event: "auto_closed", reason: "below_threshold" };
@@ -73,6 +80,12 @@ export function reconcile(i: ReconcileInput): ReconcileResult {
     const raised = i.dismissedBand !== null && bandRank(i.band) >= bandRank(i.dismissedBand) + RECORD.DISMISS_REOPEN_BAND_STEPS;
     if (i.pairActive && i.qualifies && raised) return { status: syncAck("open", i.agencies), belowThreshold: false, event: "reopened", reason: "severity_increased" };
     return keep("dismissed");
+  }
+  if (i.status === "resolved" && i.resolved) {
+    const rose = bandRank(i.band) >= bandRank(i.resolved.band) + RECORD.DISMISS_REOPEN_BAND_STEPS;
+    const accepted = i.resolved.outcome === "risk_accepted" || i.resolved.outcome === "no_action";
+    if (i.pairActive && i.qualifies && (accepted ? rose : true)) return { status: syncAck("open", i.agencies), belowThreshold: false, event: "reopened", reason: "severity_increased" };
+    return keep("resolved");
   }
   if (i.status === "auto_closed" && i.pairActive && i.qualifies) return { status: syncAck("open", i.agencies), belowThreshold: false, event: "redetected", reason: null };
   return keep(i.status);
@@ -94,7 +107,7 @@ export function ackDueAt(from: Date, band: Band, existing: Date | null): Date {
   return existing && existing.getTime() <= fresh.getTime() ? existing : fresh;
 }
 
-const KEEP_ALWAYS = new Set<EventType>(["detected", "dismissed", "reopened", "auto_closed", "redetected", "lead_set"]);
+const KEEP_ALWAYS = new Set<EventType>(["resolved", "detected", "dismissed", "reopened", "auto_closed", "redetected", "lead_set"]);
 export function trimEvents<T extends { type: EventType }>(events: T[], max: number = RECORD.EVENTS_MAX): T[] {
   let over = events.length - max;
   if (over <= 0) return events;

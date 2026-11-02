@@ -10,6 +10,7 @@ import { Role } from "../identity/models/role.model.js";
 import { User } from "../identity/models/user.model.js";
 import { Project } from "../projects/models/project.model.js";
 import { WorkRequest } from "./models/work-request.model.js";
+import { roadsyncEvents } from "./roadsync.events.js";
 import { candidateCounts, requestIdsWithCandidates } from "./candidate.counts.js";
 import { validateWorkGeometry, type GeoIssue } from "./geo.service.js";
 import type { WorkRequestCreateInput, WorkRequestListQuery } from "./work-requests.schema.js";
@@ -311,4 +312,47 @@ export async function createWorkRequest(actor: AuthenticatedActor, input: WorkRe
     if (error instanceof FlowControl) return fail(error.status, error.code);
     throw new WorkRequestDependencyError();
   }
+}
+
+// ---------- Step 76: the ONE controlled path that changes a submitted request's schedule ----------
+
+const AMENDABLE = ["SUBMITTED", "PLANNED", "APPROVED"] as const;
+const REVISIONS_CAP = 20;
+export type AmendInput = { amendmentId: string; resolutionId: string; workRequestId: string; baseVersion: number; plannedStart: Date; plannedEnd: Date };
+export type AmendResult = { ok: true; version: number; before: { plannedStart: Date; plannedEnd: Date } } | { ok: false; code: "not_found" | "stale" | "not_amendable" | "invalid" };
+
+/**
+ * Atomic compare-and-set on the request version: a stale or already-applied amendment matches nothing. The Step 66-67
+ * create path and its whitelist are untouched; nothing else may mutate schedule fields of a submitted request.
+ */
+export async function applyAmendmentToRequest(a: AmendInput, by: { userId: string; agencyId: string }): Promise<AmendResult> {
+  if (Number.isNaN(a.plannedStart.getTime()) || Number.isNaN(a.plannedEnd.getTime()) || a.plannedEnd < a.plannedStart) return { ok: false, code: "invalid" };
+  const id = new mongoose.Types.ObjectId(a.workRequestId);
+  const current = await WorkRequest.findById(id).select("plannedStart plannedEnd status __v").lean();
+  if (!current) return { ok: false, code: "not_found" };
+  if (!(AMENDABLE as readonly string[]).includes(current.status)) return { ok: false, code: "not_amendable" };
+  if ((current as { __v?: number }).__v !== a.baseVersion) return { ok: false, code: "stale" };
+  const now = new Date();
+  const rev = {
+    n: { $add: [{ $ifNull: ["$amendedCount", 0] }, 1] }, at: { $literal: now }, by: { $literal: { userId: by.userId, agencyId: by.agencyId } }, via: { $literal: { amendmentId: a.amendmentId, resolutionId: a.resolutionId } },
+    before: { plannedStart: "$plannedStart", plannedEnd: "$plannedEnd" }, after: { plannedStart: { $literal: a.plannedStart }, plannedEnd: { $literal: a.plannedEnd } },
+  };
+  const res = await WorkRequest.findOneAndUpdate(
+    { _id: id, __v: a.baseVersion, status: { $in: [...AMENDABLE] } },
+    [{ $set: {
+      originalSchedule: { $ifNull: ["$originalSchedule", { plannedStart: "$plannedStart", plannedEnd: "$plannedEnd" }] },
+      revisions: { $slice: [{ $concatArrays: [{ $ifNull: ["$revisions", []] }, [rev]] }, -REVISIONS_CAP] },
+      amendedCount: { $add: [{ $ifNull: ["$amendedCount", 0] }, 1] },
+      lastAmendedAt: { $literal: now }, updatedAt: { $literal: now },
+      plannedStart: { $literal: a.plannedStart }, plannedEnd: { $literal: a.plannedEnd },
+      "detection.status": "pending", __v: { $add: ["$__v", 1] },
+    } }] as never,
+    { new: true, timestamps: false },
+  ).lean();
+  if (!res) return { ok: false, code: "stale" };
+  try {
+    await AuditLog.create({ userId: new mongoose.Types.ObjectId(by.userId), action: "work_request.amended", resourceType: "WORK_REQUEST", resourceId: id, newValue: { status: String(res.status), agencyId: res.agencyId }, requestId: "amendment", agencyId: new mongoose.Types.ObjectId(by.agencyId) });
+  } catch { /* the revision on the request keeps the fact */ }
+  roadsyncEvents.emit("workRequestAmended", { requestId: a.workRequestId, amendmentId: a.amendmentId, resolutionId: a.resolutionId });
+  return { ok: true, version: (res as { __v?: number }).__v ?? a.baseVersion + 1, before: { plannedStart: current.plannedStart, plannedEnd: current.plannedEnd } };
 }
