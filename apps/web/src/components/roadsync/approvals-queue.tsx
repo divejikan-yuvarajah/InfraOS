@@ -2,6 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { ClockIcon, InboxIcon } from "lucide-react";
 
@@ -25,9 +26,10 @@ export function ApprovalsQueue() {
   const copy = getResolutionCopy(locale);
   const a = copy.approvals;
   const keys = useRoadsyncKeys();
-  const [tab, setTab] = useState<Tab>("mine");
-  const [step, setStep] = useState("");
-  const [overdue, setOverdue] = useState(false);
+  const initial = useSearchParams();
+  const [tab, setTab] = useState<Tab>(() => (TABS as string[]).includes(initial.get("tab") ?? "") ? (initial.get("tab") as Tab) : "mine");
+  const [step, setStep] = useState(() => (STEPS as string[]).includes(initial.get("step") ?? "") ? initial.get("step")! : "");
+  const [overdue, setOverdue] = useState(() => initial.get("overdue") === "true");
   const [page, setPage] = useState(1);
   const qs = new URLSearchParams({ tab, page: String(page), limit: "20" });
   if (step) qs.set("step", step);

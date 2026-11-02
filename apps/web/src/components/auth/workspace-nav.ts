@@ -34,6 +34,7 @@ export const WORKSPACE_NAV: readonly WorkspaceNavGroup[] = [
     items: [
       { href: "/projects", label: "Projects", icon: FolderKanbanIcon, i18n: { si: "ව්‍යාපෘති", ta: "திட்டங்கள்" } },
       { href: "/projects/reviews", label: "Reviews", icon: ClipboardCheckIcon, i18n: { si: "ව්‍යාපෘති සමාලෝචන", ta: "திட்ட மதிப்பாய்வுகள்" } },
+      { href: "/roadsync", label: "RoadSync Dashboard", icon: LayoutDashboardIcon, i18n: { si: "RoadSync උපකරණ පුවරුව", ta: "RoadSync முகப்புப் பலகை" } },
       { href: "/roadsync/work-requests", label: "Work Requests", icon: RouteIcon, i18n: { si: "වැඩ ඉල්ලීම්", ta: "பணி கோரிக்கைகள்" } },
       { href: "/roadsync/conflicts", label: "Conflicts", icon: SwordsIcon, i18n: { si: "ගැටුම්", ta: "முரண்பாடுகள்" } },
       { href: "/roadsync/coordination", label: "Coordination", icon: HandshakeIcon, i18n: { si: "සම්බන්ධීකරණය", ta: "ஒருங்கிணைப்பு" } },
@@ -63,6 +64,7 @@ export function navLabel(item: WorkspaceNavItem, locale: "en" | "si" | "ta"): st
 export function navCurrent(pathname: string, href: string): boolean {
   const reviews = pathname === "/projects/reviews" || /^\/projects\/[^/]+\/review$/.test(pathname);
   if (href === "/projects/reviews") return reviews;
+  if (href === "/roadsync") return pathname === href || pathname.startsWith("/roadsync/dashboard");
   if (href === "/projects") return !reviews && (pathname === href || pathname.startsWith(`${href}/`));
   return pathname === href || pathname.startsWith(`${href}/`);
 }
