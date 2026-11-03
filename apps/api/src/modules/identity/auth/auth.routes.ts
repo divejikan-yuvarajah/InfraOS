@@ -13,12 +13,22 @@ import { createPasswordResetSender } from "../password-reset-mail.js";
 import {
   forgotPasswordRateLimit,
   resetPasswordRateLimit,
+  registerRateLimit,
   isJsonContentType,
   loginRateLimit,
   logoutRateLimit,
   refreshRateLimit,
   rejectDisallowedOrigin,
 } from "./auth.security.js";
+import {
+  listPublicInstitutions,
+  submitAccountRegistrationRequest,
+} from "../account-request.service.js";
+import { RegistrationInputError } from "../registration.schema.js";
+import {
+  RegistrationConflictError,
+  RegistrationDependencyError,
+} from "../registration.service.js";
 import { loginWithPassword } from "./auth.service.js";
 import { authNow } from "./auth.clock.js";
 import { clearRefreshCookie, readRefreshCookie, setRefreshCookie } from "./cookies.js";
@@ -38,6 +48,73 @@ export const authRouter = Router();
 authRouter.get("/me", requireAuthenticated, (req, res) => {
   noStore(res);
   res.status(200).json(success({ user: req.authUser }, req.requestId));
+});
+
+authRouter.get("/institutions", async (req, res, next) => {
+  try {
+    noStore(res);
+    const institutions = await listPublicInstitutions();
+    res.status(200).json(success({ institutions }, req.requestId));
+  } catch (error) {
+    next(error);
+  }
+});
+
+authRouter.post("/register", registerRateLimit, async (req, res, next) => {
+  try {
+    noStore(res);
+    res.setHeader("Referrer-Policy", "no-referrer");
+    if (rejectDisallowedOrigin(req, res)) return;
+    if (!isJsonContentType(req)) {
+      res
+        .status(415)
+        .json(failure("UNSUPPORTED_MEDIA", "JSON body is required", req.requestId));
+      return;
+    }
+    const result = await submitAccountRegistrationRequest(req.body);
+    logger.info(
+      {
+        requestId: req.requestId,
+        outcome: "registration_request_created",
+        referenceCode: result.referenceCode,
+        organizationCode: result.organizationCode,
+      },
+      "institutional account request recorded",
+    );
+    res.status(201).json(success({ request: result }, req.requestId));
+  } catch (error) {
+    if (error instanceof RegistrationInputError) {
+      res
+        .status(400)
+        .json(
+          failure(
+            "VALIDATION_ERROR",
+            error.message,
+            req.requestId,
+          ),
+        );
+      return;
+    }
+    if (error instanceof RegistrationConflictError) {
+      res
+        .status(409)
+        .json(
+          failure(
+            error.code,
+            "An account or pending institutional request already exists for this email address.",
+            req.requestId,
+          ),
+        );
+      return;
+    }
+    if (error instanceof RegistrationDependencyError) {
+      res
+        .status(503)
+        .json(failure(error.code, error.message, req.requestId));
+      return;
+    }
+    next(error);
+  }
 });
 
 authRouter.post("/forgot-password", forgotPasswordRateLimit, async (req, res, next) => {
