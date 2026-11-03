@@ -7,8 +7,19 @@ import { loginWithAuthClient, logoutWithAuthClient, requestForgotPassword, reset
 import { readResetTokenFromHash, retainResetToken } from "./reset-fragment";
 import { forgotPasswordFormSchema } from "./forgot-password-schema";
 import { loginFormSchema } from "./login-schema";
-import { getAuthForgotCopy } from "./messages";
-import { forgotPasswordPathForLocale, sanitizeNextParam } from "./redirect";
+import { getAuthForgotCopy, getAuthLoginCopy, getAuthRegisterCopy } from "./messages";
+import {
+  forgotPasswordPathForLocale,
+  registerPathForLocale,
+  sanitizeNextParam,
+} from "./redirect";
+import {
+  evaluatePasswordStrength,
+  registerStep1Schema,
+  registerStep2Schema,
+  registerStep3Schema,
+  submitRegistrationWithAuthClient,
+} from "./register-schema";
 import { confirmSessionWithMe } from "./confirm-identity";
 import { refreshAuthSessionSingleFlight, resetAuthRefreshForTests } from "./refresh-flight";
 import { clearPrivateQueryCache, registerPrivateQueryCache } from "./query-cache";
@@ -564,5 +575,100 @@ describe("fixture transport errors", () => {
       );
       expect(result.ok).toBe(false);
     }
+  });
+});
+
+describe("institutional registration wizard schemas and preview safety", () => {
+  it("resolves locale-aware register paths and trilingual copy", () => {
+    expect(registerPathForLocale("en")).toBe("/register");
+    expect(registerPathForLocale("si")).toBe("/si/register");
+    expect(registerPathForLocale("ta")).toBe("/ta/register");
+    for (const locale of ["en", "si", "ta"] as const) {
+      expect(getAuthLoginCopy(locale).title.length).toBeGreaterThan(0);
+      expect(getAuthRegisterCopy(locale).step1.title.length).toBeGreaterThan(0);
+      expect(getAuthRegisterCopy(locale).step2.institutionalNoticeBody.length).toBeGreaterThan(20);
+      expect(getAuthRegisterCopy(locale).step3.submitBtn.length).toBeGreaterThan(0);
+    }
+  });
+
+  it("enforces Step 1 password length, 72-byte UTF-8 ceiling, and confirmation match", () => {
+    expect(
+      registerStep1Schema.safeParse({
+        fullName: "Eng. Nimal Silva",
+        email: "  Nimal@RDA.gov.lk ",
+        password: "short",
+        confirmPassword: "short",
+      }).success,
+    ).toBe(false);
+
+    expect(
+      registerStep1Schema.safeParse({
+        fullName: "Eng. Nimal Silva",
+        email: "nimal@rda.gov.lk",
+        password: "é".repeat(40),
+        confirmPassword: "é".repeat(40),
+      }).success,
+    ).toBe(false);
+
+    expect(
+      registerStep1Schema.safeParse({
+        fullName: "Eng. Nimal Silva",
+        email: "nimal@rda.gov.lk",
+        password: "StrongPassword#2026",
+        confirmPassword: "DifferentPassword#2026",
+      }).success,
+    ).toBe(false);
+
+    const valid = registerStep1Schema.safeParse({
+      fullName: "  Eng. Nimal Silva ",
+      email: "  Nimal@RDA.gov.lk ",
+      password: "StrongPassword#2026",
+      confirmPassword: "StrongPassword#2026",
+    });
+    expect(valid.success).toBe(true);
+    if (valid.success) {
+      expect(valid.data.email).toBe("nimal@rda.gov.lk");
+    }
+
+    const strength = evaluatePasswordStrength("StrongPassword#2026");
+    expect(strength.meetsMinLength).toBe(true);
+    expect(strength.withinMaxBytes).toBe(true);
+    expect(strength.score).toBe(4);
+  });
+
+  it("enforces Step 2 organization & responsibility and Step 3 terms acceptance", () => {
+    expect(
+      registerStep2Schema.safeParse({
+        organizationCode: "RDA",
+        department: "Expressway Planning",
+        designation: "Chief Engineer",
+        requestedResponsibility: "PROJECT_MANAGEMENT",
+      }).success,
+    ).toBe(true);
+
+    expect(registerStep3Schema.safeParse({ acceptedTerms: false }).success).toBe(false);
+    expect(registerStep3Schema.safeParse({ acceptedTerms: true }).success).toBe(true);
+  });
+
+  it("returns a non-privileged PENDING confirmation without creating a session in preview mode", async () => {
+    resetAuthMemoryForTests();
+    const outcome = await submitRegistrationWithAuthClient({
+      fullName: "Eng. Nimal Silva",
+      email: "nimal@rda.gov.lk",
+      password: "StrongPassword#2026",
+      organizationCode: "RDA",
+      organizationName: "Road Development Authority",
+      department: "Corridor Planning",
+      designation: "Senior Engineer",
+      requestedResponsibility: "AGENCY_COORDINATION",
+      acceptedTerms: true,
+    });
+    expect(outcome.ok).toBe(true);
+    if (outcome.ok) {
+      expect(outcome.status).toBe("PENDING");
+      expect(outcome.referenceCode).toMatch(/^REQ-\d{4}-[0-9A-F]{6}$/);
+    }
+    expect(getMemoryAccessToken()).toBeNull();
+    expect(getAuthSnapshot().authenticated).toBe(false);
   });
 });
