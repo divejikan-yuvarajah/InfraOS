@@ -15,6 +15,8 @@ import { fetchConflictCoordination } from "@/lib/roadsync/coordination-api";
 import { toIso, toLocalInput } from "@/lib/roadsync/resolution";
 import { LEVER_KINDS, MAX_COMPARE, MAX_LEVERS, MEASURES, defaultLever, leverTarget, newKey, type DraftLever, type Hours, type Lever, type LeverKind, type Run, type SimResult, type Visibility } from "@/lib/roadsync/simulator";
 import { fetchScenarios, removeScenario, runSimulation, saveScenario } from "@/lib/roadsync/simulator-api";
+import { getAdvisorCopy } from "@/lib/roadsync/advisor-copy";
+import type { Handoff } from "@/lib/roadsync/advisor";
 import { getSimCopy, type SimCopy } from "@/lib/roadsync/simulator-copy";
 import "@/styles/mission-control-roadsync-lab.css";
 
@@ -23,7 +25,7 @@ import { useRoadsyncKeys, whenFmt } from "./resolution-tab";
 type Target = { id: string; label: string; mine: boolean };
 const HOURS: Hours[] = ["day", "night", "24h"];
 
-export function ScenarioLab({ id }: { id: string }) {
+export function ScenarioLab({ id, prefill }: { id: string; prefill?: Handoff | null }) {
   const [locale] = useWorkspaceLocale();
   const copy = getSimCopy(locale);
   const ac = getAssessmentCopy(locale);
@@ -33,7 +35,7 @@ export function ScenarioLab({ id }: { id: string }) {
   const dossier = useQuery({ queryKey: keys.key("lab-dossier", id), queryFn: () => fetchDossier(id), enabled, retry: false });
   const coord = useQuery({ queryKey: keys.key("lab-coordination", id), queryFn: () => fetchConflictCoordination(id), enabled: enabled && Boolean(dossier.data), retry: false });
   const saved = useQuery({ queryKey: keys.key("lab-scenarios", id), queryFn: () => fetchScenarios(id), enabled: enabled && Boolean(dossier.data), retry: false });
-  const [levers, setLevers] = useState<DraftLever[]>([]);
+  const [levers, setLevers] = useState<DraftLever[]>(() => (prefill?.levers ?? []).map((lv) => ({ key: newKey(), lever: lv })));
   const [result, setResult] = useState<{ result: SimResult; snapshot: string | null } | null>(null);
   const [runs, setRuns] = useState<Run[]>([]);
   const [toast, setToast] = useState<string | null>(null);
@@ -68,6 +70,7 @@ export function ScenarioLab({ id }: { id: string }) {
   }
   return (
     <Shell copy={copy} id={id} no={d.conflictNo}>
+      {prefill ? <p className="rz-toast" role="note">{fmt(getAdvisorCopy(locale).banner, { recNo: prefill.banner.recNo })}</p> : null}
       {toast ? <p className="rz-toast" role="status">{toast}</p> : null}
       <section className="rz-sec" aria-labelledby="sl-levers">
         <h2 id="sl-levers" className="sl-h"><FlaskConicalIcon aria-hidden="true" />{copy.f.add}</h2>

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-import { CoordinationComposer } from "@/components/roadsync/coordination-composer";
+import { PrefilledComposer } from "@/components/roadsync/prefilled";
 
 export const metadata: Metadata = {
   title: "Propose a change · INFRAOS",
@@ -9,5 +9,5 @@ export const metadata: Metadata = {
 
 export default async function NewCoordinationPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  return <CoordinationComposer conflictId={id} />;
+  return <PrefilledComposer conflictId={id} />;
 }

@@ -14,6 +14,7 @@ import {
   parseGeometryText,
   stageHasErrors,
   stageOfField,
+  utcToColomboLocal,
   STAGE_FIELDS,
   STAGES,
   startRule,
@@ -27,6 +28,7 @@ import {
 } from "@/lib/roadsync/work-requests-view";
 
 import { ConflictPreview } from "./conflict-preview";
+import { ScheduleAdvisor } from "./schedule-advisor";
 import { NearbyActivityPanel } from "./nearby-activity";
 import { PriorityMark, WORK_TYPE_ICONS } from "./roadsync-shared";
 import { LocationPicker } from "./work-map";
@@ -267,12 +269,14 @@ export function WorkRequestWizard({ mode, copy, values, setValues, errors, setEr
               </div>
               {rule !== "ok" ? <p className="rs-error" role="status">{rule === "past" ? copy.schedule.pastWarn : copy.schedule.emergencyOldWarn}</p> : null}
               <ConflictPreview variant="compact" geometry={previewGeometry} plannedStart={datesOk ? startUtc : null} plannedEnd={datesOk ? endUtc : null} workType={values.workType} priority={values.priority} />
+              <ScheduleAdvisor geometry={previewGeometry} startUtc={datesOk ? startUtc : null} endUtc={datesOk ? endUtc : null} workingHours={values.workingHours} isEmergency={values.isEmergency} workType={values.workType} priority={values.priority} onUse={(s, e) => setValues((c) => ({ ...c, plannedStart: utcToColomboLocal(s), plannedEnd: utcToColomboLocal(e) }))} />
             </section>
           ) : null}
 
           {stage === "review" ? (
             <section className="rs-section" aria-labelledby="rs-s4">
               <div className="rs-section-head"><span className="rs-step" aria-hidden="true">4</span><h2 id="rs-s4">{copy.review.heading}</h2></div>
+              <ScheduleAdvisor compact geometry={previewGeometry} startUtc={datesOk ? startUtc : null} endUtc={datesOk ? endUtc : null} workingHours={values.workingHours} isEmergency={values.isEmergency} workType={values.workType} priority={values.priority} onUse={(s, e) => setValues((c) => ({ ...c, plannedStart: utcToColomboLocal(s), plannedEnd: utcToColomboLocal(e) }))} />
               <p className={ready ? "rs-help" : "rs-error"} role="status">{ready ? copy.review.ready : copy.review.notReady}</p>
               <ul className="rs-checklist" aria-label={copy.review.checklist}>
                 {checks.map((c) => (

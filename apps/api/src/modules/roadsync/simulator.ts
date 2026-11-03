@@ -8,7 +8,7 @@
 import mongoose from "mongoose";
 
 import { assessPair, riskIndexOf } from "./assessment.engine.js";
-import { bandOf, type Band } from "./assessment.rules.js";
+import { RULE_VERSION, bandOf, type Band } from "./assessment.rules.js";
 import { canRead, type RecordPlain, type Who } from "./conflict-record.service.js";
 import { itemSide, loadItems, type SourceItem } from "./detection.service.js";
 import { Candidate } from "./models/candidate.model.js";
@@ -40,8 +40,8 @@ export const LEVER_KINDS = ["shift", "hours", "buffer", "sequence", "traffic", "
 export const SIM_HOURS = HOURS;
 export const SIM_MEASURES = TRAFFIC_MEASURES;
 
-type Snap = { score: number; band: Band; kind: string };
-type PairDoc = { _id: mongoose.Types.ObjectId; aType: "work_request" | "project" | "asset"; aId: mongoose.Types.ObjectId; bType: "work_request" | "project" | "asset"; bId: mongoose.Types.ObjectId; spatial: SpatialResult; temporal: Parameters<typeof assessPair>[3] };
+export type Snap = { score: number; band: Band; kind: string };
+export type PairDoc = { _id: mongoose.Types.ObjectId; aType: "work_request" | "project" | "asset"; aId: mongoose.Types.ObjectId; bType: "work_request" | "project" | "asset"; bId: mongoose.Types.ObjectId; spatial: SpatialResult; temporal: Parameters<typeof assessPair>[3] };
 type Override = { start?: Date; end?: Date; workingHours?: Hours };
 
 export type SimResult = {
@@ -133,41 +133,41 @@ export function expand(levers: Lever[], ctx: { requests: Map<string, { agencyId:
   return { error, over, removed, ghosts, commitments, marks, warnings: [...warnings] };
 }
 
-export async function simulate(w: Who, conflictId: string, levers: Lever[]): Promise<SimOk | SimFail> {
+export type World = {
+  rec: RecordPlain; docs: PairDoc[]; items: Map<string, SourceItem>;
+  requests: Map<string, { agencyId: string; start: Date | null; end: Date | null }>;
+  mine: (agencyId: string) => boolean; capped: boolean; incompleteInputs: boolean; ruleMismatch: boolean;
+};
+export type Change = { requestId: string; agencyId: string; shiftDays: number; start: string | null; end: string | null; workingHours: Hours | null };
+export type Evaluation = { result: SimResult; rows: { id: string; before: Snap; after: Snap }[]; changes: Change[] };
+
+/** Loads everything one conflict's simulations need, once. Evaluation is then pure and cheap, so the advisor can run hundreds. */
+export async function loadWorld(w: Who, conflictId: string): Promise<{ ok: true; world: World } | SimFail> {
   if (!/^[a-f0-9]{24}$/i.test(conflictId)) return { ok: false, status: 404, code: "not_found" };
   const rec = (await ConflictRecord.findById(oid(conflictId)).select("-notes -events").lean()) as unknown as RecordPlain | null;
   if (!rec || !canRead(w, rec)) return { ok: false, status: 404, code: "not_found" };
-  if (levers.length > SIM.MAX_LEVERS) return bad("too_many_levers");
-
   const sides = [{ type: rec.aType, id: String(rec.aId), agencyId: rec.sides.a.agencyId }, { type: rec.bType, id: String(rec.bId), agencyId: rec.sides.b.agencyId }].filter((s) => s.type === "work_request");
-  const docs = (await Candidate.find({ status: "active", $or: sides.flatMap((s) => [{ aType: "work_request", aId: oid(s.id) }, { bType: "work_request", bId: oid(s.id) }]) }).limit(SIM.PAIR_CAP).lean()) as unknown as PairDoc[];
+  const docs = sides.length ? ((await Candidate.find({ status: "active", $or: sides.flatMap((s) => [{ aType: "work_request", aId: oid(s.id) }, { bType: "work_request", bId: oid(s.id) }]) }).limit(SIM.PAIR_CAP).lean()) as unknown as PairDoc[]) : [];
   const refs = new Map<string, { type: "work_request" | "project" | "asset"; id: string }>();
   for (const d of docs) { refs.set(`${d.aType}:${d.aId}`, { type: d.aType, id: String(d.aId) }); refs.set(`${d.bType}:${d.bId}`, { type: d.bType, id: String(d.bId) }); }
   const items = await loadItems([...refs.values()]);
-
   const requests = new Map<string, { agencyId: string; start: Date | null; end: Date | null }>(sides.map((s) => {
     const snap = String(rec.aId) === s.id ? rec.sides.a : rec.sides.b;
     return [s.id, { agencyId: s.agencyId, start: snap.plannedStart ? new Date(snap.plannedStart) : null, end: snap.plannedEnd ? new Date(snap.plannedEnd) : null }] as [string, { agencyId: string; start: Date | null; end: Date | null }];
   }));
   for (const [id, r] of requests) { const it = items.get(`work_request:${id}`); if (it) { const base = itemSide(it); r.start = base.start ?? r.start; r.end = base.end ?? r.end; } }
+  const stored = docs.map((d) => (d as unknown as { assessment?: { incompleteInputs?: unknown[]; ruleVersion?: string } }).assessment);
+  return { ok: true, world: {
+    rec, docs, items, requests, mine: (agencyId) => w.national || w.scopeIds.has(agencyId), capped: docs.length >= SIM.PAIR_CAP,
+    incompleteInputs: stored.some((a) => (a?.incompleteInputs?.length ?? 0) > 0), ruleMismatch: stored.some((a) => a?.ruleVersion !== undefined && a.ruleVersion !== RULE_VERSION),
+  } };
+}
 
-  // Replayable agreed terms: only requests the viewer participates in (or any, for national).
-  const replay = new Map<string, Lever[]>();
-  const wantsReplay = levers.filter((l): l is Extract<Lever, { kind: "replay" }> => l.kind === "replay");
-  for (const l of wantsReplay) {
-    if (!/^[a-f0-9]{24}$/i.test(l.coordinationRequestId)) return bad("invalid_replay");
-    const scope = w.national ? {} : { participantAgencyIds: { $in: [...w.scopeIds].map(oid) } };
-    const q = (await CoordinationRequest.findOne({ $and: [{ _id: oid(l.coordinationRequestId), conflictId: rec._id, status: "agreed" }, scope] }).select("agreedTerms").lean()) as unknown as { agreedTerms: Parameters<typeof termsToPlan>[0] } | null;
-    if (!q?.agreedTerms) return bad("invalid_replay");
-    const plan = termsToPlan(q.agreedTerms, { aId: String(rec.aId), bId: String(rec.bId), aType: rec.aType, bType: rec.bType, aAgencyId: rec.sides.a.agencyId, bAgencyId: rec.sides.b.agencyId });
-    replay.set(l.coordinationRequestId, plan.amendments.flatMap((a): Lever[] => [
-      ...(a.schedule ? [{ kind: "shift" as const, requestId: a.workRequestId, start: a.schedule.plannedStart, end: a.schedule.plannedEnd }] : []),
-      ...(a.workingHours ? [{ kind: "hours" as const, requestId: a.workRequestId, workingHours: a.workingHours }] : []),
-    ]));
-  }
-
-  const mine = (agencyId: string) => w.national || w.scopeIds.has(agencyId);
-  const fx = expand(levers, { requests, mine, replay });
+/** Pure: applies levers to the loaded world and re-scores every stored pair with the Step 71 engine. */
+export function evaluate(world: World, levers: Lever[], replay: Map<string, Lever[]> = new Map()): ({ ok: true } & Evaluation) | SimFail {
+  if (levers.length > SIM.MAX_LEVERS) return bad("too_many_levers");
+  const { rec, docs, items, requests } = world;
+  const fx = expand(levers, { requests, mine: world.mine, replay });
   if (fx.error) return bad(fx.error);
 
   const sideOf = (item: SourceItem, apply: boolean) => {
@@ -224,10 +224,37 @@ export async function simulate(w: Who, conflictId: string, levers: Lever[]): Pro
       cleared: third.filter((r) => live(r.before) && !live(r.after)).length,
     },
     ghost: ghostOut, verdict, levers: fx.marks, commitments: fx.commitments,
-    warnings: [...fx.warnings, ...(fx.commitments.length ? ["traffic_no_score_effect"] : []), ...(docs.length >= SIM.PAIR_CAP ? ["pairs_capped"] : [])],
+    warnings: [...fx.warnings, ...(fx.commitments.length ? ["traffic_no_score_effect"] : []), ...(world.capped ? ["pairs_capped"] : [])],
     actionable: !fx.marks.some((m) => m.assumption) && fx.marks.length > 0, coverageNote: "stored_pairs_only",
   };
-  return { ok: true, result, levers };
+  const changes: Change[] = [...fx.over.entries()].map(([requestId, o]) => {
+    const base = requests.get(requestId)!;
+    return { requestId, agencyId: base.agencyId, shiftDays: o.start && base.start ? Math.round((o.start.getTime() - base.start.getTime()) / DAY) : 0, start: o.start?.toISOString() ?? null, end: o.end?.toISOString() ?? null, workingHours: o.workingHours ?? null };
+  }).sort((a, b) => a.requestId.localeCompare(b.requestId));
+  return { ok: true, result, rows, changes };
+}
+
+export async function simulate(w: Who, conflictId: string, levers: Lever[]): Promise<SimOk | SimFail> {
+  const loaded = await loadWorld(w, conflictId);
+  if (!loaded.ok) return loaded;
+  const { world } = loaded;
+  // Replayable agreed terms: only requests the viewer participates in (or any, for national).
+  const replay = new Map<string, Lever[]>();
+  for (const l of levers.filter((x): x is Extract<Lever, { kind: "replay" }> => x.kind === "replay")) {
+    if (!/^[a-f0-9]{24}$/i.test(l.coordinationRequestId)) return bad("invalid_replay");
+    const scope = w.national ? {} : { participantAgencyIds: { $in: [...w.scopeIds].map(oid) } };
+    const q = (await CoordinationRequest.findOne({ $and: [{ _id: oid(l.coordinationRequestId), conflictId: world.rec._id, status: "agreed" }, scope] }).select("agreedTerms").lean()) as unknown as { agreedTerms: Parameters<typeof termsToPlan>[0] } | null;
+    if (!q?.agreedTerms) return bad("invalid_replay");
+    const rec = world.rec;
+    const plan = termsToPlan(q.agreedTerms, { aId: String(rec.aId), bId: String(rec.bId), aType: rec.aType, bType: rec.bType, aAgencyId: rec.sides.a.agencyId, bAgencyId: rec.sides.b.agencyId });
+    replay.set(l.coordinationRequestId, plan.amendments.flatMap((a): Lever[] => [
+      ...(a.schedule ? [{ kind: "shift" as const, requestId: a.workRequestId, start: a.schedule.plannedStart, end: a.schedule.plannedEnd }] : []),
+      ...(a.workingHours ? [{ kind: "hours" as const, requestId: a.workRequestId, workingHours: a.workingHours }] : []),
+    ]));
+  }
+  const out = evaluate(world, levers, replay);
+  if (!out.ok) return out;
+  return { ok: true, result: out.result, levers };
 }
 
 // ---------- saved scenarios (snapshots; visibility private | agency | national) ----------

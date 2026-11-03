@@ -32,6 +32,7 @@ import { useWorkspaceLocale } from "@/lib/i18n/workspace-locale";
 
 import { ConflictsPanel, useAssessment } from "./conflicts-panel";
 import { NearbyActivityPanel } from "./nearby-activity";
+import { RequestAdvisorCard } from "./request-advisor-card";
 import { getConflictCopy } from "@/lib/roadsync/conflict-records-copy";
 import { getCoordCopy } from "@/lib/roadsync/coordination-copy";
 import { fmt } from "@/lib/roadsync/assessment";
@@ -274,6 +275,7 @@ export function WorkRequestDetailClient({ id }: { id: string }) {
               <>
                 <div className="rs-section" id="conflicts">
                   <ConflictsPanel requestId={wr.id} self={{ workType: wr.workType, plannedStart: wr.plannedStart, plannedEnd: wr.plannedEnd, geometry: wr.geometry }} canRun={canHintCreate(roleKey)} national={roleKey === "SUPER_ADMIN"} onOverlay={setConflictOverlay} />
+                  {wr.conflictRecords && wr.conflictRecords.total > 0 ? <RequestAdvisorCard requestId={wr.id} /> : null}
                 </div>
                 <div className="rs-section" id="nearby">
                   <NearbyActivityPanel mode="persisted" requestId={wr.id} self={{ workType: wr.workType, plannedStart: wr.plannedStart, plannedEnd: wr.plannedEnd, geometry: wr.geometry }} canRun={canHintCreate(roleKey)} onOverlay={setNearbyOverlay} severity={severity} />
