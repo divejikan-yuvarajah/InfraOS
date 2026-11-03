@@ -256,7 +256,7 @@ export async function dispatchNotifications(pending: Pending[]): Promise<number>
 
 // ---------- audit ----------
 
-type AuditAction = "state_changed" | "acknowledged" | "acknowledged_bulk" | "lead_set" | "agency_added" | "agency_excluded" | "agency_restored" | "note_added" | "note_deleted" | "dismissed" | "reopened" | "exported" | "watch_changed";
+type AuditAction = "state_changed" | "acknowledged" | "acknowledged_bulk" | "lead_set" | "agency_added" | "agency_excluded" | "agency_restored" | "note_added" | "note_deleted" | "dismissed" | "reopened" | "exported" | "watch_changed" | "advisor_refresh" | "advisor_feedback" | "advisor_handoff";
 export async function audit(actor: Actor, action: AuditAction, rec: Pick<RecordPlain, "_id"> & { sides?: RecordPlain["sides"] }, status: string, reason?: string): Promise<void> {
   try {
     const agency = actor.type === "user" ? oid(actor.agencyId) : undefined;

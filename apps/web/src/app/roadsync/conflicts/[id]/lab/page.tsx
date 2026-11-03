@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 
-import { ScenarioLab } from "@/components/roadsync/scenario-lab";
+import { PrefilledLab } from "@/components/roadsync/prefilled";
 
 export const metadata: Metadata = {
   title: "Scenario Lab · INFRAOS",
@@ -12,7 +12,7 @@ export default async function ScenarioLabPage({ params }: { params: Promise<{ id
   const { id } = await params;
   return (
     <Suspense fallback={<p role="status">Loading</p>}>
-      <ScenarioLab id={id} />
+      <PrefilledLab id={id} />
     </Suspense>
   );
 }

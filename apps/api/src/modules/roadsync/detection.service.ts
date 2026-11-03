@@ -23,7 +23,7 @@ import { bandOf, RULE_VERSION, type TrafficLevel } from "./assessment.rules.js";
 export type SourceType = "work_request" | "project" | "asset";
 type Oid = mongoose.Types.ObjectId;
 
-const INFRA_OF_WORK: Record<string, string> = {
+export const INFRA_OF_WORK: Record<string, string> = {
   ROAD_RESURFACING: "ROAD", ROAD_EXCAVATION: "ROAD", PIPELINE_INSTALLATION: "WATER", ELECTRIC_CABLE_WORK: "ELECTRICITY",
   TELECOM_CABLE_WORK: "TELECOM", DRAINAGE_WORK: "DRAINAGE", BRIDGE_WORK: "BRIDGE", UTILITY_REPAIR: "OTHER", OTHER: "OTHER",
 };
@@ -66,7 +66,7 @@ export function itemSide(item: SourceItem): AssessSide {
   const priority = item.type === "work_request" && typeof item.detail.priority === "string" ? item.detail.priority : null;
   return { sourceType: item.type, workType: item.workType, infrastructureType: item.infrastructureType, traffic: null, priority, isEmergency: item.isEmergency ?? false, workingHours: item.workingHours, start: item.start, end: item.end };
 }
-const subjectSide = (s: SubjectInput): AssessSide => ({
+export const subjectSide = (s: SubjectInput): AssessSide => ({
   sourceType: "work_request", workType: s.workType ?? null, infrastructureType: s.infrastructureType, traffic: null, priority: s.priority ?? null,
   isEmergency: s.schedule?.isEmergency ?? false, workingHours: s.schedule?.workingHours ?? "day", start: s.schedule?.start ?? null, end: s.schedule?.end ?? null,
 });
@@ -171,7 +171,7 @@ const SEQUENCE_SPATIAL = ["intersecting", "footprint_overlap", "adjacent"];
 const isCandidateOf = (s: SpatialResult, t: TemporalResult) =>
   s.relation !== "none" && (TIMED_RELATIONS.includes(t.relation) || !t.applicable || Boolean(t.sequenceRisk && SEQUENCE_SPATIAL.includes(s.relation)));
 
-async function collect(subject: SubjectInput, radius: number, limit: number) {
+export async function collect(subject: SubjectInput, radius: number, limit: number) {
   const area = searchPolygon(subject.geometry, subject.bufferMeters + radius);
   const sources: SourceCheck[] = [];
   const items: SourceItem[] = [];
