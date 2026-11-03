@@ -13,11 +13,13 @@ import {
   preflightAmendment, previewResolutionImpact, reassessResolution, rejectStep, reopenResolved, submitAmendment,
 } from "@/lib/roadsync/resolution-api";
 import {
-  JUSTIFICATION_MIN, MITIGATION_CODES, NO_ACTION_CODES, RAIL, REASON_MIN, isClosed, railIndex, toIso,
+  JUSTIFICATION_MIN, MITIGATION_CODES, NO_ACTION_CODES, RAIL, REASON_MIN, isClosed, railIndex, toIso, toLocalInput,
   type AmendmentView, type ApprovalView, type ChangeInput, type ConflictResolution, type CreateResolutionBody, type DateSpan, type ImpactPreview, type ResolutionSuggestions, type ResolutionType, type ResolutionView, type ThirdParty, type WorkingHours,
 } from "@/lib/roadsync/resolution";
 import { getResolutionCopy, type ResolutionCopy } from "@/lib/roadsync/resolution-copy";
 import { getSimCopy } from "@/lib/roadsync/simulator-copy";
+import { getAdvisorCopy } from "@/lib/roadsync/advisor-copy";
+import { clearHandoff, useHandoff, type Handoff } from "@/lib/roadsync/advisor";
 import { workRequestQueryKey } from "@/lib/roadsync/work-requests-view";
 import type { AuthLocale } from "@/lib/auth/types";
 
@@ -57,6 +59,7 @@ export function ResolutionTab({ conflictId, locale, parties }: { conflictId: str
   const qc = useQueryClient();
   const keys = useRoadsyncKeys();
   const [toast, setToast] = useState<string | null>(null);
+  const handoff = useHandoff("resolution", conflictId);
   const [dlg, setDlg] = useState<Dlg>(null);
   const [busy, setBusy] = useState(false);
   const key = keys.key("conflict-resolution", conflictId);
@@ -84,11 +87,12 @@ export function ResolutionTab({ conflictId, locale, parties }: { conflictId: str
 
   return (
     <div className="rz">
+      {handoff ? <p className="rz-toast" role="note">{fmt(getAdvisorCopy(locale).banner, { recNo: handoff.banner.recNo })}</p> : null}
       <p className="rs-help">{copy.demoNote}</p>
       <Link className="rs-btn" href={`/roadsync/conflicts/${conflictId}/lab`}>{getSimCopy(locale).open}</Link>
       {toast ? <p className="rz-toast" role="status">{toast}</p> : null}
-      {res && isClosed(res.status) && data.canStart ? <StartForm conflictId={conflictId} copy={copy} parties={parties} onCreated={(m) => { setToast(m); refresh(); }} /> : null}
-      {res ? <Workspace res={res} copy={copy} locale={locale} busy={busy} setDlg={setDlg} run={run} /> : data.canStart ? <StartForm conflictId={conflictId} copy={copy} parties={parties} onCreated={(m) => { setToast(m); refresh(); }} /> : <p className="rz-empty">{data.recordStatus === "resolved" || data.recordStatus === "dismissed" ? copy.start.closedRecord : copy.start.unavailable}</p>}
+      {res && isClosed(res.status) && data.canStart ? <StartForm key={handoff ? "p" : "n"} prefill={handoff} conflictId={conflictId} copy={copy} parties={parties} onCreated={(m) => { clearHandoff(); setToast(m); refresh(); }} /> : null}
+      {res ? <Workspace res={res} copy={copy} locale={locale} busy={busy} setDlg={setDlg} run={run} /> : data.canStart ? <StartForm key={handoff ? "p" : "n"} prefill={handoff} conflictId={conflictId} copy={copy} parties={parties} onCreated={(m) => { clearHandoff(); setToast(m); refresh(); }} /> : <p className="rz-empty">{data.recordStatus === "resolved" || data.recordStatus === "dismissed" ? copy.start.closedRecord : copy.start.unavailable}</p>}
       {data.canReopen ? <button type="button" className="rs-btn" onClick={() => setDlg({ kind: "reopen" })}>{copy.actions.reopen}</button> : null}
       <section className="rz-sec"><h3>{copy.sec.past}</h3>
         {data.history.length === 0 ? <p className="rs-help">{copy.f.noPast}</p> : (
@@ -288,10 +292,10 @@ function ApprovalRow({ s, copy, locale }: { s: ApprovalView; copy: ResolutionCop
 }
 
 // ---------- start form ----------
-function StartForm({ conflictId, copy, parties, onCreated }: { conflictId: string; copy: ResolutionCopy; parties: PartyLabel[]; onCreated: (m: string) => void }) {
+function StartForm({ conflictId, copy, parties, onCreated, prefill }: { conflictId: string; copy: ResolutionCopy; parties: PartyLabel[]; prefill?: Handoff | null; onCreated: (m: string) => void }) {
   const keys = useRoadsyncKeys();
   const sg = useQuery({ queryKey: keys.key("resolution-suggestions", conflictId), queryFn: () => fetchResolutionSuggestions(conflictId), enabled: Boolean(keys.userId), retry: false });
-  const [type, setType] = useState<ResolutionType | null>(null);
+  const [type, setType] = useState<ResolutionType | null>(prefill?.drafts[0]?.manual ? "amendment" : null);
   if (sg.isPending) return <p className="rs-help" role="status">{copy.loading}</p>;
   if (sg.isError || !sg.data) return <div className="rz-state" role="alert"><p>{copy.error}</p><button type="button" className="rs-btn" onClick={() => void sg.refetch()}>{copy.retry}</button></div>;
   const s = sg.data;
@@ -311,7 +315,7 @@ function StartForm({ conflictId, copy, parties, onCreated }: { conflictId: strin
           </button>
         ))}
       </div>
-      {type ? <StartBody key={type} type={type} s={s} conflictId={conflictId} copy={copy} parties={parties} onCreated={onCreated} /> : null}
+      {type ? <StartBody key={type} type={type} s={s} conflictId={conflictId} copy={copy} parties={parties} onCreated={onCreated} prefill={prefill ?? null} /> : null}
     </section>
   );
 }
@@ -336,13 +340,14 @@ const toChange = (c: ChangeState): ChangeInput | null => {
   return { targetRequestId: c.target, ...(hasDates ? { schedule: { plannedStart: toIso(c.start), plannedEnd: toIso(c.end) } } : {}), ...(c.hours ? { workingHours: c.hours } : {}) };
 };
 
-function StartBody({ type, s, conflictId, copy, parties, onCreated }: { type: ResolutionType; s: ResolutionSuggestions; conflictId: string; copy: ResolutionCopy; parties: PartyLabel[]; onCreated: (m: string) => void }) {
+function StartBody({ type, s, conflictId, copy, parties, onCreated, prefill }: { type: ResolutionType; s: ResolutionSuggestions; conflictId: string; copy: ResolutionCopy; parties: PartyLabel[]; prefill: Handoff | null; onCreated: (m: string) => void }) {
   // Manual amendments may only change the viewer's own requests; directives (national) may target any side.
   const targets = type === "directive" ? s.targets : s.targets.filter((t) => t.mine);
   const mineTarget = targets[0];
-  const [mode, setMode] = useState<"agreed" | "manual">(s.paths.agreedTerms ? "agreed" : "manual");
+  const manual = prefill?.drafts[0]?.manual as { targetRequestId?: string; schedule?: { plannedStart: string; plannedEnd: string }; workingHours?: WorkingHours } | undefined;
+  const [mode, setMode] = useState<"agreed" | "manual">(manual || !s.paths.agreedTerms ? "manual" : "agreed");
   const [agreedId, setAgreedId] = useState(s.agreed[0]?.coordinationRequestId ?? "");
-  const [change, setChange] = useState<ChangeState>({ target: mineTarget?.requestId ?? "", start: "", end: "", hours: "" });
+  const [change, setChange] = useState<ChangeState>({ target: manual?.targetRequestId ?? mineTarget?.requestId ?? "", start: manual?.schedule ? toLocalInput(manual.schedule.plannedStart) : "", end: manual?.schedule ? toLocalInput(manual.schedule.plannedEnd) : "", hours: manual?.workingHours ?? "" });
   const [reasonCode, setReasonCode] = useState<string>(NO_ACTION_CODES[0]);
   const [note, setNote] = useState("");
   const [just, setJust] = useState("");

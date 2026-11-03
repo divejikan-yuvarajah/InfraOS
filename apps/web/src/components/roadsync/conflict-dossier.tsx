@@ -27,6 +27,8 @@ import { StakeholderConstellation } from "./stakeholder-constellation";
 import { CoordinationTab } from "./dossier-coordination";
 import { HistoryTab } from "./history-tab";
 import { ResolutionTab } from "./resolution-tab";
+import { AdvisorPanel } from "./advisor-tab";
+import { getAdvisorCopy } from "@/lib/roadsync/advisor-copy";
 import { getResolutionCopy } from "@/lib/roadsync/resolution-copy";
 import { fetchConflictCoordination } from "@/lib/roadsync/coordination-api";
 import { getCoordCopy } from "@/lib/roadsync/coordination-copy";
@@ -34,8 +36,8 @@ import { getCoordCopy } from "@/lib/roadsync/coordination-copy";
 function useAuthPart(read: () => string): string {
   return useSyncExternalStore(subscribeAuth, read, () => "");
 }
-type Tab = "overview" | "stakeholders" | "coordination" | "resolution" | "history" | "timeline" | "notes" | "related" | "evidence";
-const TABS: Tab[] = ["overview", "stakeholders", "coordination", "resolution", "history", "timeline", "notes", "related", "evidence"];
+type Tab = "overview" | "stakeholders" | "coordination" | "resolution" | "advisor" | "history" | "timeline" | "notes" | "related" | "evidence";
+const TABS: Tab[] = ["overview", "stakeholders", "coordination", "resolution", "advisor", "history", "timeline", "notes", "related", "evidence"];
 type DialogKind = { kind: "ack" } | { kind: "dismiss" } | { kind: "reopen" } | { kind: "lead"; agencyId: string } | { kind: "exclude"; agencyId: string } | { kind: "add" } | null;
 
 export function ConflictDossier({ id }: { id: string }) {
@@ -50,7 +52,7 @@ export function ConflictDossier({ id }: { id: string }) {
   const userId = useAuthPart(() => getMemorySession()?.user.id ?? "");
   const epoch = useAuthPart(() => String(getAuthEpoch()));
   const now = useNow();
-  const [tab, setTab] = useState<Tab>(() => { const t = typeof window === "undefined" ? null : new URLSearchParams(window.location.search).get("tab"); return t === "resolution" || t === "history" ? t : "overview"; });
+  const [tab, setTab] = useState<Tab>(() => { const t = typeof window === "undefined" ? null : new URLSearchParams(window.location.search).get("tab"); return t === "resolution" || t === "history" || t === "advisor" ? t : "overview"; });
   const [dialog, setDialog] = useState<DialogKind>(null);
   const [toast, setToast] = useState<string | null>(null);
   const [live, setLive] = useState("");
@@ -148,11 +150,12 @@ export function ConflictDossier({ id }: { id: string }) {
           <section className="cr-tabs">
             <div role="tablist" className="cr-tablist" aria-label={copy.title}>
               {TABS.map((t) => <button key={t} id={`cr-tab-${t}`} role="tab" type="button" aria-selected={tab === t} aria-controls={`cr-panel-${t}`} tabIndex={tab === t ? 0 : -1} onClick={() => setTab(t)}
-                onKeyDown={(e) => { const i = TABS.indexOf(t); const next = e.key === "ArrowRight" ? TABS[(i + 1) % TABS.length] : e.key === "ArrowLeft" ? TABS[(i - 1 + TABS.length) % TABS.length] : null; if (next) { e.preventDefault(); setTab(next); document.getElementById(`cr-tab-${next}`)?.focus(); } }}>{t === "coordination" ? <>{cc.integrations.tab}{coord.data && coord.data.coordination.activeCount > 0 ? <span className="cr-tabcount"> ({coord.data.coordination.activeCount})</span> : null}</> : t === "resolution" ? rc.tab : t === "history" ? rc.historyTab : copy.dossier.tabs[t]}</button>)}
+                onKeyDown={(e) => { const i = TABS.indexOf(t); const next = e.key === "ArrowRight" ? TABS[(i + 1) % TABS.length] : e.key === "ArrowLeft" ? TABS[(i - 1 + TABS.length) % TABS.length] : null; if (next) { e.preventDefault(); setTab(next); document.getElementById(`cr-tab-${next}`)?.focus(); } }}>{t === "coordination" ? <>{cc.integrations.tab}{coord.data && coord.data.coordination.activeCount > 0 ? <span className="cr-tabcount"> ({coord.data.coordination.activeCount})</span> : null}</> : t === "advisor" ? getAdvisorCopy(locale).tab : t === "resolution" ? rc.tab : t === "history" ? rc.historyTab : copy.dossier.tabs[t]}</button>)}
             </div>
             <div role="tabpanel" id={`cr-panel-${tab}`} aria-labelledby={`cr-tab-${tab}`} className="cr-panel">
               {tab === "overview" ? <Overview d={d} copy={copy} /> : null}
               {tab === "coordination" ? <CoordinationTab d={d} data={coord.data ?? null} loading={coord.isPending} copy={cc} locale={locale} /> : null}
+              {tab === "advisor" ? <AdvisorPanel conflictId={id} locale={locale} /> : null}
               {tab === "resolution" ? <ResolutionTab conflictId={id} locale={locale} parties={[d.parties.a, d.parties.b].map((p) => ({ id: p.id, ref: p.ref, agencyName: p.agencyName }))} /> : null}
               {tab === "history" ? <HistoryTab conflictId={id} conflictNo={d.conflictNo} locale={locale} /> : null}
               {tab === "stakeholders" ? <><label className="cr-toggle"><input type="checkbox" checked={stanceMode && Boolean(coord.data?.items[0])} disabled={!coord.data?.items[0]} onChange={(e) => setStanceMode(e.target.checked)} /> {cc.integrations.stanceMode}</label>{stanceMode && coord.data?.items[0] ? <p className="rs-help">{cc.integrations.stanceLegend}</p> : null}<StakeholderConstellation stances={stanceMode && coord.data?.items[0] ? Object.fromEntries(coord.data.items[0].participants.map((p) => [p.agencyId, { stance: p.stance, label: cc.stance[p.stance] }])) : null} d={d} copy={copy} locale={locale} now={now} bandLabel={ac.bands[d.severity.band]} canManage={d.canAct.manageAgencies}

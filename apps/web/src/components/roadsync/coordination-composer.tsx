@@ -7,6 +7,8 @@ import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { CheckCircle2Icon, SendIcon } from "lucide-react";
 import { Dialog } from "radix-ui";
 
+import { getAdvisorCopy } from "@/lib/roadsync/advisor-copy";
+import { clearHandoff, type Handoff } from "@/lib/roadsync/advisor";
 import { StaffWorkspaceShell } from "@/components/auth/staff-workspace-shell";
 import { ApiError } from "@/lib/api/client";
 import { getAuthEpoch, getMemorySession, subscribeAuth } from "@/lib/auth/state";
@@ -40,6 +42,15 @@ export type FormState = {
 };
 export const EMPTY_FORM: FormState = { targetRequestId: "", newStart: "", newEnd: "", changeDuration: false, workingHours: "night", leadAgencyId: "", proposedStart: "", proposedEnd: "", scopeNote: "", firstRequestId: "", minGapDays: 14, measures: [], notes: "", questions: "", mode: "onsite", locationText: "", slots: [""] };
 
+/** Maps an Advisor draft onto the composer form. Dates are day-only here; the composer keeps each request's time of day. */
+function prefillForm(d: Handoff["drafts"][number] | undefined): Partial<FormState> {
+  const p = d?.proposal;
+  if (!d || !p) return {};
+  if (d.type === "schedule_shift") return { targetRequestId: String(p.targetRequestId ?? ""), newStart: String(p.newStart ?? "").slice(0, 10) };
+  if (d.type === "working_hours") return { targetRequestId: String(p.targetRequestId ?? ""), workingHours: (p.workingHours as FormState["workingHours"]) ?? "night" };
+  if (d.type === "sequence_order") return { firstRequestId: String(p.firstRequestId ?? ""), minGapDays: Number(p.minGapDays ?? 14) };
+  return {};
+}
 export type Side = { requestId: string; ref: string; agencyId: string; agencyName: string | null; mine: boolean; start: string | null; end: string | null };
 export function sidesOf(d: Dossier): Side[] {
   return [d.parties.a, d.parties.b].filter((p) => p.sourceType === "work_request").map((p) => ({ requestId: p.id, ref: p.ref, agencyId: p.agencyId, agencyName: p.agencyName, mine: p.mine, start: p.plannedStart, end: p.plannedEnd }));
@@ -187,7 +198,7 @@ export const slotIso = (local: string) => new Date(new Date(`${local}:00Z`).getT
 
 // ---------- the composer ----------
 
-export function CoordinationComposer({ conflictId }: { conflictId: string }) {
+export function CoordinationComposer({ conflictId, prefill }: { conflictId: string; prefill?: Handoff | null }) {
   const [locale] = useWorkspaceLocale();
   const copy = getCoordCopy(locale);
   const c = copy.composer;
@@ -198,9 +209,11 @@ export function CoordinationComposer({ conflictId }: { conflictId: string }) {
   const dossier = useQuery({ queryKey: workRequestQueryKey(epoch, userId, roleKey, "conflict-dossier", conflictId), queryFn: () => fetchDossier(conflictId), enabled: Boolean(userId), retry: false });
   const sugQ = useQuery({ queryKey: workRequestQueryKey(epoch, userId, roleKey, "coord-suggestions", conflictId), queryFn: () => fetchSuggestions(conflictId), enabled: Boolean(userId), retry: false });
   const d = dossier.data;
-  const [step, setStep] = useState(1);
-  const [type, setType] = useState<ProposalType | null>(null);
-  const [form, setForm] = useState<FormState>(EMPTY_FORM);
+  const first = prefill?.drafts[0];
+  const initType = first && (PROPOSAL_TYPES as readonly string[]).includes(first.type) ? (first.type as ProposalType) : null;
+  const [step, setStep] = useState(initType ? 2 : 1);
+  const [type, setType] = useState<ProposalType | null>(initType);
+  const [form, setForm] = useState<FormState>(() => ({ ...EMPTY_FORM, ...prefillForm(first) }));
   const [consulted, setConsulted] = useState<string[]>([]);
   const [summary, setSummary] = useState("");
   const [deadline, setDeadline] = useState("");
@@ -237,7 +250,7 @@ export function CoordinationComposer({ conflictId }: { conflictId: string }) {
 
   const send = useMutation({
     mutationFn: () => createRequest(conflictId, { type: type!, summary: summary.trim(), proposal: raw, participants: consulted.map((agencyId) => ({ agencyId, mode: "consulted" as const })), deadlineAt: new Date(deadlineValue).toISOString() }),
-    onSuccess: (r) => { setDirty(false); setConfirm(false); router.push(`/roadsync/coordination/${r.id}?created=${encodeURIComponent(r.requestNo)}`); },
+    onSuccess: (r) => { clearHandoff(); setDirty(false); setConfirm(false); router.push(`/roadsync/coordination/${r.id}?created=${encodeURIComponent(r.requestNo)}`); },
     onError: (e) => { setConfirm(false); const code = e instanceof ApiError ? (((e.details as { code?: string }[] | undefined)?.[0]?.code ?? "") as string).toLowerCase() : ""; setError(c.errors[code] ?? (e instanceof ApiError && e.status === 403 ? c.errors.forbidden : c.errors.failed)); },
   });
   const stepValid = step === 1 ? Boolean(type) : step === 2 ? Boolean(raw) : step === 3 ? summary.trim().length > 0 && Boolean(deadlineValue) : true;
@@ -249,6 +262,7 @@ export function CoordinationComposer({ conflictId }: { conflictId: string }) {
     <StaffWorkspaceShell title={c.title} description={`${d.conflictNo}`} wide>
       <div className="co-composer">
         <Link className="co-back" href={`/roadsync/conflicts/${conflictId}`}>← {copy.room.openConflict}</Link>
+        {prefill ? <p className="rz-toast" role="note">{fmt(getAdvisorCopy(locale).banner, { recNo: prefill.banner.recNo })}</p> : null}
         <ol className="co-steps" aria-label={fmt(c.step, { n: step })}>{c.steps.map((s, i) => <li key={s} aria-current={step === i + 1 ? "step" : undefined} data-done={step > i + 1}>{i + 1}. {s}</li>)}</ol>
         {!canInitiate ? <p className="rs-notice" role="alert">{c.errors.forbidden}</p> : null}
         {error ? <p className="rs-errsum" role="alert">{error}</p> : null}
