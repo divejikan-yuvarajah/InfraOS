@@ -25,6 +25,9 @@ describe("route classification", () => {
     expect(classifyAppPath("/not-a-module")).toBe("public");
     expect(classifyAppPath("/dev/design-system")).toBe("public");
     expect(classifyAppPath("/login")).toBe("auth");
+    expect(classifyAppPath("/register")).toBe("auth");
+    expect(classifyAppPath("/si/register")).toBe("auth");
+    expect(classifyAppPath("/ta/register")).toBe("auth");
     expect(classifyAppPath("/si/forgot-password")).toBe("auth");
     expect(classifyAppPath("/ta/reset-password")).toBe("auth");
     expect(classifyAppPath("/verify-email")).toBe("auth");
@@ -114,6 +117,8 @@ describe("next allowlist", () => {
     expect(sanitizeNextParam("//evil.example")).toBeNull();
     expect(sanitizeNextParam("/\\evil")).toBeNull();
     expect(sanitizeNextParam("/login")).toBeNull();
+    expect(sanitizeNextParam("/register")).toBeNull();
+    expect(sanitizeNextParam("/si/register")).toBeNull();
     expect(sanitizeNextParam("/si/login")).toBeNull();
     expect(sanitizeNextParam("/login?next=https://evil")).toBeNull();
     expect(sanitizeNextParam("/si/../../etc/passwd")).toBeNull();
