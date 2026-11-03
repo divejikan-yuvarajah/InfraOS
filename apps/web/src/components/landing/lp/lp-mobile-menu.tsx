@@ -7,7 +7,7 @@ import { useCallback, useRef, useState } from "react";
 import { Sheet, SheetClose, SheetContent, SheetDescription, SheetTitle } from "@/components/ui/sheet";
 import type { LpLinks } from "@/lib/landing/lp-data";
 import type { LpCopy } from "@/lib/landing/lp-copy";
-import type { PublicLocale } from "@/lib/landing/locales";
+import type { PublicInfoSlug, PublicLocale } from "@/lib/landing/locales";
 
 import { IconButton, NavLink } from "./atoms";
 import { lpFontClass } from "./lp-fonts";
@@ -16,17 +16,27 @@ import { LpLanguageNav } from "./lp-language-nav";
 const MENU_ID = "lp-mobile-menu";
 
 /** Slide-out menu. Radix Dialog supplies the focus trap, Esc to close and scroll lock. */
-export function LpMobileMenu({ copy, links, locale }: { copy: LpCopy["nav"]; links: LpLinks; locale: PublicLocale }) {
+export function LpMobileMenu({
+  copy,
+  links,
+  locale,
+  infoSlug,
+}: {
+  copy: LpCopy["nav"];
+  links: LpLinks;
+  locale: PublicLocale;
+  infoSlug?: PublicInfoSlug;
+}) {
   const [open, setOpen] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const close = useCallback(() => setOpen(false), []);
 
   const items = [
-    { label: copy.home, href: links.home, current: true },
-    { label: copy.about, href: links.about },
-    { label: copy.howItWorks, href: links.howItWorks },
-    { label: copy.faq, href: links.faq },
-    { label: copy.contact, href: links.contact },
+    { label: copy.home, href: links.home, current: !infoSlug },
+    { label: copy.about, href: links.about, current: infoSlug === "about" },
+    { label: copy.howItWorks, href: links.howItWorks, current: infoSlug === "how-it-works" },
+    { label: copy.faq, href: links.faq, current: infoSlug === "faq" },
+    { label: copy.contact, href: links.contact, current: infoSlug === "contact" },
   ];
 
   return (
@@ -71,7 +81,7 @@ export function LpMobileMenu({ copy, links, locale }: { copy: LpCopy["nav"]; lin
             </Link>
             <div className="lp-drawer__lang">
               <div className="lp-drawer__lang-label">{copy.languageLabel}</div>
-              <LpLanguageNav locale={locale} label={copy.languageLabel} onNavigate={close} />
+              <LpLanguageNav locale={locale} label={copy.languageLabel} infoSlug={infoSlug} onNavigate={close} />
             </div>
           </div>
         </SheetContent>

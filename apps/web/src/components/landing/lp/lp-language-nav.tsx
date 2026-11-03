@@ -3,7 +3,14 @@
 import Link from "next/link";
 import { useEffect } from "react";
 
-import { PUBLIC_LOCALE_LABELS, PUBLIC_LOCALE_NAV_ORDER, publicHomePath, type PublicLocale } from "@/lib/landing/locales";
+import {
+  PUBLIC_LOCALE_LABELS,
+  PUBLIC_LOCALE_NAV_ORDER,
+  publicHomePath,
+  publicInfoPath,
+  type PublicInfoSlug,
+  type PublicLocale,
+} from "@/lib/landing/locales";
 import { cn } from "@/lib/utils";
 
 const LOCALE_STORAGE_KEY = "infraos.public.locale";
@@ -17,15 +24,17 @@ function persistLocale(locale: PublicLocale) {
   }
 }
 
-/** Route-based language selector: /, /si and /ta. The URL is the persisted choice and drives `lang`. */
+/** Route-based language selector: /, /si and /ta (or subpage equivalents). The URL is the persisted choice and drives `lang`. */
 export function LpLanguageNav({
   locale,
   label,
+  infoSlug,
   className,
   onNavigate,
 }: {
   locale: PublicLocale;
   label: string;
+  infoSlug?: PublicInfoSlug;
   className?: string;
   onNavigate?: () => void;
 }) {
@@ -48,7 +57,7 @@ export function LpLanguageNav({
             </span>
           ) : (
             <Link
-              href={publicHomePath(item)}
+              href={infoSlug ? publicInfoPath(item, infoSlug) : publicHomePath(item)}
               hrefLang={item}
               lang={item}
               className="lp-lang__item"

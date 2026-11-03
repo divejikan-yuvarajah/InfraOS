@@ -2,7 +2,7 @@ import Link from "next/link";
 
 import type { LpCopy } from "@/lib/landing/lp-copy";
 import { LP_ANCHORS, type LpLinks } from "@/lib/landing/lp-data";
-import type { PublicLocale } from "@/lib/landing/locales";
+import type { PublicInfoSlug, PublicLocale } from "@/lib/landing/locales";
 
 import { LpLanguageNav } from "./lp-language-nav";
 
@@ -12,33 +12,36 @@ export function CivicFooter({
   stages,
   links,
   locale,
+  infoSlug,
 }: {
   copy: LpCopy["footer"];
   nav: LpCopy["nav"];
   stages: LpCopy["lifecycle"]["stages"];
   links: LpLinks;
   locale: PublicLocale;
+  infoSlug?: PublicInfoSlug;
 }) {
+  const homeAnchor = (id: string) => (infoSlug ? `${links.home === "/" ? "" : links.home}#${id}` : `#${id}`);
   const platformHrefs = [
-    `#${LP_ANCHORS.capabilities}`,
-    `#${LP_ANCHORS.capabilities}`,
-    `#${LP_ANCHORS.capabilities}`,
-    `#${LP_ANCHORS.incident}`,
-    `#${LP_ANCHORS.capabilities}`,
+    homeAnchor(LP_ANCHORS.capabilities),
+    homeAnchor(LP_ANCHORS.capabilities),
+    homeAnchor(LP_ANCHORS.capabilities),
+    homeAnchor(LP_ANCHORS.incident),
+    homeAnchor(LP_ANCHORS.capabilities),
   ];
   const serviceHrefs = [
-    `#${LP_ANCHORS.dispatch}`,
-    `#${LP_ANCHORS.problem}`,
+    homeAnchor(LP_ANCHORS.dispatch),
+    homeAnchor(LP_ANCHORS.problem),
     links.contact,
     links.contact,
-    `#${LP_ANCHORS.incident}`,
+    homeAnchor(LP_ANCHORS.incident),
   ];
   const governanceHrefs = [
     links.about,
     links.howItWorks,
-    `#${LP_ANCHORS.lifecycle}`,
+    homeAnchor(LP_ANCHORS.lifecycle),
     links.howItWorks,
-    `#${LP_ANCHORS.transparency}`,
+    homeAnchor(LP_ANCHORS.transparency),
   ];
 
   return (
@@ -115,7 +118,7 @@ export function CivicFooter({
           </div>
           <div className="lp-footer__lang">
             <span style={{ color: "var(--lp-muted)" }}>{copy.languageLabel}:</span>
-            <LpLanguageNav locale={locale} label={copy.languageLabel} className="lp-lang--footer" />
+            <LpLanguageNav locale={locale} label={copy.languageLabel} infoSlug={infoSlug} className="lp-lang--footer" />
           </div>
         </div>
       </div>

@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { PublicSiteFooter } from "@/components/landing/public-site-footer";
-import { PublicSiteHeader } from "@/components/landing/public-site-header";
-import { MAIN_CONTENT_ID } from "@/lib/accessibility/document-landmarks";
+import { AboutPage } from "@/components/landing/lp/about-page";
+import { ContactPage } from "@/components/landing/lp/contact-page";
+import { LpSubpageShell } from "@/components/landing/lp/lp-subpage-shell";
 import {
   publicHomePath,
   publicInfoPath,
@@ -37,15 +37,34 @@ export function publicInformationMetadata(
 
 function InfoSections({ page }: { page: PublicInfoPageCopy }) {
   return (
-    <div>
-      {page.sections.map((section) => (
+    <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+      {page.sections.map((section, idx) => (
         <section
           key={section.id}
           aria-labelledby={`${section.id}-heading`}
-          className="cf-info-page__section"
+          className="lp-card"
+          style={{ padding: "1.75rem" }}
         >
-          <h2 id={`${section.id}-heading`}>{section.heading}</h2>
-          <p>{section.body}</p>
+          <div className="lp-eyebrow" style={{ marginBottom: "0.35rem" }}>
+            SECTION 0{idx + 1}
+          </div>
+          <h2
+            id={`${section.id}-heading`}
+            className="lp-serif"
+            style={{ fontSize: "1.4rem", color: "var(--lp-text)", margin: "0 0 0.65rem" }}
+          >
+            {section.heading}
+          </h2>
+          <p
+            style={{
+              fontSize: "0.9375rem",
+              lineHeight: 1.65,
+              color: "var(--lp-text-secondary)",
+              margin: 0,
+            }}
+          >
+            {section.body}
+          </p>
         </section>
       ))}
     </div>
@@ -59,35 +78,67 @@ export function PublicInformationPage({
   locale: PublicLocale;
   slug: PublicInfoSlug;
 }) {
+  if (slug === "about") {
+    return <AboutPage locale={locale} />;
+  }
+
+  if (slug === "contact") {
+    return <ContactPage locale={locale} />;
+  }
+
   const copy = getPublicCopy(locale);
   const page = copy.infoPages[slug];
 
   return (
-    <div lang={locale} className="public-site public-connected-future flex min-h-full flex-1 flex-col">
-      <PublicSiteHeader locale={locale} copy={copy} connectedFuture infoSlug={slug} />
-      <main
-        id={MAIN_CONTENT_ID}
-        lang={locale}
-        tabIndex={-1}
-        className="cf-info-page flex min-w-0 flex-1 flex-col scroll-mt-28 outline-none"
-      >
-        <article className="container-dashboard gutter-page public-section-pad">
-          <header className="cf-info-page__banner max-w-prose space-y-4">
-            <p className="type-caption text-text-muted">
-              <Link
-                href={publicHomePath(locale)}
-                className="text-link underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-              >
-                {copy.nav.home}
-              </Link>
-            </p>
-            <h1 className="cf-info-page__title">{page.title}</h1>
-            <p className="type-body-lead text-text-secondary">{page.intro}</p>
-          </header>
+    <LpSubpageShell locale={locale} infoSlug={slug}>
+      <section className="lp-subhero" aria-labelledby="info-page-heading">
+        <div className="lp-container">
+          <nav className="lp-breadcrumb" aria-label="Breadcrumb">
+            <Link
+              href={publicHomePath(locale)}
+              className="lp-focus"
+              style={{ color: "var(--lp-text-muted)", textDecoration: "none" }}
+            >
+              {copy.nav.home}
+            </Link>
+            <span aria-hidden="true">/</span>
+            <span style={{ color: "var(--lp-orange)" }}>{page.title}</span>
+          </nav>
+
+          <div className="lp-eyebrow" style={{ marginBottom: "0.5rem" }}>
+            Statutory Public Governance
+          </div>
+          <h1
+            id="info-page-heading"
+            className="lp-serif"
+            style={{
+              fontSize: "clamp(2rem, 3.6vw, 3rem)",
+              lineHeight: 1.15,
+              color: "var(--lp-text)",
+              margin: "0 0 0.85rem",
+            }}
+          >
+            {page.title}
+          </h1>
+          <p
+            style={{
+              fontSize: "1.0625rem",
+              lineHeight: 1.65,
+              color: "var(--lp-text-secondary)",
+              margin: 0,
+              maxWidth: "46rem",
+            }}
+          >
+            {page.intro}
+          </p>
+        </div>
+      </section>
+
+      <section className="lp-subpage-section" aria-label={page.title}>
+        <div className="lp-container" style={{ maxWidth: "56rem" }}>
           <InfoSections page={page} />
-        </article>
-      </main>
-      <PublicSiteFooter copy={copy} locale={locale} infoSlug={slug} />
-    </div>
+        </div>
+      </section>
+    </LpSubpageShell>
   );
 }

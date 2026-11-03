@@ -4,14 +4,25 @@ import { LandmarkIcon, LockIcon } from "lucide-react";
 import { InfraosMark } from "@/components/landing/infraos-mark";
 import type { LpCopy } from "@/lib/landing/lp-copy";
 import type { LpLinks } from "@/lib/landing/lp-data";
-import type { PublicLocale } from "@/lib/landing/locales";
+import type { PublicInfoSlug, PublicLocale } from "@/lib/landing/locales";
 
 import { NavLink } from "./atoms";
 import { LpLanguageNav } from "./lp-language-nav";
 import { LpMobileMenu } from "./lp-mobile-menu";
 
 /** Utility bar and primary navigation. Fixed, matching the design export. */
-export function LpHeader({ copy, links, locale }: { copy: LpCopy["nav"]; links: LpLinks; locale: PublicLocale }) {
+export function LpHeader({
+  copy,
+  links,
+  locale,
+  infoSlug,
+}: {
+  copy: LpCopy["nav"];
+  links: LpLinks;
+  locale: PublicLocale;
+  infoSlug?: PublicInfoSlug;
+}) {
+  const noticesHref = infoSlug ? `${links.home === "/" ? "" : links.home}#status-panel` : "#status-panel";
   return (
     <header className="lp-header">
       <div className="lp-util">
@@ -26,14 +37,14 @@ export function LpHeader({ copy, links, locale }: { copy: LpCopy["nav"]; links: 
           </div>
           <div className="lp-util__right">
             <div className="lp-util__links">
-              <Link href="#status-panel" className="lp-util__link">
+              <Link href={noticesHref} className="lp-util__link">
                 {copy.publicNotices}
               </Link>
               <Link href={links.contact} className="lp-util__link">
                 {copy.helpdesk}
               </Link>
             </div>
-            <LpLanguageNav locale={locale} label={copy.languageLabel} />
+            <LpLanguageNav locale={locale} label={copy.languageLabel} infoSlug={infoSlug} />
           </div>
         </div>
       </div>
@@ -46,19 +57,19 @@ export function LpHeader({ copy, links, locale }: { copy: LpCopy["nav"]; links: 
           </span>
         </Link>
         <nav aria-label={copy.label} className="lp-nav__links">
-          <NavLink href={links.home} current className="lp-navlink">
+          <NavLink href={links.home} current={!infoSlug} className="lp-navlink">
             {copy.home}
           </NavLink>
-          <NavLink href={links.about} className="lp-navlink">
+          <NavLink href={links.about} current={infoSlug === "about"} className="lp-navlink">
             {copy.about}
           </NavLink>
-          <NavLink href={links.howItWorks} className="lp-navlink">
+          <NavLink href={links.howItWorks} current={infoSlug === "how-it-works"} className="lp-navlink">
             {copy.howItWorks}
           </NavLink>
-          <NavLink href={links.faq} className="lp-navlink">
+          <NavLink href={links.faq} current={infoSlug === "faq"} className="lp-navlink">
             {copy.faq}
           </NavLink>
-          <NavLink href={links.contact} className="lp-navlink">
+          <NavLink href={links.contact} current={infoSlug === "contact"} className="lp-navlink">
             {copy.contact}
           </NavLink>
         </nav>
@@ -67,7 +78,7 @@ export function LpHeader({ copy, links, locale }: { copy: LpCopy["nav"]; links: 
             <LockIcon aria-hidden="true" width={16} height={16} />
             <span>{copy.signIn}</span>
           </Link>
-          <LpMobileMenu copy={copy} links={links} locale={locale} />
+          <LpMobileMenu copy={copy} links={links} locale={locale} infoSlug={infoSlug} />
         </div>
       </div>
     </header>
