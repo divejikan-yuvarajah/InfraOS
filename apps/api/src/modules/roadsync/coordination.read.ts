@@ -196,7 +196,7 @@ async function loadRecord(w: Who, id: string): Promise<RecordPlain | null> {
   const rec = (await ConflictRecord.findById(oid(id)).lean()) as unknown as RecordPlain | null;
   return rec && canRead(w, rec) ? rec : null;
 }
-const nextWorkingDaySlots = (from: Date, n: number): string[] => {
+export const nextWorkingDaySlots = (from: Date, n: number): string[] => {
   const out: string[] = [];
   for (let d = 1; out.length < n && d < 14; d += 1) {
     const day = new Date(from.getTime() + d * 86_400_000);
