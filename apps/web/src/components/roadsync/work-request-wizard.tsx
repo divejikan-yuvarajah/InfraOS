@@ -276,6 +276,7 @@ export function WorkRequestWizard({ mode, copy, values, setValues, errors, setEr
           {stage === "review" ? (
             <section className="rs-section" aria-labelledby="rs-s4">
               <div className="rs-section-head"><span className="rs-step" aria-hidden="true">4</span><h2 id="rs-s4">{copy.review.heading}</h2></div>
+              <ScheduleAdvisor compact geometry={previewGeometry} startUtc={datesOk ? startUtc : null} endUtc={datesOk ? endUtc : null} workingHours={values.workingHours} isEmergency={values.isEmergency} workType={values.workType} priority={values.priority} onUse={(s, e) => setValues((c) => ({ ...c, plannedStart: utcToColomboLocal(s), plannedEnd: utcToColomboLocal(e) }))} />
               <p className={ready ? "rs-help" : "rs-error"} role="status">{ready ? copy.review.ready : copy.review.notReady}</p>
               <ul className="rs-checklist" aria-label={copy.review.checklist}>
                 {checks.map((c) => (

@@ -83,6 +83,13 @@ describe("step 80 coordination advisor", { timeout: 240_000 }, () => {
     expect(advice.plans.length).toBeGreaterThan(0);
     expect(advice.plans.length).toBeLessThanOrEqual(5);
     expect(advice.audience).toBe("agency");
+    // The cached-only summary reports the viewer's own snapshot and never computes one for anybody else.
+    const cachedA = (await get(d.officerA.token, `/conflicts/${d.cid}/advisor/cached`)).body.data;
+    expect(cachedA).toMatchObject({ available: true, recNo: advice.recNo, count: advice.plans.length });
+    expect((await get(d.officerB.token, `/conflicts/${d.cid}/advisor/cached`)).body.data.available).toBe(false);
+    expect(await Recommendation.countDocuments({})).toBe(1);
+    expect((await get(d.officerC.token, `/conflicts/${d.cid}/advisor/cached`)).status).toBe(404);
+    expect(advice.plans.every((p: { metrics: { collateralOther: number } }) => typeof p.metrics.collateralOther === "number")).toBe(true);
     const second = await get(d.officerA.token, `/conflicts/${d.cid}/advisor`);
     expect(second.body.data.cached).toBe(true);
     expect(second.body.data.recNo).toBe(advice.recNo);

@@ -28,6 +28,7 @@ import { CoordinationTab } from "./dossier-coordination";
 import { HistoryTab } from "./history-tab";
 import { ResolutionTab } from "./resolution-tab";
 import { AdvisorPanel } from "./advisor-tab";
+import { fetchCachedAdvisor } from "@/lib/roadsync/advisor-api";
 import { getAdvisorCopy } from "@/lib/roadsync/advisor-copy";
 import { getResolutionCopy } from "@/lib/roadsync/resolution-copy";
 import { fetchConflictCoordination } from "@/lib/roadsync/coordination-api";
@@ -65,6 +66,7 @@ export function ConflictDossier({ id }: { id: string }) {
   const map = useQuery({ queryKey: workRequestQueryKey(epoch, userId, roleKey, "conflict-map", id), queryFn: () => fetchRecordMap(id), enabled: Boolean(userId) && Boolean(q.data), retry: false });
   const d = q.data;
   const coord = useQuery({ queryKey: workRequestQueryKey(epoch, userId, roleKey, "conflict-coordination", id), queryFn: () => fetchConflictCoordination(id), enabled: Boolean(userId) && Boolean(d), retry: false, refetchOnWindowFocus: true });
+  const advCache = useQuery({ queryKey: workRequestQueryKey(epoch, userId, roleKey, "advisor-cached", id), queryFn: () => fetchCachedAdvisor(id), enabled: Boolean(userId) && Boolean(d), retry: false });
   const [stanceMode, setStanceMode] = useState(false);
 
   const refresh = useCallback(() => { void qc.invalidateQueries({ queryKey: ["roadsync"] }); void q.refetch(); }, [qc, q]);
@@ -150,7 +152,7 @@ export function ConflictDossier({ id }: { id: string }) {
           <section className="cr-tabs">
             <div role="tablist" className="cr-tablist" aria-label={copy.title}>
               {TABS.map((t) => <button key={t} id={`cr-tab-${t}`} role="tab" type="button" aria-selected={tab === t} aria-controls={`cr-panel-${t}`} tabIndex={tab === t ? 0 : -1} onClick={() => setTab(t)}
-                onKeyDown={(e) => { const i = TABS.indexOf(t); const next = e.key === "ArrowRight" ? TABS[(i + 1) % TABS.length] : e.key === "ArrowLeft" ? TABS[(i - 1 + TABS.length) % TABS.length] : null; if (next) { e.preventDefault(); setTab(next); document.getElementById(`cr-tab-${next}`)?.focus(); } }}>{t === "coordination" ? <>{cc.integrations.tab}{coord.data && coord.data.coordination.activeCount > 0 ? <span className="cr-tabcount"> ({coord.data.coordination.activeCount})</span> : null}</> : t === "advisor" ? getAdvisorCopy(locale).tab : t === "resolution" ? rc.tab : t === "history" ? rc.historyTab : copy.dossier.tabs[t]}</button>)}
+                onKeyDown={(e) => { const i = TABS.indexOf(t); const next = e.key === "ArrowRight" ? TABS[(i + 1) % TABS.length] : e.key === "ArrowLeft" ? TABS[(i - 1 + TABS.length) % TABS.length] : null; if (next) { e.preventDefault(); setTab(next); document.getElementById(`cr-tab-${next}`)?.focus(); } }}>{t === "coordination" ? <>{cc.integrations.tab}{coord.data && coord.data.coordination.activeCount > 0 ? <span className="cr-tabcount"> ({coord.data.coordination.activeCount})</span> : null}</> : t === "advisor" ? <>{getAdvisorCopy(locale).tab}{advCache.data?.available ? <span className="cr-tabcount"> ({advCache.data.count})</span> : null}</> : t === "resolution" ? rc.tab : t === "history" ? rc.historyTab : copy.dossier.tabs[t]}</button>)}
             </div>
             <div role="tabpanel" id={`cr-panel-${tab}`} aria-labelledby={`cr-tab-${tab}`} className="cr-panel">
               {tab === "overview" ? <Overview d={d} copy={copy} /> : null}

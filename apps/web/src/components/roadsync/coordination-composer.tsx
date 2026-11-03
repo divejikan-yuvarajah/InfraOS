@@ -9,6 +9,7 @@ import { Dialog } from "radix-ui";
 
 import { getAdvisorCopy } from "@/lib/roadsync/advisor-copy";
 import { clearHandoff, type Handoff } from "@/lib/roadsync/advisor";
+import { fetchCachedAdvisor, fetchHandoff } from "@/lib/roadsync/advisor-api";
 import { StaffWorkspaceShell } from "@/components/auth/staff-workspace-shell";
 import { ApiError } from "@/lib/api/client";
 import { getAuthEpoch, getMemorySession, subscribeAuth } from "@/lib/auth/state";
@@ -214,6 +215,18 @@ export function CoordinationComposer({ conflictId, prefill }: { conflictId: stri
   const [step, setStep] = useState(initType ? 2 : 1);
   const [type, setType] = useState<ProposalType | null>(initType);
   const [form, setForm] = useState<FormState>(() => ({ ...EMPTY_FORM, ...prefillForm(first) }));
+  const cached = useQuery({ queryKey: workRequestQueryKey(epoch, userId, roleKey, "advisor-cached", conflictId), queryFn: () => fetchCachedAdvisor(conflictId), enabled: Boolean(userId) && Boolean(d), retry: false });
+  /** Applies the top cached Advisor plan to this form. The user still reviews and submits; nothing is sent here. */
+  const applyAdvisor = async () => {
+    const snap = cached.data;
+    if (!snap || !snap.available || !snap.top) return;
+    try {
+      const h = await fetchHandoff(snap.recNo, snap.top.planKey, "coordination");
+      const draft = h.drafts[0];
+      if (!draft || !(PROPOSAL_TYPES as readonly string[]).includes(draft.type)) return;
+      setType(draft.type as ProposalType); setForm({ ...EMPTY_FORM, ...prefillForm(draft) }); setStep(2); setDirty(true);
+    } catch { /* the quick proposals below remain available */ }
+  };
   const [consulted, setConsulted] = useState<string[]>([]);
   const [summary, setSummary] = useState("");
   const [deadline, setDeadline] = useState("");
@@ -263,6 +276,7 @@ export function CoordinationComposer({ conflictId, prefill }: { conflictId: stri
       <div className="co-composer">
         <Link className="co-back" href={`/roadsync/conflicts/${conflictId}`}>← {copy.room.openConflict}</Link>
         {prefill ? <p className="rz-toast" role="note">{fmt(getAdvisorCopy(locale).banner, { recNo: prefill.banner.recNo })}</p> : null}
+        {!prefill && step === 1 && cached.data?.available && cached.data.top ? <p className="co-quick"><button type="button" className="rs-btn" onClick={() => void applyAdvisor()}>{getAdvisorCopy(locale).entry.try}: {cached.data.top.archetype ? getAdvisorCopy(locale).archetype[cached.data.top.archetype] : ""} · {cached.data.top.riskBefore} → {cached.data.top.riskAfter}</button></p> : null}
         <ol className="co-steps" aria-label={fmt(c.step, { n: step })}>{c.steps.map((s, i) => <li key={s} aria-current={step === i + 1 ? "step" : undefined} data-done={step > i + 1}>{i + 1}. {s}</li>)}</ol>
         {!canInitiate ? <p className="rs-notice" role="alert">{c.errors.forbidden}</p> : null}
         {error ? <p className="rs-errsum" role="alert">{error}</p> : null}

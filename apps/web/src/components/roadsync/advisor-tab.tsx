@@ -3,7 +3,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMemo, useState, useSyncExternalStore, type ReactNode } from "react";
+import { useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore, type ReactNode, type RefObject } from "react";
 import { AlertTriangleIcon, CheckCircle2Icon, ClockIcon, CrownIcon, FeatherIcon, InfoIcon, Loader2Icon, MergeIcon, RefreshCwIcon, ScaleIcon, ShieldCheckIcon, ThumbsDownIcon, ThumbsUpIcon, XIcon, ZapIcon } from "lucide-react";
 import { Dialog } from "radix-ui";
 
@@ -15,7 +15,7 @@ import { BAND_COLOR, fmt } from "@/lib/roadsync/assessment";
 import { getAssessmentCopy } from "@/lib/roadsync/assessment-copy";
 import { fetchDossier } from "@/lib/roadsync/conflict-records-api";
 import { COMPONENTS, DISMISS_REASONS, MIX_KEYS, MIX_PRESETS, WEIGHTS, mixedScore, paretoFrontier, rankByMix, stashHandoff, type Archetype, type DismissReason, type HandoffTarget, type Mix, type Move, type Plan } from "@/lib/roadsync/advisor";
-import { fetchAdvice, fetchHandoff, sendFeedback } from "@/lib/roadsync/advisor-api";
+import { fetchAdvice, fetchAdvisorStats, fetchHandoff, sendFeedback } from "@/lib/roadsync/advisor-api";
 import { getAdvisorCopy, type AdvisorCopy } from "@/lib/roadsync/advisor-copy";
 import "@/styles/mission-control-roadsync-advisor.css";
 
@@ -30,6 +30,22 @@ function writeMix(m: Mix | null) { mixMemory = m ? JSON.stringify(m) : null; try
 function useMix(): Mix | null {
   const raw = useSyncExternalStore((cb) => { mixListeners.add(cb); return () => { mixListeners.delete(cb); }; }, readMix, () => null);
   return useMemo(() => { try { const v = raw ? (JSON.parse(raw) as Mix) : null; return v && MIX_KEYS.every((k) => Number.isFinite(v[k])) ? v : null; } catch { return null; } }, [raw]);
+}
+/** FLIP: when the order changes, each card slides from its old position (200 ms). Disabled under prefers-reduced-motion. */
+function useFlip(ref: RefObject<HTMLElement | null>, signature: string) {
+  const last = useRef(new Map<string, number>());
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const next = new Map<string, number>();
+    el.querySelectorAll<HTMLElement>("[data-key]").forEach((c) => {
+      const top = c.getBoundingClientRect().top, was = last.current.get(c.dataset.key ?? "");
+      next.set(c.dataset.key ?? "", top);
+      if (!reduced && was !== undefined && Math.abs(was - top) > 1) c.animate([{ transform: `translateY(${was - top}px)` }, { transform: "none" }], { duration: 200, easing: "ease-out" });
+    });
+    last.current = next;
+  }, [ref, signature]);
 }
 const dayFmt = (locale: string, v: string | null) => (v ? new Intl.DateTimeFormat(locale, { day: "numeric", month: "short", timeZone: "Asia/Colombo" }).format(new Date(v)) : "—");
 
@@ -49,17 +65,21 @@ export function AdvisorPanel({ conflictId, locale }: { conflictId: string; local
   const [drawer, setDrawer] = useState<string | null>(null);
   const [sheet, setSheet] = useState<string | null>(null);
   const [handoffNote, setHandoffNote] = useState<string | null>(null);
+  const [compare, setCompare] = useState<string[]>([]);
+  const listRef = useRef<HTMLOListElement>(null);
+  const stats = useQuery({ queryKey: keys.key("advisor-stats", "all"), queryFn: fetchAdvisorStats, enabled: Boolean(keys.userId) && q.data?.audience === "national", retry: false });
 
   const adv = q.data;
   const labels = useMemo(() => new Map((dossier.data ? [dossier.data.parties.a, dossier.data.parties.b] : []).map((p) => [p.id, p.ref])), [dossier.data]);
   const agency = (id: string) => adv?.agencies[id] ?? id.slice(-6);
   const canAct = Boolean(adv?.allowedActions.includes("feedback"));
   const ordered = useMemo(() => rankByMix(adv?.plans ?? [], mix), [adv?.plans, mix]);
+  useFlip(listRef, ordered.map((p) => p.planKey).join());
   const live = ordered[0] && mix ? fmt(copy.mixer.ranking, { name: ordered[0].archetypes[0] ? copy.archetype[ordered[0].archetypes[0]] ?? "" : fmt(copy.plan.rank, { n: 1 }) }) : "";
 
   const run = async (fn: () => Promise<unknown>, ok?: string) => {
     setBusy(true);
-    try { await fn(); if (ok) setToast(ok); } catch (e) { setToast(e instanceof ApiError && e.status === 403 ? copy.forbidden : copy.failed); } finally { setBusy(false); void qc.invalidateQueries({ queryKey: key }); }
+    try { await fn(); if (ok) setToast(ok); } catch (e) { setToast(e instanceof ApiError && e.status === 403 ? copy.forbidden : copy.failed); } finally { setBusy(false); void qc.invalidateQueries({ queryKey: key }); void qc.invalidateQueries({ queryKey: keys.key("advisor-cached", conflictId) }); }
   };
   const refresh = () => void run(async () => { qc.setQueryData(key, await fetchAdvice(conflictId, true)); });
   const feedback = (planKey: string, action: "helpful" | "not_helpful" | "dismissed" | "restored", reasonCode?: DismissReason) => run(async () => { await sendFeedback(adv!.recNo!, { planKey, action, ...(reasonCode ? { reasonCode } : {}) }); setSheet(null); }, copy.saved);
@@ -127,10 +147,11 @@ export function AdvisorPanel({ conflictId, locale }: { conflictId: string; local
         <div className="ad-layout">
           <div className="ad-main">
             <Mixer copy={copy} mix={mix} />
-            <ol className="ad-plans" aria-label={copy.title}>
-              {ordered.map((p, i) => <PlanCard key={p.planKey} p={p} n={i + 1} copy={copy} mix={mix} selected={selected === p.planKey} moveText={moveText} agency={agency} canAct={canAct} onSelect={() => setSelected(p.planKey)} onDetails={() => setDrawer(p.planKey)} onFeedback={(a) => void feedback(p.planKey, a)} onDismiss={() => setSheet(p.planKey)} onHand={(t) => void hand(p, t)} />)}
+            <ol className="ad-plans" aria-label={copy.title} ref={listRef}>
+              {ordered.map((p, i) => <PlanCard key={p.planKey} p={p} n={i + 1} compared={compare.includes(p.planKey)} onCompare={() => setCompare((cur) => (cur.includes(p.planKey) ? cur.filter((x) => x !== p.planKey) : cur.length < 3 ? [...cur, p.planKey] : cur))} copy={copy} mix={mix} selected={selected === p.planKey} moveText={moveText} agency={agency} canAct={canAct} onSelect={() => setSelected(p.planKey)} onDetails={() => setDrawer(p.planKey)} onFeedback={(a) => void feedback(p.planKey, a)} onDismiss={() => setSheet(p.planKey)} onHand={(t) => void hand(p, t)} />)}
             </ol>
             {handoffNote ? <p className="rz-warn" role="alert">{handoffNote}</p> : null}
+            <CompareTable plans={ordered.filter((p) => compare.includes(p.planKey))} copy={copy} agency={agency} onClear={() => setCompare([])} />
           </div>
           <aside className="ad-side"><TradeoffMap plans={ordered} selected={selected} onSelect={setSelected} copy={copy} locale={locale} /></aside>
         </div>
@@ -143,6 +164,13 @@ export function AdvisorPanel({ conflictId, locale }: { conflictId: string; local
           {canAct ? <Link className="rs-btn is-primary" href={`/roadsync/conflicts/${conflictId}/coordination/new`}>{copy.opp.cta}</Link> : null}
           <p className="rs-help">{copy.opp.caption}</p></section>
       ))}
+
+      {adv.audience === "national" && stats.data ? (
+        <section className="ad-coord" aria-label={copy.insights.title}><h3 className="ad-h">{copy.insights.title}</h3>
+          <p>{copy.insights.generated}: <b>{stats.data.generated}</b></p>
+          {stats.data.suppressed ? <p className="rs-help">{copy.insights.suppressed}</p> : <p>{copy.insights.helpful}: <b>{stats.data.helpfulRate ?? "—"}%</b> · {copy.insights.dismiss}: <b>{stats.data.dismissRate ?? "—"}%</b> · {copy.insights.handoff}: <b>{stats.data.handoffRate ?? "—"}%</b></p>}
+          <p className="rs-help">{copy.insights.note}</p></section>
+      ) : null}
 
       <details className="ad-why"><summary>{copy.whyNot.title} ({adv.excluded.length})</summary>
         {adv.excluded.length === 0 ? <p className="rs-help">{copy.whyNot.none}</p> : <ul>{adv.excluded.map((e, i) => <li key={i}><b>{e.mine ? copy.whyNot.ownRequest : copy.whyNot.otherRequest}</b> — {copy.whyNot.codes[e.code] ?? e.code}</li>)}</ul>}</details>
@@ -194,10 +222,10 @@ function ScoreRing({ score }: { score: number }) {
   return <svg className="ad-ring" viewBox="0 0 56 56" role="img" aria-label={String(score)}><circle cx="28" cy="28" r={r} fill="none" stroke="#e2e8f0" strokeWidth="6" /><circle cx="28" cy="28" r={r} fill="none" stroke="#0e7490" strokeWidth="6" strokeLinecap="round" strokeDasharray={`${(score / 100) * c} ${c}`} transform="rotate(-90 28 28)" className="dc-draw" /><text x="28" y="33" textAnchor="middle" className="ad-ring-n">{Math.round(score)}</text></svg>;
 }
 
-function PlanCard({ p, n, copy, mix, selected, moveText, agency, canAct, onSelect, onDetails, onFeedback, onDismiss, onHand }: { p: Plan; n: number; copy: AdvisorCopy; mix: Mix | null; selected: boolean; moveText: (m: Move) => string; agency: (id: string) => string; canAct: boolean; onSelect: () => void; onDetails: () => void; onFeedback: (a: "helpful" | "not_helpful") => void; onDismiss: () => void; onHand: (t: HandoffTarget) => void }) {
+function PlanCard({ compared, onCompare, p, n, copy, mix, selected, moveText, agency, canAct, onSelect, onDetails, onFeedback, onDismiss, onHand }: { compared: boolean; onCompare: () => void; p: Plan; n: number; copy: AdvisorCopy; mix: Mix | null; selected: boolean; moveText: (m: Move) => string; agency: (id: string) => string; canAct: boolean; onSelect: () => void; onDetails: () => void; onFeedback: (a: "helpful" | "not_helpful") => void; onDismiss: () => void; onHand: (t: HandoffTarget) => void }) {
   const m = p.metrics;
   return (
-    <li className="ad-card" data-selected={selected} onClick={onSelect}>
+    <li className="ad-card" data-key={p.planKey} data-selected={selected} onClick={onSelect}>
       <div className="ad-card-top">
         <ScoreRing score={mix ? mixedScore(p, mix) : p.score} />
         <div><strong>{fmt(copy.plan.rank, { n })}</strong> <span className="rs-help">{mix ? fmt(copy.mixer.mixed, { s: mixedScore(p, mix) }) : fmt(copy.plan.score, { s: p.score })}</span>
@@ -210,12 +238,14 @@ function PlanCard({ p, n, copy, mix, selected, moveText, agency, canAct, onSelec
         <span className="rz-chip" data-status="resolved">{fmt(copy.plan.risk, { a: m.riskBefore, b: m.riskAfter })}</span>
         <span className="rs-nb-chip">{fmt(copy.plan.clears, { c: m.clearedFocus, f: m.focusCount })}</span>
         <span className="rs-nb-chip" data-bad={m.newConflicts > 0}>{fmt(copy.plan.newC, { n: m.newConflicts })}</span>
+        {m.collateralOther > 0 ? <span className="rs-nb-chip" data-bad="true">{fmt(copy.plan.collateralOther, { n: m.collateralOther })}</span> : null}
         <span className="rs-nb-chip">{fmt(copy.plan.shift, { n: m.totalShiftDays })}</span>
         <span className="rs-nb-chip">{p.approvals.required ? copy.plan.approval : copy.plan.noApproval}</span>
       </p>
       <p className="rs-help"><ClockIcon aria-hidden="true" className="rz-inline" /> {m.fitsBeforeStart === null ? fmt(copy.plan.estimate, { n: m.estimateDays }) : m.fitsBeforeStart ? copy.plan.fits : copy.plan.late} · {fmt(copy.plan.steps, { n: m.steps })} · {copy.plan.coordinate}: {m.agenciesToCoordinate.map(agency).join(", ")}</p>
       <ul className="ad-bars" aria-label={copy.plan.components}>{COMPONENTS.map((c) => <li key={c} title={`${c} · ${fmt(copy.plan.weight, { w: WEIGHTS[c] })}`}><i style={{ width: `${p.components[c]}%` }} /></li>)}</ul>
       <div className="rz-row-actions" onClick={(e) => e.stopPropagation()}>
+        <label className="rz-check" onClick={(e) => e.stopPropagation()}><input type="checkbox" checked={compared} onChange={onCompare} />{copy.plan.compare}</label>
         <button type="button" className="rs-btn" onClick={onDetails}>{copy.plan.details}</button>
         {canAct ? <>
           <button type="button" className="rs-btn" onClick={() => onFeedback("helpful")} aria-label={copy.plan.helpful}><ThumbsUpIcon aria-hidden="true" /></button>
@@ -290,5 +320,20 @@ export function AdvisorPage({ id }: { id: string }) {
       <div className="rz-actions"><Link className="rs-btn" href={`/roadsync/conflicts/${id}`}>{copy.header.back}</Link></div>
       <AdvisorPanel conflictId={id} locale={locale} />
     </StaffWorkspaceShell>
+  );
+}
+
+function CompareTable({ plans, copy, agency, onClear }: { plans: Plan[]; copy: AdvisorCopy; agency: (id: string) => string; onClear: () => void }) {
+  const ct = copy.compareTable;
+  if (plans.length === 0) return <p className="rs-help">{ct.empty}</p>;
+  const rows: [string, (p: Plan) => string][] = [
+    [ct.score, (p) => String(p.score)], [ct.risk, (p) => `${p.metrics.riskBefore} → ${p.metrics.riskAfter}`], [ct.clears, (p) => `${p.metrics.clearedFocus}/${p.metrics.focusCount}`], [ct.newC, (p) => String(p.metrics.newConflicts)],
+    [ct.shift, (p) => String(p.metrics.totalShiftDays)], [ct.approval, (p) => (p.approvals.required ? ct.yes : ct.no)], [ct.agencies, (p) => p.metrics.agenciesToCoordinate.map(agency).join(", ")],
+  ];
+  return (
+    <section className="ad-map" aria-label={ct.title}><h3 className="ad-h">{ct.title}</h3>
+      <div className="dc-tscroll"><table className="sl-table"><thead><tr><th scope="col">{ct.metric}</th>{plans.map((p, i) => <th key={p.planKey} scope="col">{copy.plan.rank.replace("{n}", String(i + 1))}</th>)}</tr></thead>
+        <tbody>{rows.map(([label, f]) => <tr key={label}><th scope="row">{label}</th>{plans.map((p) => <td key={p.planKey}>{f(p)}</td>)}</tr>)}</tbody></table></div>
+      <button type="button" className="rs-btn" onClick={onClear}>{ct.clear}</button></section>
   );
 }

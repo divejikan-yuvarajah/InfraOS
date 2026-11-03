@@ -31,7 +31,7 @@ export type Plan = {
   confidence: { tier: "high" | "medium" | "low"; points: { code: string; points: number }[] };
   moves: Move[]; levers: Lever[];
   metrics: {
-    riskBefore: number; riskAfter: number; riskReduction: number; focusCount: number; clearedFocus: number; newConflicts: number; worsened: number;
+    riskBefore: number; riskAfter: number; riskReduction: number; focusCount: number; clearedFocus: number; newConflicts: number; collateralOther: number; worsened: number;
     totalShiftDays: number; perAgencyShiftDays: { agencyId: string; shiftDays: number }[]; agenciesToCoordinate: string[]; steps: number;
     daysToImpact: number | null; estimateDays: number; fitsBeforeStart: boolean | null; assumptionMoves: number; urgent: boolean;
   };
@@ -145,6 +145,8 @@ export function advise(world: World, opts: AdviseOpts): Advice {
     const shifts = [...byAgency.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([agencyId, shiftDays]) => ({ agencyId, shiftDays }));
     const totalShift = shifts.reduce((n, s) => n + s.shiftDays, 0);
     const owners = new Set(c.ev.changes.map((x) => x.agencyId));
+    const sideAgencies = (id: string) => { const d = world.docs.find((x) => String(x._id) === id); return d ? [world.items.get(`${d.aType}:${d.aId}`)?.agencyId, world.items.get(`${d.bType}:${d.bId}`)?.agencyId] : []; };
+    const collateralOther = newRows.filter((r) => !sideAgencies(r.id).some((a) => a && owners.has(a))).length;
     const required = rec.affectedAgencies.filter((a) => a.required && a.active && !a.excluded).map((a) => a.agencyId);
     const coordinate = [...new Set([...owners, ...required])].sort();
     const reasons = nationalReasons({ type: "amendment", thirdParty: { newConflicts: newRows.length, worsened: worsenedRows.length, cleared: 0 }, severityAtDetection: rec.severity.atDetection.band, shiftDays: Math.max(0, ...c.ev.changes.map((x) => Math.abs(x.shiftDays))), band });
@@ -171,7 +173,7 @@ export function advise(world: World, opts: AdviseOpts): Advice {
     return {
       planKey: key, archetypes: [], score, components, confidence: { tier: pts >= CONF.HIGH ? "high" : pts >= CONF.MEDIUM ? "medium" : "low", points },
       moves: c.moves, levers: c.levers,
-      metrics: { riskBefore, riskAfter, riskReduction: reduction, focusCount: focus.length, clearedFocus: cleared, newConflicts: newRows.length, worsened: worsenedRows.length, totalShiftDays: totalShift, perAgencyShiftDays: shifts, agenciesToCoordinate: coordinate, steps, daysToImpact, estimateDays: estimate, fitsBeforeStart: daysToImpact === null ? null : estimate <= daysToImpact, assumptionMoves: assumed, urgent: daysToImpact !== null && daysToImpact <= ADV.URGENT_DAYS },
+      metrics: { riskBefore, riskAfter, riskReduction: reduction, focusCount: focus.length, clearedFocus: cleared, newConflicts: newRows.length, collateralOther, worsened: worsenedRows.length, totalShiftDays: totalShift, perAgencyShiftDays: shifts, agenciesToCoordinate: coordinate, steps, daysToImpact, estimateDays: estimate, fitsBeforeStart: daysToImpact === null ? null : estimate <= daysToImpact, assumptionMoves: assumed, urgent: daysToImpact !== null && daysToImpact <= ADV.URGENT_DAYS },
       approvals: { required: reasons.length > 0, reasons }, afterSummary: c.ev.result.request.after,
       focusDiff: focusRows.map((r) => ({ pairKey: r.id, before: { score: r.before.score, band: r.before.band }, after: { score: r.after.score, band: r.after.band }, afterKind: r.after.kind, diff: (!live(r.after) ? "cleared" : r.after.score < r.before.score ? "improved" : r.after.score > r.before.score ? "worsened" : "unchanged") as Plan["focusDiff"][number]["diff"] })),
     };

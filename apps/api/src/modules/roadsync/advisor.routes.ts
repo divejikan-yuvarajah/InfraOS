@@ -8,7 +8,7 @@ import { isJsonContentType } from "../identity/auth/auth.security.js";
 import { requireAuthenticated, type AuthenticatedActor } from "../identity/auth/require-authenticated.js";
 import { requirePermission } from "../identity/authorization/require-permission.js";
 import { DISMISS_REASONS } from "./advisor.rules.js";
-import { addFeedback, adviceFor, handoff, requestAdvice, schedulePreview, stats } from "./advisor.service.js";
+import { addFeedback, adviceFor, cachedSummary, handoff, requestAdvice, schedulePreview, stats } from "./advisor.service.js";
 import { CLOSURE_TYPES, TRAFFIC_LEVEL_CODES } from "./assessment.rules.js";
 import { whoIs, type Who } from "./conflict-record.service.js";
 import { validateWorkGeometry } from "./geo.service.js";
@@ -80,6 +80,12 @@ advisorRouter.get("/conflicts/:id/advisor", ...auth, computeLimiter, handle(asyn
   if (refresh === null) return;
   const out = await adviceFor(c.w, idOf(c.req.params.id), { refresh, canWrite: c.canWrite });
   if ("ok" in out) return notFound(c.res, c.req);
+  c.res.json(success(out, c.req.requestId));
+}));
+advisorRouter.get("/conflicts/:id/advisor/cached", ...auth, readLimiter, handle(async (c) => {
+  if (Object.keys(c.req.query).length) return bad(c.res, c.req);
+  const out = await cachedSummary(c.w, idOf(c.req.params.id));
+  if (!out) return notFound(c.res, c.req);
   c.res.json(success(out, c.req.requestId));
 }));
 advisorRouter.get("/work-requests/:id/advisor", ...auth, computeLimiter, handle(async (c) => {

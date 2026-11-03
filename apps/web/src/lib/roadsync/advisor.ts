@@ -14,7 +14,7 @@ export type Plan = {
   planKey: string; archetypes: Archetype[]; score: number; components: Record<Component, number>;
   confidence: { tier: "high" | "medium" | "low"; points: { code: string; points: number }[] };
   moves: Move[]; levers: Lever[];
-  metrics: { riskBefore: number; riskAfter: number; riskReduction: number; focusCount: number; clearedFocus: number; newConflicts: number; worsened: number; totalShiftDays: number; perAgencyShiftDays: { agencyId: string; shiftDays: number }[]; agenciesToCoordinate: string[]; steps: number; daysToImpact: number | null; estimateDays: number; fitsBeforeStart: boolean | null; assumptionMoves: number; urgent: boolean };
+  metrics: { riskBefore: number; riskAfter: number; riskReduction: number; focusCount: number; clearedFocus: number; newConflicts: number; collateralOther: number; worsened: number; totalShiftDays: number; perAgencyShiftDays: { agencyId: string; shiftDays: number }[]; agenciesToCoordinate: string[]; steps: number; daysToImpact: number | null; estimateDays: number; fitsBeforeStart: boolean | null; assumptionMoves: number; urgent: boolean };
   approvals: { required: boolean; reasons: string[] };
   afterSummary: { riskIndex: number; maxBand: Band | null; conflictCount: number };
   focusDiff: { pairKey: string; before: { score: number; band: Band }; after: { score: number; band: Band }; afterKind: string; diff: "cleared" | "new" | "worsened" | "improved" | "unchanged" }[];
@@ -32,6 +32,8 @@ export type Advice = {
 };
 export type HandoffTarget = "coordination" | "resolution" | "simulator";
 export type Handoff = { target: HandoffTarget; drafts: ({ moveIndex: number; conflictId: string; type: string; proposal?: Record<string, unknown>; manual?: Record<string, unknown> })[]; notEligible: { moveIndex: number; reason: string }[]; levers?: Lever[]; banner: { recNo: string; planKey: string } };
+export type Cached = { available: false } | { available: boolean; recNo: string; count: number; generatedAt: string; top: { planKey: string; archetype: Archetype | null; riskBefore: number; riskAfter: number } | null };
+export type AdvisorStats = { generated: number; feedbackAgencies: number | null; suppressed: boolean; helpfulRate: number | null; dismissRate: number | null; handoffRate: number | null; dismissReasons: Record<string, number> | null };
 export type DismissReason = "not_feasible" | "already_coordinated_offline" | "disagree_with_assessment" | "too_disruptive" | "other";
 export const DISMISS_REASONS: DismissReason[] = ["not_feasible", "already_coordinated_offline", "disagree_with_assessment", "too_disruptive", "other"];
 export type Preview = {

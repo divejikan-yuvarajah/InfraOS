@@ -125,6 +125,19 @@ export async function requestAdvice(w: Who, requestId: string, o: { refresh: boo
   return { ...out, conflictId: String(rec._id), requestPlan: best && best.fixes > 0 ? { planKey: best.p.planKey, requestId, shiftDays: best.p.moves[0]!.shiftDays ?? 0, fixes: best.fixes, of: out.baseline.conflictCount } : null };
 }
 
+/** Cheap read for tab badges and composer chips: reports an existing fresh snapshot for the viewer's audience, never computes one. */
+export async function cachedSummary(w: Who, conflictId: string) {
+  if (!/^[a-f0-9]{24}$/i.test(conflictId)) return null;
+  const visible = await ConflictRecord.exists({ $and: [accessFilter(w), { _id: oid(conflictId) }] });
+  if (!visible) return null;
+  const doc = (await Recommendation.findOne({ "scope.type": "conflict", "scope.conflictId": oid(conflictId), "scope.requestId": null, audienceKey: audienceOf(w), advisorVersion: ADVISOR_VERSION, status: "fresh", expiresAt: { $gt: new Date() } }).lean()) as unknown as { recNo: string; feedback: Feedback[]; generatedAt: Date; result: Stored } | null;
+  if (!doc) return { available: false as const };
+  const hidden = dismissedOf(doc.feedback);
+  const plans = doc.result.advice.plans.filter((p) => !hidden.has(p.planKey));
+  const top = plans[0];
+  return { available: plans.length > 0, recNo: doc.recNo, count: plans.length, generatedAt: doc.generatedAt.toISOString(), top: top ? { planKey: top.planKey, archetype: top.archetypes[0] ?? null, riskBefore: top.metrics.riskBefore, riskAfter: top.metrics.riskAfter } : null };
+}
+
 // ---------- feedback and handoff ----------
 async function owned(w: Who, recNo: string) {
   if (!/^RSX-\d{4}-\d{6}$/.test(recNo)) return null;

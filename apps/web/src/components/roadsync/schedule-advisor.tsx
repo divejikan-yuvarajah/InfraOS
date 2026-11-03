@@ -15,6 +15,7 @@ import "@/styles/mission-control-roadsync-advisor.css";
 import { useRoadsyncKeys } from "./resolution-tab";
 
 type Props = {
+  compact?: boolean;
   geometry: unknown; startUtc: string | null; endUtc: string | null; workingHours: string; isEmergency: boolean; workType: string; priority: string;
   /** Applies new dates to the form. Called ONLY from a user click or Enter. */
   onUse: (startUtc: string, endUtc: string) => void;
@@ -23,7 +24,7 @@ const DAY = 86_400_000;
 const days = (a: string, b: string) => Math.round((Date.parse(`${b}T00:00:00Z`) - Date.parse(`${a}T00:00:00Z`)) / DAY) + 1;
 
 /** Advisory only: never blocks Next or Submit, and never edits the form unless the user clicks "Use these dates". */
-export function ScheduleAdvisor({ geometry, startUtc, endUtc, workingHours, isEmergency, workType, priority, onUse }: Props) {
+export function ScheduleAdvisor({ compact, geometry, startUtc, endUtc, workingHours, isEmergency, workType, priority, onUse }: Props) {
   const [locale] = useWorkspaceLocale();
   const copy = getAdvisorCopy(locale);
   const ac = getAssessmentCopy(locale);
@@ -76,11 +77,12 @@ export function ScheduleAdvisor({ geometry, startUtc, endUtc, workingHours, isEm
               {p.none ? <p className="rz-toast" role="status"><CheckCircle2Icon aria-hidden="true" className="rz-inline" /> {copy.wizard.none}</p>
                 : <p role="status">{best ? (best.offsetDays > 0 ? fmt(copy.wizard.summaryLater, { n: best.offsetDays }) : fmt(copy.wizard.summaryEarlier, { n: Math.abs(best.offsetDays) })) : (later || earlier ? "" : copy.wizard.none)}</p>}
               {p.agenciesToCoordinate.length ? <p className="rs-help">{copy.wizard.agencies}: {p.agenciesToCoordinate.join(", ")}</p> : null}
-              <div className="sa-ribbon" role="slider" tabIndex={0} aria-label={copy.wizard.ribbon} aria-valuemin={0} aria-valuemax={Math.max(0, total - 1)} aria-valuenow={cursor ?? 0} aria-valuetext={chosen ? fmt(copy.wizard.window, { from: chosen.from, to: chosen.to }) : copy.wizard.hint} onKeyDown={key}>
+              {compact ? <ul className="ad-moves">{[later, earlier].flatMap((x) => (x ? [x] : [])).slice(0, 2).map((x) => <li key={x.offsetDays}>{x.offsetDays > 0 ? fmt(copy.wizard.summaryLater, { n: x.offsetDays }) : fmt(copy.wizard.summaryEarlier, { n: Math.abs(x.offsetDays) })}</li>)}</ul> : null}
+              {compact ? null : <div className="sa-ribbon" role="slider" tabIndex={0} aria-label={copy.wizard.ribbon} aria-valuemin={0} aria-valuemax={Math.max(0, total - 1)} aria-valuenow={cursor ?? 0} aria-valuetext={chosen ? fmt(copy.wizard.window, { from: chosen.from, to: chosen.to }) : copy.wizard.hint} onKeyDown={key}>
                 {(() => { let at = 0; return p.windows.map((w) => { const len = days(w.from, w.to); const start = at; at += len; return (
                   <button key={w.from} type="button" tabIndex={-1} className="sa-seg" data-free={w.maxBand === null} data-band={w.maxBand ?? "none"} style={{ ["--w" as string]: len, ["--c" as string]: w.maxBand ? BAND_COLOR[w.maxBand] : "#3E9B7A" }} aria-pressed={chosen === w}
                     aria-label={`${fmt(copy.wizard.window, { from: w.from, to: w.to })}: ${w.maxBand ? `${copy.wizard.band} ${ac.bands[w.maxBand]}` : copy.wizard.free}`} onClick={() => setCursor(start)} />); }); })()}
-              </div>
+              </div>}
               <ul className="sa-legend"><li><i className="dc-key" data-shape="hatch" style={{ ["--k" as string]: "#3E9B7A" }} aria-hidden="true" />{copy.wizard.free}</li><li><i className="dc-key" style={{ ["--k" as string]: BAND_COLOR.high }} aria-hidden="true" />{copy.wizard.conflict}</li></ul>
               {chosen ? <p>{fmt(copy.wizard.window, { from: chosen.from, to: chosen.to })} · {chosen.maxBand ? `${copy.wizard.band}: ${ac.bands[chosen.maxBand]}` : copy.wizard.free} <button type="button" className="rs-btn is-primary" onClick={apply}>{copy.wizard.use}</button></p> : null}
               <details><summary>{copy.map.table}</summary><table className="sl-table"><tbody>{p.windows.map((w) => <tr key={w.from}><th scope="row">{fmt(copy.wizard.window, { from: w.from, to: w.to })}</th><td>{w.maxBand ? ac.bands[w.maxBand] : copy.wizard.free}</td></tr>)}</tbody></table></details>
