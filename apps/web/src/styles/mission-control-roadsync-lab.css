@@ -1,0 +1,16 @@
+/* Step 79 "Scenario Lab". Reuses the rz-* resolution primitives; only lab-specific pieces live here. */
+.sl .sl-h { display: flex; gap: 0.5rem; align-items: center; margin: 0; font-size: 0.95rem; color: var(--rz-navy, #0b1f3a); }
+.sl .sl-h svg { width: 1.1rem; height: 1.1rem; }
+.sl-add { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.sl-lever .sl-remove { margin-left: auto; }
+.sl-save { display: flex; flex-wrap: wrap; gap: 0.7rem; align-items: flex-end; }
+.sl-result { display: grid; gap: 0.7rem; }
+.sl-verdict { margin: 0; font-size: 1.25rem; font-weight: 700; color: var(--rz-navy, #0b1f3a); }
+.sl-verdict[data-v="clears"] { color: var(--rz-green, #16603a); } .sl-verdict[data-v="raises"] { color: var(--rz-maroon, #8d153a); }
+.sl-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); gap: 1rem; }
+.sl-grid p { margin: 0.2rem 0; }
+.sl-band { display: inline-flex; padding: 0.1rem 0.6rem; border-radius: 999px; border: 2px solid var(--c); font-weight: 700; font-size: 0.82rem; background: #fff; }
+.sl-table { width: 100%; min-width: 28rem; border-collapse: collapse; font-size: 0.85rem; }
+.sl-table th, .sl-table td { padding: 0.35rem 0.6rem; border-bottom: 1px solid #eef2f7; text-align: left; }
+.dc-tscroll { overflow-x: auto; } .dc-h3 { margin: 0.4rem 0; font-size: 0.85rem; }
+@media (max-width: 767px) { .sl .rs-btn { min-height: 44px; } .sl-lever .sl-remove { margin-left: 0; } }

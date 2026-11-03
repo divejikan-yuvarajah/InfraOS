@@ -1,6 +1,7 @@
 "use client";
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import Link from "next/link";
 import { useState, useSyncExternalStore } from "react";
 import { AlertTriangleIcon, BanIcon, CheckCircle2Icon, CircleDotIcon, ClockIcon, Loader2Icon, ShieldCheckIcon } from "lucide-react";
 
@@ -16,6 +17,7 @@ import {
   type AmendmentView, type ApprovalView, type ChangeInput, type ConflictResolution, type CreateResolutionBody, type DateSpan, type ImpactPreview, type ResolutionSuggestions, type ResolutionType, type ResolutionView, type ThirdParty, type WorkingHours,
 } from "@/lib/roadsync/resolution";
 import { getResolutionCopy, type ResolutionCopy } from "@/lib/roadsync/resolution-copy";
+import { getSimCopy } from "@/lib/roadsync/simulator-copy";
 import { workRequestQueryKey } from "@/lib/roadsync/work-requests-view";
 import type { AuthLocale } from "@/lib/auth/types";
 
@@ -83,6 +85,7 @@ export function ResolutionTab({ conflictId, locale, parties }: { conflictId: str
   return (
     <div className="rz">
       <p className="rs-help">{copy.demoNote}</p>
+      <Link className="rs-btn" href={`/roadsync/conflicts/${conflictId}/lab`}>{getSimCopy(locale).open}</Link>
       {toast ? <p className="rz-toast" role="status">{toast}</p> : null}
       {res && isClosed(res.status) && data.canStart ? <StartForm conflictId={conflictId} copy={copy} parties={parties} onCreated={(m) => { setToast(m); refresh(); }} /> : null}
       {res ? <Workspace res={res} copy={copy} locale={locale} busy={busy} setDlg={setDlg} run={run} /> : data.canStart ? <StartForm conflictId={conflictId} copy={copy} parties={parties} onCreated={(m) => { setToast(m); refresh(); }} /> : <p className="rz-empty">{data.recordStatus === "resolved" || data.recordStatus === "dismissed" ? copy.start.closedRecord : copy.start.unavailable}</p>}

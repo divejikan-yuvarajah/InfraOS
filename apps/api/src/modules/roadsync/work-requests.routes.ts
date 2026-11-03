@@ -14,6 +14,7 @@ import { conflictRecordRouter } from "./conflict-record.routes.js";
 import { coordinationRouter } from "./coordination.routes.js";
 import { resolutionRouter } from "./resolution.routes.js";
 import { dashboardRouter } from "./dashboard.routes.js";
+import { simulatorRouter } from "./simulator.routes.js";
 
 type Res = { status: (code: number) => { json: (body: unknown) => void }; setHeader: (name: string, value: string) => void };
 
@@ -38,6 +39,7 @@ roadsyncRouter.use(conflictRecordRouter);
 roadsyncRouter.use(coordinationRouter);
 roadsyncRouter.use(resolutionRouter);
 roadsyncRouter.use(dashboardRouter);
+roadsyncRouter.use(simulatorRouter);
 
 roadsyncRouter.get("/work-requests", requireAuthenticated, requirePermission("roadsync.work_request.read"), async (req, res) => {
   try {
