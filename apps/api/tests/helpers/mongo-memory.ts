@@ -8,6 +8,7 @@ import { EmailVerificationChallenge } from "../../src/modules/identity/models/em
 import { PasswordResetChallenge } from "../../src/modules/identity/models/password-reset-challenge.model.js";
 import { RefreshFamily } from "../../src/modules/identity/models/refresh-family.model.js";
 import { RefreshSession } from "../../src/modules/identity/models/refresh-session.model.js";
+import { RegistrationRequest } from "../../src/modules/identity/models/registration-request.model.js";
 import { Role } from "../../src/modules/identity/models/role.model.js";
 import { User } from "../../src/modules/identity/models/user.model.js";
 import type { AppEnv } from "../../src/config/env.js";
@@ -46,6 +47,7 @@ export async function clearCoreCollections(): Promise<void> {
     RefreshFamily.deleteMany({}),
     EmailVerificationChallenge.deleteMany({}),
     PasswordResetChallenge.deleteMany({}),
+    RegistrationRequest.deleteMany({}),
   ]);
 }
 

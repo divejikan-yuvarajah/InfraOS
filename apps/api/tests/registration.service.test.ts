@@ -14,6 +14,11 @@ import {
   rejectAnonymousStaffRegistration,
   requestCitizenRegistration,
 } from "../src/modules/identity/registration.service.js";
+import {
+  listPublicInstitutions,
+  submitAccountRegistrationRequest,
+} from "../src/modules/identity/account-request.service.js";
+import { RegistrationRequest } from "../src/modules/identity/models/registration-request.model.js";
 import { RegistrationInputError } from "../src/modules/identity/registration.schema.js";
 import { SYSTEM_ROLE_PERMISSIONS } from "../src/modules/identity/seed/system-role-permissions.js";
 import {
@@ -271,5 +276,71 @@ describe("staff provisioning", { timeout: 60_000 }, () => {
     } finally {
       model.create = original;
     }
+  });
+
+  it("stores an institutional account request as PENDING with bcrypt cost-12 and no user/session privileges", async () => {
+    await seedOfficerRole();
+    await seedAgency();
+
+    const institutions = await listPublicInstitutions();
+    expect(institutions.some((item) => item.code === "DEMO_RDA")).toBe(true);
+
+    const submitted = await submitAccountRegistrationRequest({
+      fullName: "  Eng. Kasun Perera ",
+      email: "  Kasun.Perera@RDA.gov.lk ",
+      password: PASSWORD,
+      organizationCode: "demo_rda",
+      department: "Expressway Planning Division",
+      designation: "Senior Civil Engineer",
+      requestedResponsibility: "PROJECT_MANAGEMENT",
+      acceptedTerms: true,
+    });
+
+    expect(submitted.status).toBe("PENDING");
+    expect(submitted.emailVerified).toBe(false);
+    expect(submitted.organizationCode).toBe("DEMO_RDA");
+    expect(submitted.organizationName).toBe("Demo Road Authority");
+    expect(submitted.nextAction).toBe("AWAIT_INSTITUTIONAL_VERIFICATION");
+    expect(submitted.referenceCode).toMatch(/^REQ-\d{4}-[0-9A-F]{6}$/);
+
+    // Must never grant an active User record or RefreshSession automatically
+    expect(await User.countDocuments()).toBe(0);
+    expect(await RefreshSession.countDocuments()).toBe(0);
+
+    const storedReq = await RegistrationRequest.findById(submitted.id).select("+passwordHash");
+    expect(storedReq?.email).toBe("kasun.perera@rda.gov.lk");
+    expect(storedReq?.status).toBe("PENDING");
+    expect(storedReq?.passwordHash).toContain("$12$");
+    expect(await compare(PASSWORD, storedReq?.passwordHash ?? "")).toBe(true);
+    expect(storedReq?.toJSON()).not.toHaveProperty("passwordHash");
+
+    // Duplicate pending request must be rejected with RegistrationConflictError
+    await expect(
+      submitAccountRegistrationRequest({
+        fullName: "Eng. Kasun Perera",
+        email: "kasun.perera@rda.gov.lk",
+        password: PASSWORD,
+        organizationCode: "DEMO_RDA",
+        department: "Expressway Planning Division",
+        designation: "Senior Civil Engineer",
+        requestedResponsibility: "PROJECT_MANAGEMENT",
+        acceptedTerms: true,
+      }),
+    ).rejects.toBeInstanceOf(RegistrationConflictError);
+
+    // Mass-assignment of privileged keys must be rejected
+    await expect(
+      submitAccountRegistrationRequest({
+        fullName: "Attacker",
+        email: "attacker@rda.gov.lk",
+        password: PASSWORD,
+        organizationCode: "DEMO_RDA",
+        department: "IT",
+        designation: "Admin",
+        requestedResponsibility: "INSTITUTIONAL_ADMIN",
+        acceptedTerms: true,
+        roleKey: "SUPER_ADMIN",
+      }),
+    ).rejects.toBeInstanceOf(RegistrationInputError);
   });
 });
