@@ -17,7 +17,7 @@ export type Plan = {
   metrics: { riskBefore: number; riskAfter: number; riskReduction: number; focusCount: number; clearedFocus: number; newConflicts: number; worsened: number; totalShiftDays: number; perAgencyShiftDays: { agencyId: string; shiftDays: number }[]; agenciesToCoordinate: string[]; steps: number; daysToImpact: number | null; estimateDays: number; fitsBeforeStart: boolean | null; assumptionMoves: number; urgent: boolean };
   approvals: { required: boolean; reasons: string[] };
   afterSummary: { riskIndex: number; maxBand: Band | null; conflictCount: number };
-  focusDiff: { pairKey: string; before: { score: number; band: Band }; after: { score: number; band: Band }; diff: "cleared" | "new" | "worsened" | "improved" | "unchanged" }[];
+  focusDiff: { pairKey: string; before: { score: number; band: Band }; after: { score: number; band: Band }; afterKind: string; diff: "cleared" | "new" | "worsened" | "improved" | "unchanged" }[];
 };
 export type Excluded = { code: string; requestId: string | null; agencyId: string | null; mine: boolean; params: Record<string, number | string> };
 export type CoordinationFact = { startNow: boolean; urgency: { daysToImpact: number | null; urgent: boolean }; suggestedLead: { agencyId: string; reasonCode: string | null } | null; participants: { agencyId: string; role: "required" | "consulted" }[]; reasons: string[] };

@@ -37,7 +37,7 @@ export type Plan = {
   };
   approvals: { required: boolean; reasons: string[] };
   afterSummary: { riskIndex: number; maxBand: string | null; conflictCount: number };
-  focusDiff: { pairKey: string; before: { score: number; band: string }; after: { score: number; band: string }; diff: "cleared" | "new" | "worsened" | "improved" | "unchanged" }[];
+  focusDiff: { pairKey: string; before: { score: number; band: string }; after: { score: number; band: string }; afterKind: string; diff: "cleared" | "new" | "worsened" | "improved" | "unchanged" }[];
 };
 export type Excluded = { code: string; requestId: string | null; agencyId: string | null; mine: boolean; params: Record<string, number | string> };
 export type Advice = {
@@ -173,7 +173,7 @@ export function advise(world: World, opts: AdviseOpts): Advice {
       moves: c.moves, levers: c.levers,
       metrics: { riskBefore, riskAfter, riskReduction: reduction, focusCount: focus.length, clearedFocus: cleared, newConflicts: newRows.length, worsened: worsenedRows.length, totalShiftDays: totalShift, perAgencyShiftDays: shifts, agenciesToCoordinate: coordinate, steps, daysToImpact, estimateDays: estimate, fitsBeforeStart: daysToImpact === null ? null : estimate <= daysToImpact, assumptionMoves: assumed, urgent: daysToImpact !== null && daysToImpact <= ADV.URGENT_DAYS },
       approvals: { required: reasons.length > 0, reasons }, afterSummary: c.ev.result.request.after,
-      focusDiff: focusRows.map((r) => ({ pairKey: r.id, before: { score: r.before.score, band: r.before.band }, after: { score: r.after.score, band: r.after.band }, diff: (!live(r.after) ? "cleared" : r.after.score < r.before.score ? "improved" : r.after.score > r.before.score ? "worsened" : "unchanged") as Plan["focusDiff"][number]["diff"] })),
+      focusDiff: focusRows.map((r) => ({ pairKey: r.id, before: { score: r.before.score, band: r.before.band }, after: { score: r.after.score, band: r.after.band }, afterKind: r.after.kind, diff: (!live(r.after) ? "cleared" : r.after.score < r.before.score ? "improved" : r.after.score > r.before.score ? "worsened" : "unchanged") as Plan["focusDiff"][number]["diff"] })),
     };
   };
   const hasNewHigh = (c: Candidate) => c.ev.rows.some((r) => !live(r.before) && live(r.after) && BAND_ORDER.indexOf(r.after.band) >= BAND_ORDER.indexOf("high"));
