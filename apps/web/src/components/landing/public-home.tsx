@@ -1,31 +1,23 @@
 import type { Metadata } from "next";
 
-import { RoadsyncSignatureSection } from "@/components/landing/roadsync-signature-section";
-import { InfrastructureLifecycleSection } from "@/components/landing/infrastructure-lifecycle-section";
-import { LandingFaqSection } from "@/components/landing/landing-faq-section";
-import { LandingNextStepsSection } from "@/components/landing/landing-next-steps-section";
-import { ProductGisPreviewSection } from "@/components/landing/product-gis-preview-section";
-import { PlatformTransparencySection } from "@/components/landing/platform-transparency-section";
-import { TrustInformationSection } from "@/components/landing/trust-information-section";
-import { PublicAudiencesSection } from "@/components/landing/public-audiences-section";
-import { PlatformFeaturesSection } from "@/components/landing/platform-features-section";
-import { InfrastructureProblemSection } from "@/components/landing/infrastructure-problem-section";
-import { LandingHero } from "@/components/landing/landing-hero";
-import { PublicSiteFooter } from "@/components/landing/public-site-footer";
-import { PublicSiteHeader } from "@/components/landing/public-site-header";
-import { MAIN_CONTENT_ID } from "@/lib/accessibility/document-landmarks";
-import {
-  PUBLIC_LOCALES,
-  publicHomePath,
-  type PublicLocale,
-} from "@/lib/landing/locales";
-import { getPublicCopy } from "@/lib/landing/messages";
+import { LandingPage } from "@/components/landing/lp/landing-page";
+import { getLpCopy } from "@/lib/landing/lp-copy";
+import { PUBLIC_LOCALES, publicHomePath, type PublicLocale } from "@/lib/landing/locales";
+
+const OG_LOCALE: Record<PublicLocale, string> = { en: "en_US", si: "si_LK", ta: "ta_LK" };
 
 export function publicPageMetadata(locale: PublicLocale): Metadata {
-  const copy = getPublicCopy(locale);
+  const { meta } = getLpCopy(locale);
+  const image = {
+    url: "/landing/lp/hero-coordination.jpg",
+    width: 1376,
+    height: 768,
+    alt: getLpCopy(locale).hero.imageAlt,
+  };
   return {
-    title: copy.metaTitle,
-    description: copy.metaDescription,
+    title: { absolute: meta.title },
+    description: meta.description,
+    robots: { index: false, follow: false },
     alternates: {
       canonical: publicHomePath(locale),
       languages: {
@@ -35,36 +27,25 @@ export function publicPageMetadata(locale: PublicLocale): Metadata {
         "x-default": publicHomePath("en"),
       },
     },
+    openGraph: {
+      type: "website",
+      siteName: "INFRAOS",
+      title: meta.title,
+      description: meta.description,
+      locale: OG_LOCALE[locale],
+      images: [image],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: meta.title,
+      description: meta.description,
+      images: [image.url],
+    },
   };
 }
 
 export function PublicHome({ locale }: { locale: PublicLocale }) {
-  const copy = getPublicCopy(locale);
-
-  return (
-    <div lang={locale} className="public-site public-connected-future flex min-h-full flex-1 flex-col">
-      <PublicSiteHeader locale={locale} copy={copy} connectedFuture />
-      <main
-        id={MAIN_CONTENT_ID}
-        lang={locale}
-        tabIndex={-1}
-        className="flex min-w-0 flex-1 flex-col scroll-mt-28 outline-none"
-      >
-        <LandingHero copy={copy} locale={locale} />
-        <InfrastructureProblemSection copy={copy} />
-        <RoadsyncSignatureSection copy={copy} />
-        <PlatformFeaturesSection copy={copy} />
-        <InfrastructureLifecycleSection copy={copy} />
-        <PublicAudiencesSection copy={copy} />
-        <ProductGisPreviewSection copy={copy} />
-        <TrustInformationSection copy={copy} />
-        <PlatformTransparencySection copy={copy} />
-        <LandingFaqSection copy={copy} locale={locale} />
-        <LandingNextStepsSection copy={copy} />
-      </main>
-      <PublicSiteFooter copy={copy} locale={locale} />
-    </div>
-  );
+  return <LandingPage locale={locale} />;
 }
 
 export { PUBLIC_LOCALES };
