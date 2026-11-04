@@ -8,7 +8,7 @@ export type MapFeature = { type: "Feature"; geometry: { type: string; coordinate
 export type LayerData = { type: "FeatureCollection"; truncated: boolean; features: MapFeature[] };
 
 /** Server API path segment for each layer. */
-export const LAYER_PATH: Record<LayerKey, string> = { projects: "projects", roadworks: "work-requests", conflicts: "conflicts" };
+export const LAYER_PATH: Record<LayerKey, string> = { projects: "projects", roadworks: "roadworks", conflicts: "conflicts" };
 
 /** The API refuses a viewport wider than this many degrees, so the client never asks for one. */
 export const MAX_BBOX_SPAN_DEG = 10;
@@ -62,3 +62,52 @@ export const CLOSED_CONFLICT_STATUSES = ["resolved", "dismissed", "auto_closed",
 
 /** Count of features per layer for the toolbar; unknown until the layer has loaded. */
 export const countOf = (data: LayerData | undefined): number | null => (data ? data.features.length : null);
+
+export type LayerFilters = Record<string, string | undefined>;
+export type Filters = Record<LayerKey, LayerFilters>;
+export const NO_FILTERS: Filters = { projects: {}, roadworks: {}, conflicts: {} };
+
+/** `&k=v` for the active filters only, keys sorted so identical filters share a cache entry. */
+export const filtersParam = (filters: LayerFilters): string =>
+  Object.keys(filters).sort().filter((k) => filters[k]).map((k) => `&${encodeURIComponent(k)}=${encodeURIComponent(filters[k] as string)}`).join("");
+
+export type LayerAvailability = { id: LayerKey; available: boolean; reason?: "forbidden" | "unavailable" };
+export type MissingProject = { id: string; projectCode: string; title: string };
+export type LayersInfo = { layers: LayerAvailability[]; projectsWithoutLocation: { total: number; items: MissingProject[] } };
+
+type Position = number[];
+function positions(coordinates: unknown, out: Position[] = []): Position[] {
+  if (Array.isArray(coordinates) && typeof coordinates[0] === "number" && typeof coordinates[1] === "number") out.push(coordinates as Position);
+  else if (Array.isArray(coordinates)) for (const part of coordinates) positions(part, out);
+  return out;
+}
+
+/** [[west, south], [east, north]] of a GeoJSON geometry, or null when it holds no finite lon/lat pair. */
+export function featureBounds(geometry: { coordinates?: unknown } | null | undefined): [[number, number], [number, number]] | null {
+  const pts = positions(geometry?.coordinates).filter((p) => Number.isFinite(p[0]) && Number.isFinite(p[1]) && Math.abs(p[0]!) <= 180 && Math.abs(p[1]!) <= 90);
+  if (!pts.length) return null;
+  const xs = pts.map((p) => p[0]!), ys = pts.map((p) => p[1]!);
+  return [[Math.min(...xs), Math.min(...ys)], [Math.max(...xs), Math.max(...ys)]];
+}
+
+export type SearchHit = FeatureSummary & { geometry: MapFeature["geometry"] };
+const HAYSTACK_KEYS = ["title", "projectCode", "conflictNo", "workType", "projectTitle", "district", "agencyName"] as const;
+
+/** Case-insensitive search over the features already loaded for the enabled layers. Not a server search. */
+export function searchLoaded(data: Partial<Record<LayerKey, LayerData>>, enabled: Record<LayerKey, boolean>, query: string, limit = 24): SearchHit[] {
+  const q = query.trim().toLowerCase();
+  if (q.length < 2) return [];
+  const hits: SearchHit[] = [];
+  for (const layer of LAYER_KEYS) {
+    if (!enabled[layer]) continue;
+    for (const feature of data[layer]?.features ?? []) {
+      const p = feature.properties;
+      const hay = HAYSTACK_KEYS.map((k) => (typeof p[k] === "string" ? (p[k] as string) : "")).join(" ").replace(/_/g, " ").toLowerCase();
+      if (!hay.includes(q)) continue;
+      const info = summarize(layer, p);
+      if (info) hits.push({ ...info, geometry: feature.geometry });
+      if (hits.length >= limit) return hits;
+    }
+  }
+  return hits;
+}
