@@ -70,6 +70,11 @@ const EN = {
     title: "Resolution archive", subtitle: "Closed conflicts and how they ended.", outcome: "Outcome", empty: "No closed records match.", csv: "Export CSV", days: "{n} d", duration: "Duration", severity: "Severity", detection: "At detection", resolution: "At resolution", amendments: "Amendments applied", commitments: "Open commitments",
     tiles: { resolved: "Resolved", riskAccepted: "Risk accepted", noAction: "No action" } as Record<string, string>, allOutcomes: "All outcomes", closed: "Closed", nav: "History",
   },
+  audit: {
+    tab: "Audit", archiveTab: "Archive", title: "National audit", subtitle: "Every ledger entry across all conflicts. National staff only.", search: "Search action", empty: "No entries match.", total: "{n} entries",
+    verifyPage: "Verify chains on this page", verifying: "Verifying…", intact: "Intact", broken: "Broken at entry {seq}", missing: "Not found", system: "System", open: "Open history",
+    note: "Verification checks the hash chain. It is tamper-evident, not tamper-proof.",
+  },
 };
 export type ResolutionCopy = typeof EN;
 
@@ -84,6 +89,7 @@ const SI = merge({
   approvals: { title: "අනුමැතීන්", nav: "අනුමැතීන්" },
   sec: { plan: "සැලැස්ම", amendments: "සංශෝධන", approvals: "අනුමැතීන්", commitments: "බැඳීම්", verification: "සත්‍යාපනය", outcome: "ප්‍රතිඵලය" },
   archive: { title: "විසඳුම් ලේඛනාගාරය", nav: "ඉතිහාසය" },
+  audit: { tab: "විගණනය", archiveTab: "ලේඛනාගාරය", title: "ජාතික විගණනය" },
   loading: "පූරණය වෙමින්…", tab: "විසඳුම", historyTab: "ඉතිහාසය",
 });
 const TA = merge({
@@ -94,6 +100,7 @@ const TA = merge({
   approvals: { title: "ஒப்புதல்கள்", nav: "ஒப்புதல்கள்" },
   sec: { plan: "திட்டம்", amendments: "திருத்தங்கள்", approvals: "ஒப்புதல்கள்", commitments: "உறுதிமொழிகள்", verification: "சரிபார்ப்பு", outcome: "முடிவு" },
   archive: { title: "தீர்வு காப்பகம்", nav: "வரலாறு" },
+  audit: { tab: "தணிக்கை", archiveTab: "காப்பகம்", title: "தேசிய தணிக்கை" },
   loading: "ஏற்றுகிறது…", tab: "தீர்வு", historyTab: "வரலாறு",
 });
 

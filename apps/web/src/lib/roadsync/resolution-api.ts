@@ -1,7 +1,7 @@
 import { apiClient } from "@/lib/api/client";
 
 import { guard, moved, type Envelope } from "./api";
-import type { Archive, ChangeInput, Chronicle, ConflictResolution, CreateResolutionBody, ImpactPreview, QueueList, ResolutionSuggestions, ResolutionView, VerifyOut } from "./resolution";
+import type { Archive, AuditList, BatchVerifyRow, ChangeInput, Chronicle, ConflictResolution, CreateResolutionBody, ImpactPreview, QueueList, ResolutionSuggestions, ResolutionView, VerifyOut } from "./resolution";
 
 export { downloadFile } from "./conflict-records-api";
 
@@ -42,6 +42,8 @@ export const fetchApprovals = (query: string) => call<QueueList>(`${base}/approv
 export const fetchApprovalsSummary = () => call<{ pending: number; overdue: number }>(`${base}/approvals/summary`, "GET");
 
 export const fetchChronicle = (conflictId: string, query: string) => call<Chronicle>(`${conflict(conflictId, "history")}?${query}`, "GET");
+export const fetchAudit = (query: string) => call<AuditList>(`${base}/audit?${query}`, "GET");
+export const verifyAuditBatch = (conflictIds: string[]) => call<{ results: BatchVerifyRow[] }>(`${base}/audit/verify-batch`, "POST", { conflictIds });
 export const verifyChronicle = (conflictId: string) => call<VerifyOut>(conflict(conflictId, "history/verify"), "GET");
 export const chronicleCsvPath = (conflictId: string) => conflict(conflictId, "history/export.csv");
 export const evidencePackPath = (conflictId: string) => conflict(conflictId, "history/export.json");
