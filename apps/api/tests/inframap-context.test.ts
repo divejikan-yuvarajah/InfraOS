@@ -15,6 +15,7 @@ import {
   attentionReasons, effectiveSensitivity, projectAssetProperties, representativePoint, riskBand, tierOf, visibleAssetFilter, type AssetRow, type Viewer,
 } from "../src/modules/inframap/inframap.access.js";
 import { envelopeAround } from "../src/modules/inframap/inframap.geo.js";
+import { parseArgs, planImport } from "../src/modules/risk/hazard-import.js";
 import { Project } from "../src/modules/projects/models/project.model.js";
 import { HazardZone } from "../src/modules/risk/models/hazard-zone.model.js";
 import { RiskAssessment } from "../src/modules/risk/models/risk-assessment.model.js";
@@ -243,5 +244,35 @@ describe("Batch 02 asset, utility and risk layers", { timeout: 240_000 }, () => 
     for (const q of ["assets?bbox=" + HERE + "&assetType=WATER", "utilities?bbox=" + HERE + "&assetType=ROAD", "risks?bbox=" + HERE + "&level=EXTREME", "assets?bbox=" + HERE + "&x=1", `assets?bbox=${HERE}&bbox=${HERE}`, "exposure?layer=projects", `exposure?layer=projects&id=${d.pA.id}&x=1`]) {
       expect((await get(d.superUser.token, q)).status, q).toBe(400);
     }
+  });
+});
+
+describe("hazard import planning (pure)", () => {
+  const base = { hazardType: "FLOOD", levelProperty: "risk", levelMap: { "1": "LOW", "2": "HIGH" }, organisation: "Org", dataset: "Set", licence: "Licence", kind: "OFFICIAL_PUBLIC", commit: false };
+  const poly = { type: "Polygon", coordinates: [[[79, 6], [80, 6], [80, 7], [79, 6]]] };
+  it("refuses missing provenance, DEMO kind and bad hazard types before reading any feature", () => {
+    for (const bad of [{ licence: "" }, { organisation: "" }, { dataset: "" }, { kind: "DEMO" }, { kind: "" }, { hazardType: "TSUNAMI" }, { dataDate: "not-a-date" }]) {
+      expect(planImport({ features: [] }, { ...base, ...bad }).refused, JSON.stringify(bad)).toBeTruthy();
+    }
+    expect(planImport({ features: [] }, base).refused).toBeNull();
+    expect(planImport({ nope: 1 }, base).refused).toMatch(/FeatureCollection/);
+  });
+  it("keeps valid features and reports each skipped one with a reason, without crashing", () => {
+    const huge = { type: "Polygon", coordinates: [Array.from({ length: 10_002 }, (_, i) => [79 + (i % 2) * 0.001, 6 + (i % 3) * 0.001]).concat([[79, 6]])] };
+    const plan = planImport({ features: [
+      { id: "a", geometry: poly, properties: { risk: "2", name: "Zone A" } },
+      { id: "b", geometry: { type: "Polygon", coordinates: [[[200, 6], [80, 6], [80, 7], [200, 6]]] }, properties: { risk: "1" } },
+      { id: "c", geometry: poly, properties: { risk: "9" } },
+      { geometry: poly, properties: { risk: "1" } },
+      { id: "e", geometry: huge, properties: { risk: "1" } },
+      { id: "f", geometry: { type: "LineString", coordinates: [[1, 1], [2, 2]] }, properties: { risk: "1" } },
+    ] }, base);
+    expect(plan.read).toBe(6);
+    expect(plan.zones.map((z) => [z.externalId, z.level])).toEqual([["a", "HIGH"]]);
+    expect(plan.skipped.map((s) => s.index)).toEqual([1, 2, 3, 4, 5]);
+  });
+  it("parses arguments, treating a bare --commit as a flag and defaulting to a dry run", () => {
+    expect(parseArgs(["--file", "x.json", "--commit"])).toEqual({ file: "x.json", commit: true });
+    expect(parseArgs(["--file", "x.json"]).commit).toBeUndefined();
   });
 });

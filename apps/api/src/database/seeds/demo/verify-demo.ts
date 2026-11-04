@@ -2,6 +2,7 @@ import { SYSTEM_ROLE_KEYS } from "@infraos/shared-types";
 
 import { Agency } from "../../../modules/agencies/models/agency.model.js";
 import { Asset } from "../../../modules/assets/models/asset.model.js";
+import { HazardZone } from "../../../modules/risk/models/hazard-zone.model.js";
 import { Milestone } from "../../../modules/projects/models/milestone.model.js";
 import { Project } from "../../../modules/projects/models/project.model.js";
 import { Role } from "../../../modules/identity/models/role.model.js";
@@ -135,6 +136,14 @@ export async function verifyDemoSeed(): Promise<VerifyDemoResult> {
   lines.push({
     name: "Assets",
     pass: Boolean(asset?.sourceProjectId),
+  });
+
+  const demoHazards = await HazardZone.find({ isDemo: true }).select("name source.kind").lean();
+  const restrictedMain = await Asset.findOne({ name: "[DEMO] Water main (restricted)" }).select("sensitivity").lean();
+  lines.push({
+    name: "InfraMap demo hazards and restricted utility",
+    pass: demoHazards.length >= 2 && demoHazards.every((z) => z.name.startsWith("[DEMO]") && z.source.kind === "DEMO") && restrictedMain?.sensitivity === "RESTRICTED",
+    detail: `hazards=${demoHazards.length}`,
   });
 
   const issues = await CitizenIssue.countDocuments();

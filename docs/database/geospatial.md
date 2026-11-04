@@ -68,3 +68,14 @@ The index only produces candidates. A future RoadSync service must evaluate
 exact intersection/proximity, the full overlap rule, classification, severity,
 authorization, and coordination state. Step 14 does not implement a conflict
 engine.
+
+## Hazard zones (Phase 8, InfraMap)
+
+`hazardZones` is read-only reference data for the InfraMap Risk layer: `Polygon` (or `Point`) geometry with a `2dsphere`
+index, `{hazardType, level}`, and a required `source` (kind, organisation, dataset, licence, retrieved/data dates). There
+is no create/update API. Data arrives only through `npm run db:import:hazards -w @infraos/api -- --file ...`, which is a
+dry run unless `--commit` is passed, refuses missing provenance, skips invalid or oversized geometry and never writes
+`DEMO` data, or through the labelled `[DEMO]` seed (`isDemo: true`, removed by `db:seed:reset-demo`).
+No official hazard dataset is bundled or scraped; sources such as NBRO landslide zonation or Disaster Management Centre
+and Irrigation Department flood extents must be requested, and their licence recorded, before import.
+Exposure and nearby lookups are spatial overlaps with this recorded data, not predictions.
