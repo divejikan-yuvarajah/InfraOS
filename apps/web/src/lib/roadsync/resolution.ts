@@ -77,6 +77,10 @@ export type Chronicle = { items: ChronicleItem[]; total: number; nextCursor: num
 export type VerifyOut = { ok: boolean; count: number; firstBrokenSeq?: number | null; reason?: string; shortHead: string | null; headHash?: string; notice: string };
 export type ArchiveRow = { conflictId: string; conflictNo: string; status: string; outcome: string; resolutionNo: string | null; resolutionType: string | null; severityAtDetection: Band; severityAtResolution: Band | null; durationDays: number; amendmentsApplied: number; openCommitments: number; closedAt: string | null };
 export type Archive = { total: number; page: number; limit: number; items: ArchiveRow[]; tiles: Record<string, number> };
+/** National audit explorer rows (the API never sends free text; actor user ids are not rendered). */
+export type AuditRow = { conflictId: string; seq: number; at: string; action: string; entityType: string; entityNo: string | null; actor: { type?: string; agencyId?: string | null; role?: string | null }; short: string };
+export type AuditList = { total: number; page: number; limit: number; items: AuditRow[] };
+export type BatchVerifyRow = { conflictId: string; found: boolean; conflictNo?: string; ok?: boolean; count?: number; firstBrokenSeq?: number | null; reason?: string };
 
 // ---------- pure helpers ----------
 export const RAIL: ResolutionStatus[] = ["draft", "pending_approval", "approved", "applying", "verifying", "resolved"];

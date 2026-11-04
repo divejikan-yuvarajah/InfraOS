@@ -13,12 +13,13 @@ import { fmt } from "@/lib/roadsync/assessment";
 import { archiveCsvPath, downloadFile, fetchArchive } from "@/lib/roadsync/resolution-api";
 import { getResolutionCopy } from "@/lib/roadsync/resolution-copy";
 
+import { NationalAudit } from "./national-audit";
 import { useRoadsyncKeys, whenFmt } from "./resolution-tab";
 
 const OUTCOMES = ["amendment_cleared", "risk_accepted", "no_action", "opportunity_realized", "directive_cleared"] as const;
 
 /** Read-only archive of closed records within the viewer's agency scope (the server applies scope). */
-export function ResolutionArchive() {
+function ArchiveBody() {
   const [locale] = useWorkspaceLocale();
   const copy = getResolutionCopy(locale);
   const ar = copy.archive;
@@ -35,9 +36,7 @@ export function ResolutionArchive() {
   const csvQuery = new URLSearchParams(outcome ? { outcome } : {}).toString();
 
   return (
-    <StaffWorkspaceShell title={copy.archive.title} description={copy.archive.subtitle} wide>
-      <div className="rz rz-page">
-        <p className="rs-help">{copy.demoNote}</p>
+      <>
         <div className="rz-filters">
           <div className="rs-field"><label className="rs-label" htmlFor="rz-a-o">{ar.outcome}</label>
             <select id="rz-a-o" className="rs-input" value={outcome} onChange={(e) => { setOutcome(e.target.value); setPage(1); }}><option value="">{ar.allOutcomes}</option>{OUTCOMES.map((o) => <option key={o} value={o}>{copy.outcome[o]}</option>)}</select></div>
@@ -62,6 +61,29 @@ export function ResolutionArchive() {
         {q.data && q.data.total > q.data.limit ? (
           <div className="rz-actions"><button type="button" className="rs-btn" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>{copy.approvals.prev}</button><span className="rs-help">{page} / {pages}</span><button type="button" className="rs-btn" disabled={page >= pages} onClick={() => setPage((p) => p + 1)}>{copy.approvals.next}</button></div>
         ) : null}
+      </>
+  );
+}
+
+/** History page: the scoped archive for everyone; national staff also get the audit explorer (the server enforces that). */
+export function ResolutionArchive() {
+  const [locale] = useWorkspaceLocale();
+  const copy = getResolutionCopy(locale);
+  const keys = useRoadsyncKeys();
+  const national = keys.roleKey === "SUPER_ADMIN";
+  const [view, setView] = useState<"archive" | "audit">("archive");
+  const showAudit = national && view === "audit";
+  return (
+    <StaffWorkspaceShell title={showAudit ? copy.audit.title : copy.archive.title} description={showAudit ? copy.audit.subtitle : copy.archive.subtitle} wide>
+      <div className="rz rz-page">
+        <p className="rs-help">{copy.demoNote}</p>
+        {national ? (
+          <div className="rs-seg" role="group" aria-label={copy.archive.title}>
+            <button type="button" className="rs-btn" data-on={!showAudit} aria-pressed={!showAudit} onClick={() => setView("archive")}>{copy.audit.archiveTab}</button>
+            <button type="button" className="rs-btn" data-on={showAudit} aria-pressed={showAudit} onClick={() => setView("audit")}>{copy.audit.tab}</button>
+          </div>
+        ) : null}
+        {showAudit ? <NationalAudit /> : <ArchiveBody />}
       </div>
     </StaffWorkspaceShell>
   );

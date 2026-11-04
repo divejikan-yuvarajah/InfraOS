@@ -55,6 +55,7 @@ function summarizeUserAgent(value: string | undefined): string | null {
 
 async function accountCanSignIn(user: UserDocument): Promise<boolean> {
   if (user.status !== "ACTIVE" || user.emailVerified !== true) return false;
+  // Same policy as require-authenticated: no agency, no session (nullable agencyId is not an auth path).
   if (!user.agencyId) return false;
   const [role, agency] = await Promise.all([
     Role.findById(user.roleId),

@@ -10,7 +10,7 @@ import { StaffWorkspaceShell } from "@/components/auth/staff-workspace-shell";
 import { StatusChip } from "@/components/site-plan/site-plan";
 import { RouteLines } from "@/components/motif/connected-motif";
 import { fetchProjects } from "@/lib/projects/api";
-import { classifyWorkRequestError, fetchWorkRequestMap, fetchWorkRequests, FAILURE_COPY } from "@/lib/roadsync/api";
+import { classifyWorkRequestError, fetchWorkRequestMap, fetchWorkRequests } from "@/lib/roadsync/api";
 import {
   canHintCreate,
   ELIGIBLE_PROJECT_STATUSES,
@@ -18,11 +18,9 @@ import {
   filtersToQuery,
   formatWindow,
   hasActiveFilters,
-  PRIORITY_LABELS,
   statusLabel,
   WORK_PRIORITIES,
   WORK_STATUSES,
-  WORK_TYPE_LABELS,
   WORK_TYPES,
   workRequestQueryKey,
   type WorkRequestFilters,
@@ -32,6 +30,7 @@ import { getAuthEpoch, getMemorySession, subscribeAuth } from "@/lib/auth/state"
 import { useWorkspaceLocale } from "@/lib/i18n/workspace-locale";
 import { BANDS_DESC, fmt, type Band } from "@/lib/roadsync/assessment";
 import { getAssessmentCopy } from "@/lib/roadsync/assessment-copy";
+import { getWorkRequestCopy } from "@/lib/roadsync/work-request-copy";
 import { getConflictCopy } from "@/lib/roadsync/conflict-records-copy";
 
 import { BandPill } from "./risk-visuals";
@@ -49,6 +48,9 @@ export function WorkRequestsListClient() {
   const [filters, setFilters] = useState<WorkRequestFilters>(EMPTY_FILTERS);
   const [locale] = useWorkspaceLocale();
   const risk = getAssessmentCopy(locale);
+  const wc = getWorkRequestCopy(locale);
+  const lc = wc.list;
+  const failText = (kind: ReturnType<typeof classifyWorkRequestError>) => wc.failures[kind === "not-found" ? "notFound" : kind];
   const query = filtersToQuery(filters);
   const router = useRouter();
   const [view, setView] = useState<"list" | "map">("list");
@@ -85,73 +87,73 @@ export function WorkRequestsListClient() {
   const pages = data ? Math.max(1, Math.ceil(data.total / data.limit)) : 1;
 
   return (
-    <StaffWorkspaceShell title="Work Requests" description="Planned road and utility works in your authorised scope. Requests start as drafts; submitting one starts conflict detection." wide>
+    <StaffWorkspaceShell title={lc.title} description={lc.description} wide>
       <div className="rs-page">
         <div className="rs-eyebrow">
-          <p className="rs-crumb">Operations / RoadSync</p>
-          <div className="rs-seg rs-view" role="group" aria-label="View">
-            <button type="button" className="rs-btn" aria-pressed={view === "list"} onClick={() => setView("list")}>List</button>
-            <button type="button" className="rs-btn" aria-pressed={view === "map"} onClick={() => setView("map")}>Map</button>
+          <p className="rs-crumb">{lc.crumb}</p>
+          <div className="rs-seg rs-view" role="group" aria-label={lc.viewLabel}>
+            <button type="button" className="rs-btn" aria-pressed={view === "list"} onClick={() => setView("list")}>{lc.viewList}</button>
+            <button type="button" className="rs-btn" aria-pressed={view === "map"} onClick={() => setView("map")}>{lc.viewMap}</button>
           </div>
           {canHintCreate(roleKey) ? (
             <Link href="/roadsync/work-requests/new" className="rs-btn is-primary">
               <PlusIcon aria-hidden="true" />
-              Create work request
+              {lc.create}
             </Link>
           ) : null}
         </div>
 
         {data ? (
-          <section className="rs-tiles" aria-label="Work request summary">
+          <section className="rs-tiles" aria-label={lc.tilesLabel}>
             <div className="rs-tile" style={{ ["--rs-accent" as string]: "var(--infra-orange)" }}>
-              <p className="rs-tile-label">In your scope</p>
+              <p className="rs-tile-label">{lc.scope}</p>
               <p className="rs-tile-value">{scopeTotal}</p>
-              <p className="rs-tile-note">all statuses</p>
+              <p className="rs-tile-note">{lc.scopeNote}</p>
             </div>
             <div className="rs-tile" style={{ ["--rs-accent" as string]: "#94a3b8" }}>
-              <p className="rs-tile-label">Drafts</p>
+              <p className="rs-tile-label">{lc.drafts}</p>
               <p className="rs-tile-value">{byStatus.DRAFT ?? 0}</p>
-              <p className="rs-tile-note">not yet submitted</p>
+              <p className="rs-tile-note">{lc.draftsNote}</p>
             </div>
             <div className="rs-tile" style={{ ["--rs-accent" as string]: "var(--infra-yellow, #feb600)" }}>
-              <p className="rs-tile-label">High or critical</p>
+              <p className="rs-tile-label">{lc.urgent}</p>
               <p className="rs-tile-value">{urgent}</p>
-              <p className="rs-tile-note">by requested priority</p>
+              <p className="rs-tile-note">{lc.urgentNote}</p>
             </div>
           </section>
         ) : null}
 
-        <form className="rs-filters" aria-label="Filter work requests" onSubmit={(e) => e.preventDefault()}>
+        <form className="rs-filters" aria-label={lc.filtersLabel} onSubmit={(e) => e.preventDefault()}>
           <label className="rs-field">
-            <span className="rs-label">Status</span>
+            <span className="rs-label">{lc.status}</span>
             <select className="rs-input" value={filters.status} onChange={(e) => set({ status: e.target.value })}>
-              <option value="">All statuses</option>
+              <option value="">{lc.allStatuses}</option>
               {WORK_STATUSES.map((s) => (
-                <option key={s} value={s}>{statusLabel(s)}</option>
+                <option key={s} value={s}>{lc.statuses[s] ?? statusLabel(s)}</option>
               ))}
             </select>
           </label>
           <label className="rs-field">
-            <span className="rs-label">Work type</span>
+            <span className="rs-label">{lc.workType}</span>
             <select className="rs-input" value={filters.workType} onChange={(e) => set({ workType: e.target.value })}>
-              <option value="">All work types</option>
+              <option value="">{lc.allWorkTypes}</option>
               {WORK_TYPES.map((t) => (
-                <option key={t} value={t}>{WORK_TYPE_LABELS[t]}</option>
+                <option key={t} value={t}>{lc.workTypes[t]}</option>
               ))}
             </select>
           </label>
           <label className="rs-field">
-            <span className="rs-label">Priority</span>
+            <span className="rs-label">{lc.priority}</span>
             <select className="rs-input" value={filters.priority} onChange={(e) => set({ priority: e.target.value })}>
-              <option value="">All priorities</option>
+              <option value="">{lc.allPriorities}</option>
               {WORK_PRIORITIES.map((p) => (
-                <option key={p} value={p}>{PRIORITY_LABELS[p]}</option>
+                <option key={p} value={p}>{lc.priorities[p]}</option>
               ))}
             </select>
           </label>
           <label className="rs-nb-check">
             <input type="checkbox" checked={Boolean(filters.hasCandidates)} onChange={(e) => set({ hasCandidates: e.target.checked })} />
-            Has nearby activity
+            {lc.nearby}
           </label>
           <label className="rs-field">
             <span className="rs-label">{risk.list.bandFilter}</span>
@@ -173,9 +175,9 @@ export function WorkRequestsListClient() {
           </label>
           {projects.data ? (
             <label className="rs-field">
-              <span className="rs-label">Project</span>
+              <span className="rs-label">{lc.project}</span>
               <select className="rs-input" value={filters.projectId} onChange={(e) => set({ projectId: e.target.value })}>
-                <option value="">All projects</option>
+                <option value="">{lc.allProjects}</option>
                 {projects.data.projects
                   .filter((p) => (ELIGIBLE_PROJECT_STATUSES as readonly string[]).includes(p.status) || p.id === filters.projectId)
                   .map((p) => (
@@ -186,31 +188,31 @@ export function WorkRequestsListClient() {
           ) : null}
           {filtered ? (
             <button type="button" className="rs-btn" onClick={() => setFilters(EMPTY_FILTERS)}>
-              Reset filters
+              {lc.reset}
             </button>
           ) : null}
         </form>
 
         {view === "map" ? (
           mapData.isPending ? (
-            <div className="rs-skel-row" role="status" aria-label="Loading map" style={{ height: 420 }} />
+            <div className="rs-skel-row" role="status" aria-label={lc.mapLoading} style={{ height: 420 }} />
           ) : mapData.isError ? (
             <div className="rs-state" role="alert">
-              <h2>The map could not be loaded</h2>
-              <p>{FAILURE_COPY[classifyWorkRequestError(mapData.error)]}</p>
-              <button type="button" className="rs-btn" onClick={() => void mapData.refetch()}><RefreshCwIcon aria-hidden="true" />Try again</button>
+              <h2>{lc.mapFailed}</h2>
+              <p>{failText(classifyWorkRequestError(mapData.error))}</p>
+              <button type="button" className="rs-btn" onClick={() => void mapData.refetch()}><RefreshCwIcon aria-hidden="true" />{lc.retry}</button>
             </div>
           ) : (
-            <section aria-label="Work requests map">
-              <WorkMap features={mapData.data.features} height={460} label="Map of work requests in your scope. Select a shape to open it." onSelect={(id) => router.push(`/roadsync/work-requests/${id}`)} />
+            <section aria-label={lc.mapLabel}>
+              <WorkMap features={mapData.data.features} height={460} label={lc.mapHelp} onSelect={(id) => router.push(`/roadsync/work-requests/${id}`)} />
               <p className="rs-help">
-                {mapData.data.features.length} {mapData.data.features.length === 1 ? "work request" : "work requests"} on the map
-                {mapData.data.truncated ? " (first 1,000 only; narrow the filters)" : ""}. Dashed = draft. Select a shape to open it.
+                {fmt(mapData.data.features.length === 1 ? lc.countOne : lc.countMany, { n: mapData.data.features.length })} {lc.mapSuffix}
+                {mapData.data.truncated ? lc.mapTruncated : ""}
               </p>
             </section>
           )
         ) : list.isPending ? (
-          <div className="rs-list" role="status" aria-label="Loading work requests">
+          <div className="rs-list" role="status" aria-label={lc.loading}>
             {[0, 1, 2, 3].map((i) => (
               <div key={i} className="rs-skel-row" />
             ))}
@@ -218,41 +220,39 @@ export function WorkRequestsListClient() {
         ) : failure ? (
           <div className="rs-state" role="alert">
             <RouteLines className="rs-state-motif" />
-            <h2>{failure === "forbidden" ? "Work requests are not available to your role" : "Work requests could not be loaded"}</h2>
-            <p>{FAILURE_COPY[failure]}</p>
+            <h2>{failure === "forbidden" ? lc.forbiddenTitle : lc.failedTitle}</h2>
+            <p>{failText(failure)}</p>
             {failure === "unavailable" ? (
               <button type="button" className="rs-btn" onClick={() => void list.refetch()}>
                 <RefreshCwIcon aria-hidden="true" />
-                Try again
+                {lc.retry}
               </button>
             ) : null}
           </div>
         ) : data && data.workRequests.length === 0 ? (
           <div className="rs-state">
             <RouteLines className="rs-state-motif" />
-            <h2>{filtered ? "No work requests match these filters" : "No work requests yet"}</h2>
+            <h2>{filtered ? lc.emptyFilteredTitle : lc.emptyNoneTitle}</h2>
             <p>
-              {filtered
-                ? "Try a different status, type or priority, or reset the filters."
-                : "Work requests describe planned works on a project, with a location and a schedule. Create the first draft to start coordinating."}
+              {filtered ? lc.emptyFilteredHelp : lc.emptyNoneHelp}
             </p>
             {filtered ? (
-              <button type="button" className="rs-btn" onClick={() => setFilters(EMPTY_FILTERS)}>Reset filters</button>
+              <button type="button" className="rs-btn" onClick={() => setFilters(EMPTY_FILTERS)}>{lc.reset}</button>
             ) : canHintCreate(roleKey) ? (
               <Link href="/roadsync/work-requests/new" className="rs-btn">
                 <PlusIcon aria-hidden="true" />
-                Create work request
+                {lc.create}
               </Link>
             ) : null}
           </div>
         ) : data ? (
-          <section className="rs-list" aria-label="Work requests">
+          <section className="rs-list" aria-label={lc.title}>
             <div className="rs-list-head" aria-hidden="true">
-              <span>Work</span>
-              <span>Project</span>
-              <span>Planned window (Colombo)</span>
-              <span>Priority</span>
-              <span>Status</span>
+              <span>{lc.head.work}</span>
+              <span>{lc.head.project}</span>
+              <span>{lc.head.window}</span>
+              <span>{lc.head.priority}</span>
+              <span>{lc.head.status}</span>
             </div>
             <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
               {data.workRequests.map((wr) => (
@@ -261,39 +261,39 @@ export function WorkRequestsListClient() {
                     <WorkTypeIcon type={wr.workType} />
                     <div style={{ minWidth: 0 }}>
                       <Link className="rs-row-link" href={`/roadsync/work-requests/${wr.id}`}>
-                        {WORK_TYPE_LABELS[wr.workType]}
-                        <span className="mc-sr"> — open details</span>
+                        {lc.workTypes[wr.workType]}
+                        <span className="mc-sr">{lc.openDetails}</span>
                       </Link>
-                      <p className="rs-sub">{wr.geometry.type === "Point" ? "Point" : wr.geometry.type === "LineString" ? "Corridor" : "Area"} · {wr.agencyName ?? "Agency"}{wr.nearbyCount > 0 ? <span className="rs-nb-chip" style={{ marginLeft: "0.5rem" }}>{wr.assessment?.maxBand ? fmt(risk.list.risk, { n: wr.nearbyCount, band: risk.bands[wr.assessment.maxBand as Band] }) : fmt(risk.list.nearbyOnly, { n: wr.nearbyCount })}</span> : null}{wr.assessment?.maxBand ? <span style={{ marginLeft: "0.5rem" }} title={`${risk.riskIndex}: ${wr.assessment.riskIndex}`}><BandPill band={wr.assessment.maxBand as Band} copy={risk} /></span> : null}{wr.conflictRecords && wr.conflictRecords.total > 0 ? <Link href={`/roadsync/conflicts?requestId=${wr.id}`} className="rs-nb-chip" style={{ marginLeft: "0.5rem" }}>{fmt(getConflictCopy(locale).integrations.records, { n: wr.conflictRecords.total })}{wr.conflictRecords.needsAck > 0 ? ` · ${getConflictCopy(locale).integrations.needsAck}` : ""}</Link> : null}</p>
+                      <p className="rs-sub">{wr.geometry.type === "Point" ? lc.geom.Point : wr.geometry.type === "LineString" ? lc.geom.Corridor : lc.geom.Area} · {wr.agencyName ?? lc.agency}{wr.nearbyCount > 0 ? <span className="rs-nb-chip" style={{ marginLeft: "0.5rem" }}>{wr.assessment?.maxBand ? fmt(risk.list.risk, { n: wr.nearbyCount, band: risk.bands[wr.assessment.maxBand as Band] }) : fmt(risk.list.nearbyOnly, { n: wr.nearbyCount })}</span> : null}{wr.assessment?.maxBand ? <span style={{ marginLeft: "0.5rem" }} title={`${risk.riskIndex}: ${wr.assessment.riskIndex}`}><BandPill band={wr.assessment.maxBand as Band} copy={risk} /></span> : null}{wr.conflictRecords && wr.conflictRecords.total > 0 ? <Link href={`/roadsync/conflicts?requestId=${wr.id}`} className="rs-nb-chip" style={{ marginLeft: "0.5rem" }}>{fmt(getConflictCopy(locale).integrations.records, { n: wr.conflictRecords.total })}{wr.conflictRecords.needsAck > 0 ? ` · ${getConflictCopy(locale).integrations.needsAck}` : ""}</Link> : null}</p>
                     </div>
                   </div>
                   <div className="rs-cell">
-                    <span className="rs-cell-label">Project</span>
+                    <span className="rs-cell-label">{lc.head.project}</span>
                     {wr.projectTitle ?? "—"}
                     {wr.projectCode ? <p className="rs-sub">{wr.projectCode}</p> : null}
                   </div>
                   <div className="rs-cell rs-cell-window">
-                    <span className="rs-cell-label">Planned window</span>
+                    <span className="rs-cell-label">{lc.head.window}</span>
                     {formatWindow(wr.plannedStart, wr.plannedEnd)}
                   </div>
                   <div className="rs-cell">
-                    <span className="rs-cell-label">Priority</span>
-                    <PriorityMark priority={wr.priority} />
+                    <span className="rs-cell-label">{lc.head.priority}</span>
+                    <PriorityMark priority={wr.priority} label={lc.priorities[wr.priority]} />
                   </div>
                   <div className="rs-cell">
-                    <span className="rs-cell-label">Status</span>
-                    <StatusChip domain="work" status={wr.status} />
+                    <span className="rs-cell-label">{lc.head.status}</span>
+                    <StatusChip domain="work" status={wr.status} label={lc.statuses[wr.status]} />
                   </div>
                 </li>
               ))}
             </ul>
             <div className="rs-pager">
               <span>
-                <RouteIcon aria-hidden="true" style={{ width: "0.9rem", height: "0.9rem", display: "inline", verticalAlign: "-0.15em" }} /> {data.total} {data.total === 1 ? "work request" : "work requests"} · page {data.page} of {pages}
+                <RouteIcon aria-hidden="true" style={{ width: "0.9rem", height: "0.9rem", display: "inline", verticalAlign: "-0.15em" }} /> {fmt(data.total === 1 ? lc.countOne : lc.countMany, { n: data.total })} · {fmt(lc.page, { page: data.page, pages })}
               </span>
               <span style={{ display: "inline-flex", gap: "0.5rem" }}>
-                <button type="button" className="rs-btn" disabled={filters.page <= 1} onClick={() => setFilters((c) => ({ ...c, page: c.page - 1 }))}>Previous</button>
-                <button type="button" className="rs-btn" disabled={filters.page >= pages} onClick={() => setFilters((c) => ({ ...c, page: c.page + 1 }))}>Next</button>
+                <button type="button" className="rs-btn" disabled={filters.page <= 1} onClick={() => setFilters((c) => ({ ...c, page: c.page - 1 }))}>{lc.prev}</button>
+                <button type="button" className="rs-btn" disabled={filters.page >= pages} onClick={() => setFilters((c) => ({ ...c, page: c.page + 1 }))}>{lc.next}</button>
               </span>
             </div>
           </section>

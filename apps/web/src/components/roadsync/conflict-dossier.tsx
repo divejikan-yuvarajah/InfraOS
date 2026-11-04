@@ -14,7 +14,7 @@ import { getAuthEpoch, getMemorySession, subscribeAuth } from "@/lib/auth/state"
 import { useWorkspaceLocale } from "@/lib/i18n/workspace-locale";
 import { BAND_COLOR, BAND_RANGE, BANDS_ASC, fmt } from "@/lib/roadsync/assessment";
 import { factorSentence, getAssessmentCopy, mitigationSentence } from "@/lib/roadsync/assessment-copy";
-import { IMPLEMENTED_LIFECYCLE, SIDE_EXITS, stepPath, type Dossier, type FactorView, type HistoryPoint } from "@/lib/roadsync/conflict-records";
+import { IMPLEMENTED_LIFECYCLE, isAckOpen, SIDE_EXITS, stepPath, type Dossier, type FactorView, type HistoryPoint } from "@/lib/roadsync/conflict-records";
 import { acknowledgeRecord, addAffectedAgency, addRecordNote, deleteRecordNote, dismissRecord, downloadFile, evidencePath, excludeAffectedAgency, fetchDossier, fetchRecordMap, reopenRecord, restoreAffectedAgency, setLeadAgency, setWatching } from "@/lib/roadsync/conflict-records-api";
 import { getConflictCopy, type ConflictCopy } from "@/lib/roadsync/conflict-records-copy";
 import { workRequestQueryKey } from "@/lib/roadsync/work-requests-view";
@@ -128,7 +128,7 @@ export function ConflictDossier({ id }: { id: string }) {
           </div>
           <div className="cr-hero-meta">
             <p>{fmt(copy.dossier.ackSummary, d.ackProgress)}</p><AckSegments row={d} copy={copy} />
-            {myAgency && myAgency.ack.status === "pending" ? <SlaChip due={myAgency.ackDueAt} now={now} copy={copy} locale={locale} /> : null}
+            {myAgency && myAgency.ack.status === "pending" && isAckOpen(d.status) ? <SlaChip due={myAgency.ackDueAt} now={now} copy={copy} locale={locale} /> : null}
             <p className="cr-lead"><CrownIcon aria-hidden="true" /> {sentenceLead}</p>
             {coord.data && coord.data.coordination.activeCount > 0 ? <Link className="rs-nb-chip" href={`/roadsync/coordination?preset=all&conflictId=${id}`}>{coord.data.items.filter((x) => x.myParticipation?.mustRespond).length > 0 ? fmt(cc.integrations.activeChip, { active: coord.data.coordination.activeCount, needs: coord.data.items.filter((x) => x.myParticipation?.mustRespond).length }) : fmt(cc.integrations.activeChipNone, { active: coord.data.coordination.activeCount })}</Link> : null}
           </div>

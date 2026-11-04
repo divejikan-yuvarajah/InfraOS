@@ -66,9 +66,15 @@ const EN = {
       resolution_followup: "Follow-up needed", resolution_cancelled: "Resolution cancelled", risk_accepted: "Risk accepted", risk_reopened: "Risk re-opened", note_added: "Note added", export_generated: "Export generated", integrity_verified: "Integrity verified",
     } as Record<string, string>,
   },
+  roles: { SUPER_ADMIN: "National administrator", GOV_ADMIN: "Government administrator", AGENCY_OFFICER: "Agency officer", PROJECT_MANAGER: "Project manager", CONTRACTOR: "Contractor", INSPECTOR: "Inspector", CITIZEN: "Citizen" } as Record<string, string>,
   archive: {
     title: "Resolution archive", subtitle: "Closed conflicts and how they ended.", outcome: "Outcome", empty: "No closed records match.", csv: "Export CSV", days: "{n} d", duration: "Duration", severity: "Severity", detection: "At detection", resolution: "At resolution", amendments: "Amendments applied", commitments: "Open commitments",
     tiles: { resolved: "Resolved", riskAccepted: "Risk accepted", noAction: "No action" } as Record<string, string>, allOutcomes: "All outcomes", closed: "Closed", nav: "History",
+  },
+  audit: {
+    tab: "Audit", archiveTab: "Archive", title: "National audit", subtitle: "Every ledger entry across all conflicts. National staff only.", search: "Search action", empty: "No entries match.", total: "{n} entries",
+    verifyPage: "Verify chains on this page", verifying: "Verifying…", intact: "Intact", broken: "Broken at entry {seq}", missing: "Not found", system: "System", open: "Open history",
+    note: "Verification checks the hash chain. It is tamper-evident, not tamper-proof.",
   },
 };
 export type ResolutionCopy = typeof EN;
@@ -80,25 +86,37 @@ const SI = merge({
   status: { draft: "කෙටුම්පත", pending_approval: "අනුමැතිය බලාපොරොත්තුවෙන්", approved: "අනුමත", applying: "වෙනස්කම් යොදමින්", verifying: "සත්‍යාපනය", resolved: "විසඳා ඇත", needs_followup: "පසු විපරම අවශ්‍යයි", cancelled: "අවලංගු" },
   types: { amendment: "කාලසටහන් සංශෝධනය", directive: "ජාතික නිර්දේශය", risk_acceptance: "අවදානම පිළිගැනීම", no_action: "ක්‍රියාමාර්ගයක් අවශ්‍ය නැත", opportunity: "එක් වරක් කැණීමේ අවස්ථාව" },
   actions: { start: "විසඳුම ආරම්භ කරන්න", cancel: "විසඳුම අවලංගු කරන්න", approve: "අනුමත කරන්න", reject: "ප්‍රතික්ෂේප කරන්න", confirm: "පාර්ශ්වයක් ලෙස තහවුරු කරන්න", reassess: "දැන් නැවත ඇගයීම", contest: "නිර්දේශය අභියෝග කරන්න", complete: "සම්පූර්ණයි", waive: "අත්හරින්න" },
-  history: { title: "සම්බන්ධීකරණ ඉතිහාසය", verify: "අඛණ්ඩතාව සත්‍යාපනය", csv: "CSV අපනයනය", loadMore: "තව පූරණය කරන්න" },
+  history: { system: "පද්ධතිය", actor: "පරිශීලකයා", title: "සම්බන්ධීකරණ ඉතිහාසය", verify: "අඛණ්ඩතාව සත්‍යාපනය", csv: "CSV අපනයනය", loadMore: "තව පූරණය කරන්න" },
   approvals: { title: "අනුමැතීන්", nav: "අනුමැතීන්" },
   sec: { plan: "සැලැස්ම", amendments: "සංශෝධන", approvals: "අනුමැතීන්", commitments: "බැඳීම්", verification: "සත්‍යාපනය", outcome: "ප්‍රතිඵලය" },
   archive: { title: "විසඳුම් ලේඛනාගාරය", nav: "ඉතිහාසය" },
+  roles: { SUPER_ADMIN: "ජාතික පරිපාලක", GOV_ADMIN: "රාජ්‍ය පරිපාලක", AGENCY_OFFICER: "ආයතන නිලධාරියා", PROJECT_MANAGER: "ව්‍යාපෘති කළමනාකරු", CONTRACTOR: "කොන්ත්‍රාත්කරු", INSPECTOR: "පරීක්ෂක", CITIZEN: "පුරවැසියා" },
+  audit: { tab: "විගණනය", archiveTab: "ලේඛනාගාරය", title: "ජාතික විගණනය", system: "පද්ධතිය" },
   loading: "පූරණය වෙමින්…", tab: "විසඳුම", historyTab: "ඉතිහාසය",
 });
 const TA = merge({
   status: { draft: "வரைவு", pending_approval: "ஒப்புதல் நிலுவையில்", approved: "அங்கீகரிக்கப்பட்டது", applying: "மாற்றங்கள் செயல்படுத்தப்படுகின்றன", verifying: "சரிபார்ப்பு", resolved: "தீர்க்கப்பட்டது", needs_followup: "தொடர் நடவடிக்கை தேவை", cancelled: "ரத்து" },
   types: { amendment: "அட்டவணை திருத்தம்", directive: "தேசிய உத்தரவு", risk_acceptance: "ஆபத்து ஏற்பு", no_action: "நடவடிக்கை தேவையில்லை", opportunity: "ஒருமுறை தோண்டும் வாய்ப்பு" },
   actions: { start: "தீர்வைத் தொடங்கு", cancel: "தீர்வை ரத்து செய்", approve: "அங்கீகரி", reject: "நிராகரி", confirm: "தரப்பாக உறுதிப்படுத்து", reassess: "இப்போது மறுமதிப்பீடு", contest: "உத்தரவை எதிர்", complete: "முடிந்தது", waive: "தள்ளுபடி" },
-  history: { title: "ஒருங்கிணைப்பு வரலாறு", verify: "ஒருமைப்பாட்டைச் சரிபார்", csv: "CSV ஏற்றுமதி", loadMore: "மேலும் ஏற்று" },
+  history: { system: "அமைப்பு", actor: "பயனர்", title: "ஒருங்கிணைப்பு வரலாறு", verify: "ஒருமைப்பாட்டைச் சரிபார்", csv: "CSV ஏற்றுமதி", loadMore: "மேலும் ஏற்று" },
   approvals: { title: "ஒப்புதல்கள்", nav: "ஒப்புதல்கள்" },
   sec: { plan: "திட்டம்", amendments: "திருத்தங்கள்", approvals: "ஒப்புதல்கள்", commitments: "உறுதிமொழிகள்", verification: "சரிபார்ப்பு", outcome: "முடிவு" },
   archive: { title: "தீர்வு காப்பகம்", nav: "வரலாறு" },
+  roles: { SUPER_ADMIN: "தேசிய நிர்வாகி", GOV_ADMIN: "அரசு நிர்வாகி", AGENCY_OFFICER: "நிறுவன அலுவலர்", PROJECT_MANAGER: "திட்ட மேலாளர்", CONTRACTOR: "ஒப்பந்ததாரர்", INSPECTOR: "ஆய்வாளர்", CITIZEN: "குடிமகன்" },
+  audit: { tab: "தணிக்கை", archiveTab: "காப்பகம்", title: "தேசிய தணிக்கை", system: "அமைப்பு" },
   loading: "ஏற்றுகிறது…", tab: "தீர்வு", historyTab: "வரலாறு",
 });
 
 export function getResolutionCopy(locale: AuthLocale): ResolutionCopy {
   return locale === "si" ? SI : locale === "ta" ? TA : EN;
+}
+
+/** Role label in the viewer's language; an unknown key reads as plain words, never the raw code. */
+export function roleLabel(copy: ResolutionCopy, role: string): string {
+  const known = copy.roles[role];
+  if (known) return known;
+  const words = role.replace(/_/g, " ").toLowerCase();
+  return words.charAt(0).toUpperCase() + words.slice(1);
 }
 
 /** Ledger action label with a readable fallback for codes added later on the server. */
