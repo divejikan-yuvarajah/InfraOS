@@ -12,13 +12,10 @@ export const LAYER_FEATURE_CAP = 250;
 export const MAX_BBOX_SPAN_DEG = 10;
 const COORDINATE_DECIMALS = 6;
 
-/** `bbox=west,south,east,north` is required, finite, inside lon/lat range, ordered, and not wider than MAX_BBOX_SPAN_DEG. */
-export const bboxQuerySchema = z
-  .object({
-    bbox: z
-      .string()
-      .max(120)
-      .transform((value, ctx) => {
+const bboxField = z
+  .string()
+  .max(120)
+  .transform((value, ctx) => {
         const n = value.split(",").map((part) => (part.trim() === "" ? Number.NaN : Number(part)));
         const [west, south, east, north] = n;
         if (
@@ -31,9 +28,29 @@ export const bboxQuerySchema = z
           return z.NEVER;
         }
         return n as Bbox;
-      }),
-  })
-  .strict();
+      });
+
+/** `bbox=west,south,east,north` is required, finite, inside lon/lat range, ordered, and not wider than MAX_BBOX_SPAN_DEG. */
+export const bboxQuerySchema = z.object({ bbox: bboxField }).strict();
+
+export const PROJECT_STATUSES = ["DRAFT", "SUBMITTED", "UNDER_REVIEW", "REJECTED", "APPROVED", "ACTIVE", "ON_HOLD", "DELAYED", "COMPLETED", "CANCELLED"] as const;
+export const PROJECT_TYPES = ["ROAD", "WATER", "ELECTRICITY", "TELECOM", "DRAINAGE", "BRIDGE", "BUILDING", "PUBLIC_FACILITY", "MULTI_INFRASTRUCTURE", "OTHER"] as const;
+export const WORK_STATUSES = ["DRAFT", "SUBMITTED", "PLANNED", "APPROVED", "ACTIVE", "COMPLETED", "CANCELLED"] as const;
+export const BANDS = ["info", "low", "medium", "high", "critical"] as const;
+
+/** Per-layer filters are closed enums or "1"; anything else is a 400. Applied on the server so the browser never receives rows it filtered out. */
+export const layerQuerySchemas = {
+  projects: z.object({ bbox: bboxField, status: z.enum(PROJECT_STATUSES).optional(), projectType: z.enum(PROJECT_TYPES).optional() }).strict(),
+  roadworks: z.object({ bbox: bboxField, status: z.enum(WORK_STATUSES).optional(), overdue: z.literal("1").optional() }).strict(),
+  conflicts: z.object({ bbox: bboxField, band: z.enum(BANDS).optional(), group: z.enum(["open", "closed"]).optional() }).strict(),
+};
+
+/** Derived, never stored: a roadwork whose planned end has passed while it is still open. */
+export function isOverdueWork(status: unknown, plannedEnd: unknown, now = new Date()): boolean {
+  if (status === "COMPLETED" || status === "CANCELLED" || !plannedEnd) return false;
+  const end = new Date(plannedEnd as string | number | Date).getTime();
+  return Number.isFinite(end) && end < now.getTime();
+}
 
 export function viewportPolygon([west, south, east, north]: Bbox) {
   return { type: "Polygon" as const, coordinates: [[[west, south], [east, south], [east, north], [west, north], [west, south]]] };

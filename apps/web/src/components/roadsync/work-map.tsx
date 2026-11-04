@@ -2,10 +2,11 @@
 
 import "maplibre-gl/dist/maplibre-gl.css";
 
-import type { GeoJSONSource, Map as MlMap, StyleSpecification } from "maplibre-gl";
+import type { GeoJSONSource, Map as MlMap } from "maplibre-gl";
 import { useEffect, useRef, useState } from "react";
 import { DownloadIcon, Trash2Icon, Undo2Icon, UploadIcon } from "lucide-react";
 
+import { MAP_STYLE, SRI_LANKA_BOUNDS } from "@/lib/inframap/map-style";
 import { useWorkspaceLocale } from "@/lib/i18n/workspace-locale";
 import { BAND_COLOR as BAND_HEX, BANDS_ASC as BAND_ORDER } from "@/lib/roadsync/assessment";
 import { getAssessmentCopy } from "@/lib/roadsync/assessment-copy";
@@ -102,21 +103,7 @@ function useNearbyOverlay(mapRef: React.RefObject<MlMap | null>, ready: boolean,
   }, [conflictsOn, ready, mapRef]);
 }
 
-/** Free OpenStreetMap raster tiles: no API key, attribution always visible. */
-export const MAP_STYLE: StyleSpecification = {
-  version: 8,
-  sources: {
-    osm: {
-      type: "raster",
-      tiles: ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],
-      tileSize: 256,
-      maxzoom: 19,
-      attribution: "© OpenStreetMap contributors",
-    },
-  },
-  layers: [{ id: "osm", type: "raster", source: "osm" }],
-};
-export const SRI_LANKA_BOUNDS: [[number, number], [number, number]] = [[79.4, 5.8], [82.1, 9.95]];
+export { MAP_STYLE, SRI_LANKA_BOUNDS };
 const ACCENT = "#c2410c";
 const EMPTY = { type: "FeatureCollection" as const, features: [] as unknown[] };
 
