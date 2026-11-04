@@ -91,7 +91,7 @@ export function ResetPasswordForm({ locale }: ResetPasswordFormProps) {
               : localError;
 
   return (
-    <form className="space-y-5" noValidate onSubmit={onSubmit}>
+    <form method="post" className="space-y-5" noValidate onSubmit={onSubmit}>
       {message ? (
         <div
           id={statusId}

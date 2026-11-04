@@ -491,7 +491,7 @@ export function RegisterWizardForm({
       {/* STEP 1 (STA 0+000): ACCOUNT DETAILS                               */}
       {/* ================================================================= */}
       {step === 1 ? (
-        <form onSubmit={handleStep1Continue} noValidate className="space-y-2.5">
+        <form method="post" onSubmit={handleStep1Continue} noValidate className="space-y-2.5">
           {/* Statutory institutional identity verification notice */}
           <div className="flex items-center gap-3 rounded-lg border border-slate-200/90 bg-[#F8FAFC] px-3 py-2">
             <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-[#FFDBCE] text-[#A83900]">
@@ -955,7 +955,7 @@ export function RegisterWizardForm({
       {/* STEP 3 (STA 1+000): REVIEW & ACCOUNT SUBMISSION                   */}
       {/* ================================================================= */}
       {step === 3 ? (
-        <form onSubmit={handleFinalSubmit} noValidate className="space-y-2.5">
+        <form method="post" onSubmit={handleFinalSubmit} noValidate className="space-y-2.5">
           {/* Summary Card 1: Personal & Security Credentials */}
           <div className="rounded-xl border border-slate-200 bg-[#F8FAFC] p-3">
             <div className="mb-1.5 flex items-center justify-between">
