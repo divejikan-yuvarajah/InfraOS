@@ -43,8 +43,8 @@ describe("steps 81-84 InfraMap helpers", () => {
     for (const locale of ["en", "si", "ta"] as const) {
       const copy = getInframapCopy(locale);
       expect(walk(copy), locale).toEqual([]);
-      expect(Object.keys(copy.layers).sort()).toEqual(["conflicts", "projects", "roadworks"]);
-      expect(Object.keys(copy.panel.open).sort()).toEqual(["conflicts", "projects", "roadworks"]);
+      expect(Object.keys(copy.layers).sort()).toEqual(["assets", "conflicts", "projects", "risks", "roadworks", "utilities"]);
+      expect(Object.keys(copy.panel.open).sort()).toEqual(["conflicts", "projects", "risks", "roadworks"]);
     }
     expect(getInframapCopy("si").layers.projects).not.toBe(getInframapCopy("en").layers.projects);
     expect(getInframapCopy("ta").states.count).toContain("{n}");

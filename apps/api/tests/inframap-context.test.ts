@@ -276,3 +276,48 @@ describe("hazard import planning (pure)", () => {
     expect(parseArgs(["--file", "x.json"]).commit).toBeUndefined();
   });
 });
+
+describe("hazardZones indexes and the demo seed", { timeout: 240_000 }, () => {
+  beforeAll(async () => {
+    await startIsolatedMongo();
+    for (const m of [Asset, Project, HazardZone, MaintenanceRecord]) await m.init();
+  }, 300_000);
+  afterAll(async () => { await stopIsolatedMongo(); });
+
+  it("creates the 2dsphere, type/level and demo indexes and refuses a non-DEMO source without a licence", async () => {
+    const keys = (await HazardZone.collection.indexes()).map((i) => JSON.stringify(i.key));
+    expect(keys).toEqual(expect.arrayContaining([JSON.stringify({ geometry: "2dsphere" }), JSON.stringify({ hazardType: 1, level: 1 }), JSON.stringify({ isDemo: 1 })]));
+    await expect(HazardZone.create({ name: "x", hazardType: "FLOOD", level: "LOW", geometry: POLY, source: { kind: "OFFICIAL_PUBLIC", organisation: "O", datasetName: "D", retrievedAt: new Date() } })).rejects.toThrow(/licence/);
+    await expect(HazardZone.create({ name: "x", hazardType: "FLOOD", level: "LOW", geometry: { type: "Polygon", coordinates: [[[200, 6], [80, 6], [80, 7], [200, 6]]] }, source: SOURCE })).rejects.toThrow();
+  });
+
+  it("seeds labelled demo hazards and a restricted water main idempotently, and reset removes only demo hazards", async () => {
+    const { DEMO_PROJECT_CODES } = await import("../src/database/seeds/demo/catalog.js");
+    const { seedDemoInframapContext, DEMO_HAZARD_NAMES } = await import("../src/database/seeds/demo/seed-inframap-context.js");
+    const agencies = new Map<string, import("mongoose").Types.ObjectId>();
+    for (const code of ["DEMO_RDA", "DEMO_WATER", "AGENCY_DEMO_DRAINAGE"]) agencies.set(code, (await Agency.create({ code, name: code, type: "DEPARTMENT", status: "ACTIVE" }))._id);
+    const projects = new Map<string, import("mongoose").Types.ObjectId>();
+    for (const code of DEMO_PROJECT_CODES) projects.set(code, new (await import("mongoose")).default.Types.ObjectId());
+    const context = { agencies, users: new Map(), roles: new Map(), contractors: new Map(), projects, assets: new Map() } as never;
+    const first = await seedDemoInframapContext(context);
+    const second = await seedDemoInframapContext(context);
+    expect(first).toEqual({ assets: 5, hazardZones: 2 });
+    expect(second).toEqual(first);
+    expect(await Asset.countDocuments({ name: /^\[DEMO\]/ })).toBe(5);
+    expect(await HazardZone.countDocuments({ isDemo: true })).toBe(2);
+    const zones = await HazardZone.find({}).lean();
+    expect(zones.every((z) => z.name.startsWith("[DEMO]") && z.source.kind === "DEMO" && !z.source.licence)).toBe(true);
+    expect(zones.map((z) => z.name).sort()).toEqual([...DEMO_HAZARD_NAMES].sort());
+    expect((await Asset.findOne({ name: "[DEMO] Water main (restricted)" }).lean())?.sensitivity).toBe("RESTRICTED");
+    const bridge = await Asset.findOne({ name: "[DEMO] Poor-condition river bridge" }).lean();
+    expect(bridge).toMatchObject({ condition: "POOR" });
+    expect(bridge!.nextMaintenanceAt!.getTime()).toBeLessThan(Date.now());
+    expect(await MaintenanceRecord.countDocuments({ assetId: bridge!._id })).toBe(2);
+    // The demo flood polygon overlaps the demo road corridor; the landslide polygon does not.
+    const corridor = { type: "LineString", coordinates: [[79.8612, 6.9271], [79.862, 6.928]] };
+    expect((await HazardZone.find({ geometry: { $geoIntersects: { $geometry: corridor } } }).lean()).map((z) => z.hazardType)).toEqual(["FLOOD"]);
+    await HazardZone.create({ name: "Imported", hazardType: "FLOOD", level: "LOW", geometry: POLY, source: { kind: "OFFICIAL_PUBLIC", organisation: "O", datasetName: "D", licence: "L", retrievedAt: new Date() } });
+    await HazardZone.deleteMany({ isDemo: true, "source.kind": "DEMO" });
+    expect((await HazardZone.find({}).lean()).map((z) => z.name)).toEqual(["Imported"]);
+  });
+});
