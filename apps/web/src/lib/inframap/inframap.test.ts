@@ -10,7 +10,7 @@ const ID = "6aeb5136a8f6af4a68058868";
 describe("steps 81-84 InfraMap helpers", () => {
   it("turns a map viewport into a box the API accepts", () => {
     expect(viewportBbox(79.4, 5.8, 82.1, 9.95)).toEqual([79.4, 5.8, 82.1, 9.95]);
-    for (const bad of [[Number.NaN, 1, 2, 3], [80, 6, 79, 7], [80, 7, 81, 6], [0, 0, 0, 1]] as const) expect(viewportBbox(...bad)).toBeNull();
+    for (const bad of [[Number.NaN, 1, 2, 3], [80, 6, 79, 7], [80, 7, 81, 6], [0, 0, 0, 1]] as [number, number, number, number][]) expect(viewportBbox(...bad)).toBeNull();
     const wide = viewportBbox(-179, -80, 179, 80)!;
     expect(wide[2] - wide[0]).toBeLessThanOrEqual(MAX_BBOX_SPAN_DEG);
     expect(wide[3] - wide[1]).toBeLessThanOrEqual(MAX_BBOX_SPAN_DEG);
