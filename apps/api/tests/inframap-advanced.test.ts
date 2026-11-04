@@ -247,6 +247,8 @@ describe("Batch 03 search, facets, health, filters, payload controls and detail"
     expect(ids(await get(d.officerA.token, `assets?${BBOX}&assetType=BRIDGE&condition=POOR`))).toEqual([d.bridge.id]);
     expect(ids(await get(d.officerA.token, `utilities?${BBOX}&utilityClass=drainage`))).toEqual([d.drain.id]);
     expect(ids(await get(d.superUser.token, `utilities?${BBOX}&utilityClass=water`))).toEqual([d.main.id]);
+    // An asset-type filter that names only asset types leaves Utilities untouched.
+    expect(ids(await get(d.superUser.token, `utilities?${BBOX}&assetType=BRIDGE`))).toEqual([d.main.id, d.drain.id].sort());
     expect((await get(d.officerA.token, `projects?${BBOX}&agencyId=${d.pOther.agencyId}`)).body.data.features).toEqual([]);
     // A filter that belongs to another layer does not hide this one.
     expect(ids(await get(d.officerA.token, `projects?${BBOX}&roadworkStatus=CANCELLED&conflictBand=critical`))).toHaveLength(3);
@@ -269,6 +271,23 @@ describe("Batch 03 search, facets, health, filters, payload controls and detail"
     const other = await request(app).get(`${api}/assets?${BBOX}`).set(auth(d.officerB.token)).set("If-None-Match", first.headers.etag!);
     expect(other.status).toBe(200);
     expect(first.headers.vary).toContain("Authorization");
+  });
+
+  it("shrinks the layer payload with fields=min and zoom-based simplification (measured on 120 long project lines)", async () => {
+    const d = await ready();
+    const agA = (await Agency.findOne({ code: "AG_A" }))!._id;
+    await Project.insertMany(Array.from({ length: 120 }, (_, i) => ({
+      projectCode: `INF-BPERF-${i + 1}`, title: `Performance corridor project number ${i + 1}`, projectType: "ROAD", agencyId: agA, managerId: d.officerA.user._id, budget: { amountMinor: 1000, currency: "LKR" }, status: "ACTIVE",
+      physicalProgress: 10, financialProgress: 5, createdBy: d.officerA.user._id, location: { district: "Colombo", province: "Western Province", locality: "Fort", roadName: "Galle Road" }, startDate: at(-30), plannedEndDate: at(30),
+      geometry: { type: "LineString", coordinates: Array.from({ length: 200 }, (_, k) => [79.8 + (i % 10) * 0.01 + k * 0.00005, 6.91 + Math.floor(i / 10) * 0.004 + Math.sin(k / 6) * 0.00004]) },
+    })));
+    const size = async (query: string) => JSON.stringify((await get(d.officerA.token, `projects?${BBOX}&${query}`)).body).length;
+    const before = await size("fields=full&limit=500");            // what a client without the new controls received
+    const after = await size("fields=min&zoom=9&limit=500");       // the pipeline's request at a regional zoom
+    const detail = await size("fields=min&zoom=16&limit=500");
+    console.info(`payload bytes for 123 projects: full/no-zoom=${before} min/zoom9=${after} min/zoom16=${detail} (${Math.round((1 - after / before) * 100)}% smaller at zoom 9)`);
+    expect(after).toBeLessThan(before * 0.4);
+    expect(detail).toBeLessThan(before);
   });
 
   it("returns drawer detail for projects, roadworks, assets and zones with related records, real links, exposure and scope", async () => {

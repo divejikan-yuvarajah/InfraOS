@@ -30,6 +30,8 @@ export type LayerDef = {
   layerIds: readonly string[];
   /** Map layers a pointer can hit. */
   interactiveLayerIds: readonly string[];
+  /** The subset of `layerIds` added by addTopToMap (point markers drawn above conflict hotspots). */
+  topLayerIds: readonly string[];
   filters: readonly FilterDef[];
   legend: readonly LegendEntry[];
   quickViewKind: "project" | "roadwork" | "conflict" | "asset" | "utility" | "risk";
@@ -62,7 +64,7 @@ const PROJECT_SOLID = ["ACTIVE", "COMPLETED", "DELAYED"] as const;
 const PROJECT_BADGED = ["DELAYED", "COMPLETED", "ON_HOLD"] as const;
 
 const projects: LayerDef = {
-  id: "projects", group: "operations", z: 10, defaultVisible: true, permissionLayerId: "projects", sourceId: "im-projects", quickViewKind: "project",
+  id: "projects", group: "operations", z: 10, defaultVisible: true, permissionLayerId: "projects", sourceId: "im-projects", quickViewKind: "project", topLayerIds: [],
   layerIds: ["im-projects-fill", "im-projects-casing", "im-projects-line", "im-projects-line-dash", "im-projects-cluster", "im-projects-cluster-count", "im-projects-point", "im-projects-badge"],
   interactiveLayerIds: ["im-projects-fill", "im-projects-line", "im-projects-line-dash", "im-projects-cluster", "im-projects-point"],
   filters: [{ key: "status", values: ["ACTIVE", "APPROVED", "DELAYED", "ON_HOLD", "COMPLETED"] }],
@@ -95,7 +97,7 @@ const projects: LayerDef = {
 };
 
 const roadworks: LayerDef = {
-  id: "roadworks", group: "operations", z: 20, defaultVisible: true, permissionLayerId: "roadworks", sourceId: "im-roadworks", quickViewKind: "roadwork",
+  id: "roadworks", group: "operations", z: 20, defaultVisible: true, permissionLayerId: "roadworks", sourceId: "im-roadworks", quickViewKind: "roadwork", topLayerIds: [],
   layerIds: ["im-roadworks-fill", "im-roadworks-casing", "im-roadworks-line-solid", "im-roadworks-line-dash", "im-roadworks-line-dot", "im-roadworks-line-faded", "im-roadworks-line-overdue", "im-roadworks-point", "im-roadworks-badge-line", "im-roadworks-badge-point"],
   interactiveLayerIds: ["im-roadworks-fill", "im-roadworks-line-solid", "im-roadworks-line-dash", "im-roadworks-line-dot", "im-roadworks-line-faded", "im-roadworks-line-overdue", "im-roadworks-point"],
   filters: [{ key: "status", values: ["SUBMITTED", "PLANNED", "APPROVED", "ACTIVE", "COMPLETED"] }, { key: "overdue", values: ["1"] }],
@@ -123,7 +125,7 @@ const roadworks: LayerDef = {
 };
 
 const conflicts: LayerDef = {
-  id: "conflicts", group: "operations", z: 30, defaultVisible: true, permissionLayerId: "conflicts", sourceId: "im-conflicts", quickViewKind: "conflict",
+  id: "conflicts", group: "operations", z: 30, defaultVisible: true, permissionLayerId: "conflicts", sourceId: "im-conflicts", quickViewKind: "conflict", topLayerIds: [],
   layerIds: ["im-evidence-casing", "im-evidence-line", "im-evidence-connector", "im-evidence-point", "im-conflicts-ring", "im-conflicts-symbol"],
   interactiveLayerIds: ["im-conflicts-symbol"],
   filters: [{ key: "band", values: [...BANDS_ASC] }, { key: "group", values: ["open", "closed"] }],
@@ -161,7 +163,7 @@ const demoOutline = (map: MlMap, id: string, source: string, filter: unknown) =>
   ensureLayer(map, { id, type: "line", source, filter: ["all", filter, ["==", ["get", "isDemo"], true]] as never, paint: { "line-color": "#0f172a", "line-width": 1.5, "line-dasharray": [1, 2.5] } });
 
 const assets: LayerDef = {
-  id: "assets", group: "infrastructure", z: 7, defaultVisible: false, permissionLayerId: "assets", sourceId: "im-assets", quickViewKind: "asset",
+  id: "assets", group: "infrastructure", z: 7, defaultVisible: false, permissionLayerId: "assets", sourceId: "im-assets", quickViewKind: "asset", topLayerIds: ["im-assets-attn", "im-assets-cluster", "im-assets-cluster-count", "im-assets-point"],
   layerIds: ["im-assets-fill", "im-assets-casing", "im-assets-line", "im-assets-demo", "im-assets-attn", "im-assets-cluster", "im-assets-cluster-count", "im-assets-point"],
   interactiveLayerIds: ["im-assets-fill", "im-assets-line", "im-assets-cluster", "im-assets-point"],
   filters: [{ key: "assetType", values: ["ROAD", "BRIDGE", "BUILDING", "PUBLIC_FACILITY", "OTHER"] }, { key: "condition", values: ["EXCELLENT", "GOOD", "FAIR", "POOR", "CRITICAL", "UNKNOWN"] }],
@@ -186,7 +188,7 @@ const assets: LayerDef = {
 };
 
 const utilities: LayerDef = {
-  id: "utilities", group: "infrastructure", z: 6, defaultVisible: false, permissionLayerId: "utilities", sourceId: "im-utilities", quickViewKind: "utility",
+  id: "utilities", group: "infrastructure", z: 6, defaultVisible: false, permissionLayerId: "utilities", sourceId: "im-utilities", quickViewKind: "utility", topLayerIds: ["im-utilities-point"],
   layerIds: ["im-utilities-fill", "im-utilities-casing", "im-utilities-water", "im-utilities-drainage", "im-utilities-electricity", "im-utilities-telecom", "im-utilities-demo", "im-utilities-point"],
   interactiveLayerIds: ["im-utilities-fill", "im-utilities-water", "im-utilities-drainage", "im-utilities-electricity", "im-utilities-telecom", "im-utilities-point"],
   filters: [{ key: "assetType", values: ["WATER", "DRAINAGE", "ELECTRICITY", "TELECOM"] }],
@@ -216,7 +218,7 @@ const utilities: LayerDef = {
 const isHazard = ["==", ["get", "kind"], "hazard"] as never;
 const isMarker = ["==", ["get", "kind"], "project"] as never;
 const risks: LayerDef = {
-  id: "risks", group: "risk", z: 5, defaultVisible: false, permissionLayerId: "risks", sourceId: "im-risks", quickViewKind: "risk",
+  id: "risks", group: "risk", z: 5, defaultVisible: false, permissionLayerId: "risks", sourceId: "im-risks", quickViewKind: "risk", topLayerIds: ["im-risks-marker"],
   layerIds: ["im-risks-fill", "im-risks-pattern", "im-risks-flood", "im-risks-landslide", "im-risks-other", "im-risks-demo", "im-risks-hazard-point", "im-risks-marker"],
   interactiveLayerIds: ["im-risks-fill", "im-risks-hazard-point", "im-risks-marker"],
   filters: [{ key: "kind", values: ["hazard", "project"] }, { key: "hazardType", values: ["FLOOD", "LANDSLIDE", "COASTAL", "INFRASTRUCTURE_DAMAGE", "OTHER"] }, { key: "level", values: ["LOW", "MEDIUM", "HIGH", "VERY_HIGH"] }],
@@ -247,6 +249,8 @@ const risks: LayerDef = {
 export const LAYER_DEFS: readonly LayerDef[] = [projects, roadworks, conflicts, assets, utilities, risks].sort((a, b) => a.z - b.z);
 export const LAYER_GROUPS = ["operations", "infrastructure", "risk"] as const;
 export const LAYER_BY_ID = Object.fromEntries(LAYER_DEFS.map((d) => [d.id, d])) as Record<LayerKey, LayerDef>;
+/** Default draw order, bottom to top. The layer manager lets users reorder layers within a group; conflicts always stay above. */
+export const DEFAULT_ORDER: readonly LayerKey[] = LAYER_DEFS.map((d) => d.id);
 export const ALL_INTERACTIVE_IDS = LAYER_DEFS.flatMap((d) => d.interactiveLayerIds);
 /** Map layer ids per data layer, for Focus mode. */
 export const LAYER_IDS_BY_LAYER: Record<string, readonly string[]> = Object.fromEntries(LAYER_DEFS.map((d) => [d.id, d.layerIds]));
@@ -264,6 +268,9 @@ export function ensureLayers(map: MlMap): void {
   ensureLayer(map, { id: "im-exposed-point", type: "circle", source: "im-exposed", filter: isPoint, paint: { "circle-radius": 17, "circle-color": "rgba(0,0,0,0)", "circle-stroke-color": "#dc2626", "circle-stroke-width": 3, "circle-stroke-opacity": 0.9 } });
   ensureLayer(map, { id: "im-lens-fill", type: "fill", source: "im-lens", paint: { "fill-color": "#0f172a", "fill-opacity": 0.04 } });
   ensureLayer(map, { id: "im-lens-line", type: "line", source: "im-lens", paint: { "line-color": "#0f172a", "line-width": 2, "line-dasharray": [3, 2] } });
+  // Dropped pin (long-press / coordinate jump).
+  ensureSource(map, "im-pin");
+  ensureLayer(map, { id: "im-pin-point", type: "circle", source: "im-pin", paint: { "circle-radius": 9, "circle-color": "#0e7490", "circle-stroke-color": "#ffffff", "circle-stroke-width": 3 } });
   ensureSource(map, "im-selected");
   const amber = "#f59e0b";
   ensureLayer(map, { id: "im-selected-fill", type: "fill", source: "im-selected", filter: ["==", ["geometry-type"], "Polygon"], paint: { "fill-color": amber, "fill-opacity": 0.2 } });

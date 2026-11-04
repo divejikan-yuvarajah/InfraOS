@@ -171,7 +171,7 @@ inframapRouter.get("/exposure", requireAuthenticated, requirePermission(MAP), re
 }));
 inframapRouter.get("/nearby", requireAuthenticated, requirePermission(MAP), readLimiter, lookupRoute((req) => {
   const q = nearbyQuerySchema.safeParse(req.query);
-  return q.success ? { ok: true, run: (actor) => nearby(actor, q.data.featureLayer, q.data.featureId, Number(q.data.radiusM), q.data.layers) } : { ok: false };
+  return q.success ? { ok: true, run: (actor) => nearby(actor, q.data.featureLayer ?? null, q.data.featureId ?? null, Number(q.data.radiusM), q.data.layers, q.data.lat !== undefined && q.data.lng !== undefined ? [q.data.lng, q.data.lat] : undefined) } : { ok: false };
 }));
 inframapRouter.get("/features/:layer/:id", requireAuthenticated, requirePermission(MAP), readLimiter, lookupRoute((req) => {
   const q = featureParamsSchema.safeParse({ ...req.params, ...(Object.keys(req.query).length ? { extra: 1 } : {}) });

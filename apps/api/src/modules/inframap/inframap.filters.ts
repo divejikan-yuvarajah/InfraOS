@@ -180,7 +180,8 @@ export function conflictNarrow(nf: NF, omit?: keyof NF): Record<string, unknown>
 /** Effective asset types for a layer: the layer's own set, narrowed by assetType and utilityClass (AND across facets). null = nothing can match. */
 export function effectiveAssetTypes(layer: "assets" | "utilities", nf: NF, omit?: keyof NF): string[] | null {
   let types: string[] = layer === "assets" ? [...ASSET_LAYER_TYPES] : [...UTILITY_TYPES];
-  if (omit !== "assetType" && nf.assetType.length) types = types.filter((t) => nf.assetType.includes(t));
+  // assetType spans both layers; it only narrows a layer it actually names, so picking "Bridge" never empties Utilities.
+  if (omit !== "assetType" && nf.assetType.some((t) => types.includes(t))) types = types.filter((t) => nf.assetType.includes(t));
   if (layer === "utilities" && omit !== "utilityClass" && nf.utilityClass.length) types = types.filter((t) => nf.utilityClass.includes(UTILITY_CLASS[t]!));
   return types.length ? types : null;
 }

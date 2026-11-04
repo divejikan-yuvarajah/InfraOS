@@ -44,10 +44,16 @@ export const FOCAL_LAYERS = ["projects", "roadworks", "conflicts", "assets", "ut
 export const NEARBY_RADII = ["50", "100", "250", "500"] as const;
 /** Exposure for one feature (feature to zones) or one zone (zone to records). No client geometry is ever accepted. */
 export const exposureQuerySchema = z.object({ layer: z.enum(FOCAL_LAYERS), id: objectId }).strict();
+/**
+ * Nearby lens around either a stored feature (featureLayer + featureId) or a dropped pin (lat + lng, kept inside a generous
+ * Sri Lanka envelope). Exactly one of the two forms is accepted; the pin form never touches a record, so it needs no scope.
+ */
 export const nearbyQuerySchema = z.object({
-  featureLayer: z.enum(FOCAL_LAYERS), featureId: objectId, radiusM: z.enum(NEARBY_RADII),
+  featureLayer: z.enum(FOCAL_LAYERS).optional(), featureId: objectId.optional(),
+  lat: z.coerce.number().min(4).max(11).optional(), lng: z.coerce.number().min(78).max(83.5).optional(),
+  radiusM: z.enum(NEARBY_RADII),
   layers: z.string().max(40).optional().transform((v) => (v ? v.split(",") : ["assets", "utilities", "risks"])).pipe(z.array(z.enum(["assets", "utilities", "risks"])).min(1).max(3)),
-}).strict();
+}).strict().refine((q) => (q.featureLayer && q.featureId && q.lat === undefined && q.lng === undefined) || (!q.featureLayer && !q.featureId && q.lat !== undefined && q.lng !== undefined), "one focal form");
 export const featureParamsSchema = z.object({ layer: z.enum(["assets", "utilities", "risks"]), id: objectId }).strict();
 
 const R_LAT = 111_320;

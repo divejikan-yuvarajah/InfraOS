@@ -215,6 +215,12 @@ describe("Batch 02 asset, utility and risk layers", { timeout: 240_000 }, () => 
     const su = await get(d.superUser.token, `nearby?featureLayer=projects&featureId=${d.pA.id}&radiusM=250&layers=utilities`);
     expect(su.body.data.layers.utilities.items.map((i: { id: string }) => i.id)).toContain(d.main.id);
     expect((await get(d.officerB.token, `nearby?featureLayer=projects&featureId=${d.pA.id}&radiusM=100`)).status).toBe(404);
+    // A dropped pin works without a record, still applies tiers, and rejects mixed or out-of-range forms.
+    const pin = await get(d.officerA.token, "nearby?lat=6.928&lng=79.862&radiusM=100");
+    expect(pin.status).toBe(200);
+    expect(pin.body.data.layers.assets.items.map((i: { id: string }) => i.id)).toContain(d.bridge.id);
+    expect(JSON.stringify(pin.body)).not.toContain("RESTRICTED-WATER-MAIN");
+    for (const q of ["lat=6.9&radiusM=100", "lat=6.9&lng=79.8&featureLayer=projects&radiusM=100", "lat=40&lng=79.8&radiusM=100", "lat=6.9&lng=79.8&radiusM=37"]) expect((await get(d.officerA.token, `nearby?${q}`)).status, q).toBe(400);
   });
 
   it("returns feature detail, hiding maintenance from awareness and answering 404 for restricted or out-of-scope ids", async () => {

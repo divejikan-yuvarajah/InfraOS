@@ -271,9 +271,9 @@ export async function exposure(actor: AuthenticatedActor, layer: string, id: str
 }
 
 /** Nearby Context Lens. Envelope-based (the focal geometry's bbox grown by the radius), so it is approximate and reports no distances. */
-export async function nearby(actor: AuthenticatedActor, featureLayer: string, featureId: string, radiusM: number, layers: readonly string[]) {
+export async function nearby(actor: AuthenticatedActor, featureLayer: string | null, featureId: string | null, radiusM: number, layers: readonly string[], pin?: [number, number]) {
   const ctx = await contextOf(actor);
-  const focal = await focalOf(ctx, actor, featureLayer, featureId);
+  const focal = pin ? { geometry: { type: "Point", coordinates: pin } } : featureLayer && featureId ? await focalOf(ctx, actor, featureLayer, featureId) : null;
   if (!focal) return NOT_FOUND;
   const bounds = geometryBounds(focal.geometry);
   if (!bounds) return NOT_FOUND;
@@ -281,7 +281,7 @@ export async function nearby(actor: AuthenticatedActor, featureLayer: string, fe
   const envelope = viewportPolygon(box);
   const out: Record<string, unknown> = {};
   let restrictedHidden = 0;
-  const same = (layer: string) => (featureLayer === layer ? featureId : undefined);
+  const same = (layer: string) => (featureLayer === layer && featureId ? featureId : undefined);
   for (const layer of layers) {
     if (layer === "assets" || layer === "utilities") {
       if (!ctx.has("asset.read")) { out[layer] = null; continue; }
@@ -290,7 +290,7 @@ export async function nearby(actor: AuthenticatedActor, featureLayer: string, fe
       out[layer] = { total: found.total, items: found.items.map(dropGeometry) };
     } else if (layer === "risks") {
       if (!ctx.has("risk.read")) { out[layer] = null; continue; }
-      const q = { $and: [hazardVisible(ctx), { geometry: { $geoIntersects: { $geometry: envelope } } }, ...(same("risks") ? [{ _id: { $ne: new mongoose.Types.ObjectId(featureId) } }] : [])] };
+      const q = { $and: [hazardVisible(ctx), { geometry: { $geoIntersects: { $geometry: envelope } } }, ...(same("risks") ? [{ _id: { $ne: new mongoose.Types.ObjectId(same("risks")!) } }] : [])] };
       const [total, zones] = await Promise.all([HazardZone.countDocuments(q), HazardZone.find(q).sort({ _id: 1 }).limit(30).lean() as unknown as Promise<ZoneLean[]>]);
       out[layer] = { total, items: zones.map((z) => dropGeometry(zoneItem(z))) };
     }
