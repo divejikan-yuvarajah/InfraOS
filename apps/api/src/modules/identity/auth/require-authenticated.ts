@@ -77,6 +77,8 @@ export async function requireAuthenticated(
       return;
     }
     const user = await User.findById(claims.sub);
+    // Policy: every authenticated account, whatever its role, must belong to an ACTIVE agency. User.agencyId is nullable
+    // in the schema, but an agency-less user (including CITIZEN) never gets a session. See tests/auth-agency-invariant.test.ts.
     if (!user || user.status !== "ACTIVE" || user.emailVerified !== true || !user.agencyId) {
       reject(res, req, 401, "AUTH_REQUIRED");
       return;
