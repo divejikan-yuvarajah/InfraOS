@@ -1,5 +1,3 @@
-import { ShieldCheck } from "lucide-react";
-
 import { getAuthLoginCopy } from "@/lib/auth/messages";
 import { loginPathForLocale, sanitizeNextParam } from "@/lib/auth/redirect";
 import type { AuthLocale } from "@/lib/auth/types";
@@ -36,10 +34,9 @@ export function LoginPageShell({ locale, nextParam }: LoginPageShellProps) {
       variant="login"
     >
       <header className="mb-3.5 flex flex-col items-center text-center">
-        <div className="mb-2 inline-flex items-center gap-1.5 rounded-full border border-[#8C1F28]/20 bg-[#FFDAD6]/45 px-3 py-1 text-[#8C1F28] shadow-2xs">
+        <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-[#ECEEF0] px-3.5 py-1 text-slate-900 shadow-2xs">
           <span className="h-2 w-2 rounded-full bg-[#279541]" aria-hidden="true" />
-          <ShieldCheck className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-          <span className="auth-stitch-mono text-[10.5px] font-bold uppercase tracking-wider">
+          <span className="text-[10.5px] font-semibold tracking-wide uppercase">
             {CLEARANCE_BADGE[locale]}
           </span>
         </div>

@@ -492,6 +492,27 @@ export function RegisterWizardForm({
       {/* ================================================================= */}
       {step === 1 ? (
         <form onSubmit={handleStep1Continue} noValidate className="space-y-2.5">
+          {/* Statutory institutional identity verification notice */}
+          <div className="flex items-center gap-3 rounded-lg border border-slate-200/90 bg-[#F8FAFC] px-3 py-2">
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-[#FFDBCE] text-[#A83900]">
+              <ShieldCheck className="h-4.5 w-4.5" aria-hidden="true" />
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-bold text-slate-900">
+                Statutory Institutional Identity Verification
+              </p>
+              <p className="text-[11px] leading-snug text-slate-600">
+                Requests are validated under Gazette No. 2341/14 protocol for public
+                infrastructure clearance.
+              </p>
+            </div>
+            <span className="auth-stitch-mono hidden shrink-0 rounded border border-slate-200 bg-white px-2 py-1 text-[10px] leading-tight text-slate-600 sm:block">
+              SEC-
+              <br />
+              CLASS-1
+            </span>
+          </div>
+
           {/* Row 1: Official Full Name & Official Agency Email */}
           <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
             <LiquidGlassInput

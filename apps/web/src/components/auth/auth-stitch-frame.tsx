@@ -17,7 +17,7 @@ import { getAuthLoginCopy } from "@/lib/auth/messages";
 import type { AuthLocale } from "@/lib/auth/types";
 import { publicInfoPath } from "@/lib/landing/locales";
 
-import { TopAuthBar } from "./top-auth-bar";
+import { AuthPanelNav, TopAuthBar } from "./top-auth-bar";
 
 type AuthStitchFrameProps = {
   locale: AuthLocale;
@@ -149,17 +149,14 @@ export function AuthStitchFrame({
 
   return (
     <div data-infra-app className={`auth-login-root ${lpFontClass}`}>
-      {/* Global 56px Top Utility Header */}
-      <TopAuthBar
-        locale={locale}
-        localeHrefFor={localeHrefFor}
-        backLabel={copy.backHome}
-        subBadge={
-          isRegister
-            ? "NATIONAL INFRASTRUCTURE DIRECTORATE"
-            : "SL-NIP CORRIDOR • STATUTORY GATEWAY"
-        }
-      />
+      {/* Sign Up carries a header bar; Sign In starts directly with the split canvas */}
+      {isRegister ? (
+        <TopAuthBar
+          locale={locale}
+          localeHrefFor={localeHrefFor}
+          backLabel={copy.backHome}
+        />
+      ) : null}
 
       {/* Main 100dvh Split-Screen Workspace */}
       <div className="auth-workspace">
@@ -242,7 +239,7 @@ export function AuthStitchFrame({
                 </div>
 
                 <div className="pt-1">
-                  <h2 className="auth-stitch-serif text-[clamp(1.6rem,2.4vh+0.65rem,2.25rem)] font-bold leading-[1.08] tracking-tight text-slate-900">
+                  <h2 className="auth-stitch-serif text-[clamp(1.9rem,3.6vh+0.5rem,3.1rem)] font-semibold leading-[1.08] tracking-tight text-slate-900">
                     {signupCorridor.headlineLead}
                     <br />
                     <span className="relative inline-block italic text-slate-900">
@@ -270,7 +267,7 @@ export function AuthStitchFrame({
               </div>
 
               {/* Field Survey Photograph with Total Station & Route Alignment */}
-              <div className="relative z-10 my-2 overflow-hidden rounded-xl border border-slate-200/90 bg-white shadow-md">
+              <div className="auth-plate relative z-10 my-2 overflow-hidden rounded-xl border border-slate-200/90 bg-white shadow-md">
                 <div className="auth-corridor-plate-media">
                   <Image
                     src="/landing/lp/qa-inspection.jpg"
@@ -463,7 +460,7 @@ export function AuthStitchFrame({
               </div>
 
               {/* Documentary Highway Photograph with Interactive Survey Leader Points */}
-              <div className="relative z-10 my-2 overflow-hidden rounded-2xl border border-white/80 bg-white shadow-md">
+              <div className="auth-plate relative z-10 my-2 overflow-hidden rounded-2xl border border-white/80 bg-white shadow-md">
                 <div className="auth-corridor-plate-media">
                   <Image
                     src="/landing/lp/aerial-highway.jpg"
@@ -653,6 +650,17 @@ export function AuthStitchFrame({
 
         {/* RIGHT PANEL: "The Entrance" — Active Form & Statutory Footnote */}
         <section className="auth-login-panel">
+          {/* Back link + trilingual pill heading the entrance panel */}
+          {!isRegister ? (
+            <div className="mb-3 lg:mb-0">
+              <AuthPanelNav
+                locale={locale}
+                localeHrefFor={localeHrefFor}
+                backLabel={copy.backHome}
+              />
+            </div>
+          ) : null}
+
           {/* Mobile Corridor Telemetry Plate (< 1024px, Sign In & Recovery) */}
           {!isRegister ? (
             <div className="mb-3 space-y-2.5 lg:hidden">

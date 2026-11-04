@@ -151,12 +151,40 @@
 }
 
 /* Documentary Photography Plate */
+.auth-plate {
+  display: flex;
+  flex-direction: column;
+}
+
+@media (min-width: 1024px) {
+  .auth-plate {
+    flex: 1 1 0%;
+    min-height: 0;
+  }
+}
+
 .auth-corridor-plate-media {
   position: relative;
   width: 100%;
-  height: clamp(8.5rem, 24vh, 15.5rem);
+  height: 9rem;
   overflow: hidden;
   background-color: #0b0f17;
+}
+
+@media (min-width: 1024px) {
+  .auth-corridor-plate-media {
+    flex: 1 1 0%;
+    height: auto;
+    min-height: 4.5rem;
+  }
+}
+
+/* Desktop: scale the whole auth surface with viewport height so 1080p reads
+   large and editorial while 1366x768 keeps its compact fit. */
+@media (min-width: 1024px) {
+  html:has(.auth-login-root) {
+    font-size: clamp(15px, calc(0.9vh + 9.2px), 20px);
+  }
 }
 
 /* Form Container Widths */
@@ -207,7 +235,7 @@
 
 .auth-login-title {
   font-family: var(--lp-font-display, Georgia, Cambria, "Times New Roman", serif);
-  font-size: clamp(1.55rem, 2.4vh + 0.65rem, 2.15rem);
+  font-size: clamp(1.6rem, 3vh + 0.5rem, 2.7rem);
   font-weight: 600;
   letter-spacing: -0.02em;
   line-height: 1.14;
@@ -273,9 +301,6 @@
   .auth-login-panel {
     padding: 0.75rem 1.75rem;
   }
-  .auth-corridor-plate-media {
-    height: clamp(6.5rem, 17.5vh, 9.5rem);
-  }
   .auth-liquid-card {
     padding: 0.9rem 1.35rem;
   }
@@ -310,9 +335,6 @@
   }
   .auth-login-panel {
     padding: 0.55rem 1.5rem;
-  }
-  .auth-corridor-plate-media {
-    height: clamp(5.25rem, 14.5vh, 7.25rem);
   }
   .auth-liquid-card {
     padding: 0.7rem 1.15rem;
