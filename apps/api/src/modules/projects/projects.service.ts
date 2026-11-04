@@ -876,6 +876,8 @@ export type ProjectMapRow = {
   agencyName: string | null;
   startDate: Date | null;
   plannedEndDate: Date | null;
+  district: string | null;
+  province: string | null;
   geometry: unknown;
 };
 
@@ -886,6 +888,7 @@ export type ProjectMapRow = {
 export async function mapProjects(
   actor: AuthenticatedActor,
   bbox: [number, number, number, number],
+  filters: { status?: string; projectType?: string } = {},
 ): Promise<{ ok: true; rows: ProjectMapRow[]; truncated: boolean } | ProjectFailure> {
   try {
     await assertLive(actor, ["project.read"]);
@@ -893,8 +896,11 @@ export async function mapProjects(
     if (scoped.denied) return fail(403, "FORBIDDEN");
     const [west, south, east, north] = bbox;
     const viewport = { type: "Polygon", coordinates: [[[west, south], [east, south], [east, north], [west, north], [west, south]]] };
-    const found = await Project.find({ $and: [scoped.filter, { geometry: { $geoIntersects: { $geometry: viewport } } }] })
-      .select("projectCode title projectType status agencyId startDate plannedEndDate geometry")
+    const narrow: Record<string, unknown> = { geometry: { $geoIntersects: { $geometry: viewport } } };
+    if (filters.status) narrow.status = filters.status;
+    if (filters.projectType) narrow.projectType = filters.projectType;
+    const found = await Project.find({ $and: [scoped.filter, narrow] })
+      .select("projectCode title projectType status agencyId startDate plannedEndDate location.district location.province geometry")
       .sort({ _id: 1 })
       .limit(PROJECT_MAP_CAP + 1)
       .lean();
@@ -913,9 +919,33 @@ export async function mapProjects(
         agencyName: names.get(row.agencyId.toString()) ?? null,
         startDate: row.startDate ?? null,
         plannedEndDate: row.plannedEndDate ?? null,
+        district: row.location?.district ?? null,
+        province: row.location?.province ?? null,
         geometry: row.geometry,
       })),
     };
+  } catch (error) {
+    if (error instanceof FlowControl) return fail(error.status, error.code);
+    throw new ProjectDependencyError();
+  }
+}
+
+export const PROJECT_MISSING_LIST_CAP = 25;
+
+/** In-scope projects that have no recorded geometry: never drawn, never given a default position, only counted and listed (id, code, title). */
+export async function projectsWithoutLocation(
+  actor: AuthenticatedActor,
+): Promise<{ ok: true; total: number; items: { id: string; projectCode: string; title: string }[] } | ProjectFailure> {
+  try {
+    await assertLive(actor, ["project.read"]);
+    const scoped = await readFilter(actor);
+    if (scoped.denied) return fail(403, "FORBIDDEN");
+    const filter = { $and: [scoped.filter, { $or: [{ geometry: { $exists: false } }, { geometry: null }] }] };
+    const [total, rows] = await Promise.all([
+      Project.countDocuments(filter),
+      Project.find(filter).select("projectCode title").sort({ _id: 1 }).limit(PROJECT_MISSING_LIST_CAP).lean(),
+    ]);
+    return { ok: true, total, items: rows.map((row) => ({ id: row._id.toString(), projectCode: row.projectCode, title: row.title })) };
   } catch (error) {
     if (error instanceof FlowControl) return fail(error.status, error.code);
     throw new ProjectDependencyError();

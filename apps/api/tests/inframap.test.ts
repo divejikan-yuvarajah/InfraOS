@@ -9,7 +9,7 @@ import { signAccessToken } from "../src/modules/identity/auth/jwt.js";
 import { Role } from "../src/modules/identity/models/role.model.js";
 import { User } from "../src/modules/identity/models/user.model.js";
 import { SYSTEM_ROLE_META, SYSTEM_ROLE_PERMISSIONS } from "../src/modules/identity/seed/system-role-permissions.js";
-import { bboxQuerySchema, LAYER_FEATURE_CAP, layerCollection, transportGeometry } from "../src/modules/inframap/inframap.geo.js";
+import { bboxQuerySchema, isOverdueWork, LAYER_FEATURE_CAP, layerCollection, transportGeometry } from "../src/modules/inframap/inframap.geo.js";
 import { Notification } from "../src/modules/notifications/models/notification.model.js";
 import { Project } from "../src/modules/projects/models/project.model.js";
 import { Candidate } from "../src/modules/roadsync/models/candidate.model.js";
@@ -111,7 +111,7 @@ describe("steps 81-84 InfraMap layers", { timeout: 240_000 }, () => {
 
   it("requires a session and the layer's read permission", async () => {
     const d = await ready();
-    for (const layer of ["projects", "work-requests", "conflicts"]) {
+    for (const layer of ["projects", "roadworks", "conflicts"]) {
       expect((await get(null, layer)).status, `${layer} anonymous`).toBe(401);
       expect((await get(d.citizen.token, layer)).status, `${layer} citizen`).toBe(403);
     }
@@ -128,9 +128,9 @@ describe("steps 81-84 InfraMap layers", { timeout: 240_000 }, () => {
     expect(ids(await get(d.officerB.token, "projects"))).toEqual([d.pB.id]);
     expect(ids(await get(d.officerC.token, "projects"))).toEqual([d.pC.id]);
     expect(ids(await get(d.superUser.token, "projects"))).toEqual([d.pA.id, d.pB.id, d.pC.id].sort());
-    expect(ids(await get(d.officerA.token, "work-requests"))).toEqual([d.mine.id]);
-    expect(ids(await get(d.officerB.token, "work-requests"))).toEqual([d.theirs.id]);
-    expect(ids(await get(d.officerC.token, "work-requests"))).toEqual([]);
+    expect(ids(await get(d.officerA.token, "roadworks"))).toEqual([d.mine.id]);
+    expect(ids(await get(d.officerB.token, "roadworks"))).toEqual([d.theirs.id]);
+    expect(ids(await get(d.officerC.token, "roadworks"))).toEqual([]);
     expect(ids(await get(d.officerA.token, "conflicts"))).toEqual([d.cid]);
     expect(ids(await get(d.officerB.token, "conflicts"))).toEqual([d.cid]);
     expect(ids(await get(d.officerC.token, "conflicts"))).toEqual([]);
@@ -140,20 +140,20 @@ describe("steps 81-84 InfraMap layers", { timeout: 240_000 }, () => {
   it("never returns another agency's private fields, finance or progress", async () => {
     const d = await ready();
     const everything = JSON.stringify([
-      (await get(d.officerA.token, "projects")).body, (await get(d.officerA.token, "work-requests")).body, (await get(d.officerA.token, "conflicts")).body,
+      (await get(d.officerA.token, "projects")).body, (await get(d.officerA.token, "roadworks")).body, (await get(d.officerA.token, "conflicts")).body,
     ]);
     for (const secret of [TITLE_B, TITLE_C, "INF-IM-2", "INF-IM-3", "CRITICAL", "ELECTRIC_CABLE_WORK", "INFRAMAP-NO-GEOMETRY"]) expect(everything, secret).not.toContain(secret);
     for (const key of ["budget", "amountMinor", "physicalProgress", "financialProgress", "managerId", "description", "notes", "sides", "affectedAgencies"]) expect(everything, key).not.toContain(key);
     const conflict = (await get(d.officerB.token, "conflicts")).body.data.features[0];
-    expect(Object.keys(conflict.properties).sort()).toEqual(["band", "conflictNo", "id", "overlapEnd", "overlapStart", "resolutionState", "score", "status"]);
+    expect(Object.keys(conflict.properties).sort()).toEqual(["band", "conflictNo", "district", "id", "overlapEnd", "overlapStart", "resolutionState", "score", "status"]);
     expect(conflict.geometry.type).toBe("Point");
     const project = (await get(d.officerA.token, "projects")).body.data.features[0];
-    expect(Object.keys(project.properties).sort()).toEqual(["agencyName", "id", "plannedEndDate", "projectCode", "projectType", "startDate", "status", "title"]);
+    expect(Object.keys(project.properties).sort()).toEqual(["agencyName", "district", "geometryType", "id", "isDelayed", "plannedEndDate", "projectCode", "projectType", "province", "startDate", "status", "title"]);
   });
 
   it("returns only what intersects the viewport and omits projects without a geometry", async () => {
     const d = await ready();
-    for (const layer of ["projects", "work-requests", "conflicts"]) {
+    for (const layer of ["projects", "roadworks", "conflicts"]) {
       const far = await get(d.superUser.token, layer, `bbox=${FAR}`);
       expect(far.status).toBe(200);
       expect(far.body.data).toMatchObject({ type: "FeatureCollection", truncated: false, features: [] });
@@ -163,9 +163,46 @@ describe("steps 81-84 InfraMap layers", { timeout: 240_000 }, () => {
     expect(ids(await get(d.superUser.token, "projects"))).not.toContain(d.pNone.id);
   });
 
+  it("reports layer availability and the in-scope projects that have no map location", async () => {
+    const d = await ready();
+    expect((await request(app).get(`${api}/layers`)).status).toBe(401);
+    expect((await request(app).get(`${api}/layers`).set(auth(d.citizen.token))).status).toBe(403);
+    expect((await request(app).get(`${api}/layers?x=1`).set(auth(d.officerA.token))).status).toBe(400);
+    const a = await request(app).get(`${api}/layers`).set(auth(d.officerA.token));
+    expect(a.status).toBe(200);
+    expect(a.headers["cache-control"]).toContain("no-store");
+    expect(a.body.data.layers).toEqual([{ id: "projects", available: true }, { id: "roadworks", available: true }, { id: "conflicts", available: true }]);
+    expect(a.body.data.projectsWithoutLocation.total).toBe(1);
+    expect(a.body.data.projectsWithoutLocation.items).toEqual([{ id: d.pNone.id, projectCode: "INF-IM-4", title: "INFRAMAP-NO-GEOMETRY" }]);
+    const b = await request(app).get(`${api}/layers`).set(auth(d.officerB.token));
+    expect(JSON.stringify(b.body)).not.toContain("INFRAMAP-NO-GEOMETRY");
+    expect(b.body.data.projectsWithoutLocation.total).toBe(0);
+  });
+
+  it("applies closed-enum filters on the server and derives overdue from the planned end", async () => {
+    const d = await ready();
+    expect(ids(await get(d.superUser.token, "projects", `bbox=${HERE}&status=ACTIVE`))).toEqual([]);
+    expect(ids(await get(d.superUser.token, "projects", `bbox=${HERE}&status=APPROVED&projectType=ROAD`))).toEqual([d.pA.id, d.pB.id, d.pC.id].sort());
+    expect(ids(await get(d.superUser.token, "conflicts", `bbox=${HERE}&group=closed`))).toEqual([]);
+    expect(ids(await get(d.superUser.token, "conflicts", `bbox=${HERE}&group=open`))).toEqual([d.cid]);
+    for (const query of [`bbox=${HERE}&status=NOPE`, `bbox=${HERE}&overdue=yes`, `bbox=${HERE}&band=severe`]) {
+      for (const layer of ["projects", "roadworks", "conflicts"]) expect((await get(d.superUser.token, layer, query)).status, `${layer}?${query}`).toBe(400);
+    }
+    expect(isOverdueWork("SUBMITTED", at(-1))).toBe(true);
+    expect(isOverdueWork("SUBMITTED", at(3))).toBe(false);
+    expect(isOverdueWork("COMPLETED", at(-5))).toBe(false);
+    expect(isOverdueWork("CANCELLED", at(-5))).toBe(false);
+    expect(isOverdueWork("ACTIVE", null)).toBe(false);
+    const works = (await get(d.officerA.token, "roadworks")).body.data.features[0].properties;
+    expect(works).toMatchObject({ isOverdue: false, displayStatus: "SUBMITTED" });
+    await WorkRequest.updateOne({ _id: d.mine._id }, { $set: { plannedEnd: at(-2) } });
+    expect((await get(d.officerA.token, "roadworks")).body.data.features[0].properties).toMatchObject({ isOverdue: true, displayStatus: "overdue" });
+    expect(ids(await get(d.officerA.token, "roadworks", `bbox=${HERE}&overdue=1`))).toEqual([d.mine.id]);
+  });
+
   it("rejects malformed, repeated, oversized or unknown query input before touching data", async () => {
     const d = await ready();
-    for (const layer of ["projects", "work-requests", "conflicts"]) {
+    for (const layer of ["projects", "roadworks", "conflicts"]) {
       for (const query of ["", "bbox=", "bbox=1,2,3", "bbox=a,b,c,d", "bbox=79,7,78,6", "bbox=0,0,50,50", `bbox=${HERE}&bbox=${FAR}`, `bbox=${HERE}&limit=5`, `bbox[$ne]=1`, `bbox=${HERE}&status[$ne]=x`]) {
         expect((await get(d.officerA.token, layer, query)).status, `${layer}?${query}`).toBe(400);
       }
