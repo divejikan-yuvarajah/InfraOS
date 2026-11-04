@@ -13,12 +13,14 @@ import {
   EyeOff,
   FileCheck2,
   Info,
+  KeyRound,
   Loader2,
   Lock,
   Mail,
   Pencil,
   Search,
   ShieldAlert,
+  ShieldCheck,
   User,
 } from "lucide-react";
 
@@ -41,10 +43,19 @@ import {
 import type { AuthLocale } from "@/lib/auth/types";
 import { publicHomePath, publicInfoPath } from "@/lib/landing/locales";
 
+import { LiquidGlassInput } from "./liquid-glass-input";
+import { PillButton } from "./pill-button";
+
 type RegisterWizardFormProps = {
   locale: AuthLocale;
   initialStep?: 1 | 2 | 3;
 };
+
+const SURVEY_STATIONS = [
+  { step: 1 as const, station: "STA 0+000" },
+  { step: 2 as const, station: "STA 0+500" },
+  { step: 3 as const, station: "STA 1+000" },
+] as const;
 
 export function RegisterWizardForm({
   locale,
@@ -94,6 +105,9 @@ export function RegisterWizardForm({
   }, []);
 
   const strength = evaluatePasswordStrength(values.password);
+  const passwordsMatch =
+    values.confirmPassword.length > 0 &&
+    values.password === values.confirmPassword;
 
   const filteredInstitutions = institutions.filter((item) => {
     const q = orgQuery.trim().toLowerCase();
@@ -250,10 +264,13 @@ export function RegisterWizardForm({
         role="region"
         aria-live="polite"
         aria-label={copy.confirmation.title}
-        className="space-y-3.5"
+        className="space-y-3"
       >
-        <div className="inline-flex items-center gap-1.5 rounded-md border border-emerald-200 bg-emerald-50 px-2.5 py-0.5">
-          <CheckCircle2 className="h-3.5 w-3.5 text-[#279541]" aria-hidden="true" />
+        <div className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-0.5">
+          <CheckCircle2
+            className="h-3.5 w-3.5 text-[#279541]"
+            aria-hidden="true"
+          />
           <span className="auth-stitch-mono text-[10px] font-bold uppercase tracking-wider text-[#279541]">
             {copy.confirmation.badge}
           </span>
@@ -265,7 +282,7 @@ export function RegisterWizardForm({
         </div>
 
         {/* Reference & Status Ledger Card */}
-        <div className="rounded-xl border border-slate-200 bg-slate-50/90 p-3">
+        <div className="rounded-xl border border-slate-200 bg-[#F2F4F6]/80 p-3">
           <dl className="grid grid-cols-1 gap-2.5 sm:grid-cols-3">
             <div>
               <dt className="text-[10.5px] font-medium text-slate-500">
@@ -314,7 +331,10 @@ export function RegisterWizardForm({
 
         {completedOutcome.mode === "preview" ? (
           <div className="auth-login-banner flex items-start gap-2">
-            <Info className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-700" aria-hidden="true" />
+            <Info
+              className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-700"
+              aria-hidden="true"
+            />
             <span>{copy.confirmation.previewModeNote}</span>
           </div>
         ) : null}
@@ -322,14 +342,14 @@ export function RegisterWizardForm({
         <div className="flex flex-col gap-2 pt-1 sm:flex-row">
           <Link
             href={loginPathForLocale(locale)}
-            className="auth-primary-cta inline-flex h-10 flex-1 items-center justify-center gap-2 rounded-lg px-5 text-sm font-semibold"
+            className="auth-pill-btn--compact inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-full bg-[#FF5B00] px-5 text-sm font-bold text-white shadow-sm transition-colors hover:bg-[#E05000]"
           >
             <span>{copy.confirmation.returnToSignIn}</span>
             <ArrowRight className="h-4 w-4" aria-hidden="true" />
           </Link>
           <Link
             href={publicHomePath(locale)}
-            className="inline-flex h-10 items-center justify-center rounded-lg border border-slate-300 bg-white px-4 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-50"
+            className="inline-flex h-11 items-center justify-center rounded-full border border-slate-300 bg-white px-5 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-50"
           >
             {copy.confirmation.returnToPortal}
           </Link>
@@ -351,32 +371,51 @@ export function RegisterWizardForm({
         ? copy.step2.subtitle
         : copy.step3.subtitle;
 
+  const progressWidth = step === 1 ? "0%" : step === 2 ? "50%" : "100%";
+
   return (
     <div className="space-y-2.5">
-      {/* Eyebrow + Sign-In Link & Step Progress Rail */}
+      {/* Eyebrow + Sign-In Link & THE SURVEY LINE 3-Station Stepper */}
       <div>
-        <div className="mb-1.5 flex flex-wrap items-center justify-between gap-2">
-          <div className="inline-flex items-center gap-1.5 rounded-md border border-slate-200/90 bg-slate-100/90 px-2 py-0.5">
+        <div className="mb-1 flex flex-wrap items-center justify-between gap-2">
+          <div className="inline-flex items-center gap-1.5 rounded-full bg-[#FFDBCE]/75 px-2.5 py-0.5">
             <span className="h-1.5 w-1.5 rounded-full bg-[#FF5B00]" />
-            <span className="auth-stitch-mono text-[10px] font-bold uppercase tracking-[0.12em] text-slate-700">
-              {copy.eyebrow}
+            <span className="auth-stitch-mono text-[10px] font-bold uppercase tracking-wider text-[#A83900]">
+              CREATE YOUR INFRAOS ACCOUNT
             </span>
           </div>
           <p className="text-[11.5px] text-slate-600">
             {copy.alreadyHaveAccount}{" "}
             <Link
               href={loginPathForLocale(locale)}
-              className="font-bold text-[#C43D00] hover:text-[#FF5B00] hover:underline"
+              className="font-bold text-[#A83900] hover:text-[#FF5B00] hover:underline"
             >
               {copy.signInLink}
             </Link>
           </p>
         </div>
 
-        {/* 3-Step Horizontal Stepper */}
-        <nav aria-label="Account registration steps" className="mb-2">
-          <ol className="grid grid-cols-3 gap-1.5">
-            {([1, 2, 3] as const).map((stepNumber) => {
+        <h1 className="auth-login-title">{activeTitle}</h1>
+        <p className="auth-login-subtitle">{activeSubtitle}</p>
+
+        {/* THE SURVEY LINE STEPPER: STA 0+000 -> STA 0+500 -> STA 1+000 */}
+        <nav
+          aria-label="Account registration survey stations"
+          className="mt-2 rounded-xl border border-slate-200/90 bg-[#F8FAFC] px-3 py-2 shadow-2xs"
+        >
+          <ol className="relative flex items-center justify-between">
+            {/* Continuous Survey Track */}
+            <div
+              className="pointer-events-none absolute top-1/2 right-8 left-8 h-[2px] -translate-y-1/2 bg-slate-200"
+              aria-hidden="true"
+            />
+            <div
+              className="pointer-events-none absolute top-1/2 left-8 h-[2px] -translate-y-1/2 bg-[#FF5B00] transition-all duration-300"
+              style={{ width: `calc((100% - 4rem) * ${step === 1 ? 0 : step === 2 ? 0.5 : 1})` }}
+              aria-hidden="true"
+            />
+
+            {SURVEY_STATIONS.map(({ step: stepNumber, station }) => {
               const isCurrent = step === stepNumber;
               const isDone = step > stepNumber;
               const label = copy.stepLabels[stepNumber - 1];
@@ -384,36 +423,41 @@ export function RegisterWizardForm({
                 <li
                   key={stepNumber}
                   aria-current={isCurrent ? "step" : undefined}
-                  className={`min-w-0 rounded-lg border px-2 py-1 transition-colors ${
-                    isCurrent
-                      ? "border-[#FF5B00] bg-orange-50/60"
-                      : isDone
-                        ? "border-emerald-200 bg-emerald-50/40"
-                        : "border-slate-200 bg-slate-50/70"
-                  }`}
+                  className="relative z-10 flex items-center gap-2 bg-[#F8FAFC] px-1.5"
                 >
-                  <div className="flex min-w-0 items-center gap-1.5">
+                  <span
+                    className={`auth-stitch-mono flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[10.5px] font-bold transition-all ${
+                      isCurrent
+                        ? "bg-[#FF5B00] text-white ring-3 ring-[#FFDBCE]"
+                        : isDone
+                          ? "bg-[#279541] text-white"
+                          : "border border-slate-300 bg-white text-slate-500"
+                    }`}
+                  >
+                    {isDone ? (
+                      <Check className="h-3 w-3" aria-hidden="true" />
+                    ) : (
+                      `0${stepNumber}`
+                    )}
+                  </span>
+                  <div className="min-w-0">
                     <span
-                      className={`auth-stitch-mono flex h-4.5 w-4.5 shrink-0 items-center justify-center rounded-full text-[9.5px] font-bold ${
+                      className={`auth-stitch-mono block text-[9.5px] font-bold uppercase tracking-wider ${
                         isCurrent
-                          ? "bg-[#FF5B00] text-white"
+                          ? "text-[#A83900]"
                           : isDone
-                            ? "bg-[#279541] text-white"
-                            : "bg-slate-200 text-slate-600"
+                            ? "text-[#279541]"
+                            : "text-slate-400"
                       }`}
                     >
-                      {isDone ? (
-                        <Check className="h-2.5 w-2.5" aria-hidden="true" />
-                      ) : (
-                        `0${stepNumber}`
-                      )}
+                      {station}
                     </span>
                     <span
-                      className={`truncate text-[11px] font-semibold ${
+                      className={`block truncate text-[11px] leading-tight font-semibold ${
                         isCurrent
                           ? "text-slate-900"
                           : isDone
-                            ? "text-emerald-900"
+                            ? "text-emerald-950"
                             : "text-slate-500"
                       }`}
                     >
@@ -424,10 +468,8 @@ export function RegisterWizardForm({
               );
             })}
           </ol>
+          <span className="sr-only">Progress {progressWidth}</span>
         </nav>
-
-        <h1 className="auth-login-title">{activeTitle}</h1>
-        <p className="auth-login-subtitle">{activeSubtitle}</p>
       </div>
 
       {submitError ? (
@@ -445,122 +487,97 @@ export function RegisterWizardForm({
         </div>
       ) : null}
 
-      {/* STEP 1: ACCOUNT DETAILS */}
+      {/* ================================================================= */}
+      {/* STEP 1 (STA 0+000): ACCOUNT DETAILS                               */}
+      {/* ================================================================= */}
       {step === 1 ? (
         <form onSubmit={handleStep1Continue} noValidate className="space-y-2.5">
-          {/* Full Name & Work Email */}
+          {/* Row 1: Official Full Name & Official Agency Email */}
           <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
-            <div className="auth-login-field">
-              <label htmlFor="reg-full-name">
-                {copy.step1.fullNameLabel} <span className="text-[#8C1F28]">*</span>
-              </label>
-              <div className="relative">
-                <User
-                  className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400"
-                  aria-hidden="true"
-                />
-                <input
-                  id="reg-full-name"
-                  name="fullName"
-                  type="text"
-                  autoComplete="name"
-                  required
-                  placeholder={copy.step1.fullNamePlaceholder}
-                  value={values.fullName}
-                  onChange={(e) => updateField("fullName", e.target.value)}
-                  aria-invalid={fieldErrors.fullName ? "true" : "false"}
-                  className={`h-10 w-full rounded-lg border bg-white pr-3 pl-9 text-sm text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:outline-none ${
-                    fieldErrors.fullName
-                      ? "border-[#8C1F28] focus:border-[#8C1F28] focus:ring-[#8C1F28]/20"
-                      : "border-slate-300 focus:border-[#FF5B00] focus:ring-[#FF5B00]/20"
-                  }`}
-                />
-              </div>
-              {fieldErrors.fullName ? (
-                <p className="mt-1 text-[11px] font-medium text-[#8C1F28]">
-                  {fieldErrors.fullName}
-                </p>
-              ) : null}
-            </div>
+            <LiquidGlassInput
+              id="reg-full-name"
+              name="fullName"
+              type="text"
+              autoComplete="name"
+              required
+              compact
+              label={copy.step1.fullNameLabel}
+              icon={<User className="h-4 w-4" />}
+              placeholder={copy.step1.fullNamePlaceholder}
+              value={values.fullName}
+              onChange={(e) => updateField("fullName", e.target.value)}
+              error={fieldErrors.fullName}
+            />
 
-            <div className="auth-login-field">
-              <label htmlFor="reg-email">
-                {copy.step1.emailLabel} <span className="text-[#8C1F28]">*</span>
-              </label>
-              <div className="relative">
-                <Mail
-                  className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400"
-                  aria-hidden="true"
-                />
-                <input
-                  id="reg-email"
-                  name="email"
-                  type="email"
-                  inputMode="email"
-                  autoComplete="email"
-                  required
-                  placeholder={copy.step1.emailPlaceholder}
-                  value={values.email}
-                  onChange={(e) => updateField("email", e.target.value)}
-                  aria-invalid={fieldErrors.email ? "true" : "false"}
-                  className={`h-10 w-full rounded-lg border bg-white pr-3 pl-9 text-sm text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:outline-none ${
-                    fieldErrors.email
-                      ? "border-[#8C1F28] focus:border-[#8C1F28] focus:ring-[#8C1F28]/20"
-                      : "border-slate-300 focus:border-[#FF5B00] focus:ring-[#FF5B00]/20"
-                  }`}
-                />
-              </div>
-              {fieldErrors.email ? (
-                <p className="mt-1 text-[11px] font-medium text-[#8C1F28]">
-                  {fieldErrors.email}
-                </p>
-              ) : null}
-            </div>
+            <LiquidGlassInput
+              id="reg-email"
+              name="email"
+              type="email"
+              inputMode="email"
+              autoComplete="email"
+              required
+              compact
+              label={copy.step1.emailLabel}
+              suffixBadge=".gov.lk / .rda.lk"
+              icon={<Mail className="h-4 w-4" />}
+              placeholder={copy.step1.emailPlaceholder}
+              value={values.email}
+              onChange={(e) => updateField("email", e.target.value)}
+              error={fieldErrors.email}
+            />
           </div>
+
           {!fieldErrors.email ? (
             <p className="-mt-1 text-[11px] text-slate-500">
               {copy.step1.emailHelper}
             </p>
           ) : null}
 
-          {/* Password & Confirm Password Side-by-Side on Desktop */}
+          {/* Row 2: Access Password & Confirm Access Password */}
           <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
-            <div className="auth-login-field">
-              <div className="mb-1 flex items-center justify-between">
-                <label htmlFor="reg-password" className="mb-0">
-                  {copy.step1.passwordLabel} <span className="text-[#8C1F28]">*</span>
-                </label>
-                <span className="auth-stitch-mono text-[10px] font-medium text-slate-500">
-                  {copy.step1.strengthLabels[strength.score]}
-                </span>
-              </div>
-              <div className="auth-login-password-row">
-                <Lock
-                  className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400"
-                  aria-hidden="true"
-                />
-                <input
-                  id="reg-password"
-                  name="password"
-                  type={showPassword ? "text" : "password"}
-                  autoComplete="new-password"
-                  required
-                  placeholder={copy.step1.passwordPlaceholder}
-                  value={values.password}
-                  onChange={(e) => updateField("password", e.target.value)}
-                  aria-invalid={fieldErrors.password ? "true" : "false"}
-                  className={`h-10 w-full rounded-lg border bg-white pr-10 pl-9 text-sm text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:outline-none ${
-                    fieldErrors.password
-                      ? "border-[#8C1F28] focus:border-[#8C1F28] focus:ring-[#8C1F28]/20"
-                      : "border-slate-300 focus:border-[#FF5B00] focus:ring-[#FF5B00]/20"
+            <LiquidGlassInput
+              id="reg-password"
+              name="password"
+              type={showPassword ? "text" : "password"}
+              autoComplete="new-password"
+              required
+              compact
+              label={copy.step1.passwordLabel}
+              icon={<KeyRound className="h-4 w-4" />}
+              placeholder={copy.step1.passwordPlaceholder}
+              value={values.password}
+              onChange={(e) => updateField("password", e.target.value)}
+              error={fieldErrors.password}
+              rightLabelSlot={
+                <span
+                  className={`auth-stitch-mono inline-flex items-center gap-1 text-[10px] font-bold ${
+                    strength.score >= 3
+                      ? "text-[#279541]"
+                      : strength.score === 2
+                        ? "text-amber-700"
+                        : "text-slate-500"
                   }`}
-                />
+                >
+                  <span
+                    className={`h-1.5 w-1.5 rounded-full ${
+                      strength.score >= 3
+                        ? "bg-[#279541]"
+                        : strength.score === 2
+                          ? "bg-[#FEB600]"
+                          : "bg-slate-300"
+                    }`}
+                  />
+                  {copy.step1.strengthLabels[strength.score]}
+                  {strength.score === 4 ? " (94%)" : ""}
+                </span>
+              }
+              trailingControl={
                 <button
                   type="button"
                   onClick={() => setShowPassword((prev) => !prev)}
                   aria-pressed={showPassword}
                   aria-label={showPassword ? "Hide password" : "Show password"}
-                  className="auth-login-password-toggle inline-flex h-7 w-7 items-center justify-center rounded-md text-slate-500 hover:bg-slate-100 hover:text-slate-800"
+                  className="inline-flex h-7 w-7 items-center justify-center rounded-full text-slate-500 hover:bg-slate-100 hover:text-slate-900"
                 >
                   {showPassword ? (
                     <EyeOff className="h-4 w-4" aria-hidden="true" />
@@ -568,68 +585,62 @@ export function RegisterWizardForm({
                     <Eye className="h-4 w-4" aria-hidden="true" />
                   )}
                 </button>
-              </div>
-              {fieldErrors.password ? (
-                <p className="mt-1 text-[11px] font-medium text-[#8C1F28]">
-                  {fieldErrors.password}
-                </p>
-              ) : null}
-            </div>
+              }
+            />
 
-            <div className="auth-login-field">
-              <label htmlFor="reg-confirm-password">
-                {copy.step1.confirmPasswordLabel}{" "}
-                <span className="text-[#8C1F28]">*</span>
-              </label>
-              <div className="auth-login-password-row">
-                <Lock
-                  className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400"
-                  aria-hidden="true"
-                />
-                <input
-                  id="reg-confirm-password"
-                  name="confirmPassword"
-                  type={showConfirmPassword ? "text" : "password"}
-                  autoComplete="new-password"
-                  required
-                  placeholder={copy.step1.confirmPasswordPlaceholder}
-                  value={values.confirmPassword}
-                  onChange={(e) => updateField("confirmPassword", e.target.value)}
-                  aria-invalid={fieldErrors.confirmPassword ? "true" : "false"}
-                  className={`h-10 w-full rounded-lg border bg-white pr-10 pl-9 text-sm text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:outline-none ${
-                    fieldErrors.confirmPassword
-                      ? "border-[#8C1F28] focus:border-[#8C1F28] focus:ring-[#8C1F28]/20"
-                      : "border-slate-300 focus:border-[#FF5B00] focus:ring-[#FF5B00]/20"
-                  }`}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowConfirmPassword((prev) => !prev)}
-                  aria-pressed={showConfirmPassword}
-                  aria-label={
-                    showConfirmPassword
-                      ? "Hide confirm password"
-                      : "Show confirm password"
-                  }
-                  className="auth-login-password-toggle inline-flex h-7 w-7 items-center justify-center rounded-md text-slate-500 hover:bg-slate-100 hover:text-slate-800"
-                >
-                  {showConfirmPassword ? (
-                    <EyeOff className="h-4 w-4" aria-hidden="true" />
-                  ) : (
-                    <Eye className="h-4 w-4" aria-hidden="true" />
-                  )}
-                </button>
-              </div>
-              {fieldErrors.confirmPassword ? (
-                <p className="mt-1 text-[11px] font-medium text-[#8C1F28]">
-                  {fieldErrors.confirmPassword}
-                </p>
-              ) : null}
-            </div>
+            <LiquidGlassInput
+              id="reg-confirm-password"
+              name="confirmPassword"
+              type={showConfirmPassword ? "text" : "password"}
+              autoComplete="new-password"
+              required
+              compact
+              label={copy.step1.confirmPasswordLabel}
+              icon={<Lock className="h-4 w-4" />}
+              placeholder={copy.step1.confirmPasswordPlaceholder}
+              value={values.confirmPassword}
+              onChange={(e) => updateField("confirmPassword", e.target.value)}
+              error={fieldErrors.confirmPassword}
+              rightLabelSlot={
+                passwordsMatch ? (
+                  <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-[#279541]">
+                    <CheckCircle2 className="h-3 w-3" aria-hidden="true" />
+                    <span>Matched</span>
+                  </span>
+                ) : null
+              }
+              trailingControl={
+                <div className="flex items-center gap-1">
+                  {passwordsMatch ? (
+                    <CheckCircle2
+                      className="h-4 w-4 text-[#279541]"
+                      aria-label="Passwords match"
+                    />
+                  ) : null}
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword((prev) => !prev)}
+                    aria-pressed={showConfirmPassword}
+                    aria-label={
+                      showConfirmPassword
+                        ? "Hide confirm password"
+                        : "Show confirm password"
+                    }
+                    className="inline-flex h-7 w-7 items-center justify-center rounded-full text-slate-500 hover:bg-slate-100 hover:text-slate-900"
+                  >
+                    {showConfirmPassword ? (
+                      <EyeOff className="h-4 w-4" aria-hidden="true" />
+                    ) : (
+                      <Eye className="h-4 w-4" aria-hidden="true" />
+                    )}
+                  </button>
+                </div>
+              }
+            />
           </div>
 
-          {/* Strength Bar + Real-Time Password Policy Checklist */}
-          <div className="rounded-lg border border-slate-200/80 bg-slate-50/70 p-2.5">
+          {/* 4-Bar Strength Meter + Statutory Cryptographic Standards Checklist */}
+          <div className="rounded-xl border border-slate-200/80 bg-[#F8FAFC] p-2.5">
             <div className="grid grid-cols-4 gap-1.5" aria-hidden="true">
               {[1, 2, 3, 4].map((bar) => {
                 const active = strength.score >= bar;
@@ -677,7 +688,9 @@ export function RegisterWizardForm({
               <li className="flex items-center gap-1.5">
                 <span
                   className={`h-1.5 w-1.5 shrink-0 rounded-full ${
-                    strength.hasMixedCaseOrSymbol ? "bg-[#279541]" : "bg-slate-300"
+                    strength.hasMixedCaseOrSymbol
+                      ? "bg-[#279541]"
+                      : "bg-slate-300"
                   }`}
                 />
                 <span>{copy.step1.ruleComplex}</span>
@@ -685,31 +698,41 @@ export function RegisterWizardForm({
             </ul>
           </div>
 
-          <div className="pt-1">
-            <button
+          <div className="flex flex-col items-center justify-between gap-2 pt-0.5 sm:flex-row">
+            <span className="hidden min-w-0 items-center gap-1.5 text-[11px] font-medium text-slate-500 sm:inline-flex">
+              <ShieldCheck
+                className="h-3.5 w-3.5 shrink-0 text-[#279541]"
+                aria-hidden="true"
+              />
+              <span className="truncate">Encrypted via TLS 1.3 Statutory Channel</span>
+            </span>
+            <PillButton
               type="submit"
-              className="auth-primary-cta inline-flex h-10.5 w-full items-center justify-center gap-2 rounded-lg px-5 text-sm font-semibold"
+              compact
+              className="shrink-0 whitespace-nowrap sm:w-auto sm:px-6"
             >
               <span>{copy.step1.continueBtn}</span>
-              <ArrowRight className="h-4 w-4" aria-hidden="true" />
-            </button>
+              <ArrowRight className="h-4 w-4 shrink-0" aria-hidden="true" />
+            </PillButton>
           </div>
         </form>
       ) : null}
 
-      {/* STEP 2: ORGANIZATION & ACCESS */}
+      {/* ================================================================= */}
+      {/* STEP 2 (STA 0+500): ORGANIZATION & ACCESS                         */}
+      {/* ================================================================= */}
       {step === 2 ? (
-        <form onSubmit={handleStep2Continue} noValidate className="space-y-1.5">
+        <form onSubmit={handleStep2Continue} noValidate className="space-y-2">
           {/* Searchable Organization Selector in Compact Row */}
           <div className="auth-login-field">
-            <label htmlFor="reg-organization">
+            <label htmlFor="reg-organization" className="mb-1">
               {copy.step2.organizationLabel}{" "}
-              <span className="text-[#8C1F28]">*</span>
+              <span className="font-bold text-[#FF5B00]">*</span>
             </label>
             <div className="grid grid-cols-1 gap-2 sm:grid-cols-[0.85fr_1.15fr]">
               <div className="relative">
                 <Search
-                  className="pointer-events-none absolute top-1/2 left-2.5 h-3.5 w-3.5 -translate-y-1/2 text-slate-400"
+                  className="pointer-events-none absolute top-1/2 left-3 h-3.5 w-3.5 -translate-y-1/2 text-slate-400"
                   aria-hidden="true"
                 />
                 <input
@@ -718,7 +741,7 @@ export function RegisterWizardForm({
                   onChange={(e) => setOrgQuery(e.target.value)}
                   placeholder={copy.step2.organizationSearchPlaceholder}
                   aria-label={copy.step2.organizationSearchPlaceholder}
-                  className="h-9 w-full rounded-lg border border-slate-200 bg-slate-50 pr-2.5 pl-8 text-xs text-slate-800 placeholder:text-slate-400 focus:border-[#FF5B00] focus:bg-white focus:outline-none"
+                  className="h-9.5 w-full rounded-xl border border-slate-200 bg-slate-50 pr-2.5 pl-8.5 text-xs text-slate-800 placeholder:text-slate-400 focus:border-[#FF5B00] focus:bg-white focus:outline-none"
                 />
               </div>
 
@@ -739,7 +762,7 @@ export function RegisterWizardForm({
                     updateField("organizationName", found?.name ?? code);
                   }}
                   aria-invalid={fieldErrors.organizationCode ? "true" : "false"}
-                  className="h-9 w-full rounded-lg border border-slate-300 bg-white pr-7 pl-9 text-xs font-medium text-slate-900 focus:border-[#FF5B00] focus:ring-2 focus:ring-[#FF5B00]/20 focus:outline-none"
+                  className="h-9.5 w-full rounded-xl border border-slate-300 bg-white pr-7 pl-9 text-xs font-medium text-slate-900 focus:border-[#FF5B00] focus:ring-2 focus:ring-[#FF5B00]/20 focus:outline-none"
                 >
                   {filteredInstitutions.map((inst) => (
                     <option key={inst.code} value={inst.code}>
@@ -760,9 +783,9 @@ export function RegisterWizardForm({
           {/* Department / Division & Professional Designation */}
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
             <div className="auth-login-field">
-              <label htmlFor="reg-department">
+              <label htmlFor="reg-department" className="mb-1">
                 {copy.step2.departmentLabel}{" "}
-                <span className="text-[#8C1F28]">*</span>
+                <span className="font-bold text-[#FF5B00]">*</span>
               </label>
               <input
                 id="reg-department"
@@ -773,7 +796,7 @@ export function RegisterWizardForm({
                 value={values.department}
                 onChange={(e) => updateField("department", e.target.value)}
                 aria-invalid={fieldErrors.department ? "true" : "false"}
-                className={`h-9 w-full rounded-lg border bg-white px-3 text-xs text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:outline-none ${
+                className={`h-9.5 w-full rounded-xl border bg-white px-3 text-xs text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:outline-none ${
                   fieldErrors.department
                     ? "border-[#8C1F28] focus:border-[#8C1F28] focus:ring-[#8C1F28]/20"
                     : "border-slate-300 focus:border-[#FF5B00] focus:ring-[#FF5B00]/20"
@@ -787,9 +810,9 @@ export function RegisterWizardForm({
             </div>
 
             <div className="auth-login-field">
-              <label htmlFor="reg-designation">
+              <label htmlFor="reg-designation" className="mb-1">
                 {copy.step2.designationLabel}{" "}
-                <span className="text-[#8C1F28]">*</span>
+                <span className="font-bold text-[#FF5B00]">*</span>
               </label>
               <input
                 id="reg-designation"
@@ -801,7 +824,7 @@ export function RegisterWizardForm({
                 value={values.designation}
                 onChange={(e) => updateField("designation", e.target.value)}
                 aria-invalid={fieldErrors.designation ? "true" : "false"}
-                className={`h-9 w-full rounded-lg border bg-white px-3 text-xs text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:outline-none ${
+                className={`h-9.5 w-full rounded-xl border bg-white px-3 text-xs text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:outline-none ${
                   fieldErrors.designation
                     ? "border-[#8C1F28] focus:border-[#8C1F28] focus:ring-[#8C1F28]/20"
                     : "border-slate-300 focus:border-[#FF5B00] focus:ring-[#FF5B00]/20"
@@ -818,9 +841,9 @@ export function RegisterWizardForm({
           {/* Requested Access Responsibility */}
           <fieldset className="auth-login-field">
             <div className="mb-1 flex flex-wrap items-baseline justify-between gap-x-2">
-              <legend className="text-xs font-semibold text-slate-800">
+              <legend className="text-xs font-semibold text-slate-900">
                 {copy.step2.responsibilityLabel}{" "}
-                <span className="text-[#8C1F28]">*</span>
+                <span className="font-bold text-[#FF5B00]">*</span>
               </legend>
               <span className="text-[10px] text-slate-500">
                 {copy.step2.responsibilityHelper}
@@ -833,7 +856,7 @@ export function RegisterWizardForm({
                 return (
                   <label
                     key={key}
-                    className={`flex min-w-0 cursor-pointer items-start gap-2 rounded-lg border px-2.5 py-1.5 text-left transition-colors ${
+                    className={`flex min-w-0 cursor-pointer items-start gap-2 rounded-xl border px-2.5 py-1.5 text-left transition-colors ${
                       selected
                         ? "border-[#FF5B00] bg-orange-50/50"
                         : "border-slate-200 bg-white hover:border-slate-300"
@@ -874,7 +897,7 @@ export function RegisterWizardForm({
           {/* Mandatory Institutional Access Callout */}
           <div
             role="note"
-            className="rounded-lg border border-amber-300/80 bg-amber-50/80 px-2.5 py-1.5 text-[10.5px] text-amber-950"
+            className="rounded-xl border border-amber-300/80 bg-amber-50/80 px-2.5 py-1.5 text-[10.5px] text-amber-950"
           >
             <div className="flex items-start gap-2">
               <ShieldAlert
@@ -894,35 +917,34 @@ export function RegisterWizardForm({
             <button
               type="button"
               onClick={() => setStep(1)}
-              className="inline-flex h-9.5 items-center justify-center gap-1.5 rounded-lg border border-slate-300 bg-white px-4 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-50"
+              className="inline-flex h-10 items-center justify-center gap-1.5 rounded-full border border-slate-300 bg-white px-5 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-50"
             >
               <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" />
               <span>{copy.step2.previousBtn}</span>
             </button>
-            <button
-              type="submit"
-              className="auth-primary-cta inline-flex h-9.5 flex-1 items-center justify-center gap-2 rounded-lg px-5 text-sm font-semibold"
-            >
+            <PillButton type="submit" compact className="flex-1">
               <span>{copy.step2.continueBtn}</span>
               <ArrowRight className="h-4 w-4" aria-hidden="true" />
-            </button>
+            </PillButton>
           </div>
         </form>
       ) : null}
 
-      {/* STEP 3: REVIEW & ACCOUNT SUBMISSION */}
+      {/* ================================================================= */}
+      {/* STEP 3 (STA 1+000): REVIEW & ACCOUNT SUBMISSION                   */}
+      {/* ================================================================= */}
       {step === 3 ? (
         <form onSubmit={handleFinalSubmit} noValidate className="space-y-2.5">
           {/* Summary Card 1: Personal & Security Credentials */}
-          <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-3">
+          <div className="rounded-xl border border-slate-200 bg-[#F8FAFC] p-3">
             <div className="mb-1.5 flex items-center justify-between">
-              <h2 className="auth-stitch-mono text-[11px] font-bold uppercase tracking-wider text-slate-700">
+              <h2 className="auth-stitch-mono text-[10.5px] font-bold uppercase tracking-wider text-slate-700">
                 {copy.step3.accountSectionTitle}
               </h2>
               <button
                 type="button"
                 onClick={() => setStep(1)}
-                className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#C43D00] hover:text-[#FF5B00] hover:underline"
+                className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#A83900] hover:text-[#FF5B00] hover:underline"
               >
                 <Pencil className="h-3 w-3" aria-hidden="true" />
                 <span>{copy.step3.editBtn}</span>
@@ -957,15 +979,15 @@ export function RegisterWizardForm({
           </div>
 
           {/* Summary Card 2: Institutional Affiliation & Scope */}
-          <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-3">
+          <div className="rounded-xl border border-slate-200 bg-[#F8FAFC] p-3">
             <div className="mb-1.5 flex items-center justify-between">
-              <h2 className="auth-stitch-mono text-[11px] font-bold uppercase tracking-wider text-slate-700">
+              <h2 className="auth-stitch-mono text-[10.5px] font-bold uppercase tracking-wider text-slate-700">
                 {copy.step3.organizationSectionTitle}
               </h2>
               <button
                 type="button"
                 onClick={() => setStep(2)}
-                className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#C43D00] hover:text-[#FF5B00] hover:underline"
+                className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#A83900] hover:text-[#FF5B00] hover:underline"
               >
                 <Pencil className="h-3 w-3" aria-hidden="true" />
                 <span>{copy.step3.editBtn}</span>
@@ -984,7 +1006,7 @@ export function RegisterWizardForm({
                 <dt className="text-[10.5px] text-slate-500">
                   {copy.step2.responsibilityLabel}
                 </dt>
-                <dd className="truncate font-semibold text-[#C43D00]">
+                <dd className="truncate font-semibold text-[#A83900]">
                   {values.requestedResponsibility
                     ? copy.step2.responsibilities[values.requestedResponsibility]
                         .label
@@ -1013,7 +1035,7 @@ export function RegisterWizardForm({
           {/* Mandatory Institutional Access Callout */}
           <div
             role="note"
-            className="rounded-lg border border-amber-300/80 bg-amber-50/80 px-3 py-2 text-[11px] leading-snug text-slate-700"
+            className="rounded-xl border border-amber-300/80 bg-amber-50/80 px-3 py-2 text-[11px] leading-snug text-slate-700"
           >
             <strong className="font-semibold text-slate-900">
               {copy.step2.institutionalNoticeTitle}:{" "}
@@ -1022,7 +1044,7 @@ export function RegisterWizardForm({
           </div>
 
           {/* Governance & Privacy Acceptance */}
-          <div className="rounded-lg border border-slate-200 bg-white p-2.5">
+          <div className="rounded-xl border border-slate-200 bg-white p-2.5">
             <label className="flex cursor-pointer items-start gap-2 text-[11.5px] leading-snug text-slate-700">
               <input
                 id="reg-accept-terms"
@@ -1031,20 +1053,20 @@ export function RegisterWizardForm({
                 checked={values.acceptedTerms}
                 onChange={(e) => updateField("acceptedTerms", e.target.checked)}
                 aria-invalid={fieldErrors.acceptedTerms ? "true" : "false"}
-                className="mt-0.5 h-3.5 w-3.5 rounded border-slate-300 accent-[#FF5B00]"
+                className="mt-0.5 h-4 w-4 rounded border-slate-300 accent-[#FF5B00]"
               />
               <span>
                 {copy.step3.termsCheckboxLabel}{" "}
                 <Link
                   href={publicInfoPath(locale, "privacy")}
-                  className="font-semibold text-[#C43D00] underline hover:text-[#FF5B00]"
+                  className="font-semibold text-[#A83900] underline hover:text-[#FF5B00]"
                 >
                   {copy.step3.privacyPolicyLink}
                 </Link>{" "}
                 &amp;{" "}
                 <Link
                   href={publicInfoPath(locale, "accessibility")}
-                  className="font-semibold text-[#C43D00] underline hover:text-[#FF5B00]"
+                  className="font-semibold text-[#A83900] underline hover:text-[#FF5B00]"
                 >
                   {copy.step3.accessibilityLink}
                 </Link>
@@ -1063,16 +1085,12 @@ export function RegisterWizardForm({
               type="button"
               disabled={submitting}
               onClick={() => setStep(2)}
-              className="inline-flex h-10 items-center justify-center gap-1.5 rounded-lg border border-slate-300 bg-white px-4 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-50 disabled:opacity-60"
+              className="inline-flex h-10 items-center justify-center gap-1.5 rounded-full border border-slate-300 bg-white px-5 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-50 disabled:opacity-60"
             >
               <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" />
               <span>{copy.step3.previousBtn}</span>
             </button>
-            <button
-              type="submit"
-              disabled={submitting}
-              className="auth-primary-cta inline-flex h-10 flex-1 items-center justify-center gap-2 rounded-lg px-5 text-sm font-semibold"
-            >
+            <PillButton type="submit" compact disabled={submitting} className="flex-1">
               {submitting ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
@@ -1084,7 +1102,7 @@ export function RegisterWizardForm({
                   <span>{copy.step3.submitBtn}</span>
                 </>
               )}
-            </button>
+            </PillButton>
           </div>
         </form>
       ) : null}

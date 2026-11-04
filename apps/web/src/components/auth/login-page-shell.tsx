@@ -1,3 +1,5 @@
+import { ShieldCheck } from "lucide-react";
+
 import { getAuthLoginCopy } from "@/lib/auth/messages";
 import { loginPathForLocale, sanitizeNextParam } from "@/lib/auth/redirect";
 import type { AuthLocale } from "@/lib/auth/types";
@@ -10,11 +12,20 @@ type LoginPageShellProps = {
   nextParam?: string | null;
 };
 
-function loginPathWithNext(locale: AuthLocale, nextParam: string | null | undefined): string {
+function loginPathWithNext(
+  locale: AuthLocale,
+  nextParam: string | null | undefined,
+): string {
   const base = loginPathForLocale(locale);
   const safe = sanitizeNextParam(nextParam ?? null);
   return safe ? `${base}?next=${encodeURIComponent(safe)}` : base;
 }
+
+const CLEARANCE_BADGE: Record<AuthLocale, string> = {
+  en: "STATUTORY CLEARANCE REQUIRED",
+  si: "ව්‍යවස්ථාපිත ප්‍රවේශ අවසරය අවශ්‍යයි",
+  ta: "சட்டபூர்வ அனுமதி தேவை",
+};
 
 export function LoginPageShell({ locale, nextParam }: LoginPageShellProps) {
   const copy = getAuthLoginCopy(locale);
@@ -24,15 +35,18 @@ export function LoginPageShell({ locale, nextParam }: LoginPageShellProps) {
       localeHrefFor={(item) => loginPathWithNext(item, nextParam)}
       variant="login"
     >
-      <header className="mb-3.5">
-        <div className="mb-2 inline-flex items-center gap-2 rounded-md border border-slate-200/90 bg-slate-100/90 px-2 py-0.5">
-          <span className="h-1.5 w-1.5 rounded-full bg-[#FF5B00]" />
-          <span className="auth-stitch-mono text-[10px] font-bold uppercase tracking-[0.12em] text-slate-700">
-            {copy.eyebrow}
+      <header className="mb-3.5 flex flex-col items-center text-center">
+        <div className="mb-2 inline-flex items-center gap-1.5 rounded-full border border-[#8C1F28]/20 bg-[#FFDAD6]/45 px-3 py-1 text-[#8C1F28] shadow-2xs">
+          <span className="h-2 w-2 rounded-full bg-[#279541]" aria-hidden="true" />
+          <ShieldCheck className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+          <span className="auth-stitch-mono text-[10.5px] font-bold uppercase tracking-wider">
+            {CLEARANCE_BADGE[locale]}
           </span>
         </div>
-        <h1 className="auth-login-title">{copy.title}</h1>
-        <p className="auth-login-subtitle">{copy.subtitle}</p>
+        <h1 className="auth-login-title text-center">{copy.title}</h1>
+        <p className="auth-login-subtitle mx-auto max-w-md text-center">
+          {copy.subtitle}
+        </p>
       </header>
       <LoginForm locale={locale} nextParam={nextParam} />
     </AuthStitchFrame>
