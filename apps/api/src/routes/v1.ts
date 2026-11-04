@@ -10,6 +10,7 @@ import { profileRouter } from "../modules/identity/profile/profile.routes.js";
 import { projectRouter } from "../modules/projects/projects.routes.js";
 import { notificationRouter } from "../modules/notifications/notice.routes.js";
 import { roadsyncRouter } from "../modules/roadsync/work-requests.routes.js";
+import { inframapRouter } from "../modules/inframap/inframap.routes.js";
 
 export function createV1Router(): Router {
   const router = Router();
@@ -25,5 +26,6 @@ export function createV1Router(): Router {
   router.use("/projects", projectRouter);
   router.use("/notifications", notificationRouter);
   router.use("/roadsync", roadsyncRouter);
+  router.use("/inframap", inframapRouter);
   return router;
 }
