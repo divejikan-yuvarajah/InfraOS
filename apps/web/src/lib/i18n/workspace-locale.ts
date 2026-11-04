@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useSyncExternalStore } from "react";
 
 import type { AuthLocale } from "@/lib/auth/types";
 
@@ -51,6 +51,8 @@ function subscribe(listener: () => void): () => void {
 export function useWorkspaceLocale(): [AuthLocale, (next: AuthLocale) => void] {
   const locale = useSyncExternalStore(subscribe, read, () => "en" as AuthLocale);
   const set = useCallback((next: AuthLocale) => setWorkspaceLocale(next), []);
+  // Keep the document language in step with the visible language so screen readers pick the right voice and hyphenation.
+  useEffect(() => { document.documentElement.lang = locale; }, [locale]);
   return [locale, set];
 }
 
