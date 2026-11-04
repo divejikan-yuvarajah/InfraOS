@@ -83,6 +83,7 @@ export function LoginForm({ locale, nextParam }: LoginFormProps) {
 
   return (
     <form
+      method="post"
       onSubmit={handleSubmit}
       noValidate
       className="space-y-3"

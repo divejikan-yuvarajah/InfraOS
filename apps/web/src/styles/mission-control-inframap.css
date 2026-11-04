@@ -1,0 +1,43 @@
+/* Steps 81-84 InfraMap. Extends Mission Control. Status is never colour-only: every mark has a text label in the list and panel. */
+.im { --im-navy: #0b1f3a; --im-line: #d6dde8; display: grid; gap: 0.9rem; min-width: 0; }
+.im svg { width: 1rem; height: 1rem; flex: none; }
+.im-bar { display: flex; flex-wrap: wrap; gap: 0.6rem 1rem; align-items: center; }
+.im-toggle { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 0.4rem; }
+.im-toggle .rs-btn[aria-pressed="true"] { background: var(--im-navy); color: #fff; border-color: var(--im-navy); }
+.im-toggle[data-on="false"] .im-swatch { background: transparent; }
+.im-swatch { width: 0.75rem; height: 0.75rem; border-radius: 3px; border: 2px solid currentColor; display: inline-block; margin-right: 0.35rem; background: currentColor; }
+.im-toggle[data-layer="conflicts"] .im-swatch { border-radius: 50%; }
+.im-toggle-note { font-size: 0.82rem; color: #475569; }
+.im-note { margin: 0; padding: 0.55rem 0.8rem; border-radius: 10px; border-left: 4px solid #0e7490; background: #ecfbff; color: #0b4a5c; font-size: 0.9rem; }
+.im-grid { display: grid; grid-template-columns: minmax(0, 1fr) 21rem; gap: 1rem; align-items: start; }
+.im-stage { position: relative; min-width: 0; border: 1px solid var(--im-line); border-radius: 14px; overflow: hidden; background: #e8edf3; }
+.im-map { width: 100%; height: clamp(26rem, calc(100dvh - 20rem), 46rem); }
+.im-failed { display: grid; place-items: center; min-height: 18rem; padding: 1rem; text-align: center; color: #475569; }
+.im-panel { display: grid; gap: 0.7rem; padding: 1rem; border: 1px solid var(--im-line); border-radius: 14px; background: #fff; max-height: clamp(26rem, calc(100dvh - 20rem), 46rem); overflow: auto; }
+.im-h { margin: 0; font-size: 0.95rem; color: var(--im-navy); }
+.im-details { display: grid; gap: 0.6rem; padding: 0.8rem; border-radius: 12px; background: #f8fafc; border: 1px solid var(--im-line); }
+.im-details-top { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; justify-content: space-between; }
+.im-details dl { margin: 0; display: grid; gap: 0.35rem; }
+.im-details dl div { display: grid; grid-template-columns: 7rem minmax(0, 1fr); gap: 0.5rem; font-size: 0.88rem; }
+.im-details dt { color: #64748b; } .im-details dd { margin: 0; overflow-wrap: anywhere; }
+.im-details-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.im-list { display: grid; gap: 0.4rem; }
+.im-list ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.25rem; }
+.im-item { width: 100%; display: flex; justify-content: space-between; gap: 0.6rem; text-align: left; padding: 0.5rem 0.65rem; min-height: 2.5rem; border: 1px solid var(--im-line); border-radius: 10px; background: #fff; cursor: pointer; font: inherit; color: inherit; }
+.im-item small { color: #64748b; flex: none; }
+.im-item[aria-pressed="true"] { border-color: #f59e0b; background: #fff7e8; }
+.im-item:focus-visible, .im-toggle .rs-btn:focus-visible, .im-details .rs-btn:focus-visible { outline: 3px solid #0e7490; outline-offset: 2px; }
+.im-legend { position: absolute; left: 0.6rem; bottom: 2.2rem; max-width: 14rem; background: rgba(255, 255, 255, 0.95); border: 1px solid var(--im-line); border-radius: 10px; padding: 0.4rem 0.6rem; font-size: 0.8rem; z-index: 2; }
+.im-legend summary { cursor: pointer; font-weight: 600; min-height: 1.5rem; }
+.im-legend ul { list-style: none; margin: 0 0 0.3rem; padding: 0; display: grid; gap: 0.15rem; }
+.im-legend li { display: flex; align-items: center; gap: 0.4rem; }
+.im-legend i { width: 0.8rem; height: 0.35rem; border-radius: 2px; display: inline-block; }
+.im-legend i.im-dot { width: 0.7rem; height: 0.7rem; border-radius: 50%; }
+.im-legend-h { margin: 0.3rem 0 0.1rem; font-weight: 700; font-size: 0.78rem; color: var(--im-navy); }
+@media (max-width: 900px) {
+  .im-grid { grid-template-columns: minmax(0, 1fr); }
+  .im-map { height: clamp(22rem, 62dvh, 34rem); }
+  .im-panel { max-height: none; }
+  .im .rs-btn, .im-item { min-height: 44px; }
+}
+@media (prefers-reduced-motion: reduce) { .im * { transition: none !important; animation: none !important; } }

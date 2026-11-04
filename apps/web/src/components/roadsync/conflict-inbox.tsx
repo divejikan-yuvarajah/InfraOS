@@ -12,7 +12,7 @@ import { getAuthEpoch, getMemorySession, subscribeAuth } from "@/lib/auth/state"
 import { useWorkspaceLocale } from "@/lib/i18n/workspace-locale";
 import { BANDS_DESC, CLASS_ORDER, fmt, type Band } from "@/lib/roadsync/assessment";
 import { getAssessmentCopy } from "@/lib/roadsync/assessment-copy";
-import { apiQuery, csvOf, FILTER_KEYS, presetOf, type Preset, type RecordRow } from "@/lib/roadsync/conflict-records";
+import { ackSlaDue, apiQuery, csvOf, FILTER_KEYS, presetOf, type Preset, type RecordRow } from "@/lib/roadsync/conflict-records";
 import { acknowledgeBulk, acknowledgeRecord, downloadFile, exportCsvPath, fetchRecords, fetchRecordSummary, setWatching } from "@/lib/roadsync/conflict-records-api";
 import { getConflictCopy } from "@/lib/roadsync/conflict-records-copy";
 import { getCoordCopy } from "@/lib/roadsync/coordination-copy";
@@ -274,7 +274,7 @@ function Row({ row, index, active, selected, copy, ac, locale, now, onFocus, onO
           {row.unseenChanges > 0 ? <span className="cr-unseen" title={fmt(copy.row.unseen, { n: row.unseenChanges })}>{row.unseenChanges}<span className="sr-only"> {fmt(copy.row.unseen, { n: row.unseenChanges })}</span></span> : null}
         </div>
         <PartyLine row={row} copy={copy} />
-        <div className="cr-row-bottom"><AckSegments row={row} copy={copy} /><SlaChip due={row.myAgency?.ackStatus === "pending" ? row.myAgency.ackDueAt : null} now={now} copy={copy} locale={locale} /></div>
+        <div className="cr-row-bottom"><AckSegments row={row} copy={copy} /><SlaChip due={ackSlaDue(row.status, row.myAgency)} now={now} copy={copy} locale={locale} /></div>
       </div>
       <TimeRing t={row.timeToImpact} copy={copy} size={38} />
       <button type="button" className="rs-btn cr-open" onClick={(e) => { e.stopPropagation(); onOpen(); }} aria-label={`${copy.row.open} ${row.conflictNo}`}><ChevronRightIcon aria-hidden="true" /></button>
@@ -294,7 +294,7 @@ function Preview({ row, copy, ac, locale, now, canAck, onAck, onWatch, compact }
       </div>
       <p className="rs-help">{lead}</p>
       <AckSegments row={row} copy={copy} />
-      <div className="cr-pv-row"><TimeRing t={row.timeToImpact} copy={copy} /><SlaChip due={row.myAgency?.ackStatus === "pending" ? row.myAgency.ackDueAt : null} now={now} copy={copy} locale={locale} /></div>
+      <div className="cr-pv-row"><TimeRing t={row.timeToImpact} copy={copy} /><SlaChip due={ackSlaDue(row.status, row.myAgency)} now={now} copy={copy} locale={locale} /></div>
       {compact ? null : <p className="rs-help">{row.hotspot.coordinates[1].toFixed(4)}, {row.hotspot.coordinates[0].toFixed(4)}</p>}
       <div className="cr-pv-actions">
         {canAck ? <button type="button" className="rs-btn is-primary" onClick={onAck}>{copy.row.acknowledge}</button> : null}
@@ -320,7 +320,7 @@ function Board({ rows, copy, ac, locale, now, onOpen }: { rows: RecordRow[]; cop
               <button key={r.id} type="button" className="cr-card" onClick={() => onOpen(r)}>
                 <span className="cr-row-top"><code className="cr-no">{r.conflictNo}</code><StatusPill status={r.status} copy={copy} /></span>
                 <PartyLine row={r} copy={copy} />
-                <span className="cr-row-bottom"><AckSegments row={r} copy={copy} /><TimeRing t={r.timeToImpact} copy={copy} size={32} /><SlaChip due={r.myAgency?.ackStatus === "pending" ? r.myAgency.ackDueAt : null} now={now} copy={copy} locale={locale} /></span>
+                <span className="cr-row-bottom"><AckSegments row={r} copy={copy} /><TimeRing t={r.timeToImpact} copy={copy} size={32} /><SlaChip due={ackSlaDue(r.status, r.myAgency)} now={now} copy={copy} locale={locale} /></span>
               </button>
             ))}
           </section>

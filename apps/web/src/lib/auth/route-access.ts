@@ -21,6 +21,7 @@ const PRIVATE_ROOTS = new Set([
   "dashboard",
   "projects",
   "roadsync",
+  "inframap",
   "map",
   "contractors",
   "assets",

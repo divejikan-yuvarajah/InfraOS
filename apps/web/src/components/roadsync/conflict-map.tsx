@@ -44,6 +44,8 @@ export function ConflictMap({ features, mode, onSelect, label, selectedId }: { f
       try {
         const maplibre = await import("maplibre-gl");
         if (cancelled || !box.current) return;
+        // The bundler moves maplibre into a chunk, so point it at its own self-contained worker file (same as the work map).
+        if (!maplibre.getWorkerUrl()) maplibre.setWorkerUrl(new URL("maplibre-gl/dist/maplibre-gl-worker.mjs", import.meta.url).href);
         const map = new maplibre.Map({ container: box.current, style: STYLE, bounds: SRI_LANKA, fitBoundsOptions: { padding: 20 }, attributionControl: { compact: true } });
         mapRef.current = map;
         map.addControl(new maplibre.NavigationControl({ showCompass: false }), "top-right");

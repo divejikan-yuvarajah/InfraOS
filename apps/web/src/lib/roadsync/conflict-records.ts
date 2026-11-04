@@ -100,6 +100,16 @@ export const SIDE_EXITS: RecordStatus[] = ["dismissed", "auto_closed"];
 
 export type SlaState = { kind: "none" } | { kind: "later"; hours: number } | { kind: "today" } | { kind: "overdue"; days: number; hours: number };
 
+/** A record still being worked (not resolved, dismissed, auto-closed or withdrawn). Only these can owe an acknowledgement. */
+export function isAckOpen(status: string): boolean {
+  return status === "open" || status === "acknowledged" || status === "awaiting_response" || status === "negotiating" || status === "escalated";
+}
+
+/** The acknowledgement deadline to show, or null when it is not owed (already acknowledged, or the record is closed). */
+export function ackSlaDue(status: string, mine: { ackStatus: string; ackDueAt: string | null } | null | undefined): string | null {
+  return mine && mine.ackStatus === "pending" && isAckOpen(status) ? mine.ackDueAt : null;
+}
+
 /** Client-side SLA clock. "Due today" means within 12 hours; overdue is measured from the due time. */
 export function slaState(ackDueAt: string | null, now: number): SlaState {
   if (!ackDueAt) return { kind: "none" };

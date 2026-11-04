@@ -6,6 +6,7 @@ import {
   FolderKanbanIcon,
   RouteIcon,
   LayoutDashboardIcon,
+  MapIcon,
   ShieldCheckIcon,
   SlidersHorizontalIcon,
   HandshakeIcon,
@@ -40,6 +41,7 @@ export const WORKSPACE_NAV: readonly WorkspaceNavGroup[] = [
       { href: "/roadsync/coordination", label: "Coordination", icon: HandshakeIcon, i18n: { si: "සම්බන්ධීකරණය", ta: "ஒருங்கிணைப்பு" } },
       { href: "/roadsync/approvals", label: "Approvals", icon: FileCheck2Icon, i18n: { si: "අනුමැතීන්", ta: "ஒப்புதல்கள்" } },
       { href: "/roadsync/history", label: "History", icon: ArchiveIcon, i18n: { si: "ඉතිහාසය", ta: "வரலாறு" } },
+      { href: "/inframap", label: "InfraMap", icon: MapIcon, i18n: { si: "InfraMap සිතියම", ta: "InfraMap வரைபடம்" } },
     ],
   },
   {

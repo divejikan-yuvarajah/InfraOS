@@ -18,8 +18,18 @@ import { Notification } from "../../modules/notifications/models/notification.mo
 import { Milestone } from "../../modules/projects/models/milestone.model.js";
 import { Project } from "../../modules/projects/models/project.model.js";
 import { RiskAssessment } from "../../modules/risk/models/risk-assessment.model.js";
+import { Candidate } from "../../modules/roadsync/models/candidate.model.js";
 import { Conflict } from "../../modules/roadsync/models/conflict.model.js";
+import { ConflictRead, ConflictRecord, RoadsyncCounter } from "../../modules/roadsync/models/conflict-record.model.js";
 import { CoordinationRequest } from "../../modules/roadsync/models/coordination-request.model.js";
+import {
+  CoordinationMessage,
+  CoordinationRead,
+  CoordinationRequest as RoadsyncCoordinationRequest,
+} from "../../modules/roadsync/models/coordination.model.js";
+import { Recommendation } from "../../modules/roadsync/models/recommendation.model.js";
+import { Amendment, LedgerEntry, Resolution } from "../../modules/roadsync/models/resolution.model.js";
+import { Scenario } from "../../modules/roadsync/models/scenario.model.js";
 import { WorkRequest } from "../../modules/roadsync/models/work-request.model.js";
 
 /** Every persisted model inspected by the read-only index check command. */
@@ -36,6 +46,18 @@ export const INDEX_MODELS = [
   WorkRequest,
   Conflict,
   CoordinationRequest,
+  Candidate,
+  ConflictRecord,
+  ConflictRead,
+  RoadsyncCounter,
+  RoadsyncCoordinationRequest,
+  CoordinationMessage,
+  CoordinationRead,
+  Resolution,
+  Amendment,
+  LedgerEntry,
+  Scenario,
+  Recommendation,
   Contractor,
   ProjectPayment,
   Document,

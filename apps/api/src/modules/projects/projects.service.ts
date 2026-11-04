@@ -865,3 +865,59 @@ export async function reviewProject(
     await mongo.endSession();
   }
 }
+
+export const PROJECT_MAP_CAP = 250;
+export type ProjectMapRow = {
+  id: string;
+  projectCode: string;
+  title: string;
+  projectType: string;
+  status: string;
+  agencyName: string | null;
+  startDate: Date | null;
+  plannedEndDate: Date | null;
+  geometry: unknown;
+};
+
+/**
+ * InfraMap project layer: projects with a recorded geometry inside the viewport, under the same read scope and live
+ * checks as the catalog. Only identity, status, agency and dates are selected; budget, progress, text and people never leave.
+ */
+export async function mapProjects(
+  actor: AuthenticatedActor,
+  bbox: [number, number, number, number],
+): Promise<{ ok: true; rows: ProjectMapRow[]; truncated: boolean } | ProjectFailure> {
+  try {
+    await assertLive(actor, ["project.read"]);
+    const scoped = await readFilter(actor);
+    if (scoped.denied) return fail(403, "FORBIDDEN");
+    const [west, south, east, north] = bbox;
+    const viewport = { type: "Polygon", coordinates: [[[west, south], [east, south], [east, north], [west, north], [west, south]]] };
+    const found = await Project.find({ $and: [scoped.filter, { geometry: { $geoIntersects: { $geometry: viewport } } }] })
+      .select("projectCode title projectType status agencyId startDate plannedEndDate geometry")
+      .sort({ _id: 1 })
+      .limit(PROJECT_MAP_CAP + 1)
+      .lean();
+    const rows = found.slice(0, PROJECT_MAP_CAP);
+    const agencies = await Agency.find({ _id: { $in: [...new Set(rows.map((row) => row.agencyId.toString()))] } }).select("name").lean();
+    const names = new Map(agencies.map((agency) => [agency._id.toString(), agency.name as string]));
+    return {
+      ok: true,
+      truncated: found.length > PROJECT_MAP_CAP,
+      rows: rows.map((row) => ({
+        id: row._id.toString(),
+        projectCode: row.projectCode,
+        title: row.title,
+        projectType: row.projectType,
+        status: row.status,
+        agencyName: names.get(row.agencyId.toString()) ?? null,
+        startDate: row.startDate ?? null,
+        plannedEndDate: row.plannedEndDate ?? null,
+        geometry: row.geometry,
+      })),
+    };
+  } catch (error) {
+    if (error instanceof FlowControl) return fail(error.status, error.code);
+    throw new ProjectDependencyError();
+  }
+}
