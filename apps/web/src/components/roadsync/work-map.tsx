@@ -103,7 +103,7 @@ function useNearbyOverlay(mapRef: React.RefObject<MlMap | null>, ready: boolean,
 }
 
 /** Free OpenStreetMap raster tiles: no API key, attribution always visible. */
-const STYLE: StyleSpecification = {
+export const MAP_STYLE: StyleSpecification = {
   version: 8,
   sources: {
     osm: {
@@ -116,7 +116,7 @@ const STYLE: StyleSpecification = {
   },
   layers: [{ id: "osm", type: "raster", source: "osm" }],
 };
-const SRI_LANKA: [[number, number], [number, number]] = [[79.4, 5.8], [82.1, 9.95]];
+export const SRI_LANKA_BOUNDS: [[number, number], [number, number]] = [[79.4, 5.8], [82.1, 9.95]];
 const ACCENT = "#c2410c";
 const EMPTY = { type: "FeatureCollection" as const, features: [] as unknown[] };
 
@@ -142,7 +142,7 @@ function useMap(container: React.RefObject<HTMLDivElement | null>, onReady: (map
       if (cancelled || !container.current) return;
       // The bundler moves maplibre into a chunk, so point it at its own self-contained worker file explicitly.
       if (!ml.getWorkerUrl()) ml.setWorkerUrl(new URL("maplibre-gl/dist/maplibre-gl-worker.mjs", import.meta.url).href);
-      const created = new ml.Map({ container: container.current, style: STYLE, bounds: SRI_LANKA, attributionControl: { compact: false } });
+      const created = new ml.Map({ container: container.current, style: MAP_STYLE, bounds: SRI_LANKA_BOUNDS, attributionControl: { compact: false } });
       map = created;
       // Keep the canvas matched to its box when the layout settles or the viewport changes.
       observer = new ResizeObserver(() => created.resize());
@@ -183,7 +183,7 @@ function setShapes(map: MlMap | null, features: unknown[], vertices: Position[] 
 
 /* ---------- read-only map (detail page and overview) ---------- */
 
-const STATUS_COLOR: Record<string, string> = { DRAFT: "#64748b", SUBMITTED: "#1d4ed8", PLANNED: "#0f766e", APPROVED: "#15803d", ACTIVE: "#c2410c", COMPLETED: "#334155", CANCELLED: "#9ca3af" };
+export const WORK_STATUS_COLOR: Record<string, string> = { DRAFT: "#64748b", SUBMITTED: "#1d4ed8", PLANNED: "#0f766e", APPROVED: "#15803d", ACTIVE: "#c2410c", COMPLETED: "#334155", CANCELLED: "#9ca3af" };
 
 export function WorkMap({ features, height = 320, label, onSelect, overlay }: { features: WorkMapFeature[] | { geometry: GeometryInput }[]; height?: number | string; label: string; onSelect?: (id: string) => void; overlay?: NearbyOverlay | null }) {
   const container = useRef<HTMLDivElement>(null);
@@ -205,7 +205,7 @@ export function WorkMap({ features, height = 320, label, onSelect, overlay }: { 
     if (!ready) return;
     const list = features.map((f) => {
       const props = "properties" in f ? f.properties : undefined;
-      return { type: "Feature", geometry: f.geometry, properties: props ? { id: props.id, status: props.status, color: STATUS_COLOR[props.status] ?? ACCENT, ...(props.maxBand ? { band: props.maxBand } : {}) } : {} };
+      return { type: "Feature", geometry: f.geometry, properties: props ? { id: props.id, status: props.status, color: WORK_STATUS_COLOR[props.status] ?? ACCENT, ...(props.maxBand ? { band: props.maxBand } : {}) } : {} };
     });
     setShapes(mapRef.current, list);
     const b = boundsOf(features.map((f) => f.geometry));
