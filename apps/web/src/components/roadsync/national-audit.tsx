@@ -9,7 +9,7 @@ import { ApiError } from "@/lib/api/client";
 import { useWorkspaceLocale } from "@/lib/i18n/workspace-locale";
 import { fmt } from "@/lib/roadsync/assessment";
 import { fetchAudit, verifyAuditBatch } from "@/lib/roadsync/resolution-api";
-import { actionLabel, getResolutionCopy } from "@/lib/roadsync/resolution-copy";
+import { actionLabel, getResolutionCopy, roleLabel } from "@/lib/roadsync/resolution-copy";
 
 import { useRoadsyncKeys, whenFmt } from "./resolution-tab";
 
@@ -54,7 +54,7 @@ export function NationalAudit() {
                   <li key={`${r.conflictId}-${r.seq}`} className="rz-card">
                     <div className="rz-card-top"><code>{r.entityNo ?? r.entityType}</code><strong>{actionLabel(copy, r.action)}</strong>
                       {v ? <span className="rz-chip" data-status={!v.found ? "cancelled" : v.ok ? "resolved" : "cancelled"}>{!v.found ? au.missing : v.ok ? au.intact : fmt(au.broken, { seq: v.firstBrokenSeq ?? 0 })}</span> : null}</div>
-                    <p className="rs-help">{whenFmt(locale, r.at)} · {r.actor.role ?? au.system} · #{r.seq} · {r.short}</p>
+                    <p className="rs-help">{whenFmt(locale, r.at)} · {r.actor.role ? roleLabel(copy, r.actor.role) : au.system} · #{r.seq} · {r.short}</p>
                     <Link className="rs-btn" href={`/roadsync/conflicts/${r.conflictId}?tab=history`}>{au.open}</Link>
                   </li>
                 );

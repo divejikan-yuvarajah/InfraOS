@@ -1,12 +1,21 @@
 import { describe, expect, it } from "vitest";
 
-import { apiQuery, impactTone, ringFraction, slaState, stepPath, type HistoryPoint } from "./conflict-records";
+import { ackSlaDue, apiQuery, impactTone, ringFraction, slaState, stepPath, type HistoryPoint } from "./conflict-records";
 import { getConflictCopy, ringText, slaText } from "./conflict-records-copy";
 
 const keysOf = (o: unknown, prefix = ""): string[] =>
   o && typeof o === "object" ? Object.entries(o).flatMap(([k, v]) => keysOf(v, `${prefix}${k}.`)) : [prefix];
 
 describe("steps 72-73 conflict record helpers", () => {
+  it("owes an acknowledgement deadline only on open records that are still pending", () => {
+    const pending = { ackStatus: "pending", ackDueAt: "2026-06-15T10:00:00Z" };
+    expect(ackSlaDue("open", pending)).toBe("2026-06-15T10:00:00Z");
+    expect(ackSlaDue("negotiating", pending)).toBe("2026-06-15T10:00:00Z");
+    for (const closed of ["resolved", "dismissed", "auto_closed", "withdrawn"]) expect(ackSlaDue(closed, pending)).toBeNull();
+    expect(ackSlaDue("open", { ackStatus: "acknowledged", ackDueAt: "2026-06-15T10:00:00Z" })).toBeNull();
+    expect(ackSlaDue("open", null)).toBeNull();
+  });
+
   it("computes the SLA clock states", () => {
     const now = Date.parse("2026-06-10T10:00:00Z");
     expect(slaState(null, now)).toEqual({ kind: "none" });

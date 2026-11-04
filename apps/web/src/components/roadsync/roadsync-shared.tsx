@@ -39,10 +39,10 @@ export function WorkTypeIcon({ type }: { type: WorkType }) {
   );
 }
 
-export function PriorityMark({ priority }: { priority: WorkPriority }) {
+export function PriorityMark({ priority, label }: { priority: WorkPriority; label?: string }) {
   return (
     <span className="rs-pri" data-p={priority}>
-      {PRIORITY_LABELS[priority]}
+      {label ?? PRIORITY_LABELS[priority]}
     </span>
   );
 }

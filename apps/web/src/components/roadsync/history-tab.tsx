@@ -9,7 +9,7 @@ import type { AuthLocale } from "@/lib/auth/types";
 import { fmt } from "@/lib/roadsync/assessment";
 import { LEDGER_CATEGORIES, type Chronicle, type ChronicleItem, type LedgerCategory, type VerifyOut } from "@/lib/roadsync/resolution";
 import { chronicleCsvPath, downloadFile, evidencePackPath, fetchChronicle, verifyChronicle } from "@/lib/roadsync/resolution-api";
-import { actionLabel, getResolutionCopy } from "@/lib/roadsync/resolution-copy";
+import { actionLabel, getResolutionCopy, roleLabel } from "@/lib/roadsync/resolution-copy";
 
 import { useRoadsyncKeys, whenFmt } from "./resolution-tab";
 
@@ -100,7 +100,7 @@ export function HistoryTab({ conflictId, conflictNo, locale }: { conflictId: str
 function EntryRow({ e, open, onToggle, locale }: { e: Entry; open: boolean; onToggle: () => void; locale: AuthLocale }) {
   const copy = getResolutionCopy(locale);
   const h = copy.history;
-  const actor = e.actorLabel.person ? (e.actorLabel.role ?? h.actor) : h.system;
+  const actor = e.actorLabel.person ? (e.actorLabel.role ? roleLabel(copy, e.actorLabel.role) : h.actor) : h.system;
   return (
     <li className="rz-tl" data-cat={e.category}>
       <span className="rz-tl-dot" aria-hidden="true" />
