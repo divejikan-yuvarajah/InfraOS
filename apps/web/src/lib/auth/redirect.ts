@@ -81,6 +81,11 @@ export function registerPathForLocale(locale: "en" | "si" | "ta"): string {
   return `/${locale}/register`;
 }
 
+export function signupPathForLocale(locale: "en" | "si" | "ta"): string {
+  if (locale === "en") return "/signup";
+  return `/${locale}/signup`;
+}
+
 export function forgotPasswordPathForLocale(locale: "en" | "si" | "ta"): string {
   if (locale === "en") return "/forgot-password";
   return `/${locale}/forgot-password`;
