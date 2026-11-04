@@ -119,7 +119,9 @@ describe("steps 81-84 InfraMap layers", { timeout: 240_000 }, () => {
     expect((await get(d.contractor.token, "conflicts")).status).toBe(403);
     const ok = await get(d.officerA.token, "projects");
     expect(ok.status).toBe(200);
-    expect(ok.headers["cache-control"]).toContain("no-store");
+    // Layer reads revalidate with an ETag (private, no-cache); every other inframap route stays no-store.
+    expect(ok.headers["cache-control"]).toBe("private, no-cache");
+    expect(ok.headers.etag).toMatch(/^W\//);
   });
 
   it("scopes every layer to the caller's agency, with national seeing all", async () => {
@@ -144,10 +146,10 @@ describe("steps 81-84 InfraMap layers", { timeout: 240_000 }, () => {
     ]);
     for (const secret of [TITLE_B, TITLE_C, "INF-IM-2", "INF-IM-3", "CRITICAL", "ELECTRIC_CABLE_WORK", "INFRAMAP-NO-GEOMETRY"]) expect(everything, secret).not.toContain(secret);
     for (const key of ["budget", "amountMinor", "physicalProgress", "financialProgress", "managerId", "description", "notes", "sides", "affectedAgencies"]) expect(everything, key).not.toContain(key);
-    const conflict = (await get(d.officerB.token, "conflicts")).body.data.features[0];
+    const conflict = (await get(d.officerB.token, "conflicts", `bbox=${HERE}&fields=full`)).body.data.features[0];
     expect(Object.keys(conflict.properties).sort()).toEqual(["band", "conflictNo", "district", "id", "overlapEnd", "overlapStart", "resolutionState", "score", "status"]);
     expect(conflict.geometry.type).toBe("Point");
-    const project = (await get(d.officerA.token, "projects")).body.data.features[0];
+    const project = (await get(d.officerA.token, "projects", `bbox=${HERE}&fields=full`)).body.data.features[0];
     expect(Object.keys(project.properties).sort()).toEqual(["agencyName", "district", "geometryType", "id", "isDelayed", "plannedEndDate", "projectCode", "projectType", "province", "startDate", "status", "title"]);
   });
 
@@ -204,7 +206,7 @@ describe("steps 81-84 InfraMap layers", { timeout: 240_000 }, () => {
   it("rejects malformed, repeated, oversized or unknown query input before touching data", async () => {
     const d = await ready();
     for (const layer of ["projects", "roadworks", "conflicts"]) {
-      for (const query of ["", "bbox=", "bbox=1,2,3", "bbox=a,b,c,d", "bbox=79,7,78,6", "bbox=0,0,50,50", `bbox=${HERE}&bbox=${FAR}`, `bbox=${HERE}&limit=5`, `bbox[$ne]=1`, `bbox=${HERE}&status[$ne]=x`]) {
+      for (const query of ["", "bbox=", "bbox=1,2,3", "bbox=a,b,c,d", "bbox=79,7,78,6", "bbox=0,0,50,50", `bbox=${HERE}&bbox=${FAR}`, `bbox=${HERE}&limit=0`, `bbox[$ne]=1`, `bbox=${HERE}&status[$ne]=x`]) {
         expect((await get(d.officerA.token, layer, query)).status, `${layer}?${query}`).toBe(400);
       }
     }

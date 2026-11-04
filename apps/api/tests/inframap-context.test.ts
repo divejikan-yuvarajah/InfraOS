@@ -160,7 +160,7 @@ describe("Batch 02 asset, utility and risk layers", { timeout: 240_000 }, () => 
 
   it("scopes assets by agency tier, flags attention at full tier only, and hides health from awareness", async () => {
     const d = await ready();
-    const a = await get(d.officerA.token, `assets?bbox=${HERE}`);
+    const a = await get(d.officerA.token, `assets?bbox=${HERE}&fields=full`);
     expect(ids(a)).toEqual([d.bridge.id, d.theirs.id].sort());
     const mine = a.body.data.features.find((f: { properties: { id: string } }) => f.properties.id === d.bridge.id).properties;
     expect(mine).toMatchObject({ tier: "FULL", needsAttention: true });
@@ -175,7 +175,7 @@ describe("Batch 02 asset, utility and risk layers", { timeout: 240_000 }, () => 
 
   it("serves hazard zones by visibility and project risk from the latest assessment only, without free text", async () => {
     const d = await ready();
-    const a = await get(d.officerA.token, `risks?bbox=${HERE}`);
+    const a = await get(d.officerA.token, `risks?bbox=${HERE}&fields=full`);
     expect(ids(a)).toContain(d.flood.id);
     expect(ids(a)).not.toContain(d.agencyOnly.id);
     expect(ids(await get(d.officerB.token, `risks?bbox=${HERE}&kind=hazard`))).toEqual([d.flood.id, d.agencyOnly.id].sort());
@@ -241,7 +241,7 @@ describe("Batch 02 asset, utility and risk layers", { timeout: 240_000 }, () => 
     expect((await get(d.inspector.token, `assets?bbox=${HERE}`)).status).toBe(200);
     expect((await get(d.citizen.token, `assets?bbox=${HERE}`)).status).toBe(403);
     expect((await get(null, `utilities?bbox=${HERE}`)).status).toBe(401);
-    for (const q of ["assets?bbox=" + HERE + "&assetType=WATER", "utilities?bbox=" + HERE + "&assetType=ROAD", "risks?bbox=" + HERE + "&level=EXTREME", "assets?bbox=" + HERE + "&x=1", `assets?bbox=${HERE}&bbox=${HERE}`, "exposure?layer=projects", `exposure?layer=projects&id=${d.pA.id}&x=1`]) {
+    for (const q of ["assets?bbox=" + HERE + "&assetType=NOPE", "utilities?bbox=" + HERE + "&assetType=NOPE", "risks?bbox=" + HERE + "&level=EXTREME", "assets?bbox=" + HERE + "&x=1", `assets?bbox=${HERE}&bbox=${HERE}`, "exposure?layer=projects", `exposure?layer=projects&id=${d.pA.id}&x=1`]) {
       expect((await get(d.superUser.token, q)).status, q).toBe(400);
     }
   });
