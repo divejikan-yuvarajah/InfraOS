@@ -17,10 +17,10 @@ export function ResetPasswordPageShell({ locale }: ResetPasswordPageShellProps) 
       localeHrefFor={(item) => resetPasswordPathForLocale(item)}
       variant="recovery"
     >
-      <header className="mb-6">
-        <div className="mb-3 inline-flex items-center gap-2 rounded-md border border-slate-200/90 bg-slate-100/90 px-2.5 py-1">
+      <header className="mb-3.5">
+        <div className="mb-1.5 inline-flex items-center gap-1.5 rounded-md border border-slate-200/90 bg-slate-100/90 px-2 py-0.5">
           <span className="h-1.5 w-1.5 rounded-full bg-[#FF5B00]" />
-          <span className="auth-stitch-mono text-[10.5px] font-bold uppercase tracking-[0.12em] text-slate-700">
+          <span className="auth-stitch-mono text-[10px] font-bold uppercase tracking-[0.12em] text-slate-700">
             CREDENTIAL UPDATE
           </span>
         </div>

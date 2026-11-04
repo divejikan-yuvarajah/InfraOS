@@ -83,16 +83,16 @@ export function LoginForm({ locale, nextParam }: LoginFormProps) {
     <form
       onSubmit={handleSubmit}
       noValidate
-      className="space-y-4"
+      className="space-y-3"
       aria-describedby={availability !== "live" ? statusId : undefined}
     >
       {availability !== "live" ? (
         <div
           id={statusId}
           role="status"
-          className="auth-login-banner flex items-start gap-2.5"
+          className="auth-login-banner flex items-start gap-2"
         >
-          <Info className="mt-0.5 h-4 w-4 shrink-0 text-amber-700" aria-hidden="true" />
+          <Info className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-700" aria-hidden="true" />
           <span>{copy.previewBanner}</span>
         </div>
       ) : null}
@@ -101,10 +101,10 @@ export function LoginForm({ locale, nextParam }: LoginFormProps) {
         <div
           role="alert"
           aria-live="assertive"
-          className="auth-login-error flex items-start gap-2.5"
+          className="auth-login-error flex items-start gap-2"
         >
           <AlertCircle
-            className="mt-0.5 h-4 w-4 shrink-0 text-[#8C1F28]"
+            className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#8C1F28]"
             aria-hidden="true"
           />
           <span>{copy.errors[submitError]}</span>
@@ -113,17 +113,17 @@ export function LoginForm({ locale, nextParam }: LoginFormProps) {
 
       {/* Work Email Field */}
       <div className="auth-login-field">
-        <div className="mb-1.5 flex items-center justify-between gap-2">
+        <div className="mb-1 flex flex-wrap items-center justify-between gap-x-2 gap-y-0.5">
           <label htmlFor="auth-email" className="mb-0">
             {copy.emailLabel} <span className="text-[#8C1F28]">*</span>
           </label>
-          <span className="auth-stitch-mono text-[11px] text-slate-400">
+          <span className="auth-stitch-mono text-[10px] text-slate-400">
             {copy.emailDomainHint}
           </span>
         </div>
         <div className="relative">
           <Mail
-            className="pointer-events-none absolute top-1/2 left-3.5 h-4 w-4 -translate-y-1/2 text-slate-400"
+            className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400"
             aria-hidden="true"
           />
           <input
@@ -139,7 +139,7 @@ export function LoginForm({ locale, nextParam }: LoginFormProps) {
             aria-invalid={emailError ? "true" : "false"}
             aria-describedby={emailError ? emailErrorId : undefined}
             disabled={submitting}
-            className={`h-11 w-full rounded-lg border bg-white pr-3.5 pl-10 text-sm text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:outline-none disabled:opacity-60 ${
+            className={`h-10 w-full rounded-lg border bg-white pr-3.5 pl-9 text-sm text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:outline-none disabled:opacity-60 ${
               emailError
                 ? "border-[#8C1F28] focus:border-[#8C1F28] focus:ring-[#8C1F28]/20"
                 : "border-slate-300 focus:border-[#FF5B00] focus:ring-[#FF5B00]/20"
@@ -147,12 +147,12 @@ export function LoginForm({ locale, nextParam }: LoginFormProps) {
           />
         </div>
         {emailError ? (
-          <p id={emailErrorId} className="mt-1.5 text-xs font-medium text-[#8C1F28]">
+          <p id={emailErrorId} className="mt-1 text-[11px] font-medium text-[#8C1F28]">
             {emailError}
           </p>
         ) : (
-          <p className="mt-1.5 flex items-center gap-1.5 text-[11.5px] text-slate-500">
-            <Info className="h-3.5 w-3.5 shrink-0 text-slate-400" aria-hidden="true" />
+          <p className="mt-1 flex items-center gap-1 text-[11px] text-slate-500">
+            <Info className="h-3 w-3 shrink-0 text-slate-400" aria-hidden="true" />
             <span>{copy.emailHelper}</span>
           </p>
         )}
@@ -160,7 +160,7 @@ export function LoginForm({ locale, nextParam }: LoginFormProps) {
 
       {/* Password Field */}
       <div className="auth-login-field">
-        <div className="mb-1.5 flex items-center justify-between gap-2">
+        <div className="mb-1 flex flex-wrap items-center justify-between gap-x-2 gap-y-0.5">
           <label htmlFor="auth-password" className="mb-0">
             {copy.passwordLabel} <span className="text-[#8C1F28]">*</span>
           </label>
@@ -173,7 +173,7 @@ export function LoginForm({ locale, nextParam }: LoginFormProps) {
         </div>
         <div className="auth-login-password-row">
           <Lock
-            className="pointer-events-none absolute top-1/2 left-3.5 h-4 w-4 -translate-y-1/2 text-slate-400"
+            className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400"
             aria-hidden="true"
           />
           <input
@@ -188,7 +188,7 @@ export function LoginForm({ locale, nextParam }: LoginFormProps) {
             aria-invalid={passwordError ? "true" : "false"}
             aria-describedby={passwordError ? passwordErrorId : undefined}
             disabled={submitting}
-            className={`h-11 w-full rounded-lg border bg-white pr-12 pl-10 text-sm text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:outline-none disabled:opacity-60 ${
+            className={`h-10 w-full rounded-lg border bg-white pr-11 pl-9 text-sm text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:outline-none disabled:opacity-60 ${
               passwordError
                 ? "border-[#8C1F28] focus:border-[#8C1F28] focus:ring-[#8C1F28]/20"
                 : "border-slate-300 focus:border-[#FF5B00] focus:ring-[#FF5B00]/20"
@@ -199,7 +199,7 @@ export function LoginForm({ locale, nextParam }: LoginFormProps) {
             onClick={() => setShowPassword((current) => !current)}
             aria-pressed={showPassword}
             aria-label={showPassword ? copy.hidePassword : copy.showPassword}
-            className="auth-login-password-toggle inline-flex h-8 w-8 items-center justify-center rounded-md text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800 focus-visible:ring-2 focus-visible:ring-[#FF5B00] focus-visible:outline-none"
+            className="auth-login-password-toggle inline-flex h-7 w-7 items-center justify-center rounded-md text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800 focus-visible:ring-2 focus-visible:ring-[#FF5B00] focus-visible:outline-none"
           >
             {showPassword ? (
               <EyeOff className="h-4 w-4" aria-hidden="true" />
@@ -209,35 +209,35 @@ export function LoginForm({ locale, nextParam }: LoginFormProps) {
           </button>
         </div>
         {passwordError ? (
-          <p id={passwordErrorId} className="mt-1.5 text-xs font-medium text-[#8C1F28]">
+          <p id={passwordErrorId} className="mt-1 text-[11px] font-medium text-[#8C1F28]">
             {passwordError}
           </p>
         ) : null}
       </div>
 
       {/* Secured Terminal Row */}
-      <div className="flex flex-wrap items-center justify-between gap-2 pt-0.5">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <label className="inline-flex cursor-pointer items-center gap-2 text-xs font-medium text-slate-600 select-none">
           <input
             type="checkbox"
             checked={keepTerminalActive}
             onChange={(event) => setKeepTerminalActive(event.target.checked)}
-            className="h-4 w-4 rounded border-slate-300 accent-[#FF5B00] focus:ring-[#FF5B00]"
+            className="h-3.5 w-3.5 rounded border-slate-300 accent-[#FF5B00] focus:ring-[#FF5B00]"
           />
           <span>{copy.keepActiveLabel}</span>
         </label>
-        <span className="auth-stitch-mono inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-0.5 text-[10px] font-semibold text-[#279541]">
+        <span className="auth-stitch-mono inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[9.5px] font-semibold text-[#279541]">
           <span className="h-1.5 w-1.5 rounded-full bg-[#279541]" />
           {copy.tlsBadge}
         </span>
       </div>
 
       {/* Primary Sign In CTA */}
-      <div className="pt-1">
+      <div className="pt-0.5">
         <button
           type="submit"
           disabled={submitting}
-          className="auth-primary-cta inline-flex h-12 w-full items-center justify-center gap-2 rounded-lg px-5 text-sm font-semibold focus-visible:ring-2 focus-visible:ring-[#FF5B00] focus-visible:ring-offset-2 focus-visible:outline-none"
+          className="auth-primary-cta inline-flex h-10.5 w-full items-center justify-center gap-2 rounded-lg px-5 text-sm font-semibold focus-visible:ring-2 focus-visible:ring-[#FF5B00] focus-visible:ring-offset-2 focus-visible:outline-none"
         >
           {submitting ? (
             <>
@@ -254,12 +254,12 @@ export function LoginForm({ locale, nextParam }: LoginFormProps) {
       </div>
 
       {/* Institutional Account Creation / Onboarding Box */}
-      <div className="mt-5 rounded-xl border border-slate-200/90 bg-slate-50/90 p-4 text-center">
-        <div className="flex flex-col items-center gap-1.5">
-          <div className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-600">
+      <div className="mt-2.5 rounded-xl border border-slate-200/90 bg-slate-50/90 p-3 text-center">
+        <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1">
+          <span className="inline-flex items-center gap-1 text-xs font-medium text-slate-600">
             <Building2 className="h-3.5 w-3.5 text-[#C43D00]" aria-hidden="true" />
             <span>{copy.newOfficerPrompt}</span>
-          </div>
+          </span>
           <Link
             href={registerPathForLocale(locale)}
             className="inline-flex items-center gap-1 text-xs font-bold text-[#C43D00] transition-colors hover:text-[#FF5B00] hover:underline"
@@ -267,10 +267,10 @@ export function LoginForm({ locale, nextParam }: LoginFormProps) {
             <span>{copy.createAccountLink}</span>
             <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
           </Link>
-          <p className="mt-1 max-w-sm text-[11px] leading-relaxed text-slate-500">
-            {copy.onboardingNotice}
-          </p>
         </div>
+        <p className="mx-auto mt-1 max-w-md text-[10.5px] leading-snug text-slate-500">
+          {copy.onboardingNotice}
+        </p>
       </div>
     </form>
   );
