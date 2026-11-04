@@ -138,7 +138,7 @@ const heavyLimiter = rateLimit({
 
 const SEARCH_LAYERS = [...LAYER_IDS, "agencies", "places"] as const;
 const searchSchema = z.object({
-  q: z.string().transform((v) => v.trim().replace(/\s+/g, " ")).pipe(z.string().min(2).max(80).refine((v) => !/[\u0000-\u001f\u007f]/.test(v), "control")),
+  q: z.string().transform((v) => v.trim().replace(/\s+/g, " ")).pipe(z.string().min(2).max(80).refine((v) => ![...v].some((c) => c.charCodeAt(0) < 32 || c.charCodeAt(0) === 127), "control")),
   layers: z.string().max(120).transform((v) => [...new Set(v.split(",").map((x) => x.trim()).filter(Boolean))]).pipe(z.array(z.enum(SEARCH_LAYERS)).min(1).max(8)).optional(),
   scope: z.enum(["view", "all"]).optional(),
   bbox: bboxField.optional(),
