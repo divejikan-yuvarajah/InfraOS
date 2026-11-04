@@ -14,7 +14,7 @@ export type AuthPublicSnapshot = {
 
 export type PrivateAccessDecision = "loading" | "content" | "retry" | "preview" | "login" | "confirm";
 
-const AUTH_TAILS = new Set(["login", "register", "forgot-password", "reset-password", "verify-email"]);
+const AUTH_TAILS = new Set(["login", "register", "signup", "forgot-password", "reset-password", "verify-email"]);
 
 /** Staff prefixes from the route catalog. Pages other than /dashboard are not built in Step 43. */
 const PRIVATE_ROOTS = new Set([
