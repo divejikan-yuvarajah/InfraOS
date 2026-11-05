@@ -22,6 +22,8 @@ const assetSchema = new Schema({
 
 assetSchema.index({ agencyId: 1, condition: 1 });
 assetSchema.index({ nextMaintenanceAt: 1 });
+// InfraMap facets and filters group and match on type then condition.
+assetSchema.index({ assetType: 1, condition: 1 });
 assetSchema.index({ geometry: "2dsphere" });
 
 export type AssetDocument = mongoose.InferSchemaType<typeof assetSchema> & { _id: mongoose.Types.ObjectId };

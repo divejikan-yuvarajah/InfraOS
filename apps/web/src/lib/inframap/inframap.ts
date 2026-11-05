@@ -5,7 +5,7 @@ export type LayerKey = (typeof LAYER_KEYS)[number];
 export type Bbox = [number, number, number, number];
 
 export type MapFeature = { type: "Feature"; geometry: { type: string; coordinates: unknown }; properties: Record<string, unknown> };
-export type LayerData = { type: "FeatureCollection"; truncated: boolean; features: MapFeature[]; restrictedHidden?: number; hasDemo?: boolean };
+export type LayerData = { type: "FeatureCollection"; truncated: boolean; features: MapFeature[]; restrictedHidden?: number; hasDemo?: boolean; total?: number; totalIsEstimate?: boolean };
 
 /** Server API path segment for each layer. */
 export const LAYER_PATH: Record<LayerKey, string> = { projects: "projects", roadworks: "roadworks", conflicts: "conflicts", assets: "assets", utilities: "utilities", risks: "risks" };

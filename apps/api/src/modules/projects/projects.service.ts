@@ -888,28 +888,31 @@ export type ProjectMapRow = {
 export async function mapProjects(
   actor: AuthenticatedActor,
   bbox: [number, number, number, number],
-  filters: { status?: string; projectType?: string } = {},
-): Promise<{ ok: true; rows: ProjectMapRow[]; truncated: boolean } | ProjectFailure> {
+  extra: Record<string, unknown> = {},
+  limit: number = PROJECT_MAP_CAP,
+): Promise<{ ok: true; rows: ProjectMapRow[]; truncated: boolean; total?: number } | ProjectFailure> {
   try {
     await assertLive(actor, ["project.read"]);
     const scoped = await readFilter(actor);
     if (scoped.denied) return fail(403, "FORBIDDEN");
     const [west, south, east, north] = bbox;
     const viewport = { type: "Polygon", coordinates: [[[west, south], [east, south], [east, north], [west, north], [west, south]]] };
-    const narrow: Record<string, unknown> = { geometry: { $geoIntersects: { $geometry: viewport } } };
-    if (filters.status) narrow.status = filters.status;
-    if (filters.projectType) narrow.projectType = filters.projectType;
-    const found = await Project.find({ $and: [scoped.filter, narrow] })
+    const query = { $and: [scoped.filter, { geometry: { $geoIntersects: { $geometry: viewport } } }, extra] };
+    const found = await Project.find(query)
       .select("projectCode title projectType status agencyId startDate plannedEndDate location.district location.province geometry")
       .sort({ _id: 1 })
-      .limit(PROJECT_MAP_CAP + 1)
+      .limit(limit + 1)
+      .maxTimeMS(3000)
       .lean();
-    const rows = found.slice(0, PROJECT_MAP_CAP);
+    const rows = found.slice(0, limit);
+    const truncated = found.length > limit;
+    const total = truncated ? await Project.countDocuments(query).maxTimeMS(1500).catch(() => undefined) : undefined;
     const agencies = await Agency.find({ _id: { $in: [...new Set(rows.map((row) => row.agencyId.toString()))] } }).select("name").lean();
     const names = new Map(agencies.map((agency) => [agency._id.toString(), agency.name as string]));
     return {
       ok: true,
-      truncated: found.length > PROJECT_MAP_CAP,
+      truncated,
+      ...(total !== undefined ? { total } : {}),
       rows: rows.map((row) => ({
         id: row._id.toString(),
         projectCode: row.projectCode,
