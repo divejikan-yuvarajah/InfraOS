@@ -1,6 +1,7 @@
 /**
- * Focus mode: dims every layer except one by scaling its opacity paint properties, and restores the exact previous
- * values (including "unset") when released. Pure over a tiny paint API so the restore logic is unit-tested.
+ * Opacity composition for Focus mode and the layer manager. Each map layer's base opacity (as created by the registry,
+ * possibly an expression) is captured once; the value actually painted is base x (layer opacity) x (0.25 when another layer
+ * is focused). Releasing Focus or moving a slider back to 100 % restores the exact base value, including "unset".
  */
 export const FOCUS_DIM = 0.25;
 
@@ -9,38 +10,14 @@ export const OPACITY_PROPS: Record<string, readonly string[]> = {
 };
 
 /** A numeric opacity is scaled; an expression is wrapped so data-driven styling (e.g. attention dimming) keeps working. */
-export function dimmed(previous: unknown): unknown {
-  if (previous === undefined || previous === null) return FOCUS_DIM;
-  if (typeof previous === "number") return previous * FOCUS_DIM;
-  return ["*", previous, FOCUS_DIM];
+export function scaleOpacity(base: unknown, factor: number): unknown {
+  if (factor === 1) return base;
+  if (base === undefined || base === null) return factor;
+  if (typeof base === "number") return base * factor;
+  return ["*", base, factor];
 }
 
-export type PaintApi = {
-  typeOf(layerId: string): string | undefined;
-  get(layerId: string, prop: string): unknown;
-  set(layerId: string, prop: string, value: unknown): void;
-};
-export type FocusSaved = Map<string, unknown>;
+/** The multiplier for one layer: its slider value, times the Focus dim when a different layer is focused. */
+export const layerFactor = (layer: string, focus: string | null, opacity: number): number => opacity * (focus && focus !== layer ? FOCUS_DIM : 1);
 
-const key = (layerId: string, prop: string) => `${layerId}\u0000${prop}`;
-
-/** Restores everything previously dimmed, then dims all layers outside `focus` (null = nothing focused). */
-export function applyFocus(api: PaintApi, layerIdsByLayer: Record<string, readonly string[]>, focus: string | null, saved: FocusSaved): void {
-  for (const [k, value] of saved) {
-    const [layerId, prop] = k.split("\u0000") as [string, string];
-    if (api.typeOf(layerId)) api.set(layerId, prop, value);
-  }
-  saved.clear();
-  if (!focus) return;
-  for (const [layer, ids] of Object.entries(layerIdsByLayer)) {
-    if (layer === focus) continue;
-    for (const id of ids) {
-      const type = api.typeOf(id);
-      for (const prop of (type ? OPACITY_PROPS[type] : undefined) ?? []) {
-        const previous = api.get(id, prop);
-        saved.set(key(id, prop), previous);
-        api.set(id, prop, dimmed(previous));
-      }
-    }
-  }
-}
+export const clampOpacity = (v: number): number => (Number.isFinite(v) ? Math.min(1, Math.max(0, Math.round(v * 100) / 100)) : 1);

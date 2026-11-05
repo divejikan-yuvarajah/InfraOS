@@ -1,22 +1,19 @@
 import { z } from "zod";
 
-import { ASSET_CONDITIONS } from "../assets/asset.constants.js";
-import { HAZARD_LEVELS, HAZARD_TYPES } from "../risk/hazard.constants.js";
-import { ASSET_LAYER_TYPES, UTILITY_TYPES } from "./inframap.access.js";
 
 import { validGeometry } from "../../shared/database/geometry.js";
 
 export type Bbox = [number, number, number, number];
 export type LayerFeature = { type: "Feature"; geometry: unknown; properties: Record<string, unknown> };
-export type LayerCollection = { type: "FeatureCollection"; truncated: boolean; features: LayerFeature[]; generatedAt?: string; restrictedHidden?: number; hasDemo?: boolean };
+export type LayerCollection = { type: "FeatureCollection"; truncated: boolean; features: LayerFeature[]; generatedAt?: string; restrictedHidden?: number; hasDemo?: boolean; total?: number; totalIsEstimate?: boolean };
 
 /** One layer never returns more than this many features; the response says so when it cut. */
-export const LAYER_FEATURE_CAP = 250;
+export const LAYER_FEATURE_CAP = 500;
 /** Widest viewport a client may ask for, in degrees. Sri Lanka is about 2.5 by 4.5; this keeps a world-sized box out. */
 export const MAX_BBOX_SPAN_DEG = 10;
 const COORDINATE_DECIMALS = 6;
 
-const bboxField = z
+export const bboxField = z
   .string()
   .max(120)
   .transform((value, ctx) => {
@@ -42,25 +39,21 @@ export const PROJECT_TYPES = ["ROAD", "WATER", "ELECTRICITY", "TELECOM", "DRAINA
 export const WORK_STATUSES = ["DRAFT", "SUBMITTED", "PLANNED", "APPROVED", "ACTIVE", "COMPLETED", "CANCELLED"] as const;
 export const BANDS = ["info", "low", "medium", "high", "critical"] as const;
 
-/** Per-layer filters are closed enums or "1"; anything else is a 400. Applied on the server so the browser never receives rows it filtered out. */
-export const layerQuerySchemas = {
-  projects: z.object({ bbox: bboxField, status: z.enum(PROJECT_STATUSES).optional(), projectType: z.enum(PROJECT_TYPES).optional() }).strict(),
-  roadworks: z.object({ bbox: bboxField, status: z.enum(WORK_STATUSES).optional(), overdue: z.literal("1").optional() }).strict(),
-  conflicts: z.object({ bbox: bboxField, band: z.enum(BANDS).optional(), group: z.enum(["open", "closed"]).optional() }).strict(),
-  assets: z.object({ bbox: bboxField, assetType: z.enum(ASSET_LAYER_TYPES).optional(), condition: z.enum(ASSET_CONDITIONS).optional(), attention: z.literal("1").optional() }).strict(),
-  utilities: z.object({ bbox: bboxField, assetType: z.enum(UTILITY_TYPES).optional() }).strict(),
-  risks: z.object({ bbox: bboxField, hazardType: z.enum(HAZARD_TYPES).optional(), level: z.enum(HAZARD_LEVELS).optional(), kind: z.enum(["hazard", "project"]).optional(), projectLevel: z.enum(["LOW", "MEDIUM", "HIGH"]).optional() }).strict(),
-};
-
 const objectId = z.string().regex(/^[a-f0-9]{24}$/i);
 export const FOCAL_LAYERS = ["projects", "roadworks", "conflicts", "assets", "utilities", "risks"] as const;
 export const NEARBY_RADII = ["50", "100", "250", "500"] as const;
 /** Exposure for one feature (feature to zones) or one zone (zone to records). No client geometry is ever accepted. */
 export const exposureQuerySchema = z.object({ layer: z.enum(FOCAL_LAYERS), id: objectId }).strict();
+/**
+ * Nearby lens around either a stored feature (featureLayer + featureId) or a dropped pin (lat + lng, kept inside a generous
+ * Sri Lanka envelope). Exactly one of the two forms is accepted; the pin form never touches a record, so it needs no scope.
+ */
 export const nearbyQuerySchema = z.object({
-  featureLayer: z.enum(FOCAL_LAYERS), featureId: objectId, radiusM: z.enum(NEARBY_RADII),
+  featureLayer: z.enum(FOCAL_LAYERS).optional(), featureId: objectId.optional(),
+  lat: z.coerce.number().min(4).max(11).optional(), lng: z.coerce.number().min(78).max(83.5).optional(),
+  radiusM: z.enum(NEARBY_RADII),
   layers: z.string().max(40).optional().transform((v) => (v ? v.split(",") : ["assets", "utilities", "risks"])).pipe(z.array(z.enum(["assets", "utilities", "risks"])).min(1).max(3)),
-}).strict();
+}).strict().refine((q) => (q.featureLayer && q.featureId && q.lat === undefined && q.lng === undefined) || (!q.featureLayer && !q.featureId && q.lat !== undefined && q.lng !== undefined), "one focal form");
 export const featureParamsSchema = z.object({ layer: z.enum(["assets", "utilities", "risks"]), id: objectId }).strict();
 
 const R_LAT = 111_320;
@@ -91,9 +84,9 @@ export function viewportPolygon([west, south, east, north]: Bbox) {
   return { type: "Polygon" as const, coordinates: [[[west, south], [east, south], [east, north], [west, north], [west, south]]] };
 }
 
-function round(value: unknown): unknown {
-  if (typeof value === "number") return Number(value.toFixed(COORDINATE_DECIMALS));
-  if (Array.isArray(value)) return value.map(round);
+function round(value: unknown, decimals = COORDINATE_DECIMALS): unknown {
+  if (typeof value === "number") return Number(value.toFixed(decimals));
+  if (Array.isArray(value)) return value.map((v) => round(v, decimals));
   return value;
 }
 
@@ -104,12 +97,86 @@ export function transportGeometry(geometry: unknown): { type: string; coordinate
   return { type, coordinates: round(coordinates) };
 }
 
-/** Builds the response. Features with a missing or invalid geometry are dropped instead of failing the whole layer. */
-export function layerCollection(items: { geometry: unknown; properties: Record<string, unknown> }[], truncated: boolean): LayerCollection {
-  const features: LayerFeature[] = [];
-  for (const item of items.slice(0, LAYER_FEATURE_CAP)) {
-    const geometry = transportGeometry(item.geometry);
-    if (geometry) features.push({ type: "Feature", geometry, properties: item.properties });
+type Pos = number[];
+function perpendicular(p: Pos, a: Pos, b: Pos): number {
+  const dx = b[0]! - a[0]!, dy = b[1]! - a[1]!;
+  const len = dx * dx + dy * dy;
+  if (len === 0) return Math.hypot(p[0]! - a[0]!, p[1]! - a[1]!);
+  const t = Math.max(0, Math.min(1, ((p[0]! - a[0]!) * dx + (p[1]! - a[1]!) * dy) / len));
+  return Math.hypot(p[0]! - (a[0]! + t * dx), p[1]! - (a[1]! + t * dy));
+}
+/** Douglas-Peucker on one coordinate list; always keeps the first and last vertex. Iterative, so a 10 000-vertex line cannot overflow the stack. */
+export function simplifyLine(points: Pos[], tolerance: number): Pos[] {
+  if (points.length <= 2 || tolerance <= 0) return points;
+  const keep = new Array<boolean>(points.length).fill(false);
+  keep[0] = keep[points.length - 1] = true;
+  const stack: [number, number][] = [[0, points.length - 1]];
+  while (stack.length) {
+    const [lo, hi] = stack.pop()!;
+    let far = -1, max = tolerance;
+    for (let i = lo + 1; i < hi; i += 1) { const d = perpendicular(points[i]!, points[lo]!, points[hi]!); if (d > max) { max = d; far = i; } }
+    if (far >= 0) { keep[far] = true; stack.push([lo, far], [far, hi]); }
   }
-  return { type: "FeatureCollection", truncated: truncated || items.length > LAYER_FEATURE_CAP, features };
+  return points.filter((_, i) => keep[i]);
+}
+
+/** Roughly 1.5 screen pixels at the given zoom, in degrees. */
+export const toleranceForZoom = (zoom: number): number => (1.5 * 360) / (256 * 2 ** zoom);
+
+export type ShapeOptions = { zoom: number | null };
+const BELOW_POINT_ZOOM = 7;
+
+/**
+ * Zoom-aware transport geometry. Coordinates are rounded to 6 decimals (about 10 cm), or 5 below zoom 12; lines and
+ * rings are simplified with a pixel-scaled tolerance; very large polygons collapse to a representative point below
+ * zoom 7 (the full ring is served by the detail endpoint for the selected feature). Stored data is never altered.
+ */
+export function shapedGeometry(geometry: unknown, opts: ShapeOptions): { type: string; coordinates: unknown } | null {
+  if (!validGeometry(geometry)) return null;
+  const g = geometry as { type: string; coordinates: unknown };
+  const zoom = opts.zoom;
+  if (zoom === null) return transportGeometry(g);
+  const decimals = zoom < 12 ? 5 : COORDINATE_DECIMALS;
+  const tol = toleranceForZoom(zoom);
+  if (g.type === "Point") return { type: "Point", coordinates: round(g.coordinates, decimals) };
+  if (g.type === "LineString") {
+    const line = simplifyLine(g.coordinates as Pos[], tol);
+    return { type: "LineString", coordinates: round(line.length >= 2 ? line : (g.coordinates as Pos[]).slice(0, 2), decimals) };
+  }
+  const bounds = geometryBounds(g);
+  if (zoom < BELOW_POINT_ZOOM && bounds) return { type: "Point", coordinates: round([(bounds[0] + bounds[2]) / 2, (bounds[1] + bounds[3]) / 2], decimals) };
+  const rings = (g.coordinates as Pos[][]).map((ring) => {
+    const simple = simplifyLine(ring, tol);
+    return simple.length >= 4 ? simple : ring;
+  });
+  return { type: "Polygon", coordinates: round(rings, decimals) };
+}
+
+/**
+ * `fields=min` keeps only what rendering, hover and the overlap chooser need. Everything else comes from the detail
+ * endpoint, so list payloads stay small. Each entry lists the properties dropped from the minimal response.
+ */
+export const MIN_DROP: Record<string, readonly string[]> = {
+  projects: ["startDate", "plannedEndDate", "district", "province"],
+  roadworks: ["plannedStart", "plannedEnd", "priority", "riskIndex"],
+  conflicts: ["overlapStart", "overlapEnd", "resolutionState", "district"],
+  assets: ["roadName", "lastInspectionAt", "nextMaintenanceAt", "healthScore", "attentionReasons", "sourceProjectId", "sourceProjectTitle", "district", "province"],
+  utilities: ["roadName", "lastInspectionAt", "nextMaintenanceAt", "healthScore", "attentionReasons", "sourceProjectId", "sourceProjectTitle", "district", "province"],
+  risks: ["description", "source", "latestAssessedAt", "modelVersion", "agencyName"],
+};
+
+export type CollectionOptions = { limit?: number; zoom?: number | null; fields?: "min" | "full"; layer?: string };
+
+/** Builds the response. Features with a missing or invalid geometry are dropped instead of failing the whole layer. */
+export function layerCollection(items: { geometry: unknown; properties: Record<string, unknown> }[], truncated: boolean, opts: CollectionOptions = {}): LayerCollection {
+  const limit = opts.limit ?? LAYER_FEATURE_CAP;
+  const drop = opts.fields === "full" || !opts.layer ? [] : MIN_DROP[opts.layer] ?? [];
+  const features: LayerFeature[] = [];
+  for (const item of items.slice(0, limit)) {
+    const geometry = shapedGeometry(item.geometry, { zoom: opts.zoom ?? null });
+    if (!geometry) continue;
+    const properties = drop.length ? Object.fromEntries(Object.entries(item.properties).filter(([k]) => !drop.includes(k))) : item.properties;
+    features.push({ type: "Feature", geometry, properties });
+  }
+  return { type: "FeatureCollection", truncated: truncated || items.length > limit, features };
 }

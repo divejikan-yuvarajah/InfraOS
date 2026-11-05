@@ -35,6 +35,8 @@ projectSchema.index({ managerId: 1, status: 1 });
 projectSchema.index({ contractorId: 1, status: 1 });
 projectSchema.index({ projectType: 1, status: 1 });
 projectSchema.index({ geometry: "2dsphere" });
+// InfraMap district filter and district facet.
+projectSchema.index({ "location.district": 1 });
 
 export type ProjectDocument = mongoose.InferSchemaType<typeof projectSchema> & { _id: mongoose.Types.ObjectId };
 export const Project = (mongoose.models.Project as mongoose.Model<ProjectDocument> | undefined) ?? mongoose.model<ProjectDocument>("Project", projectSchema);

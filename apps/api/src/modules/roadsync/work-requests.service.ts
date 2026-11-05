@@ -221,7 +221,8 @@ export async function getWorkRequest(actor: AuthenticatedActor, id: string) {
 const MAP_FEATURE_CAP = 1000;
 
 /** Step 67 map overview: the same RBAC read filter as list and detail, optional bbox, hard feature cap. */
-export async function mapWorkRequests(actor: AuthenticatedActor, query: { status?: string; workType?: string; priority?: string; projectId?: string; bbox?: [number, number, number, number] }) {
+/** `extra` (an additional Mongo fragment) and `limit` are used by InfraMap only; RoadSync's own map route does not pass them. */
+export async function mapWorkRequests(actor: AuthenticatedActor, query: { status?: string; workType?: string; priority?: string; projectId?: string; bbox?: [number, number, number, number]; extra?: Record<string, unknown>; limit?: number }) {
   try {
     await assertLive(actor, ["roadsync.work_request.read"]);
     const scoped = await readFilter(actor);
@@ -234,13 +235,18 @@ export async function mapWorkRequests(actor: AuthenticatedActor, query: { status
       const [w, s, e, n] = query.bbox;
       narrow.geometry = { $geoIntersects: { $geometry: { type: "Polygon", coordinates: [[[w, s], [e, s], [e, n], [w, n], [w, s]]] } } };
     }
-    const rows = await WorkRequest.find({ $and: [scoped, narrow] }).sort({ plannedStart: 1, _id: 1 }).limit(MAP_FEATURE_CAP + 1);
-    const views = await toViews(rows.slice(0, MAP_FEATURE_CAP) as unknown as Row[]);
+    const cap = query.limit ?? MAP_FEATURE_CAP;
+    const filter = { $and: [scoped, narrow, ...(query.extra ? [query.extra] : [])] };
+    const rows = await WorkRequest.find(filter).sort({ plannedStart: 1, _id: 1 }).limit(cap + 1).maxTimeMS(3000);
+    const truncatedHere = rows.length > cap;
+    const total = query.limit !== undefined && truncatedHere ? await WorkRequest.countDocuments(filter).maxTimeMS(1500).catch(() => undefined) : undefined;
+    const views = await toViews(rows.slice(0, cap) as unknown as Row[]);
     return {
       ok: true as const,
       map: {
         type: "FeatureCollection" as const,
-        truncated: rows.length > MAP_FEATURE_CAP,
+        truncated: truncatedHere,
+        ...(total !== undefined ? { total } : {}),
         features: views.map((v) => ({
           type: "Feature" as const,
           geometry: v.geometry,

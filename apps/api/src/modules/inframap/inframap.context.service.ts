@@ -21,7 +21,8 @@ import {
   ASSET_LAYER_TYPES, attentionReasons, effectiveSensitivity, hiddenRestrictedFilter, projectAssetProperties, representativePoint, riskBand,
   tierOf, UTILITY_TYPES, visibleAssetFilter, type AssetLayerId, type AssetRow, type Viewer,
 } from "./inframap.access.js";
-import { envelopeAround, geometryBounds, LAYER_FEATURE_CAP, layerCollection, transportGeometry, viewportPolygon, type Bbox } from "./inframap.geo.js";
+import { assetNarrow, hazardNarrow, projectNarrow, type LayerQ } from "./inframap.filters.js";
+import { envelopeAround, geometryBounds, layerCollection, transportGeometry, viewportPolygon, type Bbox } from "./inframap.geo.js";
 import type { LayerResult } from "./inframap.service.js";
 
 /**
@@ -48,10 +49,10 @@ export async function contextOf(actor: AuthenticatedActor): Promise<Ctx> {
   };
 }
 
-const hazardVisible = (ctx: Ctx): Record<string, unknown> =>
+export const hazardVisible = (ctx: Ctx): Record<string, unknown> =>
   ctx.viewer.platform ? {} : { $or: [{ visibility: "ALL_STAFF" }, { visibility: "AGENCY", agencyId: { $in: ctx.ids } }] };
 const within = (bbox: Bbox) => ({ geometry: { $geoIntersects: { $geometry: viewportPolygon(bbox) } } });
-const layerTypes = (layer: AssetLayerId): readonly string[] => (layer === "assets" ? ASSET_LAYER_TYPES : UTILITY_TYPES);
+export const layerTypes = (layer: AssetLayerId): readonly string[] => (layer === "assets" ? ASSET_LAYER_TYPES : UTILITY_TYPES);
 
 type AssetLean = {
   _id: mongoose.Types.ObjectId; assetType: string; name: string; condition: string; agencyId?: mongoose.Types.ObjectId | null;
@@ -86,63 +87,63 @@ async function toRows(ctx: Ctx, actor: AuthenticatedActor, docs: AssetLean[]): P
 const ASSET_SELECT = "assetType name condition agencyId location.district location.province location.roadName sourceProjectId lastInspectionAt nextMaintenanceAt commissionedAt sensitivity geometry";
 
 /** Assets (Step 85) and utilities (Step 86): same reader, different type set. Restricted rows the viewer may not see are excluded by the query. */
-export async function assetLayer(actor: AuthenticatedActor, bbox: Bbox, layer: AssetLayerId, filters: Record<string, string | undefined>): Promise<LayerResult> {
+export async function assetLayer(actor: AuthenticatedActor, bbox: Bbox, layer: AssetLayerId, q: LayerQ): Promise<LayerResult> {
   const ctx = await contextOf(actor);
   if (!ctx.has("asset.read")) return FORBIDDEN;
   const { viewer } = ctx;
-  const narrow: Record<string, unknown> = { assetType: filters.assetType ?? { $in: [...layerTypes(layer)] } };
-  if (filters.condition) narrow.condition = filters.condition;
-  if (filters.attention) {
-    // Attention reasons are only disclosed at FULL tier, so the filter may only match the viewer's own assets.
-    const now = new Date(), yearAgo = new Date(now.getTime() - 365 * 86_400_000);
-    narrow.$and = [{ $or: [{ condition: { $in: ["POOR", "CRITICAL"] } }, { nextMaintenanceAt: { $lt: now } }, { lastInspectionAt: { $lt: yearAgo } }, { lastInspectionAt: null, commissionedAt: { $lt: yearAgo } }] }];
-    if (!viewer.platform) narrow.agencyId = { $in: ctx.ids };
-  }
-  const query = { $and: [visibleAssetFilter(viewer), narrow, within(bbox)] };
-  const found = (await Asset.find(query).select(`${ASSET_SELECT}${viewer.canHealth ? " healthScore" : ""}`).sort({ _id: 1 }).limit(LAYER_FEATURE_CAP + 1).lean()) as unknown as AssetLean[];
-  const rows = await toRows(ctx, actor, found.slice(0, LAYER_FEATURE_CAP));
-  const hidden = await Asset.countDocuments({ $and: [hiddenRestrictedFilter(viewer), { assetType: { $in: [...layerTypes(layer)] } }, within(bbox)] });
-  const items = found.slice(0, LAYER_FEATURE_CAP).flatMap((d) => {
+  const query = { $and: [visibleAssetFilter(viewer), assetNarrow(layer, q.nf, ctx.ids, viewer.platform), within(bbox)] };
+  const found = (await Asset.find(query).select(`${ASSET_SELECT}${viewer.canHealth ? " healthScore" : ""}`).sort({ _id: 1 }).limit(q.limit + 1).maxTimeMS(3000).lean()) as unknown as AssetLean[];
+  const truncated = found.length > q.limit;
+  const rows = await toRows(ctx, actor, found.slice(0, q.limit));
+  const [hidden, total] = await Promise.all([
+    // Restricted-hidden is a count of rows this viewer may not see; it ignores the filters so it can never be used to probe them.
+    Asset.countDocuments({ $and: [hiddenRestrictedFilter(viewer), { assetType: { $in: [...layerTypes(layer)] } }, within(bbox)] }).maxTimeMS(1500),
+    truncated ? Asset.countDocuments(query).maxTimeMS(1500).catch(() => undefined) : Promise.resolve(undefined),
+  ]);
+  const items = found.slice(0, q.limit).flatMap((d) => {
     const row = rows.get(d._id.toString())!;
     const tier = tierOf(viewer, row);
     return tier === "HIDDEN" ? [] : [{ geometry: d.geometry, properties: projectAssetProperties(row, layer, tier, viewer) }];
   });
-  return { ok: true, layer: { ...layerCollection(items, found.length > LAYER_FEATURE_CAP), generatedAt: new Date().toISOString(), restrictedHidden: hidden, hasDemo: items.some((i) => i.properties.isDemo === true) } };
+  return { ok: true, layer: { ...layerCollection(items, truncated, { limit: q.limit, zoom: q.zoom, fields: q.fields, layer }), generatedAt: new Date().toISOString(), restrictedHidden: hidden, hasDemo: items.some((i) => i.properties.isDemo === true), ...(total !== undefined ? { total } : {}) } };
 }
 
 /** Hazard zones plus project-risk markers (Step 87). Zones need risk.read; markers additionally follow project read scope. */
-export async function riskLayer(actor: AuthenticatedActor, bbox: Bbox, filters: Record<string, string | undefined>): Promise<LayerResult> {
+export async function riskLayer(actor: AuthenticatedActor, bbox: Bbox, q: LayerQ): Promise<LayerResult> {
   const ctx = await contextOf(actor);
   if (!ctx.has("risk.read")) return FORBIDDEN;
+  const nf = q.nf;
   const items: { geometry: unknown; properties: Record<string, unknown> }[] = [];
   let truncated = false;
-  if (filters.kind !== "project") {
-    const narrow: Record<string, unknown> = {};
-    if (filters.hazardType) narrow.hazardType = filters.hazardType;
-    if (filters.level) narrow.level = filters.level;
-    const zones = await HazardZone.find({ $and: [hazardVisible(ctx), narrow, within(bbox)] }).sort({ _id: 1 }).limit(101).lean();
-    truncated = zones.length > 100;
+  const zoneCap = Math.min(100, q.limit);
+  const markerCap = Math.min(150, q.limit);
+  if (nf.kind !== "project") {
+    const zones = await HazardZone.find({ $and: [hazardVisible(ctx), hazardNarrow(nf), within(bbox)] }).sort({ _id: 1 }).limit(zoneCap + 1).maxTimeMS(3000).lean();
+    truncated = zones.length > zoneCap;
     const agencies = await Agency.find({ _id: { $in: zones.map((z) => z.agencyId).filter(Boolean) } }).select("name").lean();
-    const names = new Map(agencies.map((a) => [a._id.toString(), a.name as string]));
-    for (const z of zones.slice(0, 100)) items.push({ geometry: z.geometry, properties: hazardProperties(z, names.get(z.agencyId?.toString() ?? "") ?? null) });
+    const names = new Map(agencies.map((ag) => [ag._id.toString(), ag.name as string]));
+    for (const z of zones.slice(0, zoneCap)) items.push({ geometry: z.geometry, properties: hazardProperties(z as unknown as ZoneLean, names.get(z.agencyId?.toString() ?? "") ?? null) });
   }
-  if (filters.kind !== "hazard" && ctx.has("project.read")) {
+  // Hazard-only filters (type, level) narrow zones; they do not remove project markers unless a marker filter is also set.
+  const markerFiltersOnly = nf.kind === "project" || (!nf.hazardType.length && !nf.hazardLevel.length);
+  if (nf.kind !== "hazard" && markerFiltersOnly && ctx.has("project.read")) {
     const scoped = await projectScopeFilter(actor);
     if (scoped) {
-      const projects = await Project.find({ $and: [scoped, within(bbox)] }).select("projectCode title geometry").sort({ _id: 1 }).limit(151).lean();
-      truncated = truncated || projects.length > 150;
-      const kept = projects.slice(0, 150);
+      const where = projectNarrow({ ...nf, projectStatus: [], projectType: [], dateFrom: undefined as never, dateTo: undefined as never });
+      const projects = await Project.find({ $and: [scoped, where, within(bbox)] }).select("projectCode title geometry").sort({ _id: 1 }).limit(markerCap + 1).maxTimeMS(3000).lean();
+      truncated = truncated || projects.length > markerCap;
+      const kept = projects.slice(0, markerCap);
       const latest = await RiskAssessment.aggregate<{ _id: mongoose.Types.ObjectId; overallRisk: number; createdAt: Date; modelVersion: string }>([
         { $match: { projectId: { $in: kept.map((p) => p._id) } } }, { $sort: { createdAt: -1 } },
         { $group: { _id: "$projectId", overallRisk: { $first: "$overallRisk" }, createdAt: { $first: "$createdAt" }, modelVersion: { $first: "$modelVersion" } } },
-      ]);
+      ]).option({ maxTimeMS: 3000 });
       const byProject = new Map(latest.map((r) => [r._id.toString(), r]));
       for (const p of kept) {
         const assessment = byProject.get(p._id.toString());
         const point = representativePoint(p.geometry as { type: string; coordinates: unknown });
         if (!assessment || !point) continue;
         const band = riskBand(assessment.overallRisk);
-        if (filters.projectLevel && filters.projectLevel !== band) continue;
+        if (nf.riskBand.length && !nf.riskBand.includes(band)) continue;
         items.push({ geometry: { type: "Point", coordinates: point }, properties: {
           id: p._id.toString(), layer: "risks", kind: "project", projectId: p._id.toString(), projectCode: p.projectCode, title: p.title,
           overallRisk: assessment.overallRisk, riskBand: band, latestAssessedAt: iso(assessment.createdAt), modelVersion: assessment.modelVersion,
@@ -151,7 +152,7 @@ export async function riskLayer(actor: AuthenticatedActor, bbox: Bbox, filters: 
       }
     }
   }
-  return { ok: true, layer: { ...layerCollection(items, truncated), generatedAt: new Date().toISOString(), hasDemo: items.some((i) => i.properties.isDemo === true) } };
+  return { ok: true, layer: { ...layerCollection(items, truncated, { limit: q.limit, zoom: q.zoom, fields: q.fields, layer: "risks" }), generatedAt: new Date().toISOString(), hasDemo: items.some((i) => i.properties.isDemo === true) } };
 }
 
 type ZoneLean = { _id: mongoose.Types.ObjectId; name: string; description?: string | null; hazardType: string; level: string; geometry?: unknown; agencyId?: mongoose.Types.ObjectId | null; isDemo?: boolean;
@@ -165,9 +166,9 @@ function hazardProperties(z: ZoneLean, agencyName: string | null): Record<string
   };
 }
 
-type Focal = { geometry: { type: string; coordinates: unknown } };
+export type Focal = { geometry: { type: string; coordinates: unknown } };
 /** The focal feature's stored geometry, resolved server-side under the viewer's own scope. null means not found or not allowed (a 404, never a 403). */
-async function focalOf(ctx: Ctx, actor: AuthenticatedActor, layer: string, id: string): Promise<Focal | null> {
+export async function focalOf(ctx: Ctx, actor: AuthenticatedActor, layer: string, id: string): Promise<Focal | null> {
   const oid = new mongoose.Types.ObjectId(id);
   try {
     if (layer === "projects") {
@@ -270,9 +271,9 @@ export async function exposure(actor: AuthenticatedActor, layer: string, id: str
 }
 
 /** Nearby Context Lens. Envelope-based (the focal geometry's bbox grown by the radius), so it is approximate and reports no distances. */
-export async function nearby(actor: AuthenticatedActor, featureLayer: string, featureId: string, radiusM: number, layers: readonly string[]) {
+export async function nearby(actor: AuthenticatedActor, featureLayer: string | null, featureId: string | null, radiusM: number, layers: readonly string[], pin?: [number, number]) {
   const ctx = await contextOf(actor);
-  const focal = await focalOf(ctx, actor, featureLayer, featureId);
+  const focal = pin ? { geometry: { type: "Point", coordinates: pin } } : featureLayer && featureId ? await focalOf(ctx, actor, featureLayer, featureId) : null;
   if (!focal) return NOT_FOUND;
   const bounds = geometryBounds(focal.geometry);
   if (!bounds) return NOT_FOUND;
@@ -280,7 +281,7 @@ export async function nearby(actor: AuthenticatedActor, featureLayer: string, fe
   const envelope = viewportPolygon(box);
   const out: Record<string, unknown> = {};
   let restrictedHidden = 0;
-  const same = (layer: string) => (featureLayer === layer ? featureId : undefined);
+  const same = (layer: string) => (featureLayer === layer && featureId ? featureId : undefined);
   for (const layer of layers) {
     if (layer === "assets" || layer === "utilities") {
       if (!ctx.has("asset.read")) { out[layer] = null; continue; }
@@ -289,7 +290,7 @@ export async function nearby(actor: AuthenticatedActor, featureLayer: string, fe
       out[layer] = { total: found.total, items: found.items.map(dropGeometry) };
     } else if (layer === "risks") {
       if (!ctx.has("risk.read")) { out[layer] = null; continue; }
-      const q = { $and: [hazardVisible(ctx), { geometry: { $geoIntersects: { $geometry: envelope } } }, ...(same("risks") ? [{ _id: { $ne: new mongoose.Types.ObjectId(featureId) } }] : [])] };
+      const q = { $and: [hazardVisible(ctx), { geometry: { $geoIntersects: { $geometry: envelope } } }, ...(same("risks") ? [{ _id: { $ne: new mongoose.Types.ObjectId(same("risks")!) } }] : [])] };
       const [total, zones] = await Promise.all([HazardZone.countDocuments(q), HazardZone.find(q).sort({ _id: 1 }).limit(30).lean() as unknown as Promise<ZoneLean[]>]);
       out[layer] = { total, items: zones.map((z) => dropGeometry(zoneItem(z))) };
     }

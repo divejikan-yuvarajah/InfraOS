@@ -160,7 +160,7 @@ describe("Batch 02 asset, utility and risk layers", { timeout: 240_000 }, () => 
 
   it("scopes assets by agency tier, flags attention at full tier only, and hides health from awareness", async () => {
     const d = await ready();
-    const a = await get(d.officerA.token, `assets?bbox=${HERE}`);
+    const a = await get(d.officerA.token, `assets?bbox=${HERE}&fields=full`);
     expect(ids(a)).toEqual([d.bridge.id, d.theirs.id].sort());
     const mine = a.body.data.features.find((f: { properties: { id: string } }) => f.properties.id === d.bridge.id).properties;
     expect(mine).toMatchObject({ tier: "FULL", needsAttention: true });
@@ -175,7 +175,7 @@ describe("Batch 02 asset, utility and risk layers", { timeout: 240_000 }, () => 
 
   it("serves hazard zones by visibility and project risk from the latest assessment only, without free text", async () => {
     const d = await ready();
-    const a = await get(d.officerA.token, `risks?bbox=${HERE}`);
+    const a = await get(d.officerA.token, `risks?bbox=${HERE}&fields=full`);
     expect(ids(a)).toContain(d.flood.id);
     expect(ids(a)).not.toContain(d.agencyOnly.id);
     expect(ids(await get(d.officerB.token, `risks?bbox=${HERE}&kind=hazard`))).toEqual([d.flood.id, d.agencyOnly.id].sort());
@@ -215,6 +215,12 @@ describe("Batch 02 asset, utility and risk layers", { timeout: 240_000 }, () => 
     const su = await get(d.superUser.token, `nearby?featureLayer=projects&featureId=${d.pA.id}&radiusM=250&layers=utilities`);
     expect(su.body.data.layers.utilities.items.map((i: { id: string }) => i.id)).toContain(d.main.id);
     expect((await get(d.officerB.token, `nearby?featureLayer=projects&featureId=${d.pA.id}&radiusM=100`)).status).toBe(404);
+    // A dropped pin works without a record, still applies tiers, and rejects mixed or out-of-range forms.
+    const pin = await get(d.officerA.token, "nearby?lat=6.928&lng=79.862&radiusM=100");
+    expect(pin.status).toBe(200);
+    expect(pin.body.data.layers.assets.items.map((i: { id: string }) => i.id)).toContain(d.bridge.id);
+    expect(JSON.stringify(pin.body)).not.toContain("RESTRICTED-WATER-MAIN");
+    for (const q of ["lat=6.9&radiusM=100", "lat=6.9&lng=79.8&featureLayer=projects&radiusM=100", "lat=40&lng=79.8&radiusM=100", "lat=6.9&lng=79.8&radiusM=37"]) expect((await get(d.officerA.token, `nearby?${q}`)).status, q).toBe(400);
   });
 
   it("returns feature detail, hiding maintenance from awareness and answering 404 for restricted or out-of-scope ids", async () => {
@@ -241,7 +247,7 @@ describe("Batch 02 asset, utility and risk layers", { timeout: 240_000 }, () => 
     expect((await get(d.inspector.token, `assets?bbox=${HERE}`)).status).toBe(200);
     expect((await get(d.citizen.token, `assets?bbox=${HERE}`)).status).toBe(403);
     expect((await get(null, `utilities?bbox=${HERE}`)).status).toBe(401);
-    for (const q of ["assets?bbox=" + HERE + "&assetType=WATER", "utilities?bbox=" + HERE + "&assetType=ROAD", "risks?bbox=" + HERE + "&level=EXTREME", "assets?bbox=" + HERE + "&x=1", `assets?bbox=${HERE}&bbox=${HERE}`, "exposure?layer=projects", `exposure?layer=projects&id=${d.pA.id}&x=1`]) {
+    for (const q of ["assets?bbox=" + HERE + "&assetType=NOPE", "utilities?bbox=" + HERE + "&assetType=NOPE", "risks?bbox=" + HERE + "&level=EXTREME", "assets?bbox=" + HERE + "&x=1", `assets?bbox=${HERE}&bbox=${HERE}`, "exposure?layer=projects", `exposure?layer=projects&id=${d.pA.id}&x=1`]) {
       expect((await get(d.superUser.token, q)).status, q).toBe(400);
     }
   });
