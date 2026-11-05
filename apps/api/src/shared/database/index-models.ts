@@ -17,6 +17,7 @@ import { CitizenIssue } from "../../modules/issues/models/citizen-issue.model.js
 import { Notification } from "../../modules/notifications/models/notification.model.js";
 import { Milestone } from "../../modules/projects/models/milestone.model.js";
 import { Project } from "../../modules/projects/models/project.model.js";
+import { HazardZone } from "../../modules/risk/models/hazard-zone.model.js";
 import { RiskAssessment } from "../../modules/risk/models/risk-assessment.model.js";
 import { Candidate } from "../../modules/roadsync/models/candidate.model.js";
 import { Conflict } from "../../modules/roadsync/models/conflict.model.js";
@@ -68,5 +69,6 @@ export const INDEX_MODELS = [
   CitizenIssue,
   Notification,
   RiskAssessment,
+  HazardZone,
   AuditLog,
 ] as const;

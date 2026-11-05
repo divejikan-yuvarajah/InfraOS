@@ -5,9 +5,10 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import type { GeoJSONSource, Map as MlMap, MapGeoJSONFeature } from "maplibre-gl";
 import { useEffect, useRef } from "react";
 
-import { featureBounds, summarize, viewportBbox, type Bbox, type LayerData, type LayerKey } from "@/lib/inframap/inframap";
+import { featureBounds, summarize, viewportBbox, type Bbox, type LayerData, type LayerKey, type MapFeature } from "@/lib/inframap/inframap";
+import { applyFocus, type FocusSaved } from "@/lib/inframap/focus";
 import type { ConflictEvidence } from "@/lib/inframap/inframap-api";
-import { ALL_INTERACTIVE_IDS, EMPTY_COLLECTION, ensureLayers, LAYER_DEFS } from "@/lib/inframap/layer-registry";
+import { ALL_INTERACTIVE_IDS, EMPTY_COLLECTION, ensureLayers, LAYER_DEFS, LAYER_IDS_BY_LAYER } from "@/lib/inframap/layer-registry";
 import { resolveMapStyle, SRI_LANKA_BOUNDS, SRI_LANKA_MAX_BOUNDS } from "@/lib/inframap/map-style";
 import { orderCandidates, type Candidate } from "@/lib/inframap/selection-priority";
 
@@ -22,6 +23,16 @@ type Props = {
   visible: Record<LayerKey, boolean>;
   selected: Selection | null;
   evidence: ConflictEvidence | null;
+  /** Needs-Attention lens: dim assets that do not need attention. */
+  attention: boolean;
+  /** Focus mode: every layer except this one is dimmed. */
+  focus: LayerKey | null;
+  /** Features drawn with a hatched halo ("Highlight exposed"). */
+  exposed: MapFeature[] | null;
+  /** Nearby lens envelope polygon. */
+  lens: { type: "Polygon"; coordinates: number[][][] } | null;
+  /** One-shot request to move the camera (a lens or exposure result outside the loaded view). */
+  flyTo: { key: number; point: [number, number]; zoom: number } | null;
   resetKey: number;
   retryKey: number;
   label: string;
@@ -42,7 +53,8 @@ function candidateOf(f: MapGeoJSONFeature): (Candidate & { layer: LayerKey }) | 
   const layer = layerOf(f.layer.id);
   const info = layer ? summarize(layer, f.properties ?? {}) : null;
   if (!layer || !info) return null;
-  const score = typeof f.properties?.score === "number" ? (f.properties.score as number) : null;
+  // Conflicts rank by score; within risks a project marker outranks a (usually huge) hazard polygon.
+  const score = typeof f.properties?.score === "number" ? (f.properties.score as number) : layer === "risks" ? (f.properties?.kind === "project" ? 1 : 0) : null;
   return { layer, id: info.id, title: info.title, score };
 }
 
@@ -52,13 +64,14 @@ function candidateOf(f: MapGeoJSONFeature): (Candidate & { layer: LayerKey }) | 
  * properties; everything is removed on unmount.
  */
 export function InframapMap(props: Props) {
-  const { data, visible, selected, evidence, resetKey, retryKey, label } = props;
+  const { data, visible, selected, evidence, attention, focus, exposed, lens, flyTo, resetKey, retryKey, label } = props;
   const box = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MlMap | null>(null);
   const readyRef = useRef(false);
   const cb = useRef(props);
-  const latest = useRef({ data, visible, selected, evidence });
-  useEffect(() => { cb.current = props; latest.current = { data, visible, selected, evidence }; });
+  const latest = useRef({ data, visible, selected, evidence, attention, focus, exposed, lens });
+  const focusSaved = useRef<FocusSaved>(new Map());
+  useEffect(() => { cb.current = props; latest.current = { data, visible, selected, evidence, attention, focus, exposed, lens }; });
 
   useEffect(() => {
     let cancelled = false;
@@ -86,6 +99,10 @@ export function InframapMap(props: Props) {
           applyData(created, latest.current.data, latest.current.visible);
           applySelected(created, latest.current.data, latest.current.selected);
           applyEvidence(created, latest.current.evidence);
+          applyOverlays(created, latest.current.exposed, latest.current.lens);
+          // New layers start with default paint, so any earlier dimming record is stale.
+          focusSaved.current.clear();
+          applyVisual(created, latest.current.attention, latest.current.focus, focusSaved.current);
         };
         // Runs on first load and after any style swap, so layers, icons and data always come back.
         created.on("style.load", () => { restore(); readyRef.current = true; emitViewport(); });
@@ -102,9 +119,9 @@ export function InframapMap(props: Props) {
 
         created.on("click", (e) => {
           const found = hitsAt(e.point);
-          const cluster = found.find((f) => f.layer.id === "im-projects-cluster");
+          const cluster = found.find((f) => f.layer.id.endsWith("-cluster"));
           if (cluster && cluster.properties?.cluster_id !== undefined) {
-            const source = created.getSource("im-projects") as GeoJSONSource | undefined;
+            const source = created.getSource(cluster.layer.source as string) as GeoJSONSource | undefined;
             void source?.getClusterExpansionZoom(cluster.properties.cluster_id as number).then((zoom) => {
               created.easeTo({ center: (cluster.geometry as unknown as { coordinates: [number, number] }).coordinates, zoom: zoom + 0.5, duration: reduceMotion() ? 0 : 400 });
             }).catch(() => undefined);
@@ -118,7 +135,7 @@ export function InframapMap(props: Props) {
           frame = window.requestAnimationFrame(() => {
             frame = 0;
             const top = orderCandidates(hitsAt(e.point).map(candidateOf).filter((c): c is Candidate & { layer: LayerKey } => c !== null))[0];
-            const overCluster = !top && hitsAt(e.point).some((f) => f.layer.id === "im-projects-cluster");
+            const overCluster = !top && hitsAt(e.point).some((f) => f.layer.id.endsWith("-cluster"));
             created.getCanvas().style.cursor = top || overCluster ? "pointer" : "";
             cb.current.onHover(top ? { layer: top.layer, id: top.id, x: e.point.x, y: e.point.y } : null);
             const c = created.getCenter();
@@ -156,6 +173,13 @@ export function InframapMap(props: Props) {
   useEffect(() => { if (readyRef.current && mapRef.current) applyData(mapRef.current, data, visible); }, [data, visible]);
   useEffect(() => { if (readyRef.current && mapRef.current) applySelected(mapRef.current, data, selected); }, [data, selected]);
   useEffect(() => { if (readyRef.current && mapRef.current) applyEvidence(mapRef.current, evidence); }, [evidence]);
+  useEffect(() => { if (readyRef.current && mapRef.current) applyOverlays(mapRef.current, exposed, lens); }, [exposed, lens]);
+  // Attention dimming first, then Focus on top, so releasing Focus restores exactly what Attention had set.
+  useEffect(() => { if (readyRef.current && mapRef.current) applyVisual(mapRef.current, attention, focus, focusSaved.current); }, [attention, focus, visible, data]);
+  useEffect(() => {
+    const map = mapRef.current;
+    if (map && readyRef.current && flyTo) map.easeTo({ center: flyTo.point, zoom: Math.max(map.getZoom(), flyTo.zoom), duration: reduceMotion() ? 0 : 500 });
+  }, [flyTo]);
 
   // Fly to a newly selected feature (keep the zoom when already closer), then to its evidence when that arrives.
   const flownTo = useRef<string | null>(null);
@@ -207,4 +231,18 @@ function applyEvidence(map: MlMap, evidence: ConflictEvidence | null) {
   // Only the two parties and their connector are drawn; the related and nearby context features are left out.
   const features = (evidence?.features ?? []).filter((f) => ["party", "connector"].includes(String(f.properties.feature)));
   (map.getSource("im-evidence") as GeoJSONSource | undefined)?.setData((features.length ? { type: "FeatureCollection", features } : EMPTY_COLLECTION) as never);
+}
+
+function applyOverlays(map: MlMap, exposed: MapFeature[] | null, lens: { type: "Polygon"; coordinates: number[][][] } | null) {
+  (map.getSource("im-exposed") as GeoJSONSource | undefined)?.setData((exposed?.length ? { type: "FeatureCollection", features: exposed } : EMPTY_COLLECTION) as never);
+  (map.getSource("im-lens") as GeoJSONSource | undefined)?.setData((lens ? { type: "FeatureCollection", features: [{ type: "Feature", properties: {}, geometry: lens }] } : EMPTY_COLLECTION) as never);
+}
+
+/** Needs-Attention lens and Focus mode, in that order. Focus records and restores the exact prior paint values. */
+function applyVisual(map: MlMap, attention: boolean, focus: LayerKey | null, saved: FocusSaved) {
+  // Release Focus first so attention reads and writes the true base values.
+  applyFocus({ typeOf: (id) => map.getLayer(id)?.type, get: (id, p) => map.getPaintProperty(id, p as never), set: (id, p, v) => map.setPaintProperty(id, p as never, v as never) }, LAYER_IDS_BY_LAYER, null, saved);
+  if (map.getLayer("im-assets-point")) map.setPaintProperty("im-assets-point", "icon-opacity", (attention ? ["case", ["==", ["get", "needsAttention"], true], 1, 0.25] : 1) as never);
+  if (map.getLayer("im-assets-attn")) map.setPaintProperty("im-assets-attn", "circle-stroke-opacity", (attention ? ["case", ["==", ["get", "needsAttention"], true], 0.9, 0] : 0.8) as never);
+  applyFocus({ typeOf: (id) => map.getLayer(id)?.type, get: (id, p) => map.getPaintProperty(id, p as never), set: (id, p, v) => map.setPaintProperty(id, p as never, v as never) }, LAYER_IDS_BY_LAYER, focus, saved);
 }

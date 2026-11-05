@@ -951,3 +951,9 @@ export async function projectsWithoutLocation(
     throw new ProjectDependencyError();
   }
 }
+
+/** The catalog's read filter for other modules (InfraMap risk markers, exposure): null means the actor may not read projects. */
+export async function projectScopeFilter(actor: AuthenticatedActor): Promise<Record<string, unknown> | null> {
+  const scoped = await readFilter(actor);
+  return scoped.denied ? null : (scoped.filter as Record<string, unknown>);
+}

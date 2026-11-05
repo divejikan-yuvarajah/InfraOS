@@ -1,4 +1,5 @@
 import { Asset } from "../../../modules/assets/models/asset.model.js";
+import { HazardZone } from "../../../modules/risk/models/hazard-zone.model.js";
 import { MaintenanceRecord } from "../../../modules/assets/models/maintenance-record.model.js";
 import { Document } from "../../../modules/documents/models/document.model.js";
 import { ProjectPayment } from "../../../modules/finance/models/project-payment.model.js";
@@ -53,6 +54,9 @@ export async function resetDemoData(seedEnv: SeedEnvSlice): Promise<void> {
     await MaintenanceRecord.deleteMany({ assetId: { $in: demoAssetIds } });
     await Asset.deleteMany({ _id: { $in: demoAssetIds } });
   }
+
+  // Demo hazard zones are identified only by the isDemo flag and the DEMO source kind; imported datasets are never touched.
+  await HazardZone.deleteMany({ isDemo: true, "source.kind": "DEMO" });
 
   if (demoProjectIds.length > 0) {
     await RiskAssessment.deleteMany({ projectId: { $in: demoProjectIds } });

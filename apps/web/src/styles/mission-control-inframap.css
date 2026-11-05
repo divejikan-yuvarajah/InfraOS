@@ -111,3 +111,65 @@
 @media (max-width: 639px) {
   .im-quick[data-open="true"] { position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; max-height: 60dvh; border-radius: 16px 16px 0 0; box-shadow: 0 -10px 30px rgba(11, 31, 58, 0.3); }
 }
+
+/* Batch 02: layer deck, lenses, quick-view tabs, provenance, gauges, sprites. */
+.im-deck { display: grid; gap: 0.6rem; }
+.im-group { display: grid; gap: 0.4rem; }
+.im-group-head { display: flex; align-items: center; justify-content: space-between; gap: 0.4rem; }
+.im-group-toggle { display: inline-flex; align-items: center; gap: 0.3rem; min-height: 2.25rem; padding: 0 0.3rem; border: 0; background: transparent; font: inherit; font-weight: 700; color: var(--im-navy); cursor: pointer; }
+.im-group-toggle svg[data-collapsed="true"] { transform: rotate(-90deg); }
+.im-group-toggle svg { transition: transform 0.15s; }
+.im-master, .im-focus { display: inline-grid; place-items: center; width: 2.25rem; height: 2.25rem; border: 1px solid var(--im-line); border-radius: 8px; background: #fff; cursor: pointer; }
+.im-master[aria-checked="true"], .im-focus[aria-pressed="true"] { background: var(--im-navy); color: #fff; border-color: var(--im-navy); }
+.im-master:disabled { opacity: 0.5; cursor: not-allowed; }
+.im-master:focus-visible, .im-focus:focus-visible, .im-group-toggle:focus-visible, .im-seg-btn:focus-visible, .im-condseg:focus-visible, .im-focus-chip:focus-visible { outline: 3px solid #0e7490; outline-offset: 2px; }
+.im-layer-row { display: flex; gap: 0.4rem; align-items: stretch; }
+.im-layer-row .im-switch { flex: 1; }
+.im-layer[data-focus="true"] { box-shadow: 0 0 0 2px #0e7490; }
+.im-shimmer { height: 0.6rem; border-radius: 6px; background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%); background-size: 200% 100%; animation: im-shimmer 1.2s linear infinite; }
+@keyframes im-shimmer { to { background-position: -200% 0; } }
+.im-skel { display: grid; gap: 0.4rem; }
+.im-lens-box { display: grid; gap: 0.4rem; }
+.im-attn[aria-checked="true"] { background: #b91c1c; color: #fff; border-color: #b91c1c; }
+.im-condbar { display: flex; height: 1.6rem; border-radius: 8px; overflow: hidden; border: 1px solid var(--im-line); }
+.im-condseg { min-width: 1.4rem; border: 0; color: #fff; font-size: 0.72rem; font-weight: 700; cursor: pointer; }
+.im-condseg[aria-pressed="true"] { outline: 3px solid #0b1f3a; outline-offset: -3px; }
+.im-focus-chip { display: inline-flex; align-items: center; gap: 0.35rem; min-height: 2.25rem; padding: 0 0.7rem; border: 1px solid #0e7490; border-radius: 999px; background: #ecfbff; color: #0b4a5c; font: inherit; font-size: 0.85rem; cursor: pointer; }
+.im-sprite { display: inline-block; flex: none; }
+.im-sw[data-shape="dashdot"] { height: 0; border-top: 4px dashed var(--c); border-image: none; }
+.im-legend-group { margin: 0.5rem 0 0; font-weight: 800; font-size: 0.8rem; color: #0b1f3a; text-transform: uppercase; letter-spacing: 0.03em; }
+.im-title { display: grid; min-width: 0; overflow-wrap: anywhere; }
+.im-title small { color: #64748b; }
+.im-back { justify-self: start; }
+.im-seg { display: flex; flex-wrap: wrap; gap: 0.25rem; padding: 0.2rem; border-radius: 10px; background: #eef2f7; }
+.im-seg-btn { flex: 1; min-height: 2.1rem; padding: 0 0.5rem; border: 0; border-radius: 8px; background: transparent; font: inherit; font-size: 0.82rem; cursor: pointer; }
+.im-seg-btn[aria-selected="true"], .im-seg-btn[aria-checked="true"] { background: #fff; font-weight: 700; box-shadow: 0 1px 3px rgba(11, 31, 58, 0.2); }
+.im-prov { display: inline-block; padding: 0.1rem 0.5rem; border-radius: 999px; border: 1px solid #94a3b8; background: #f8fafc; font-size: 0.74rem; font-weight: 700; }
+.im-prov[data-kind="DEMO"] { background: #fff7e8; border-color: #f59e0b; color: #92400e; }
+.im-prov[data-kind="OFFICIAL_PUBLIC"] { background: #ecfdf5; border-color: #15803d; color: #14532d; }
+.im-prov[data-kind="AGENCY_SUPPLIED"] { background: #eff6ff; border-color: #1d4ed8; color: #1e3a8a; }
+.im-ribbon { padding: 0.15rem 0.6rem; border-radius: 6px; background: #f59e0b; color: #1f1300; font-weight: 800; letter-spacing: 0.02em; }
+.im-tier { display: flex; align-items: flex-start; gap: 0.4rem; margin: 0; padding: 0.45rem 0.6rem; border-radius: 8px; background: #f1f5f9; border-left: 4px solid #64748b; font-size: 0.84rem; }
+.im-gauge { margin: 0; display: grid; justify-items: center; font-size: 0.78rem; color: #475569; }
+.im-gauge svg { width: 4.5rem; height: 4.5rem; }
+.im-asset, .im-exposure, .im-nearby { display: grid; gap: 0.6rem; }
+.im-asset-top { display: flex; gap: 1rem; align-items: center; }
+.im-condition { display: grid; padding-left: 0.6rem; border-left: 5px solid var(--c, #64748b); }
+.im-condition small { color: #64748b; }
+.im-timeline { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.3rem; border-left: 3px solid #cbd5e1; padding-left: 0.7rem; }
+.im-timeline li { display: grid; font-size: 0.84rem; }
+.im-timeline b { font-weight: 700; }
+.im-tl-late { color: #7f1d1d; border-left: 3px solid #b91c1c; margin-left: -0.7rem; padding-left: 0.6rem; }
+.im-tl-today b { color: #0e7490; }
+.im-reasons, .im-maint, .im-rows, .im-chips-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.25rem; }
+.im-reasons li::before { content: "! "; color: #b91c1c; font-weight: 800; }
+.im-maint li { display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center; font-size: 0.84rem; }
+.im-dl { margin: 0; display: grid; gap: 0.3rem; }
+.im-dl div { display: grid; grid-template-columns: 7rem minmax(0, 1fr); gap: 0.5rem; font-size: 0.86rem; }
+.im-dl dt { color: #64748b; } .im-dl dd { margin: 0; overflow-wrap: anywhere; }
+.im-source summary { cursor: pointer; font-weight: 700; margin-bottom: 0.4rem; }
+.im-exp-top { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 0.4rem; }
+.im-exp-none { margin: 0; padding: 0.5rem 0.7rem; border-radius: 8px; background: #f1f5f9; font-size: 0.88rem; }
+.im-exp-line { margin: 0; }
+.im-chips-list small { display: block; color: #64748b; font-size: 0.76rem; }
+@media (max-width: 639px) { .im-dl div, .im-details dl div { grid-template-columns: minmax(0, 1fr); } }

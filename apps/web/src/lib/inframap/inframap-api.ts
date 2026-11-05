@@ -32,3 +32,37 @@ export async function fetchConflictEvidence(id: string, signal?: AbortSignal): P
   moved(atEpoch, tokenAtStart);
   return payload.data;
 }
+
+export type ExposureItem = { id: string; layer: LayerKey; point: [number, number] | null; geometry: MapFeature["geometry"] | null; name?: string; title?: string; projectCode?: string; status?: string; workType?: string; assetType?: string; agencyName?: string | null; tier?: string; isDemo?: boolean };
+export type ExposureZone = { id: string; name: string; hazardType: string; level: string; isDemo: boolean; point: [number, number] | null; geometry: MapFeature["geometry"] | null; source: { kind: string; organisation: string; datasetName: string; dataDate: string | null } };
+export type ExposureBucket = { total: number; items: ExposureItem[]; hidden?: number };
+export type ExposureData =
+  | { mode: "zones"; generatedAt: string; zones: ExposureZone[]; worstLevel: string | null }
+  | { mode: "records"; generatedAt: string; records: { projects: ExposureBucket | null; roadworks: ExposureBucket | null; assets: ExposureBucket | null; utilities: ExposureBucket | null } };
+
+/** Hazard exposure for the selected feature (which zones it overlaps) or zone (which in-scope records it covers). */
+export async function fetchExposure(layer: LayerKey, id: string, signal?: AbortSignal): Promise<ExposureData> {
+  const { atEpoch, tokenAtStart } = guard();
+  const payload = await apiClient<Envelope<ExposureData>>(`/api/v1/inframap/exposure?layer=${layer}&id=${encodeURIComponent(id)}`, { method: "GET", authenticated: true, ...(signal ? { signal } : {}) });
+  moved(atEpoch, tokenAtStart);
+  return payload.data;
+}
+
+export const NEARBY_RADII = [50, 100, 250, 500] as const;
+export type NearbyItem = { id: string; layer: LayerKey; name: string; assetType?: string; hazardType?: string; level?: string; agencyName?: string | null; tier?: string; isDemo?: boolean; point: [number, number] | null };
+export type NearbyData = { generatedAt: string; radiusM: number; approximate: boolean; envelope: { type: "Polygon"; coordinates: number[][][] }; restrictedHidden: number; layers: Partial<Record<"assets" | "utilities" | "risks", { total: number; items: NearbyItem[] } | null>> };
+
+export async function fetchNearby(featureLayer: LayerKey, featureId: string, radiusM: number, signal?: AbortSignal): Promise<NearbyData> {
+  const { atEpoch, tokenAtStart } = guard();
+  const payload = await apiClient<Envelope<NearbyData>>(`/api/v1/inframap/nearby?featureLayer=${featureLayer}&featureId=${encodeURIComponent(featureId)}&radiusM=${radiusM}`, { method: "GET", authenticated: true, ...(signal ? { signal } : {}) });
+  moved(atEpoch, tokenAtStart);
+  return payload.data;
+}
+
+export type FeatureDetail = { kind: string; properties: Record<string, unknown>; maintenance?: { maintenanceType: string; status: string; scheduledDate: string | null; completedDate: string | null }[]; reasons?: string[] };
+export async function fetchFeatureDetail(layer: "assets" | "utilities" | "risks", id: string, signal?: AbortSignal): Promise<FeatureDetail> {
+  const { atEpoch, tokenAtStart } = guard();
+  const payload = await apiClient<Envelope<FeatureDetail>>(`/api/v1/inframap/features/${layer}/${encodeURIComponent(id)}`, { method: "GET", authenticated: true, ...(signal ? { signal } : {}) });
+  moved(atEpoch, tokenAtStart);
+  return payload.data;
+}

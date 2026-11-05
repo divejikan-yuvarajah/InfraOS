@@ -1,7 +1,7 @@
 import mongoose, { Schema } from "mongoose";
 import { locationSchema, percentage, reference, textField } from "../../../shared/database/fields.js";
 import { geometryField } from "../../../shared/database/geometry.js";
-import { ASSET_CONDITIONS, ASSET_TYPES } from "../asset.constants.js";
+import { ASSET_CONDITIONS, ASSET_SENSITIVITIES, ASSET_TYPES } from "../asset.constants.js";
 
 const assetSchema = new Schema({
   sourceProjectId: reference("Project"),
@@ -16,6 +16,8 @@ const assetSchema = new Schema({
   commissionedAt: { type: Date, required: true },
   lastInspectionAt: { type: Date },
   nextMaintenanceAt: { type: Date },
+  // Optional, no backfill. When absent, utility-typed assets are treated as RESTRICTED (see inframap.access.ts).
+  sensitivity: { type: String, enum: ASSET_SENSITIVITIES },
 }, { timestamps: true, strict: "throw", collection: "assets" });
 
 assetSchema.index({ agencyId: 1, condition: 1 });

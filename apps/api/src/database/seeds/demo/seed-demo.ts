@@ -6,6 +6,7 @@ import {
 import type { DemoContext } from "./context.js";
 import { loadAgencyMap, seedDemoAgencies } from "./seed-agencies.js";
 import { seedDemoContractors } from "./seed-contractors.js";
+import { seedDemoInframapContext } from "./seed-inframap-context.js";
 import { seedDemoProjects } from "./seed-projects.js";
 import { seedDemoSupportingRecords } from "./seed-supporting-records.js";
 import { seedDemoFixtureUsers } from "./seed-users.js";
@@ -21,6 +22,8 @@ export type SeedDemoSummary = {
   workRequests: number;
   assets: number;
   citizenIssues: number;
+  inframapAssets: number;
+  hazardZones: number;
 };
 
 export async function seedDemoData(
@@ -45,6 +48,7 @@ export async function seedDemoData(
   context.projects = await seedDemoProjects(context);
   const workRequests = await seedDemoWorkRequests(context);
   const supporting = await seedDemoSupportingRecords(context);
+  const inframap = await seedDemoInframapContext(context);
 
   return {
     roles: core.roles,
@@ -56,5 +60,7 @@ export async function seedDemoData(
     workRequests,
     assets: supporting.assets,
     citizenIssues: supporting.issues,
+    inframapAssets: inframap.assets,
+    hazardZones: inframap.hazardZones,
   };
 }
