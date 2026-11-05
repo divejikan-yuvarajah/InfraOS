@@ -1,14 +1,14 @@
-export const LAYER_KEYS = ["projects", "roadworks", "conflicts"] as const;
+export const LAYER_KEYS = ["projects", "roadworks", "conflicts", "assets", "utilities", "risks"] as const;
 export type LayerKey = (typeof LAYER_KEYS)[number];
 
 /** west, south, east, north */
 export type Bbox = [number, number, number, number];
 
 export type MapFeature = { type: "Feature"; geometry: { type: string; coordinates: unknown }; properties: Record<string, unknown> };
-export type LayerData = { type: "FeatureCollection"; truncated: boolean; features: MapFeature[] };
+export type LayerData = { type: "FeatureCollection"; truncated: boolean; features: MapFeature[]; restrictedHidden?: number; hasDemo?: boolean };
 
 /** Server API path segment for each layer. */
-export const LAYER_PATH: Record<LayerKey, string> = { projects: "projects", roadworks: "roadworks", conflicts: "conflicts" };
+export const LAYER_PATH: Record<LayerKey, string> = { projects: "projects", roadworks: "roadworks", conflicts: "conflicts", assets: "assets", utilities: "utilities", risks: "risks" };
 
 /** The API refuses a viewport wider than this many degrees, so the client never asks for one. */
 export const MAX_BBOX_SPAN_DEG = 10;
@@ -38,7 +38,8 @@ export type FeatureSummary = {
   title: string;
   subtitle: string | null;
   status: string | null;
-  href: string;
+  /** null when no detail page exists for this kind of record (assets, utilities, hazard zones). */
+  href: string | null;
 };
 
 /** What the panel and the in-view list show for a feature. Only fields the API actually returned; nothing is invented. */
@@ -48,6 +49,10 @@ export function summarize(layer: LayerKey, properties: Record<string, unknown>):
   if (!id || !/^[a-f0-9]{24}$/i.test(id)) return null;
   if (layer === "projects") return { layer, id, title: s("title") ?? s("projectCode") ?? id, subtitle: s("projectCode"), status: s("status"), href: `/projects/${id}/overview` };
   if (layer === "roadworks") return { layer, id, title: s("projectTitle") ?? s("workType") ?? id, subtitle: s("projectCode"), status: s("status"), href: `/roadsync/work-requests/${id}` };
+  if (layer === "assets" || layer === "utilities") return { layer, id, title: s("name") ?? id, subtitle: s("assetType"), status: s("condition"), href: null };
+  if (layer === "risks") return s("kind") === "project"
+    ? { layer, id, title: s("title") ?? s("projectCode") ?? id, subtitle: s("projectCode"), status: s("riskBand"), href: `/projects/${id}/overview` }
+    : { layer, id, title: s("name") ?? id, subtitle: s("hazardType"), status: s("level"), href: null };
   const score = num(properties, "score");
   return { layer, id, title: s("conflictNo") ?? id, subtitle: score === null ? null : String(score), status: s("status"), href: `/roadsync/conflicts/${id}` };
 }
@@ -65,7 +70,7 @@ export const countOf = (data: LayerData | undefined): number | null => (data ? d
 
 export type LayerFilters = Record<string, string | undefined>;
 export type Filters = Record<LayerKey, LayerFilters>;
-export const NO_FILTERS: Filters = { projects: {}, roadworks: {}, conflicts: {} };
+export const NO_FILTERS: Filters = { projects: {}, roadworks: {}, conflicts: {}, assets: {}, utilities: {}, risks: {} };
 
 /** `&k=v` for the active filters only, keys sorted so identical filters share a cache entry. */
 export const filtersParam = (filters: LayerFilters): string =>
@@ -91,7 +96,7 @@ export function featureBounds(geometry: { coordinates?: unknown } | null | undef
 }
 
 export type SearchHit = FeatureSummary & { geometry: MapFeature["geometry"] };
-const HAYSTACK_KEYS = ["title", "projectCode", "conflictNo", "workType", "projectTitle", "district", "agencyName"] as const;
+const HAYSTACK_KEYS = ["title", "name", "projectCode", "conflictNo", "workType", "projectTitle", "district", "agencyName", "assetType", "hazardType"] as const;
 
 /** Case-insensitive search over the features already loaded for the enabled layers. Not a server search. */
 export function searchLoaded(data: Partial<Record<LayerKey, LayerData>>, enabled: Record<LayerKey, boolean>, query: string, limit = 24): SearchHit[] {

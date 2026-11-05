@@ -2,14 +2,16 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { ExternalLinkIcon, SearchIcon, XIcon } from "lucide-react";
+import { ArrowLeftIcon, CrosshairIcon, ExternalLinkIcon, SearchIcon, XIcon } from "lucide-react";
 
+import { AssetOverview, ExposureTab, NearbyTab, ProvenanceChip, RiskOverview, SourceTab, SpriteSwatch, type AsyncState, type Ref } from "./inframap-context-panels";
+import { valueLabel } from "./inframap-labels";
 import { StatusChip } from "@/components/site-plan/site-plan";
 import { useWorkspaceLocale } from "@/lib/i18n/workspace-locale";
 import { searchLoaded, summarize, type LayerData, type LayerKey, type MapFeature, type SearchHit } from "@/lib/inframap/inframap";
-import type { ConflictEvidence } from "@/lib/inframap/inframap-api";
+import type { ConflictEvidence, ExposureData, FeatureDetail, NearbyData } from "@/lib/inframap/inframap-api";
 import type { InframapCopy } from "@/lib/inframap/inframap-copy";
-import { LAYER_BY_ID, type LegendEntry } from "@/lib/inframap/layer-registry";
+import { LAYER_DEFS, LAYER_GROUPS, type LegendEntry } from "@/lib/inframap/layer-registry";
 import type { Candidate } from "@/lib/inframap/selection-priority";
 import { fmt, type Band } from "@/lib/roadsync/assessment";
 import { getAssessmentCopy } from "@/lib/roadsync/assessment-copy";
@@ -23,31 +25,29 @@ const str = (v: unknown) => (typeof v === "string" && v ? v : null);
 const dateFmt = (locale: string, iso: unknown) => (typeof iso === "string" && iso ? new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeZone: "Asia/Colombo" }).format(new Date(iso)) : null);
 const range = (locale: string, a: unknown, b: unknown) => [dateFmt(locale, a), dateFmt(locale, b)].filter(Boolean).join(" → ") || null;
 
-/** Translated label for a filter value or legend id. Stored data (titles, agency names, numbers) is never translated. */
-export function valueLabel(layer: LayerKey, value: string, copy: InframapCopy, locale: Locale): string {
-  const work = getWorkRequestCopy(locale).list;
-  const bands = getAssessmentCopy(locale).bands as Record<string, string>;
-  if (value === "overdue" || value === "1") return copy.values.overdue!;
-  if (copy.values[value]) return copy.values[value]!;
-  if (layer === "conflicts") return bands[value] ?? value;
-  if (layer === "roadworks") return work.statuses[value] ?? value;
-  return copy.projectStatus[value] ?? value.replace(/_/g, " ").toLowerCase();
-}
-
 export function LegendShape({ entry }: { entry: LegendEntry }) {
+  if (entry.sprite) return <SpriteSwatch sprite={entry.sprite} />;
   return <i className="im-sw" data-shape={entry.shape} style={{ ["--c" as string]: entry.color }} aria-hidden="true" />;
 }
 
 export function Legend({ copy, locale, visible }: { copy: InframapCopy; locale: Locale; visible: Record<LayerKey, boolean> }) {
   return (
-    <details className="im-legend" open>
+    <details className="im-legend">
       <summary>{copy.controls.legend}</summary>
-      {(Object.keys(visible) as LayerKey[]).filter((k) => visible[k]).map((k) => (
-        <div key={k}>
-          <p className="im-legend-h">{copy.layers[k]}</p>
-          <ul>{LAYER_BY_ID[k].legend.map((e) => <li key={e.id}><LegendShape entry={e} />{valueLabel(k, e.id, copy, locale)}</li>)}</ul>
-        </div>
-      ))}
+      {LAYER_GROUPS.map((g) => {
+        const defs = LAYER_DEFS.filter((d) => d.group === g && visible[d.id]);
+        return defs.length === 0 ? null : (
+          <div key={g}>
+            <p className="im-legend-group">{copy.groups[g]}</p>
+            {defs.map((d) => (
+              <div key={d.id}>
+                <p className="im-legend-h">{copy.layers[d.id]}</p>
+                <ul>{d.legend.map((e) => <li key={e.id}><LegendShape entry={e} />{valueLabel(d.id, e.id, copy, locale)}</li>)}</ul>
+              </div>
+            ))}
+          </div>
+        );
+      })}
       <p className="rs-help">{copy.more.layersLegendNote}</p>
     </details>
   );
@@ -123,8 +123,18 @@ export function HoverCard({ layer, feature, at, copy, locale }: { layer: LayerKe
 }
 
 export type EvidenceState = { status: "idle" | "loading" | "error" | "ready"; data: ConflictEvidence | null };
+export type QuickTab = "overview" | "exposure" | "nearby" | "source";
 
-export function QuickView({ layer, feature, evidence, copy, onClose }: { layer: LayerKey; feature: MapFeature; evidence: EvidenceState; copy: InframapCopy; onClose: () => void }) {
+export type QuickViewProps = {
+  layer: LayerKey; feature: MapFeature; evidence: EvidenceState; detail: AsyncState<FeatureDetail>; exposure: AsyncState<ExposureData>; nearby: AsyncState<NearbyData>;
+  canExposure: boolean; tab: QuickTab; onTab: (t: QuickTab) => void; expTab: string; onExpTab: (t: string) => void; highlight: boolean; onHighlight: () => void;
+  radius: number; onRadius: (m: number) => void; onSelectRef: (r: Ref) => void; back: { title: string } | null; onBack: () => void; onClose: () => void; copy: InframapCopy;
+};
+
+const NEW_KINDS: LayerKey[] = ["assets", "utilities", "risks"];
+
+export function QuickView(props: QuickViewProps) {
+  const { layer, feature, evidence, detail, copy, tab, onTab } = props;
   const [locale] = useWorkspaceLocale();
   const p = feature.properties;
   const info = summarize(layer, p);
@@ -133,6 +143,7 @@ export function QuickView({ layer, feature, evidence, copy, onClose }: { layer: 
   const rows: [string, string | null][] = [];
   let chip: React.ReactNode = null;
   let extra: React.ReactNode = null;
+  const isNew = NEW_KINDS.includes(layer);
   if (layer === "projects") {
     chip = <StatusChip domain="project" status={str(p.status) ?? "DRAFT"} label={valueLabel("projects", str(p.status) ?? "", copy, locale)} />;
     rows.push([f.code, str(p.projectCode)], [f.type, str(p.projectType)?.replace(/_/g, " ").toLowerCase() ?? null], [f.agency, str(p.agencyName)], [f.district, [str(p.district), str(p.province)].filter(Boolean).join(", ") || null], [f.dates, range(locale, p.startDate, p.plannedEndDate)]);
@@ -144,7 +155,7 @@ export function QuickView({ layer, feature, evidence, copy, onClose }: { layer: 
     </>;
     rows.push([f.workType, work.workTypes[str(p.workType) ?? ""] ?? null], [f.project, [str(p.projectCode), str(p.projectTitle)].filter(Boolean).join(" · ") || null], [f.agency, str(p.agencyName)], [f.priority, work.priorities[str(p.priority) ?? ""] ?? null], [f.dates, range(locale, p.plannedStart, p.plannedEnd)]);
     if (late) extra = <p className="rs-help">{copy.roadwork.overdueNote}</p>;
-  } else {
+  } else if (layer === "conflicts") {
     const conflict = getConflictCopy(locale);
     const band = str(p.band) as Band | null;
     const closed = (CLOSED_CONFLICT_STATUSES as readonly string[]).includes(str(p.status) ?? "");
@@ -169,16 +180,43 @@ export function QuickView({ layer, feature, evidence, copy, onClose }: { layer: 
         <p className="rs-help">{closed ? copy.conflict.closedNote : copy.conflict.openNote}</p>
       </div>
     );
+  } else if (layer === "assets" || layer === "utilities") {
+    chip = <span className="rs-nb-chip">{valueLabel("assets", str(p.condition) ?? "UNKNOWN", copy, locale)}</span>;
+    rows.push([f.type, valueLabel(layer, str(p.assetType) ?? "", copy, locale)], [f.agency, str(p.agencyName)], [f.district, [str(p.district), str(p.province)].filter(Boolean).join(", ") || null], [f.tier, str(p.tier) === "FULL" ? null : copy.tier.awareness]);
+    extra = <AssetOverview properties={detail.data?.properties ?? p} detail={detail} copy={copy} locale={locale} />;
+  } else {
+    const project = p.kind === "project";
+    chip = <span className="rs-nb-chip">{project ? valueLabel("risks", `band:${String(p.riskBand)}`, copy, locale) : valueLabel("risks", str(p.level) ?? "", copy, locale)}</span>;
+    if (project) rows.push([f.code, str(p.projectCode)]); else rows.push([f.agency, str(p.agencyName)]);
+    extra = <RiskOverview properties={p} detail={detail} copy={copy} locale={locale} />;
   }
+  const tabs: QuickTab[] = ["overview", ...(props.canExposure ? ["exposure" as const] : []), "nearby", ...(isNew ? ["source" as const] : [])];
+  const current = tabs.includes(tab) ? tab : "overview";
+  const roadsyncHref = layer === "roadworks" || layer === "conflicts" ? info?.href ?? null : null;
   return (
     <section className="im-details" aria-label={info?.title}>
-      <div className="im-details-top"><strong>{info?.title}</strong><button type="button" className="im-x" aria-label={copy.more.close} onClick={onClose}><XIcon aria-hidden="true" /></button></div>
-      <div className="im-chips">{chip}</div>
-      <dl>{rows.map(([k, v]) => <div key={k}><dt>{k}</dt><dd>{v ?? copy.noValue}</dd></div>)}</dl>
-      {extra}
+      {props.back ? <button type="button" className="rs-btn im-back" onClick={props.onBack}><ArrowLeftIcon aria-hidden="true" />{fmt(copy.nearby.back, { title: props.back.title })}</button> : null}
+      <div className="im-details-top">
+        <div className="im-title"><strong>{info?.title}</strong><small>{copy.layers[layer]} · {String(p.id ?? "").slice(-6)}</small></div>
+        <button type="button" className="im-x" aria-label={copy.more.close} onClick={props.onClose}><XIcon aria-hidden="true" /></button>
+      </div>
+      <div className="im-chips">{chip}<ProvenanceChip kind={str(p.provenance)} copy={copy} /></div>
+      <div role="tablist" className="im-seg" aria-label={copy.panel.heading}>
+        {tabs.map((t) => <button key={t} type="button" role="tab" aria-selected={t === current} className="im-seg-btn" onClick={() => onTab(t)}>{copy.tabs[t]}</button>)}
+      </div>
+      {current === "overview" ? (
+        <>
+          <dl>{rows.filter(([, v]) => v !== null).map(([k, v]) => <div key={k}><dt>{k}</dt><dd>{v}</dd></div>)}</dl>
+          {extra}
+        </>
+      ) : null}
+      {current === "exposure" ? <ExposureTab state={props.exposure} tab={props.expTab} onTab={props.onExpTab} highlight={props.highlight} onHighlight={props.onHighlight} onSelectRef={props.onSelectRef} copy={copy} locale={locale} /> : null}
+      {current === "nearby" ? <NearbyTab state={props.nearby} radius={props.radius} onRadius={props.onRadius} onSelectRef={props.onSelectRef} roadsyncHref={roadsyncHref} copy={copy} locale={locale} /> : null}
+      {current === "source" ? <SourceTab properties={detail.data?.properties ?? p} copy={copy} locale={locale} /> : null}
       <div className="im-details-actions">
-        {info ? <Link className="rs-btn is-primary" href={info.href}><ExternalLinkIcon aria-hidden="true" />{copy.panel.open[layer]}</Link> : null}
-        <button type="button" className="rs-btn" onClick={onClose}>{copy.panel.clear}</button>
+        {info?.href ? <Link className="rs-btn is-primary" href={info.href}><ExternalLinkIcon aria-hidden="true" />{copy.panel.open[layer]}</Link> : null}
+        {current !== "nearby" ? <button type="button" className="rs-btn" onClick={() => onTab("nearby")}><CrosshairIcon aria-hidden="true" />{copy.nearby.open}</button> : <button type="button" className="rs-btn" onClick={() => onTab("overview")}>{copy.nearby.close}</button>}
+        <button type="button" className="rs-btn" onClick={props.onClose}>{copy.panel.clear}</button>
       </div>
     </section>
   );

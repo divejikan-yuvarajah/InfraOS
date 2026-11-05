@@ -104,7 +104,7 @@ export async function conflictLayer(actor: AuthenticatedActor, bbox: Bbox, filte
   }
 }
 
-export type LayerAvailability = { id: "projects" | "roadworks" | "conflicts"; available: boolean; reason?: "forbidden" | "unavailable" };
+export type LayerAvailability = { id: "projects" | "roadworks" | "conflicts" | "assets" | "utilities" | "risks"; available: boolean; reason?: "forbidden" | "unavailable" };
 export type LayersInfo = { layers: LayerAvailability[]; projectsWithoutLocation: { total: number; items: { id: string; projectCode: string; title: string }[] } };
 
 /**
@@ -114,9 +114,9 @@ export type LayersInfo = { layers: LayerAvailability[]; projectsWithoutLocation:
 export async function layersInfo(actor: AuthenticatedActor): Promise<LayersInfo> {
   const role = await Role.findById(actor.roleId).select("permissions isActive key");
   const granted = role?.isActive && role.key === actor.roleKey && Array.isArray(role.permissions) ? (role.permissions as string[]) : [];
-  const entry = (id: LayerAvailability["id"], permission: "project.read" | "roadsync.work_request.read" | "roadsync.conflict.read"): LayerAvailability =>
+  const entry = (id: LayerAvailability["id"], permission: "project.read" | "roadsync.work_request.read" | "roadsync.conflict.read" | "asset.read" | "risk.read"): LayerAvailability =>
     hasPermission(granted, permission) ? { id, available: true } : { id, available: false, reason: "forbidden" };
-  const layers = [entry("projects", "project.read"), entry("roadworks", "roadsync.work_request.read"), entry("conflicts", "roadsync.conflict.read")];
+  const layers = [entry("projects", "project.read"), entry("roadworks", "roadsync.work_request.read"), entry("conflicts", "roadsync.conflict.read"), entry("assets", "asset.read"), entry("utilities", "asset.read"), entry("risks", "risk.read")];
   let missing: LayersInfo["projectsWithoutLocation"] = { total: 0, items: [] };
   const projects = layers[0]!;
   if (projects.available) {

@@ -171,7 +171,8 @@ describe("steps 81-84 InfraMap layers", { timeout: 240_000 }, () => {
     const a = await request(app).get(`${api}/layers`).set(auth(d.officerA.token));
     expect(a.status).toBe(200);
     expect(a.headers["cache-control"]).toContain("no-store");
-    expect(a.body.data.layers).toEqual([{ id: "projects", available: true }, { id: "roadworks", available: true }, { id: "conflicts", available: true }]);
+    expect(a.body.data.layers.map((l: { id: string }) => l.id)).toEqual(["projects", "roadworks", "conflicts", "assets", "utilities", "risks"]);
+    expect(a.body.data.layers.every((l: { available: boolean }) => l.available)).toBe(true);
     expect(a.body.data.projectsWithoutLocation.total).toBe(1);
     expect(a.body.data.projectsWithoutLocation.items).toEqual([{ id: d.pNone.id, projectCode: "INF-IM-4", title: "INFRAMAP-NO-GEOMETRY" }]);
     const b = await request(app).get(`${api}/layers`).set(auth(d.officerB.token));

@@ -1,10 +1,14 @@
 import { z } from "zod";
 
+import { ASSET_CONDITIONS } from "../assets/asset.constants.js";
+import { HAZARD_LEVELS, HAZARD_TYPES } from "../risk/hazard.constants.js";
+import { ASSET_LAYER_TYPES, UTILITY_TYPES } from "./inframap.access.js";
+
 import { validGeometry } from "../../shared/database/geometry.js";
 
 export type Bbox = [number, number, number, number];
 export type LayerFeature = { type: "Feature"; geometry: unknown; properties: Record<string, unknown> };
-export type LayerCollection = { type: "FeatureCollection"; truncated: boolean; features: LayerFeature[] };
+export type LayerCollection = { type: "FeatureCollection"; truncated: boolean; features: LayerFeature[]; generatedAt?: string; restrictedHidden?: number; hasDemo?: boolean };
 
 /** One layer never returns more than this many features; the response says so when it cut. */
 export const LAYER_FEATURE_CAP = 250;
@@ -43,7 +47,38 @@ export const layerQuerySchemas = {
   projects: z.object({ bbox: bboxField, status: z.enum(PROJECT_STATUSES).optional(), projectType: z.enum(PROJECT_TYPES).optional() }).strict(),
   roadworks: z.object({ bbox: bboxField, status: z.enum(WORK_STATUSES).optional(), overdue: z.literal("1").optional() }).strict(),
   conflicts: z.object({ bbox: bboxField, band: z.enum(BANDS).optional(), group: z.enum(["open", "closed"]).optional() }).strict(),
+  assets: z.object({ bbox: bboxField, assetType: z.enum(ASSET_LAYER_TYPES).optional(), condition: z.enum(ASSET_CONDITIONS).optional(), attention: z.literal("1").optional() }).strict(),
+  utilities: z.object({ bbox: bboxField, assetType: z.enum(UTILITY_TYPES).optional() }).strict(),
+  risks: z.object({ bbox: bboxField, hazardType: z.enum(HAZARD_TYPES).optional(), level: z.enum(HAZARD_LEVELS).optional(), kind: z.enum(["hazard", "project"]).optional(), projectLevel: z.enum(["LOW", "MEDIUM", "HIGH"]).optional() }).strict(),
 };
+
+const objectId = z.string().regex(/^[a-f0-9]{24}$/i);
+export const FOCAL_LAYERS = ["projects", "roadworks", "conflicts", "assets", "utilities", "risks"] as const;
+export const NEARBY_RADII = ["50", "100", "250", "500"] as const;
+/** Exposure for one feature (feature to zones) or one zone (zone to records). No client geometry is ever accepted. */
+export const exposureQuerySchema = z.object({ layer: z.enum(FOCAL_LAYERS), id: objectId }).strict();
+export const nearbyQuerySchema = z.object({
+  featureLayer: z.enum(FOCAL_LAYERS), featureId: objectId, radiusM: z.enum(NEARBY_RADII),
+  layers: z.string().max(40).optional().transform((v) => (v ? v.split(",") : ["assets", "utilities", "risks"])).pipe(z.array(z.enum(["assets", "utilities", "risks"])).min(1).max(3)),
+}).strict();
+export const featureParamsSchema = z.object({ layer: z.enum(["assets", "utilities", "risks"]), id: objectId }).strict();
+
+const R_LAT = 111_320;
+/** Approximate envelope: the geometry's bbox grown by radiusM on every side (metres to degrees at the bbox latitude). */
+export function envelopeAround(bounds: [number, number, number, number], radiusM: number): [number, number, number, number] {
+  const [w, s, e, n] = bounds;
+  const dLat = radiusM / R_LAT;
+  const dLon = radiusM / (R_LAT * Math.max(0.2, Math.cos((((s + n) / 2) * Math.PI) / 180)));
+  return [w - dLon, s - dLat, e + dLon, n + dLat];
+}
+export function geometryBounds(geometry: { coordinates?: unknown } | null | undefined): [number, number, number, number] | null {
+  const pts: number[][] = [];
+  const walk = (c: unknown) => { if (Array.isArray(c) && typeof c[0] === "number") pts.push(c as number[]); else if (Array.isArray(c)) c.forEach(walk); };
+  walk(geometry?.coordinates);
+  if (!pts.length) return null;
+  const xs = pts.map((p) => p[0]!), ys = pts.map((p) => p[1]!);
+  return [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)];
+}
 
 /** Derived, never stored: a roadwork whose planned end has passed while it is still open. */
 export function isOverdueWork(status: unknown, plannedEnd: unknown, now = new Date()): boolean {

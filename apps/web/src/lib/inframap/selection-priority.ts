@@ -1,7 +1,7 @@
 import type { LayerKey } from "./inframap";
 
-/** When several features sit under the pointer, conflicts win over roadworks, which win over projects. */
-export const LAYER_PRIORITY: readonly LayerKey[] = ["conflicts", "roadworks", "projects"];
+/** Conflict > roadwork > project > asset > utility > risk. Within risks, project markers outrank zones (see `score`), so a large polygon never blocks what lies under it. */
+export const LAYER_PRIORITY: readonly LayerKey[] = ["conflicts", "roadworks", "projects", "assets", "utilities", "risks"];
 
 export type Candidate = { layer: LayerKey; id: string; title: string; score?: number | null };
 
