@@ -9,7 +9,7 @@ export const en = {
     page: "Page {n} of {total}", prev: "Previous", total: "{n} inspections", at: "at", by: "by", of: "of", minutesShort: "min", selectAll: "Select", choose: "Choose…",
   },
   status: { SCHEDULED: "Scheduled", IN_PROGRESS: "In progress", SUBMITTED: "Awaiting review", VERIFIED: "Verified", REQUIRES_REVIEW: "Revision required", REJECTED: "Rejected", CANCELLED: "Cancelled", overdue: "Overdue" },
-  type: { PROGRESS_VERIFICATION: "Progress verification", QUALITY: "Quality", SAFETY: "Safety", MILESTONE: "Milestone", FINAL_HANDOVER: "Final handover", FOLLOW_UP: "Follow-up" },
+  type: { PROGRESS_VERIFICATION: "Progress verification", QUALITY: "Quality", SAFETY: "Safety", MILESTONE: "Milestone", FINAL_HANDOVER: "Final handover", FOLLOW_UP: "Follow-up", ASSET_CONDITION: "Asset condition" },
   priority: { LOW: "Low", NORMAL: "Normal", HIGH: "High", URGENT: "Urgent" },
   stepper: { scheduled: "Scheduled", started: "Started", submitted: "Submitted", decision: "Decision", revision: "Revision", rejected: "Rejected", cancelled: "Cancelled", verified: "Verified" },
   kpi: { upcoming7d: "Upcoming (7 days)", inProgress: "In progress", awaitingReview: "Awaiting review", revisionRequired: "Revision required", overdue: "Overdue", verified30d: "Verified (30 days)", hint: "Show these inspections" },

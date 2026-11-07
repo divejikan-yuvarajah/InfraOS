@@ -11,7 +11,7 @@ export const si: Copy = {
     page: "{total}න් {n} වන පිටුව", prev: "පෙර", total: "පරීක්ෂා {n}", at: "වේලාව", by: "විසින්", of: "ගේ", minutesShort: "මිනි", selectAll: "තෝරන්න", choose: "තෝරන්න…",
   },
   status: { SCHEDULED: "කාලසටහන් ගත කළ", IN_PROGRESS: "ක්‍රියාත්මක වෙමින්", SUBMITTED: "සමාලෝචනය බලාපොරොත්තුවෙන්", VERIFIED: "සත්‍යාපිත", REQUIRES_REVIEW: "සංශෝධනය අවශ්‍යයි", REJECTED: "ප්‍රතික්ෂේප කළ", CANCELLED: "අවලංගු කළ", overdue: "කල් ඉකුත් වූ" },
-  type: { PROGRESS_VERIFICATION: "ප්‍රගති සත්‍යාපනය", QUALITY: "ගුණාත්මකභාවය", SAFETY: "ආරක්ෂාව", MILESTONE: "සන්ධිස්ථානය", FINAL_HANDOVER: "අවසන් භාර දීම", FOLLOW_UP: "පසු විපරම" },
+  type: { PROGRESS_VERIFICATION: "ප්‍රගති සත්‍යාපනය", QUALITY: "ගුණාත්මකභාවය", SAFETY: "ආරක්ෂාව", MILESTONE: "සන්ධිස්ථානය", FINAL_HANDOVER: "අවසන් භාර දීම", FOLLOW_UP: "පසු විපරම", ASSET_CONDITION: "වත්කම් තත්ත්වය" },
   priority: { LOW: "අඩු", NORMAL: "සාමාන්‍ය", HIGH: "ඉහළ", URGENT: "හදිසි" },
   stepper: { scheduled: "කාලසටහන් ගත කළ", started: "ආරම්භ කළ", submitted: "ඉදිරිපත් කළ", decision: "තීරණය", revision: "සංශෝධනය", rejected: "ප්‍රතික්ෂේප කළ", cancelled: "අවලංගු කළ", verified: "සත්‍යාපිත" },
   kpi: { upcoming7d: "එළඹෙන (දින 7)", inProgress: "ක්‍රියාත්මක වෙමින්", awaitingReview: "සමාලෝචනය බලාපොරොත්තුවෙන්", revisionRequired: "සංශෝධනය අවශ්‍යයි", overdue: "කල් ඉකුත් වූ", verified30d: "සත්‍යාපිත (දින 30)", hint: "මෙම පරීක්ෂා පෙන්වන්න" },

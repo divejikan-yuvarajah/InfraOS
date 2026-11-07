@@ -41,7 +41,7 @@ export const fetchTimeline = (id: string, q: Q) => call<Timeline>("GET", `/asset
 export const patchAsset = (id: string, body: unknown) => call<{ updated: boolean }>("PATCH", `/assets/${id}`, body);
 export const changeAssetStatus = (id: string, body: unknown) => call<{ status: string }>("POST", `/assets/${id}/status`, body);
 export const addAsset = (body: unknown) => call<{ id: string; assetNo: string | null }>("POST", "/assets", body);
-export const recordAssessment = (id: string, body: unknown) => call<{ id: string; condition: string }>("POST", `/assets/${id}/assessments`, body);
+export const recordAssessment = (id: string, body: unknown) => call<{ id: string; condition: string; suggestion: string | null }>("POST", `/assets/${id}/assessments`, body);
 
 /** Downloads the server-generated CSV with the bearer token and hands it to the browser as a file. The server neutralises formula-like cells. */
 export async function downloadAssetsCsv(filters: Q): Promise<number> {
