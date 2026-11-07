@@ -189,6 +189,21 @@ describe("inspection workflow API (Steps 98-102)", { timeout: 180_000 }, () => {
     expect((await Project.findById(a.project._id))!.verifiedProgress?.percent).toBe(45);
   });
 
+  it("peer review: another inspector in the agency may decide a submitted report, but never their own, and sees nothing before submission", async () => {
+    w = await contractorWorld();
+    const { id } = await toSubmitted(50);
+    const peer = await makeUser("inspector.peer@example.com", "INSPECTOR", w.child._id);
+    const outsider = await makeUser("inspector.north@example.com", "INSPECTOR", w.sibling._id);
+    expect((await call(peer.token).get(`/${id}`)).status).toBe(200); // SUBMITTED in their own agency
+    expect((await call(outsider.token).get(`/${id}`)).status).toBe(404); // other agency
+    expect((await call(w.inspector.token).post(`/${id}/decision`, { decision: "REJECT", note: "Rejecting my own submitted report" })).status).toBe(403);
+    expect((await call(outsider.token).post(`/${id}/decision`, { decision: "APPROVE" })).status).toBe(404);
+    const { res } = await schedule({ inspectionDate: when(30) });
+    expect((await call(peer.token).get(`/${res.body.data.id}`)).status).toBe(404); // not submitted yet, so not visible to peers
+    expect((await call(peer.token).post(`/${id}/decision`, { decision: "APPROVE" })).status).toBe(200);
+    expect((await Inspection.findById(id))!.status).toBe("VERIFIED");
+  });
+
   it("revision loop and rejection; reviewers need a note", async () => {
     w = await contractorWorld();
     const { id } = await toSubmitted(50);
