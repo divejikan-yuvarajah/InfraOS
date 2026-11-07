@@ -11,7 +11,7 @@ const date = z.coerce.date();
 export const scheduleBody = z.object({
   projectId: objectId, inspectorId: objectId, inspectionDate: date, durationMinutes: z.number().int().min(15).max(480).default(120),
   inspectionType: z.enum(INSPECTION_TYPES).default("PROGRESS_VERIFICATION"), purpose: optText(500), priority: z.enum(INSPECTION_PRIORITIES).default("NORMAL"),
-  locationNote: optText(300), useProjectPoint: z.boolean().default(true), milestoneIds: z.array(objectId).max(10).default([]), followUpOfId: objectId.optional(),
+  locationNote: optText(300), useProjectPoint: z.boolean().default(true), milestoneIds: z.array(objectId).max(10).default([]), followUpOfId: objectId.optional(), assetId: objectId.optional(),
 }).strict();
 
 export const editBody = z.object({
@@ -35,6 +35,7 @@ export const reportBody = z.object({
   defects: z.array(defectEntry).max(30), followUpChecks: z.array(followUpCheck).max(30).default([]), recommendations: optText(3000),
   followUpRequired: z.boolean().default(false), followUpNote: optText(1000), measuredProgress: pct.nullable().optional(),
   milestoneAssessments: z.array(milestoneAssessment).max(10).default([]), discrepancyNote: optText(1000), inspectorDeclaration: z.boolean().default(false),
+  conditionRating: z.enum(["EXCELLENT", "GOOD", "FAIR", "POOR", "CRITICAL"]).optional(),
 }).strict();
 
 export const submitBody = z.object({ revision: z.number().int().min(0) }).strict();

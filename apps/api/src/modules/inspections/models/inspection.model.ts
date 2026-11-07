@@ -33,6 +33,8 @@ export const reportSchema = new Schema({
   milestoneAssessments: { type: [milestoneAssessment], default: [], validate: arrayLimit(10) },
   discrepancyNote: textField(1000),
   inspectorDeclaration: { type: Boolean, default: false },
+  // ASSET_CONDITION inspections only: the inspector's rating. The asset condition changes only when a reviewer approves.
+  conditionRating: { type: String, enum: ["EXCELLENT", "GOOD", "FAIR", "POOR", "CRITICAL"] },
 }, { _id: false, strict: "throw" });
 
 const decision = new Schema({
@@ -64,6 +66,7 @@ const inspectionSchema = new Schema({
   durationMinutes: { type: Number, min: 15, max: 480, default: 120 },
   milestoneIds: { type: [reference("Milestone")], default: [], validate: arrayLimit(10) },
   followUpOfId: reference("Inspection", false),
+  assetId: reference("Asset", false),
   claimedProgressAtSchedule: percentage(),
   scheduledBy: reference("User", false),
   assignmentHistory: { type: [assignmentEntry], default: [], validate: arrayLimit(20) },
