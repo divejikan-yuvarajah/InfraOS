@@ -149,10 +149,10 @@ export function PerformancePanel({ perf, copy, locale, onOpenCompliance }: { per
         </div>
       </section>
 
-      <section className="ctr-deferred" aria-label={copy.performance.deferredTitle}>
+      {perf.deferred.length ? (<section className="ctr-deferred" aria-label={copy.performance.deferredTitle}>
         <p style={{ gridColumn: "1 / -1", fontWeight: 700 }}>{copy.performance.deferredTitle}</p>
         {perf.deferred.map((d) => <p key={d.key}>{copy.performance.deferred[d.key as keyof Copy["performance"]["deferred"]] ?? d.key}</p>)}
-      </section>
+      </section>) : null}
 
       <EvidenceDrawer open={drawer !== null} onOpenChange={(o) => { if (!o) setDrawer(null); }} title={drawer?.title ?? ""} refs={drawer?.refs ?? []} copy={copy} onOpenCompliance={onOpenCompliance} />
     </div>
