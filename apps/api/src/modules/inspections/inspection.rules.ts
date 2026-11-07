@@ -77,12 +77,13 @@ export type ReportInput = {
   measuredProgress?: number | null;
   discrepancyNote?: string | null;
   inspectorDeclaration?: boolean | null;
+  conditionRating?: string | null;
 };
 export type EvidenceLink = { checklistItemKey?: string | null; defectKey?: string | null };
 
 export type Gap =
   | "checklist_incomplete" | "fail_without_note" | "not_enough_evidence" | "fail_item_without_photo" | "critical_defect_without_photo"
-  | "measured_progress_required" | "discrepancy_note_required" | "declaration_required";
+  | "measured_progress_required" | "discrepancy_note_required" | "declaration_required" | "condition_rating_required";
 
 /** Returns every reason a report cannot yet be submitted (empty list = complete). */
 export function submitGaps(type: InspectionType, report: ReportInput, evidence: EvidenceLink[], claimed: number | null | undefined): Gap[] {
@@ -105,6 +106,7 @@ export function submitGaps(type: InspectionType, report: ReportInput, evidence: 
     if (report.measuredProgress === null || report.measuredProgress === undefined) gaps.add("measured_progress_required");
     else if (overThreshold(report.measuredProgress, claimed) && !report.discrepancyNote?.trim()) gaps.add("discrepancy_note_required");
   }
+  if (type === "ASSET_CONDITION" && !report.conditionRating) gaps.add("condition_rating_required");
   if (report.inspectorDeclaration !== true) gaps.add("declaration_required");
   return [...gaps];
 }
