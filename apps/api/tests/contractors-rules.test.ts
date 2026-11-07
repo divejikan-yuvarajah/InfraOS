@@ -50,7 +50,7 @@ describe("indicators: evidence sufficiency", () => {
     const ins = (status: string, k: number) => ({ id: `i${k}`, projectId: "p", status, inspectionDate: d("2026-03-01") });
     expect(inspectionOutcomeRate(empty({ inspections: [ins("VERIFIED", 1), ins("SCHEDULED", 2), ins("REJECTED", 3)] })).status).toBe("INSUFFICIENT_EVIDENCE");
     const i = inspectionOutcomeRate(empty({ inspections: [ins("VERIFIED", 1), ins("VERIFIED", 2), ins("REJECTED", 3), ins("REQUIRES_REVIEW", 4)] }));
-    expect(i.value).toBe(50); expect(i.inputs).toMatchObject({ coarse: true, source: "inspection.v1" });
+    expect(i.value).toBe(50); expect(i.inputs).toMatchObject({ coarse: true, source: "inspection.v2" });
   });
   it("unverified claims stay insufficient without verified inspection progress, and fire above 10 points", () => {
     const a = asg();

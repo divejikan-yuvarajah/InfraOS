@@ -13,6 +13,8 @@ import { roadsyncRouter } from "../modules/roadsync/work-requests.routes.js";
 import { financeRouter } from "../modules/finance/finance.routes.js";
 import { projectContractorRouter } from "../modules/contractors/contractor-assignment.routes.js";
 import { contractorRouter } from "../modules/contractors/contractor.routes.js";
+import { inspectionRouter } from "../modules/inspections/inspection.routes.js";
+import { projectInspectionsRouter, projectVerifiedProgressRouter } from "../modules/inspections/inspection.project.routes.js";
 import { inframapRouter } from "../modules/inframap/inframap.routes.js";
 
 export function createV1Router(): Router {
@@ -27,11 +29,14 @@ export function createV1Router(): Router {
   router.use("/admin/roles", adminRoleRouter);
   router.use("/admin/permissions", adminPermissionRouter);
   router.use("/projects/:projectId/contractors", projectContractorRouter);
+  router.use("/projects/:projectId/inspections", projectInspectionsRouter);
+  router.use("/projects/:projectId/verified-progress", projectVerifiedProgressRouter);
   router.use("/projects", projectRouter);
   router.use("/notifications", notificationRouter);
   router.use("/roadsync", roadsyncRouter);
   router.use("/inframap", inframapRouter);
   router.use("/contractors", contractorRouter);
   router.use("/finance", financeRouter);
+  router.use("/inspections", inspectionRouter);
   return router;
 }

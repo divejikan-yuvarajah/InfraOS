@@ -11,6 +11,7 @@ import { StaffWorkspaceShell } from "@/components/auth/staff-workspace-shell";
 import { ContextBar, DualProgress, FactsList, HonestyChip, LifecycleRail, StatusChip } from "@/components/site-plan/site-plan";
 import { ApiError } from "@/lib/api/client";
 import { getAuthEpoch, getMemoryAccessToken, getMemorySession, subscribeAuth } from "@/lib/auth/state";
+import { VerifiedProgressChip } from "@/components/inspections/inspection-integrations";
 import { useWorkspaceLocale } from "@/lib/i18n/workspace-locale";
 import { fetchProject, transitionProject } from "@/lib/projects/api";
 import { getDashboardCopy } from "@/lib/projects/dashboard-messages";
@@ -113,6 +114,7 @@ function OverviewBody({
         </div>
       ) : null}
 
+      <VerifiedProgressChip projectId={project.id} reported={project.physicalProgress} />
       <div className="spp-cols">
         <div className="spp-col">
           <section className="sp-surface spp-panel" aria-labelledby="project-description">

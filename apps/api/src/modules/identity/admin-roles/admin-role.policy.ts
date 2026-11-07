@@ -27,7 +27,6 @@ const BLOCKED: Record<SystemRoleKey, readonly Permission[]> = {
     "finance.payment.approve",
     "finance.budget.approve",
     "project.approve",
-    "inspection.verify",
   ],
   PROJECT_MANAGER: [
     "role.manage",

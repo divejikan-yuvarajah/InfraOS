@@ -25,7 +25,7 @@ export function noStore(res: Response): void {
 
 export const param = (value: string | string[] | undefined): string => (Array.isArray(value) ? value[0] ?? "" : value ?? "");
 
-const MESSAGES: Record<number, string> = { 400: "request could not be completed", 401: "sign-in is required", 403: "request could not be completed", 404: "resource was not found", 409: "request could not be completed", 503: "service is temporarily unavailable" };
+const MESSAGES: Record<number, string> = { 400: "request could not be completed", 401: "sign-in is required", 403: "request could not be completed", 404: "resource was not found", 409: "request could not be completed", 413: "file is too large", 422: "file could not be verified", 503: "service is temporarily unavailable" };
 
 export function sendFailure(res: Response, req: Request, f: Failure): void {
   res.status(f.status).json(failure(f.code, MESSAGES[f.status] ?? "request could not be completed", req.requestId, f.details));

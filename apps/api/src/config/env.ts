@@ -21,7 +21,7 @@ export type LogLevel =
   | "debug"
   | "trace"
   | "silent";
-export type StorageProvider = "r2" | "local";
+export type StorageProvider = "r2" | "local" | "gridfs";
 
 export type AppEnv = {
   NODE_ENV: NodeEnv;
@@ -83,7 +83,7 @@ const LOG_LEVELS = [
   "trace",
   "silent",
 ] as const;
-const STORAGE_PROVIDERS = ["r2", "local"] as const;
+const STORAGE_PROVIDERS = ["r2", "local", "gridfs"] as const;
 
 const nodeEnvSchema = z.enum(NODE_ENVS);
 const logLevelSchema = z.enum(LOG_LEVELS);
@@ -102,7 +102,7 @@ const secretSchema = z
   .string()
   .min(32, { error: "must be at least 32 characters when set" });
 const storageProviderSchema = z.enum(STORAGE_PROVIDERS, {
-  error: "must be r2 or local",
+  error: "must be r2, local or gridfs",
 });
 
 export class EnvValidationError extends Error {

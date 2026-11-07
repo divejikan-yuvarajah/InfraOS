@@ -4,7 +4,10 @@ import { MaintenanceRecord } from "../../../modules/assets/models/maintenance-re
 import { Document } from "../../../modules/documents/models/document.model.js";
 import { ProjectPayment } from "../../../modules/finance/models/project-payment.model.js";
 import { User } from "../../../modules/identity/models/user.model.js";
+import mongoose from "mongoose";
+import { InspectionEvidence } from "../../../modules/inspections/models/inspection-evidence.model.js";
 import { Inspection } from "../../../modules/inspections/models/inspection.model.js";
+import { ProgressVerification } from "../../../modules/inspections/models/progress-verification.model.js";
 import { CitizenIssue } from "../../../modules/issues/models/citizen-issue.model.js";
 import { Milestone } from "../../../modules/projects/models/milestone.model.js";
 import { Project } from "../../../modules/projects/models/project.model.js";
@@ -71,6 +74,21 @@ export async function resetDemoData(seedEnv: SeedEnvSlice): Promise<void> {
 
   if (demoProjectIds.length > 0) {
     await RiskAssessment.deleteMany({ projectId: { $in: demoProjectIds } });
+    // Evidence bytes (GridFS), evidence rows and the append-only verification ledger go before the inspections they point at.
+    const inspectionIds = (await Inspection.find({ projectId: { $in: demoProjectIds } }).select("_id").lean()).map((i) => String(i._id));
+    const db = mongoose.connection.db;
+    if (db && inspectionIds.length) {
+      const files = db.collection("inspectionEvidence.files");
+      const chunks = db.collection("inspectionEvidence.chunks");
+      for (const id of inspectionIds) {
+        for (const f of await files.find({ filename: { $regex: `^ins/${id}/` } }).toArray()) {
+          await chunks.deleteMany({ files_id: f._id });
+          await files.deleteOne({ _id: f._id });
+        }
+      }
+    }
+    await InspectionEvidence.deleteMany({ projectId: { $in: demoProjectIds } });
+    await ProgressVerification.collection.deleteMany({ projectId: { $in: demoProjectIds } });
     await Inspection.deleteMany({ projectId: { $in: demoProjectIds } });
     await Document.deleteMany({ projectId: { $in: demoProjectIds } });
     await ProjectPayment.deleteMany({ projectId: { $in: demoProjectIds } });
