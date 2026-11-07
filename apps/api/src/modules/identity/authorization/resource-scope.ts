@@ -350,6 +350,10 @@ async function partyWorkRequestIds(actor: AuthenticatedActor): Promise<mongoose.
   return inAgency.map((item) => item._id);
 }
 
+/**
+ * @deprecated Superseded by modules/finance/payment.service.ts (transactional, gated, audited). Not mounted on any route; it is kept only because the
+ * scope test harness still exercises it. Do not call it from product code.
+ */
 export async function approvePayment(
   actor: AuthenticatedActor,
   rawId: string,
