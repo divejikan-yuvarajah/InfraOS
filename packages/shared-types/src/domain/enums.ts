@@ -33,7 +33,11 @@ export const SRI_LANKA_PROVINCES = {
 } as const;
 export const SRI_LANKA_DISTRICTS: readonly string[] = Object.values(SRI_LANKA_PROVINCES).flat();
 export const PAYMENT_TYPES = ["ADVANCE", "INTERIM", "FINAL", "RETENTION", "OTHER"] as const;
-export const PAYMENT_STATUSES = ["PENDING", "APPROVED", "REJECTED", "PAID", "CANCELLED"] as const;
+export const PAYMENT_STATUSES = ["PENDING", "APPROVED", "REJECTED", "PAID", "CANCELLED", "REVERSED"] as const;
+/** Generic project-cost categories shared by budget allocations and expenses. Not government object or account codes. */
+export const FINANCE_CATEGORIES = ["CIVIL_WORKS", "MATERIALS", "LABOUR", "EQUIPMENT", "DESIGN_SUPERVISION", "UTILITY_RELOCATION", "CONTINGENCY", "ADMIN_OVERHEAD", "OTHER"] as const;
+export const EXPENSE_STATUSES = ["DRAFT", "PENDING_VERIFICATION", "VERIFIED", "REJECTED", "REVERSED"] as const;
+export const BUDGET_REVISION_STATUSES = ["PENDING_APPROVAL", "APPROVED", "REJECTED", "CANCELLED"] as const;
 
 export const DOCUMENT_TYPES = ["CONTRACT", "TENDER", "BOQ", "INVOICE", "APPROVAL", "PROGRESS_REPORT", "INSPECTION_REPORT", "DRAWING", "OTHER"] as const;
 export const DOCUMENT_PROCESSING_STATUSES = ["NOT_STARTED", "QUEUED", "PROCESSING", "COMPLETED", "FAILED", "UNSUPPORTED"] as const;
@@ -70,6 +74,7 @@ export type ContractorStatus = (typeof CONTRACTOR_STATUSES)[number];
 export type ContractorCategory = (typeof CONTRACTOR_CATEGORIES)[number];
 export type AssignmentRole = (typeof ASSIGNMENT_ROLES)[number];
 export type AssignmentStatus = (typeof ASSIGNMENT_STATUSES)[number];
+export type FinanceCategory = (typeof FINANCE_CATEGORIES)[number];
 export type PaymentStatus = (typeof PAYMENT_STATUSES)[number];
 export type PaymentType = (typeof PAYMENT_TYPES)[number];
 export type DocumentType = (typeof DOCUMENT_TYPES)[number];
