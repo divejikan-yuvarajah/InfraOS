@@ -12,7 +12,7 @@ import type { ContractorViewer } from "./contractor.access.js";
 import { ContractorAssignment } from "./models/contractor-assignment.model.js";
 import { Contractor } from "./models/contractor.model.js";
 
-export type Failure = { ok: false; status: 400 | 401 | 403 | 404 | 409 | 503; code: "VALIDATION_ERROR" | "AUTH_REQUIRED" | "FORBIDDEN" | "NOT_FOUND" | "CONFLICT" | "SERVICE_UNAVAILABLE"; details: Record<string, unknown> | null };
+export type Failure = { ok: false; status: 400 | 401 | 403 | 404 | 409 | 413 | 422 | 503; code: "VALIDATION_ERROR" | "AUTH_REQUIRED" | "FORBIDDEN" | "NOT_FOUND" | "CONFLICT" | "SERVICE_UNAVAILABLE"; details: Record<string, unknown> | null };
 export type Result<T> = { ok: true; data: T } | Failure;
 
 export class Flow extends Error {

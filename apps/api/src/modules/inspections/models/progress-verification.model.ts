@@ -9,7 +9,7 @@ const schema = new Schema({
   projectId: reference("Project"), agencyId: reference("Agency"), inspectionId: reference("Inspection"),
   submissionNo: { type: Number, required: true, min: 1 },
   verifiedPercent: { ...int, required: true },
-  claimedPercent: { ...int, default: null },
+  claimedPercent: { type: Number, min: 0, max: 100, default: null, validate: (v: number | null) => v === null || Number.isInteger(v) },
   discrepancyPp: { type: Number, default: null, validate: (v: number | null) => v === null || Number.isInteger(v) },
   milestones: { type: [new Schema({ milestoneId: reference("Milestone"), claimedProgress: { type: Number, min: 0, max: 100 }, verifiedProgress: { ...int, required: true } }, { _id: false, strict: "throw" })], default: [], validate: arrayLimit(10) },
   inspectorId: reference("User"), reviewerId: reference("User"), asOf: { type: Date, required: true },
