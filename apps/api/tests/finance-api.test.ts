@@ -10,6 +10,7 @@ import { ProjectBudgetRevision } from "../src/modules/finance/models/project-bud
 import { ProjectExpense } from "../src/modules/finance/models/project-expense.model.js";
 import { ProjectPayment } from "../src/modules/finance/models/project-payment.model.js";
 import { Inspection } from "../src/modules/inspections/models/inspection.model.js";
+import { ProgressVerification } from "../src/modules/inspections/models/progress-verification.model.js";
 import { Project } from "../src/modules/projects/models/project.model.js";
 import { Counter } from "../src/shared/database/counter.js";
 import { contractorWorld, makeProject, useTokenSecrets, type World } from "./helpers/contractor-world.js";
@@ -38,8 +39,13 @@ describe("project finance (Steps 95-97)", { timeout: 180_000 }, () => {
     await clearCoreCollections();
     await AuditLog.collection.deleteMany({});
     await ProjectBudgetRevision.collection.deleteMany({}); // append-only model: clear natively
+    await ProgressVerification.collection.deleteMany({}); // append-only model: clear natively
     await Promise.all([Project, Contractor, ContractorAssignment, ProjectPayment, ProjectExpense, Inspection, Counter].map((m) => (m as unknown as { deleteMany: (f: object) => Promise<unknown> }).deleteMany({})));
   });
+  /** An approved verification record: the only thing that makes progress "verified" since Batch 06. */
+  const verification = (project: { _id: unknown; agencyId: unknown }, percent: number, asOf: string) =>
+    ProgressVerification.create({ projectId: project._id, agencyId: project.agencyId, inspectionId: id(), submissionNo: 1, verifiedPercent: percent, claimedPercent: null, discrepancyPp: null, inspectorId: id(), reviewerId: id(), asOf: new Date(asOf), status: "ACTIVE" });
+
 
   /** A budgeted ACTIVE project in the child agency, managed by the project manager, with an active contractor and assignment. */
   async function world(budgetMinor = 1_000_000, contractValue?: number) {
@@ -282,7 +288,7 @@ describe("project finance (Steps 95-97)", { timeout: 180_000 }, () => {
       const big = await request1(s, { amount: "2000.00", paymentType: "ADVANCE" });
       const cap = big.body.data.gates.find((g: { key: string }) => g.key === "CONTRACT_CAP");
       expect(cap.status).toBe("WARN");
-      await Inspection.create({ projectId: s.project._id, inspectorId: id(), inspectionDate: new Date("2026-02-01"), status: "VERIFIED", physicalProgress: 50 });
+      await verification(s.project, 50, "2026-02-01");
       const detail = await as(w.gov.token).get(`/payments/${big.body.data.id}`);
       expect(detail.body.data.contractCap).toEqual({ contractValueMinor: 150_000, cumulativeMinor: 0 });
       const interim = await as(w.manager.token).get(`/payments/preview-gates?projectId=${s.project._id}&contractorId=${s.contractor._id}&paymentType=INTERIM&amount=7000.00`);
@@ -338,7 +344,7 @@ describe("project finance (Steps 95-97)", { timeout: 180_000 }, () => {
       const reported = (await as(w.gov.token).get(`/projects/${s.project._id}`)).body.data.intelligence;
       expect(reported).toMatchObject({ available: true, basis: "REPORTED_UNVERIFIED", gapTenths: 300, cei: { status: "INSUFFICIENT_EVIDENCE" } });
       expect(reported.flags.find((f: { code: string }) => f.code === "SPEND_AHEAD_OF_PROGRESS")).toMatchObject({ severity: "HIGH", confidence: "INDICATIVE" });
-      await Inspection.create({ projectId: s.project._id, inspectorId: id(), inspectionDate: new Date("2026-02-20"), status: "VERIFIED", physicalProgress: 20 });
+      await verification(s.project, 20, "2026-02-20");
       const verified = (await as(w.gov.token).get(`/projects/${s.project._id}`)).body.data.intelligence;
       expect(verified).toMatchObject({ basis: "VERIFIED_INSPECTION", gapTenths: 200, cei: { status: "OK", hundredths: 50 } });
       expect(verified.flags.find((f: { code: string }) => f.code === "SPEND_AHEAD_OF_PROGRESS")).toMatchObject({ confidence: "CONFIRMED" });

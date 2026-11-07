@@ -4,12 +4,13 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useSyncExternalStore, type ReactNode } from "react";
 
 import { getAuthAvailability } from "@/lib/auth/availability";
+import { getMemorySession } from "@/lib/auth/state";
 import { confirmSessionWithMe } from "@/lib/auth/confirm-identity";
 import { getAuthAccessCopy } from "@/lib/auth/messages";
 import { refreshAuthSessionSingleFlight } from "@/lib/auth/refresh-flight";
 import { loginHrefForPrivatePath, sanitizeNextParam } from "@/lib/auth/redirect";
 import {
-  DASHBOARD_PATH,
+  landingPathFor,
   classifyAppPath,
   isLoginPath,
   privateAccessDecision,
@@ -72,7 +73,7 @@ export function RouteAccessGuard({ children }: { children: ReactNode }) {
     if (!isLoginPath(pathname) || !snapshot.authenticated || !snapshot.bootSettled) return;
     const raw = new URLSearchParams(window.location.search).get("next");
     const safe = sanitizeNextParam(raw);
-    router.replace(safe ?? DASHBOARD_PATH);
+    router.replace(safe ?? landingPathFor(getMemorySession()?.user.roleKey));
   }, [pathname, router, snapshot.authenticated, snapshot.bootSettled]);
 
   useEffect(() => {

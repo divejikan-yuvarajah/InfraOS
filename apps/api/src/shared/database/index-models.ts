@@ -15,7 +15,9 @@ import { RefreshFamily } from "../../modules/identity/models/refresh-family.mode
 import { RefreshSession } from "../../modules/identity/models/refresh-session.model.js";
 import { Role } from "../../modules/identity/models/role.model.js";
 import { User } from "../../modules/identity/models/user.model.js";
+import { InspectionEvidence } from "../../modules/inspections/models/inspection-evidence.model.js";
 import { Inspection } from "../../modules/inspections/models/inspection.model.js";
+import { ProgressVerification } from "../../modules/inspections/models/progress-verification.model.js";
 import { CitizenIssue } from "../../modules/issues/models/citizen-issue.model.js";
 import { Notification } from "../../modules/notifications/models/notification.model.js";
 import { Milestone } from "../../modules/projects/models/milestone.model.js";
@@ -70,6 +72,8 @@ export const INDEX_MODELS = [
   Document,
   DocumentChunk,
   Inspection,
+  InspectionEvidence,
+  ProgressVerification,
   Asset,
   MaintenanceRecord,
   CitizenIssue,

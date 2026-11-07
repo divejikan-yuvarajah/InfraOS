@@ -6,6 +6,7 @@ import { useState, useSyncExternalStore } from "react";
 import { useForm } from "react-hook-form";
 
 import { StaffWorkspaceShell } from "@/components/auth/staff-workspace-shell";
+import { RequestVerificationButton } from "@/components/inspections/inspection-integrations";
 import { ApiError } from "@/lib/api/client";
 import { getAuthEpoch, getMemoryAccessToken, getMemorySession, subscribeAuth } from "@/lib/auth/state";
 import { fetchProject } from "@/lib/projects/api";
@@ -121,6 +122,7 @@ export function ProjectProgressClient({ id }: { id: string }) {
           {progressQuery.data?.latest ? <p>{copy.when}: {progressQuery.data.latest.reportedAt}</p> : null}
         </section>
       ) : null}
+      {projectQuery.data ? <p><RequestVerificationButton projectId={id} claimed={progressQuery.data?.latest ? progressQuery.data.physicalProgress : null} /></p> : null}
       {projectQuery.data ? <Comparison copy={copy} physical={progressQuery.data?.physicalProgress ?? null} finance={financeQuery.data} financeError={financeQuery.error} /> : null}
       {canSubmit ? (
         <form className="project-progress-form auth-access-card" onSubmit={form.handleSubmit((values) => submit.mutate(values))} noValidate>

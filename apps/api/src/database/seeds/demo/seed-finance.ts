@@ -19,7 +19,7 @@ const M = 100_000_00; // LKR 100,000.00 in cents; keeps the literals below reada
  * Synthetic finance data for the demo. Everything here is labelled (Synthetic) and uses fixed numbers (PAY-DEMO-*, EXP-DEMO-*) so re-seeding
  * is idempotent and never consumes the real PAY/EXP counters. The project set tells a story on purpose:
  *   INF-ROAD-001      healthy, with a VERIFIED inspection (68%) so the verified basis and the cost-efficiency index are demonstrable
- *   INF-PFAC-001      spending ahead of progress, with only REPORTED progress, so conclusions stay INDICATIVE
+ *   INF-PFAC-001      spending ahead of progress; an approved inspection verification (30% vs 45% reported, seed-inspections) makes the conclusions CONFIRMED
  *   INF-BRIDGE-001    near budget (95.5%)
  *   INF-DRAINAGE-001  healthy with reported progress
  *   INF-WATER-001     a pending budget revision and an approved, unpaid advance

@@ -6,6 +6,8 @@ import { usePathname } from "next/navigation";
 import { getFinanceCopy } from "@/lib/finance/messages";
 import { canHintFinance } from "@/lib/finance/session";
 import { useWorkspaceLocale } from "@/lib/i18n/workspace-locale";
+import { getInspectionCopy } from "@/lib/inspections/messages";
+import { hintInspections } from "@/components/inspections/inspection-integrations";
 import { canLinkTimeline } from "@/lib/projects/timeline-view";
 import type { getProjectCopy } from "@/lib/projects/messages";
 
@@ -30,6 +32,8 @@ export function ProjectRecordTabs({ id, roleKey, copy }: { id: string; roleKey: 
           { slug: "activity", label: copy.activity },
         ]
       : []),
+    // Shown to roles that can hold inspection.read; the page itself is permission-checked on the server.
+    ...(hintInspections(roleKey) ? [{ slug: "inspections", label: getInspectionCopy(locale).project.tab }] : []),
     // Shown to roles that can read project finance; the finance page itself is permission-checked on the server.
     ...(canHintFinance(roleKey) ? [{ slug: "finance", label: getFinanceCopy(locale).nav }] : []),
   ];

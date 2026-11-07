@@ -169,7 +169,7 @@ function projectView(project: { _id: mongoose.Types.ObjectId; title: string; sta
 async function inspectorProjectIds(actor: AuthenticatedActor): Promise<mongoose.Types.ObjectId[]> {
   const userId = objectId(actor.userId);
   if (!userId) return [];
-  return Inspection.find({ inspectorId: userId }).distinct("projectId");
+  return Inspection.find({ inspectorId: userId, status: { $ne: "CANCELLED" } }).distinct("projectId");
 }
 
 export async function readProject(

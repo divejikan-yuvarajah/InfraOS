@@ -12,6 +12,7 @@ import {
 } from "./contractor.schema.js";
 import { handle, invalid, param, readLimiter, reply, writeLimiter } from "./contractor.http.js";
 import { riskSummary } from "./contractor-performance.service.js";
+import { contractorInspectionOutcomes } from "../inspections/inspection.integration.js";
 import { assignmentRoutes } from "./contractor-assignment.routes.js";
 
 /** Mounted at /api/v1/contractors. Every route: session, permission, strict input, no-store; scope is enforced inside the services. */
@@ -46,6 +47,11 @@ contractorRouter.post("/", ...manage, handle({ body: true }, async (req, res, ac
   const body = contractorCreateSchema.safeParse(req.body);
   if (!body.success) return invalid(res, req);
   reply(res, req, await registerContractor(actor, body.data, req.requestId), 201);
+}));
+
+contractorRouter.get("/:id/inspection-outcomes", requireAuthenticated, requirePermission("contractor.performance.read"), readLimiter, handle({}, async (req, res, actor) => {
+  if (Object.keys(req.query).length) return invalid(res, req);
+  reply(res, req, await contractorInspectionOutcomes(actor, param(req.params.id)));
 }));
 
 // Assignment, performance and timeline routes share this prefix and are declared before the "/:id" catch-alls they extend.

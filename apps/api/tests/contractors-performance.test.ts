@@ -41,11 +41,11 @@ describe("contractor performance and risk (Step 94)", { timeout: 120_000 }, () =
     const data = res.body.data;
     expect(data.evidenceLevel).toBe("NONE");
     expect(data.band).toBe("NOT_ENOUGH_EVIDENCE");
-    expect(data.indicators).toHaveLength(7);
+    expect(data.indicators).toHaveLength(9);
     for (const i of data.indicators) { expect(i.status).toBe("INSUFFICIENT_EVIDENCE"); expect(i.value).toBeNull(); }
-    expect(data.deferred.map((x: { key: string }) => x.key)).toEqual(["reworkFrequency", "qualityFindings"]);
+    expect(data.deferred).toEqual([]); // rework and quality findings are real indicators since rule set c2
     expect(JSON.stringify(res.body)).not.toMatch(/4\.9|"rating"|riskLevel|completedProjects/); // legacy caches are never trusted or shown
-    expect(data.ruleVersion).toBe("c1");
+    expect(data.ruleVersion).toBe("c2");
   });
 
   it("computes indicators from in-scope evidence, with sample sizes, band and explained flags", async () => {
