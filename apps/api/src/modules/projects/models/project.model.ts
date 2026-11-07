@@ -23,6 +23,8 @@ const projectSchema = new Schema({
   status: { type: String, enum: PROJECT_STATUSES, required: true, default: "DRAFT" },
   /** Bumped by every budget-affecting finance write so concurrent writers per project conflict instead of racing. */
   financeVersion: { type: Number, min: 0 },
+  // Cache written only by an approved inspection verification (Batch 06). Never derived from, and never overwrites, physicalProgress.
+  verifiedProgress: { type: new Schema({ percent: { ...percentage(), required: true }, asOf: { type: Date, required: true }, verificationId: { type: Schema.Types.ObjectId, required: true } }, { _id: false, strict: "throw" }) },
   // Latest assessment summary only; absence means not assessed.
   riskScore: percentage(),
   createdBy: reference("User"),
