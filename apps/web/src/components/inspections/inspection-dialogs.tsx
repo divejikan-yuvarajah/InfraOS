@@ -64,7 +64,7 @@ export function InspectorPicker({ projectId, fromIso, duration, value, onChange,
 
 /* ---------------------------------------------------------------- schedule */
 
-export type ScheduleInitial = { projectId?: string; date?: string; time?: string; type?: InspectionType; followUpOfId?: string; claimed?: number | null };
+export type ScheduleInitial = { projectId?: string; date?: string; time?: string; type?: InspectionType; followUpOfId?: string; claimed?: number | null; assetId?: string };
 
 export function ScheduleDialog({ open, onOpenChange, copy, locale, initial }: Base & { initial?: ScheduleInitial }) {
   const refresh = useRefreshInspections();
@@ -108,7 +108,7 @@ export function ScheduleDialog({ open, onOpenChange, copy, locale, initial }: Ba
   const stepOk = step === 1 ? Boolean(project) : step === 2 ? Boolean(iso) && !pastHour && duration >= 15 && duration <= 480 && (type !== "FOLLOW_UP" || Boolean(followUpOfId)) : Boolean(inspectorId);
 
   const m = useMutation({
-    mutationFn: () => scheduleInspection({ projectId: project!.id, inspectorId, inspectionDate: iso, durationMinutes: duration, inspectionType: type, purpose: purpose.trim() || undefined, priority, locationNote: locationNote.trim() || undefined, useProjectPoint, milestoneIds, ...(type === "FOLLOW_UP" ? { followUpOfId } : {}) }),
+    mutationFn: () => scheduleInspection({ projectId: project!.id, ...(type === "ASSET_CONDITION" && initial?.assetId ? { assetId: initial.assetId } : {}), inspectorId, inspectionDate: iso, durationMinutes: duration, inspectionType: type, purpose: purpose.trim() || undefined, priority, locationNote: locationNote.trim() || undefined, useProjectPoint, milestoneIds, ...(type === "FOLLOW_UP" ? { followUpOfId } : {}) }),
     onSuccess: (r) => { toast.success(fill(copy.schedule.success, { no: r.inspectionNo }), { action: { label: copy.schedule.view, onClick: () => router.push(`/inspections/${r.id}`) } }); void refresh(); onOpenChange(false); },
     onError: (e) => setError(errorText(e, copy)),
   });
@@ -142,7 +142,7 @@ export function ScheduleDialog({ open, onOpenChange, copy, locale, initial }: Ba
         {step === 2 ? (
           <>
             <div className="ctr-row">
-              <Field label={copy.schedule.type}>{(id) => <select id={id} className="ctr-input" value={type} onChange={(e) => setType(e.target.value as InspectionType)}>{INSPECTION_TYPES.map((t) => <option key={t} value={t}>{copy.type[t]}</option>)}</select>}</Field>
+              <Field label={copy.schedule.type}>{(id) => <select id={id} className="ctr-input" value={type} onChange={(e) => setType(e.target.value as InspectionType)}>{INSPECTION_TYPES.filter((t) => t !== "ASSET_CONDITION" || Boolean(initial?.assetId)).map((t) => <option key={t} value={t}>{copy.type[t]}</option>)}</select>}</Field>
               <Field label={copy.schedule.priority}>{(id) => <select id={id} className="ctr-input" value={priority} onChange={(e) => setPriority(e.target.value as InspectionPriority)}>{INSPECTION_PRIORITIES.map((t) => <option key={t} value={t}>{copy.priority[t]}</option>)}</select>}</Field>
             </div>
             <div className="ctr-row">

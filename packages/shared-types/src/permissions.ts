@@ -84,6 +84,7 @@ export const PERMISSION_CATALOG = [
   "maintenance.create",
   "maintenance.update",
   "asset.health.read",
+  "asset.conversion.approve",
   "citizen_issue.create",
   "citizen_issue.read",
   "citizen_issue.assign",

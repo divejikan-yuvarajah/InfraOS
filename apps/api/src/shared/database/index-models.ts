@@ -1,5 +1,8 @@
 import { Agency } from "../../modules/agencies/models/agency.model.js";
 import { Asset } from "../../modules/assets/models/asset.model.js";
+import { AssetConditionAssessment } from "../../modules/assets/models/asset-condition-assessment.model.js";
+import { AssetConversion } from "../../modules/assets/models/asset-conversion.model.js";
+import { MaintenanceEvidence } from "../../modules/assets/models/maintenance-evidence.model.js";
 import { MaintenanceRecord } from "../../modules/assets/models/maintenance-record.model.js";
 import { AuditLog } from "../../modules/audit/models/audit-log.model.js";
 import { ContractorAssignment } from "../../modules/contractors/models/contractor-assignment.model.js";
@@ -75,7 +78,10 @@ export const INDEX_MODELS = [
   InspectionEvidence,
   ProgressVerification,
   Asset,
+  AssetConversion,
+  AssetConditionAssessment,
   MaintenanceRecord,
+  MaintenanceEvidence,
   CitizenIssue,
   Notification,
   RiskAssessment,

@@ -9,6 +9,7 @@ import { seedDemoAssignments } from "./seed-assignments.js";
 import { seedDemoContractors } from "./seed-contractors.js";
 import { seedDemoFinance } from "./seed-finance.js";
 import { seedDemoInframapContext } from "./seed-inframap-context.js";
+import { seedDemoAssets } from "./seed-assets.js";
 import { seedDemoInspections } from "./seed-inspections.js";
 import { seedDemoProjects } from "./seed-projects.js";
 import { seedDemoSupportingRecords } from "./seed-supporting-records.js";
@@ -24,6 +25,10 @@ export type SeedDemoSummary = {
   assignments: number;
   financeRecords: number;
   inspections: number;
+  lifecycleAssets: number;
+  lifecycleAssessments: number;
+  lifecycleMaintenance: number;
+  lifecycleConversions: number;
   inspectionEvidence: number;
   progressVerifications: number;
   projects: number;
@@ -59,6 +64,7 @@ export async function seedDemoData(
   const supporting = await seedDemoSupportingRecords(context);
   const finance = await seedDemoFinance(context);
   const inspections = await seedDemoInspections(context);
+  const lifecycle = await seedDemoAssets(context);
   const inframap = await seedDemoInframapContext(context);
 
   return {
@@ -70,6 +76,10 @@ export async function seedDemoData(
     assignments,
     financeRecords: finance.revisions + finance.payments + finance.expenses,
     inspections: inspections.inspections,
+    lifecycleAssets: lifecycle.assets,
+    lifecycleAssessments: lifecycle.assessments,
+    lifecycleMaintenance: lifecycle.maintenance,
+    lifecycleConversions: lifecycle.conversions,
     inspectionEvidence: inspections.evidence,
     progressVerifications: inspections.verifications,
     projects: context.projects.size,

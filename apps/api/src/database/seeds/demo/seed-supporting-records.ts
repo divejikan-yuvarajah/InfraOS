@@ -145,7 +145,6 @@ export async function seedDemoSupportingRecords(
         },
         geometry: GEO_BRIDGE_POINT,
         condition: "GOOD",
-        healthScore: 88,
         commissionedAt: demoDates.bridgeCommissioned,
         nextMaintenanceAt: demoDates.maintenanceUpcoming,
       },

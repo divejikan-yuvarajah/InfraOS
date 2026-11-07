@@ -76,7 +76,7 @@ export const submitInspection = (actor: AuthenticatedActor, rawId: string, input
     const latest = await ProgressReport.findOne({ projectId: row.projectId }).sort({ sequence: -1 }).select("reportedPercent").session(session).lean();
     const gaps = submitGaps(typeOf(row), {
       checklist: (report.checklist ?? []).map((c) => ({ key: c.key, result: c.result, note: c.note })), defects: (report.defects ?? []).map((d) => ({ key: d.key, severity: d.severity })),
-      measuredProgress: report.measuredProgress ?? null, discrepancyNote: report.discrepancyNote, inspectorDeclaration: report.inspectorDeclaration,
+      measuredProgress: report.measuredProgress ?? null, discrepancyNote: report.discrepancyNote, inspectorDeclaration: report.inspectorDeclaration, conditionRating: report.conditionRating ?? null,
     }, evidence.map((e) => ({ checklistItemKey: e.checklistItemKey, defectKey: e.defectKey })), latest ? latest.reportedPercent : null);
     if (gaps.length) throw new Flow(400, "VALIDATION_ERROR", { gaps });
     const contractorIds = await ContractorAssignment.distinct("contractorId", { projectId: row.projectId, startDate: { $lte: row.inspectionDate }, $or: [{ endDate: { $exists: false } }, { endDate: null }, { endDate: { $gte: row.inspectionDate } }] }).session(session);
