@@ -68,7 +68,9 @@ async function decorate(ctx: Ctx, rows: AssetRow[], now: Date) {
     const due = (r.lastInspectionAt ?? r.commissionedAt).getTime() + intervalOf(r) * DAY;
     return {
       id: String(r._id), assetNo: r.assetNo ?? null, name: r.name, assetType: r.assetType, agencyId: String(r.agencyId), agencyName: names.get(String(r.agencyId)) ?? null, district: r.location?.district ?? null,
-      condition: r.condition, conditionBasis: basis.get(String(r._id)) ?? (r.condition === "UNKNOWN" ? "NONE" : "LEGACY"), healthScore: canHealth ? r.healthScore ?? null : null,
+      condition: r.condition, conditionBasis: basis.get(String(r._id)) ?? (r.condition === "UNKNOWN" ? "NONE" : "LEGACY"),
+      // A cached score with no assessment behind it is legacy data: it is never shown as a health score.
+      healthScore: canHealth && basis.has(String(r._id)) ? r.healthScore ?? null : null, healthLegacy: canHealth && !basis.has(String(r._id)) && r.healthScore !== undefined && r.healthScore !== null,
       operationalStatus: r.operationalStatus ?? "IN_SERVICE", origin: r.origin ?? "LEGACY", nextAssessmentDue: new Date(due).toISOString(), assessmentOverdue: due < now.getTime(), nextMaintenanceAt: iso(r.nextMaintenanceAt), lastInspectionAt: iso(r.lastInspectionAt),
       attention: reasons, withinDlp: Boolean(r.defectsLiabilityEndsOn && r.defectsLiabilityEndsOn.getTime() >= now.getTime()), version: r.version ?? 0,
     };
@@ -121,7 +123,7 @@ export const assetSummary = (actor: AuthenticatedActor) => run(async () => {
   const canHealth = ctx.has("asset.health.read");
   let health: unknown = { restricted: true };
   if (canHealth) {
-    const scored = await Asset.aggregate<{ _id: string; n: number }>([{ $match: { $and: [scope, { healthScore: { $exists: true } }] } }, { $bucket: { groupBy: "$healthScore", boundaries: [0, 25, 50, 75, 101], default: "other", output: { n: { $sum: 1 } } } }]).option({ maxTimeMS: 8000 });
+    const scored = await Asset.aggregate<{ _id: string; n: number }>([{ $match: { $and: [scope, { healthScore: { $exists: true }, _id: { $in: withBasis } }] } }, { $bucket: { groupBy: "$healthScore", boundaries: [0, 25, 50, 75, 101], default: "other", output: { n: { $sum: 1 } } } }]).option({ maxTimeMS: 8000 });
     const b = Object.fromEntries(scored.map((x) => [String(x._id), x.n]));
     health = { available: scored.reduce((n, x) => n + x.n, 0), total, distribution: { CRITICAL: b["0"] ?? 0, POOR: b["25"] ?? 0, WATCH: b["50"] ?? 0, GOOD: b["75"] ?? 0 } };
   }

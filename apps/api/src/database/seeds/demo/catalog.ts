@@ -24,6 +24,9 @@ export const DEMO_PROJECT_CODES = [
   "INF-DRAFT-001",
 ] as const;
 
+/** Batch 07 asset-lifecycle demo projects. Kept apart from DEMO_PROJECT_CODES so earlier demo counts do not change; reset and verify include them. */
+export const DEMO_LIFECYCLE_PROJECT_CODES = ["INF-ROAD-002", "INF-ROAD-003", "INF-DRAINAGE-002"] as const;
+
 export type DemoProjectCode = (typeof DEMO_PROJECT_CODES)[number];
 
 export const DEMO_CONTRACTOR_REGS = [

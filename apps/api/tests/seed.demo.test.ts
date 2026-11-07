@@ -96,8 +96,8 @@ describe("demo seed architecture", { timeout: 120_000 }, () => {
     const verification = await verifyDemoSeed();
     expect(verification.pass).toBe(true);
     // Batch 04: assignments are seeded once and the contractor lines of the verification really ran.
-    expect(await ContractorAssignment.countDocuments()).toBe(7);
-    expect(await ProjectPayment.countDocuments()).toBe(11); // 2 legacy + 9 finance demo rows, unchanged by the second seed run
+    expect(await ContractorAssignment.countDocuments()).toBe(10); // 7 + 3 lifecycle demo projects (Batch 07)
+    expect(await ProjectPayment.countDocuments()).toBe(12); // 2 legacy + 9 finance demo rows + 1 lifecycle retention row, unchanged by the second seed run
     expect(verification.lines.filter((l) => /^(Contractors|Assignments|Project.contractorId)/.test(l.name)).every((l) => l.pass)).toBe(true);
 
     expect(await Role.countDocuments()).toBe(SYSTEM_ROLE_KEYS.length);

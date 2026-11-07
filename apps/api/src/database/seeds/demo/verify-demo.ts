@@ -11,6 +11,9 @@ import { ProjectBudgetRevision } from "../../../modules/finance/models/project-b
 import { ProjectExpense } from "../../../modules/finance/models/project-expense.model.js";
 import { ProjectPayment } from "../../../modules/finance/models/project-payment.model.js";
 import { Inspection } from "../../../modules/inspections/models/inspection.model.js";
+import { AssetConditionAssessment } from "../../../modules/assets/models/asset-condition-assessment.model.js";
+import { AssetConversion } from "../../../modules/assets/models/asset-conversion.model.js";
+import { MaintenanceRecord } from "../../../modules/assets/models/maintenance-record.model.js";
 import { InspectionEvidence } from "../../../modules/inspections/models/inspection-evidence.model.js";
 import { ProgressVerification } from "../../../modules/inspections/models/progress-verification.model.js";
 import { Role } from "../../../modules/identity/models/role.model.js";
@@ -21,6 +24,7 @@ import {
   DEMO_CONTRACTOR_REGS,
   DEMO_LAYER_AGENCY_CODES,
   DEMO_MILESTONE_TITLES,
+  DEMO_LIFECYCLE_PROJECT_CODES,
   DEMO_PROJECT_CODES,
   SPATIAL_VERIFY,
 } from "./catalog.js";
@@ -241,6 +245,20 @@ export async function verifyDemoSeed(): Promise<VerifyDemoResult> {
     pass: inspections.length >= 10 && ["SCHEDULED", "IN_PROGRESS", "SUBMITTED", "VERIFIED", "REQUIRES_REVIEW", "REJECTED", "CANCELLED"].every((s) => statuses.has(s as never)) && new Set(inspections.map((i) => i.inspectionType)).size >= 5
       && evidenceRows.length >= 3 && verifications.some((v) => typeof v.discrepancyPp === "number" && Math.abs(v.discrepancyPp) > 10) && verifications.some((v) => typeof v.discrepancyPp === "number" && Math.abs(v.discrepancyPp) <= 10),
     detail: `inspections=${inspections.length} evidence=${evidenceRows.length} verifications=${verifications.length}`,
+  });
+  const lifecycle = await Project.find({ projectCode: { $in: [...DEMO_LIFECYCLE_PROJECT_CODES] } }).select("_id").lean();
+  const conversions = await AssetConversion.find({ projectId: { $in: lifecycle.map((p) => p._id) } }).select("status createdAssetIds").lean();
+  const lifeAssets = await Asset.find({ assetNo: /^AST-2026-9000/ }).select("healthScore condition").lean();
+  const bridgeAssets = await Asset.find({ name: "Demo Riverside Bridge Asset" }).select("_id healthScore").lean();
+  const assessments = await AssetConditionAssessment.find({ assetId: { $in: [...lifeAssets.map((a) => a._id), ...bridgeAssets.map((a) => a._id)] } }).select("assetId status basis").lean();
+  const maint = await MaintenanceRecord.find({ maintenanceNo: /^MNT-2026-9000/ }).select("status cost").lean();
+  const withHealth = [...lifeAssets, ...bridgeAssets].filter((a) => typeof a.healthScore === "number").length;
+  lines.push({
+    name: "Asset lifecycle: converted and pending conversions, assessments, maintenance and evidence-gated health",
+    pass: lifecycle.length === DEMO_LIFECYCLE_PROJECT_CODES.length && conversions.some((c) => c.status === "APPROVED" && c.createdAssetIds.length === 2) && conversions.some((c) => c.status === "PENDING_APPROVAL")
+      && assessments.some((a) => a.basis === "INSPECTION_VERIFIED") && assessments.filter((a) => a.status === "ACTIVE").length === 2 && ["REQUESTED", "SCHEDULED", "COMPLETED"].every((st) => maint.some((m) => m.status === st))
+      && maint.some((m) => m.status === "COMPLETED" && m.cost) && withHealth >= 1 && withHealth < lifeAssets.length + bridgeAssets.length,
+    detail: `assets=${lifeAssets.length + bridgeAssets.length} withHealth=${withHealth} assessments=${assessments.length} maintenance=${maint.length}`,
   });
   const pass = lines.every((line) => line.pass);
   return { lines, pass };
