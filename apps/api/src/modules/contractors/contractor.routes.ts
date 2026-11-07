@@ -11,6 +11,7 @@ import {
   duplicateCheckSchema, parseStrict, statusBodySchema,
 } from "./contractor.schema.js";
 import { handle, invalid, param, readLimiter, reply, writeLimiter } from "./contractor.http.js";
+import { riskSummary } from "./contractor-performance.service.js";
 import { assignmentRoutes } from "./contractor-assignment.routes.js";
 
 /** Mounted at /api/v1/contractors. Every route: session, permission, strict input, no-store; scope is enforced inside the services. */
@@ -26,7 +27,13 @@ contractorRouter.get("/", ...read, handle({}, async (req, res, actor) => {
 
 contractorRouter.get("/summary", ...read, handle({}, async (req, res, actor) => {
   if (Object.keys(req.query).length) return invalid(res, req);
-  reply(res, req, await summary(actor));
+  const base = await summary(actor);
+  if (base.ok && (base.data as { performance?: unknown }).performance) {
+    // Risk distribution reuses the same pure rules over a capped batch and states when it is truncated.
+    const risk = await riskSummary(actor);
+    (base.data as Record<string, unknown>).performance = risk.ok ? { available: true, ...(risk.data as object) } : { available: false };
+  }
+  reply(res, req, base);
 }));
 
 contractorRouter.get("/duplicate-check", requireAuthenticated, requirePermission("contractor.manage"), readLimiter, handle({}, async (req, res, actor) => {

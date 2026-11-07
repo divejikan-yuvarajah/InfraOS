@@ -109,6 +109,7 @@ describe("contractor registry API (Step 92)", { timeout: 120_000 }, () => {
     expect((await api(w.gov.token).get("/?bogus=1")).status).toBe(400);
     expect((await api(w.gov.token).get("/?status=ACTIVE&status=SUSPENDED")).status).toBe(400);
     expect((await api(w.gov.token).get("/?limit=500")).status).toBe(400);
+    expect((await api(w.gov.token).get("/?riskBand=WEAK")).status).toBe(200); // gov holds contractor.performance.read
     expect((await api(w.officer.token).get("/?riskBand=WEAK")).status).toBe(403);
     expect((await api(w.gov.token).post("/", body({ extra: 1 }))).status).toBe(400);
     expect((await api(w.gov.token).post("/", body({ operatingDistricts: ["Atlantis"] }))).status).toBe(400);
