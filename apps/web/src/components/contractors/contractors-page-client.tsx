@@ -2,7 +2,6 @@
 
 import { useQuery } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
-import { SRI_LANKA_DISTRICTS } from "@infraos/shared-types";
 import { FilterIcon, PlusIcon, XIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -22,7 +21,7 @@ import {
 } from "@/lib/contractors/list-query";
 import { getContractorCopy, type Copy } from "@/lib/contractors/messages";
 import { useContractorKeys } from "@/lib/contractors/session";
-import { CERT_EXPIRY, CONTRACTOR_CATEGORIES, CONTRACTOR_STATUSES, RISK_BANDS, SORTS, type ContractorStatus, type DirectoryRow } from "@/lib/contractors/types";
+import { CERT_EXPIRY, CONTRACTOR_CATEGORIES, SRI_LANKA_DISTRICTS, CONTRACTOR_STATUSES, RISK_BANDS, SORTS, type ContractorStatus, type DirectoryRow } from "@/lib/contractors/types";
 import type { TableQueryState } from "@/lib/data-table/query-state";
 import { useWorkspaceLocale } from "@/lib/i18n/workspace-locale";
 

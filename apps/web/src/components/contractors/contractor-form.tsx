@@ -2,7 +2,6 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { SRI_LANKA_PROVINCES } from "@infraos/shared-types";
 import { PlusIcon, Trash2Icon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useId, useState } from "react";
@@ -16,7 +15,7 @@ import { formatDate, fill } from "@/lib/contractors/format";
 import { failureMessage, type Copy } from "@/lib/contractors/messages";
 import { contractorFormSchema, EMPTY_FORM, STEP_FIELDS, toPatchBody, toRegisterBody, type ContractorFormValues } from "@/lib/contractors/schema";
 import { useContractorKeys } from "@/lib/contractors/session";
-import { CONTRACTOR_CATEGORIES, DOCUMENT_TYPES, type ContractorProfile } from "@/lib/contractors/types";
+import { CONTRACTOR_CATEGORIES, DOCUMENT_TYPES, SRI_LANKA_PROVINCES, type ContractorProfile } from "@/lib/contractors/types";
 import type { AuthLocale } from "@/lib/auth/types";
 
 import { DuplicateCheckPanel, type DuplicateVerdict } from "./duplicate-check-panel";

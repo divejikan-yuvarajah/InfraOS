@@ -1,9 +1,17 @@
+import { SRI_LANKA_PROVINCES as SHARED } from "@infraos/shared-types";
 import { describe, expect, it } from "vitest";
 
 import { initialsOf, formatLkr, parseLkrToMinor, fill, percent, daysUntil } from "./format";
 import { appliedChips, EMPTY_LIST_STATE, parseListParams, removeChip, serializeListParams, toListRequest, withFilter } from "./list-query";
 import { CONTRACTOR_COPY, failureMessage, keyPaths } from "./messages";
 import { contractorFormSchema, EMPTY_FORM, splitSpecializations, toPatchBody, toRegisterBody, LIMITS, assignSchema, statusReasonSchema } from "./schema";
+
+describe("district list", () => {
+  it("is identical to the shared-types constant the API validates against", async () => {
+    const { SRI_LANKA_PROVINCES } = await import("./types");
+    expect(SRI_LANKA_PROVINCES).toEqual(SHARED);
+  });
+});
 
 describe("directory URL state", () => {
   it("round-trips every filter and keeps the default URL clean", () => {

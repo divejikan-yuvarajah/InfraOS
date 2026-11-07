@@ -5,6 +5,13 @@ export const CONTRACTOR_CATEGORIES = ["ROAD_CONSTRUCTION", "BRIDGE_STRUCTURAL", 
 export const DOCUMENT_TYPES = ["REGISTRATION", "TAX", "CERTIFICATE", "CONTRACT", "OTHER"] as const;
 export const RISK_BANDS = ["STRONG", "MIXED", "WEAK", "NOT_ENOUGH_EVIDENCE"] as const;
 export const SORTS = ["name", "registeredAt", "activeProjects", "risk"] as const;
+/** Mirror of SRI_LANKA_PROVINCES in @infraos/shared-types (the web build cannot import its runtime values); a test keeps the two identical. */
+export const SRI_LANKA_PROVINCES = {
+  Western: ["Colombo", "Gampaha", "Kalutara"], Central: ["Kandy", "Matale", "Nuwara Eliya"], Southern: ["Galle", "Matara", "Hambantota"],
+  Northern: ["Jaffna", "Kilinochchi", "Mannar", "Vavuniya", "Mullaitivu"], Eastern: ["Batticaloa", "Ampara", "Trincomalee"], "North Western": ["Kurunegala", "Puttalam"],
+  "North Central": ["Anuradhapura", "Polonnaruwa"], Uva: ["Badulla", "Monaragala"], Sabaragamuwa: ["Ratnapura", "Kegalle"],
+} as const;
+export const SRI_LANKA_DISTRICTS: readonly string[] = Object.values(SRI_LANKA_PROVINCES).flat();
 export const CERT_EXPIRY = ["30", "60", "90", "expired"] as const;
 
 export type ContractorStatus = (typeof CONTRACTOR_STATUSES)[number];
