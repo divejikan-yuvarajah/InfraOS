@@ -21,6 +21,8 @@ const projectSchema = new Schema({
   // Cache derived from PAID payments / budget by the future Finance service.
   financialProgress: { ...percentage(), required: true, default: 0 },
   status: { type: String, enum: PROJECT_STATUSES, required: true, default: "DRAFT" },
+  /** Bumped by every budget-affecting finance write so concurrent writers per project conflict instead of racing. */
+  financeVersion: { type: Number, min: 0 },
   // Latest assessment summary only; absence means not assessed.
   riskScore: percentage(),
   createdBy: reference("User"),

@@ -33,6 +33,7 @@ function SidebarNav({
   conflicts,
   coordination,
   hideNotices,
+  roleKey,
   locale,
   onNavigate,
 }: {
@@ -43,13 +44,14 @@ function SidebarNav({
   /** Step 75: needs-my-response count, with a maroon dot when any is overdue. */
   coordination?: { count: number; overdue: boolean };
   hideNotices: boolean;
+  roleKey: string;
   locale: AuthLocale;
   onNavigate?: () => void;
 }) {
   return (
     <nav aria-label="Staff workspace" className="mc-nav">
       {WORKSPACE_NAV.map((group) => {
-        const items = group.items.filter((i) => i.href !== "/notifications" || !hideNotices);
+        const items = group.items.filter((i) => (i.href !== "/notifications" || !hideNotices) && (!i.roles || i.roles.includes(roleKey)));
         return (
           <div key={group.label} className="mc-nav-group">
             <p className="mc-nav-label">{group.label}</p>
@@ -173,7 +175,7 @@ export function StaffWorkspaceShell({
       </a>
       <aside className="mc-sidebar" aria-label="Sidebar">
         <SidebarBrand scopeLabel={scopeLabel} />
-        <SidebarNav pathname={pathname} unread={unreadCount} conflicts={conflictBadge} coordination={coordBadge} hideNotices={hideNotices} locale={locale} />
+        <SidebarNav pathname={pathname} unread={unreadCount} conflicts={conflictBadge} coordination={coordBadge} hideNotices={hideNotices} roleKey={roleKey} locale={locale} />
         <p className="mc-sidebar-foot">{kicker}</p>
       </aside>
 
@@ -197,6 +199,7 @@ export function StaffWorkspaceShell({
                   conflicts={conflictBadge}
                   coordination={coordBadge}
                   hideNotices={hideNotices}
+                  roleKey={roleKey}
                   locale={locale}
                   onNavigate={() => setDrawer(false)}
                 />

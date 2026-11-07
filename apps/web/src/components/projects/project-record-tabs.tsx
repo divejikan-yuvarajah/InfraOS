@@ -3,6 +3,9 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+import { getFinanceCopy } from "@/lib/finance/messages";
+import { canHintFinance } from "@/lib/finance/session";
+import { useWorkspaceLocale } from "@/lib/i18n/workspace-locale";
 import { canLinkTimeline } from "@/lib/projects/timeline-view";
 import type { getProjectCopy } from "@/lib/projects/messages";
 
@@ -16,6 +19,7 @@ type Copy = ReturnType<typeof getProjectCopy>;
  */
 export function ProjectRecordTabs({ id, roleKey, copy }: { id: string; roleKey: string; copy: Copy }) {
   const pathname = usePathname() ?? "";
+  const [locale] = useWorkspaceLocale();
   const tabs = [
     { slug: "overview", label: copy.overview },
     { slug: "milestones", label: copy.milestones },
@@ -26,6 +30,8 @@ export function ProjectRecordTabs({ id, roleKey, copy }: { id: string; roleKey: 
           { slug: "activity", label: copy.activity },
         ]
       : []),
+    // Shown to roles that can read project finance; the finance page itself is permission-checked on the server.
+    ...(canHintFinance(roleKey) ? [{ slug: "finance", label: getFinanceCopy(locale).nav }] : []),
   ];
   return (
     <nav aria-label="Project sections" className="spp-tabs">

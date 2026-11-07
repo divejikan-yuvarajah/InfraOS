@@ -24,6 +24,7 @@ const PRIVATE_ROOTS = new Set([
   "inframap",
   "map",
   "contractors",
+  "finance",
   "assets",
   "documents",
   "inspections",

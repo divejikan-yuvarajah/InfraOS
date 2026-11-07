@@ -10,6 +10,7 @@ import { profileRouter } from "../modules/identity/profile/profile.routes.js";
 import { projectRouter } from "../modules/projects/projects.routes.js";
 import { notificationRouter } from "../modules/notifications/notice.routes.js";
 import { roadsyncRouter } from "../modules/roadsync/work-requests.routes.js";
+import { financeRouter } from "../modules/finance/finance.routes.js";
 import { projectContractorRouter } from "../modules/contractors/contractor-assignment.routes.js";
 import { contractorRouter } from "../modules/contractors/contractor.routes.js";
 import { inframapRouter } from "../modules/inframap/inframap.routes.js";
@@ -31,5 +32,6 @@ export function createV1Router(): Router {
   router.use("/roadsync", roadsyncRouter);
   router.use("/inframap", inframapRouter);
   router.use("/contractors", contractorRouter);
+  router.use("/finance", financeRouter);
   return router;
 }
