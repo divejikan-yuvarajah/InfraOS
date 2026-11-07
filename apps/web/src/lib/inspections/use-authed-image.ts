@@ -18,7 +18,7 @@ export function clearImageCache(): void { for (const url of cache.values()) URL.
 export type AuthedImage = { url: string | null; state: "idle" | "loading" | "ready" | "error"; retry: () => void };
 
 /** Loads a protected image with the bearer token when the element nears the viewport. The server never exposes a public URL. */
-export function useAuthedImage(evidenceId: string, variant: "thumb" | "full", eager: boolean, node: Element | null): AuthedImage {
+export function useAuthedImage(evidenceId: string, variant: "thumb" | "full", eager: boolean, node: Element | null, fetcher: (id: string, v: "thumb" | "full", signal?: AbortSignal) => Promise<Blob> = fetchEvidenceBlob): AuthedImage {
   const key = keyOf(evidenceId, variant);
   const [loaded, setLoaded] = useState<{ key: string; url: string } | null>(null);
   const [failed, setFailed] = useState<string | null>(null);
@@ -37,11 +37,11 @@ export function useAuthedImage(evidenceId: string, variant: "thumb" | "full", ea
   useEffect(() => {
     if (cache.has(key) || !visible) return;
     const controller = new AbortController();
-    fetchEvidenceBlob(evidenceId, variant, controller.signal)
+    fetcher(evidenceId, variant, controller.signal)
       .then((blob) => { const u = URL.createObjectURL(blob); remember(key, u); setFailed(null); setLoaded({ key, url: u }); })
       .catch((e: unknown) => { if ((e as { name?: string }).name !== "AbortError") setFailed(key); });
     return () => controller.abort();
-  }, [evidenceId, variant, key, visible, attempt]);
+  }, [evidenceId, variant, key, visible, attempt, fetcher]);
 
   const url = cache.get(key) ?? (loaded?.key === key ? loaded.url : null);
   const state: AuthedImage["state"] = url ? "ready" : failed === key ? "error" : visible ? "loading" : "idle";

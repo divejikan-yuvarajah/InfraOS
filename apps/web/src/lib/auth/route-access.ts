@@ -29,6 +29,8 @@ const PRIVATE_ROOTS = new Set([
   "documents",
   "inspections",
   "issues",
+  "maintenance",
+  "insights",
   "notifications",
   "reports",
   "profile",
@@ -36,7 +38,7 @@ const PRIVATE_ROOTS = new Set([
   "admin",
 ]);
 
-const ERROR_PATHS = ["/403", "/404", "/500", "/maintenance"] as const;
+const ERROR_PATHS = ["/403", "/404", "/500"] as const;
 
 const PUBLIC_NEXT = new Set<string>(ERROR_PATHS);
 

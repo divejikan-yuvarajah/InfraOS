@@ -15,6 +15,9 @@ import { projectContractorRouter } from "../modules/contractors/contractor-assig
 import { contractorRouter } from "../modules/contractors/contractor.routes.js";
 import { inspectionRouter } from "../modules/inspections/inspection.routes.js";
 import { projectInspectionsRouter, projectVerifiedProgressRouter } from "../modules/inspections/inspection.project.routes.js";
+import { coordinationInsightsRouter } from "../modules/agencies/coordination-insights.js";
+import { assetRouter } from "../modules/assets/asset.routes.js";
+import { assetMaintenanceRouter, maintenanceRouter } from "../modules/assets/maintenance.routes.js";
 import { inframapRouter } from "../modules/inframap/inframap.routes.js";
 
 export function createV1Router(): Router {
@@ -38,5 +41,9 @@ export function createV1Router(): Router {
   router.use("/contractors", contractorRouter);
   router.use("/finance", financeRouter);
   router.use("/inspections", inspectionRouter);
+  router.use("/assets/:assetId/maintenance", assetMaintenanceRouter);
+  router.use("/assets", assetRouter);
+  router.use("/maintenance", maintenanceRouter);
+  router.use("/insights/coordination", coordinationInsightsRouter);
   return router;
 }

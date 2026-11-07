@@ -44,6 +44,10 @@ describe("route classification", () => {
     expect(classifyAppPath("/map")).toBe("private");
     expect(classifyAppPath("/admin/users")).toBe("private");
     expect(classifyAppPath("/admin/roles")).toBe("private");
+    expect(classifyAppPath("/assets/convert")).toBe("private");
+    expect(classifyAppPath("/assets/conversions")).toBe("private");
+    expect(classifyAppPath("/maintenance")).toBe("private");
+    expect(classifyAppPath("/insights/coordination")).toBe("private");
     expect(classifyAppPath("/projects")).toBe("private");
     expect(classifyAppPath("/projects/new")).toBe("private");
     expect(classifyAppPath("/si/projects/new")).toBe("public");

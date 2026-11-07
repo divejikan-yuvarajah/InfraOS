@@ -22,6 +22,7 @@ import {
 import {
   calendarWindowOk, canTransition, colomboDayStart, isOverdue, makerCheckerOk, overlaps, representativePoint, scheduleDateOk, startWindowOpen,
 } from "./inspection.rules.js";
+import { loadAsset } from "../assets/asset.common.js";
 import { Inspection } from "./models/inspection.model.js";
 import { InspectionEvidence } from "./models/inspection-evidence.model.js";
 import { ProgressVerification } from "./models/progress-verification.model.js";
@@ -74,6 +75,13 @@ export const scheduleInspection = (actor: AuthenticatedActor, input: z.infer<typ
       const parent = await Inspection.findOne({ _id: input.followUpOfId, projectId: project._id }).select("status").session(session).lean();
       if (!parent || !TERMINAL_STATUSES.includes(parent.status as InspectionStatus)) throw new Flow(400, "VALIDATION_ERROR", { field: "followUpOfId" });
     } else if (input.followUpOfId) throw new Flow(400, "VALIDATION_ERROR", { field: "followUpOfId" });
+    let assetId: Id | null = null;
+    if (input.inspectionType === "ASSET_CONDITION") {
+      if (!input.assetId) throw new Flow(400, "VALIDATION_ERROR", { field: "assetId" });
+      const asset = await loadAsset(ctx, actor, input.assetId, session, "read");
+      if (String(asset.sourceProjectId) !== String(project._id) || asset.operationalStatus === "DECOMMISSIONED") throw new Flow(400, "VALIDATION_ERROR", { field: "assetId" });
+      assetId = asset._id;
+    } else if (input.assetId) throw new Flow(400, "VALIDATION_ERROR", { field: "assetId" });
     const inspector = await assertInspector(ctx, input.inspectorId, session);
     await assertMilestones(project._id, input.milestoneIds, session);
     const geo = await Project.findById(project._id).select("geometry").session(session).lean();
@@ -83,7 +91,7 @@ export const scheduleInspection = (actor: AuthenticatedActor, input: z.infer<typ
     const [created] = await Inspection.create([{
       inspectionNo, projectId: project._id, agencyId: project.agencyId, inspectorId: inspector._id, inspectionDate: input.inspectionDate, inspectionType: input.inspectionType,
       purpose: input.purpose, priority: input.priority, locationNote: input.locationNote, durationMinutes: input.durationMinutes, milestoneIds: input.milestoneIds,
-      ...(pt ? { sitePoint: { type: "Point", coordinates: pt } } : {}), ...(input.followUpOfId ? { followUpOfId: input.followUpOfId } : {}),
+      ...(pt ? { sitePoint: { type: "Point", coordinates: pt } } : {}), ...(input.followUpOfId ? { followUpOfId: input.followUpOfId } : {}), ...(assetId ? { assetId } : {}),
       ...(claimed !== null ? { claimedProgressAtSchedule: claimed } : {}), scheduledBy: oid(actor.userId), status: "SCHEDULED", version: 0,
       assignmentHistory: [{ inspectorId: inspector._id, assignedBy: oid(actor.userId), assignedAt: now }],
     }], { session });

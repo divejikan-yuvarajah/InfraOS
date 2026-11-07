@@ -5,6 +5,7 @@ import { useRef } from "react";
 import { ArrowLeftIcon, ChevronLeftIcon, ChevronRightIcon, CopyIcon, CrosshairIcon, ExternalLinkIcon, LockIcon, TargetIcon, UnlockIcon, XIcon } from "lucide-react";
 
 import { StatusChip } from "@/components/site-plan/site-plan";
+import { getAssetCopy } from "@/lib/assets/messages";
 import { useWorkspaceLocale } from "@/lib/i18n/workspace-locale";
 import type { ExposureData, FeatureDetail, NearbyData, RelatedRef } from "@/lib/inframap/inframap-api";
 import type { InframapCopy } from "@/lib/inframap/inframap-copy";
@@ -106,7 +107,12 @@ export function FeatureDrawer(p: Props) {
   } else if (layer === "assets" || layer === "utilities") {
     chip = <span className="rs-nb-chip">{valueLabel("assets", str(props.condition) ?? "UNKNOWN", copy, locale)}</span>;
     rows.push([f.type, valueLabel(layer, str(props.assetType) ?? "", copy, locale)], [f.agency, str(props.agencyName)], [f.district, [str(props.district) ? placeName(String(props.district), locale) : null, str(props.province) ? placeName(String(props.province), locale) : null].filter(Boolean).join(", ") || null], [f.tier, str(props.tier) === "FULL" ? null : copy.tier.awareness]);
-    extra = <AssetOverview properties={props} detail={detailState} copy={copy} locale={locale} />;
+    extra = (
+      <>
+        <AssetOverview properties={props} detail={detailState} copy={copy} locale={locale} />
+        {props.tier === "FULL" ? <Link className="rs-btn" href={`/assets/${p.id}`}><ExternalLinkIcon aria-hidden="true" />{getAssetCopy(locale).passport.title}</Link> : null}
+      </>
+    );
   } else {
     const project = props.kind === "project";
     chip = <span className="rs-nb-chip">{project ? valueLabel("risks", `band:${String(props.riskBand)}`, copy, locale) : valueLabel("risks", str(props.level) ?? "", copy, locale)}</span>;

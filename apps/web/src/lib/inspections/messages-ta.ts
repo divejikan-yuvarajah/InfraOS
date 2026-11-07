@@ -11,7 +11,7 @@ export const ta: Copy = {
     page: "பக்கம் {n} / {total}", prev: "முந்தைய", total: "{n} ஆய்வுகள்", at: "நேரம்", by: "மூலம்", of: "இன்", minutesShort: "நிமி", selectAll: "தேர்வு", choose: "தேர்ந்தெடு…",
   },
   status: { SCHEDULED: "திட்டமிடப்பட்டது", IN_PROGRESS: "நடைபெறுகிறது", SUBMITTED: "மதிப்பாய்வுக்காக காத்திருக்கிறது", VERIFIED: "சரிபார்க்கப்பட்டது", REQUIRES_REVIEW: "திருத்தம் தேவை", REJECTED: "நிராகரிக்கப்பட்டது", CANCELLED: "ரத்து செய்யப்பட்டது", overdue: "காலம் கடந்தது" },
-  type: { PROGRESS_VERIFICATION: "முன்னேற்றச் சரிபார்ப்பு", QUALITY: "தரம்", SAFETY: "பாதுகாப்பு", MILESTONE: "மைல்கல்", FINAL_HANDOVER: "இறுதி ஒப்படைப்பு", FOLLOW_UP: "தொடர் ஆய்வு" },
+  type: { PROGRESS_VERIFICATION: "முன்னேற்றச் சரிபார்ப்பு", QUALITY: "தரம்", SAFETY: "பாதுகாப்பு", MILESTONE: "மைல்கல்", FINAL_HANDOVER: "இறுதி ஒப்படைப்பு", FOLLOW_UP: "தொடர் ஆய்வு", ASSET_CONDITION: "சொத்து நிலை" },
   priority: { LOW: "குறைவு", NORMAL: "இயல்பு", HIGH: "உயர்", URGENT: "அவசரம்" },
   stepper: { scheduled: "திட்டமிடப்பட்டது", started: "தொடங்கியது", submitted: "சமர்ப்பிக்கப்பட்டது", decision: "முடிவு", revision: "திருத்தம்", rejected: "நிராகரிக்கப்பட்டது", cancelled: "ரத்து", verified: "சரிபார்க்கப்பட்டது" },
   kpi: { upcoming7d: "வரவிருக்கும் (7 நாட்கள்)", inProgress: "நடைபெறுகிறது", awaitingReview: "மதிப்பாய்வுக்காக காத்திருக்கிறது", revisionRequired: "திருத்தம் தேவை", overdue: "காலம் கடந்தது", verified30d: "சரிபார்க்கப்பட்டது (30 நாட்கள்)", hint: "இந்த ஆய்வுகளைக் காட்டு" },

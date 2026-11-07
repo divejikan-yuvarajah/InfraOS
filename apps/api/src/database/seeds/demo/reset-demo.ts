@@ -4,6 +4,9 @@ import { MaintenanceRecord } from "../../../modules/assets/models/maintenance-re
 import { Document } from "../../../modules/documents/models/document.model.js";
 import { ProjectPayment } from "../../../modules/finance/models/project-payment.model.js";
 import { User } from "../../../modules/identity/models/user.model.js";
+import { AssetConditionAssessment } from "../../../modules/assets/models/asset-condition-assessment.model.js";
+import { AssetConversion } from "../../../modules/assets/models/asset-conversion.model.js";
+import { MaintenanceEvidence } from "../../../modules/assets/models/maintenance-evidence.model.js";
 import mongoose from "mongoose";
 import { InspectionEvidence } from "../../../modules/inspections/models/inspection-evidence.model.js";
 import { Inspection } from "../../../modules/inspections/models/inspection.model.js";
@@ -26,6 +29,7 @@ import { isDemoFixtureUserEmail } from "../helpers/fixture-users.js";
 import {
   DEMO_CONTRACTOR_REGS,
   DEMO_LAYER_AGENCY_CODES,
+  DEMO_LIFECYCLE_PROJECT_CODES,
   DEMO_PROJECT_CODES,
 } from "./catalog.js";
 
@@ -44,7 +48,7 @@ export async function resetDemoData(seedEnv: SeedEnvSlice): Promise<void> {
   }
 
   const demoProjects = await Project.find({
-    projectCode: { $in: [...DEMO_PROJECT_CODES] },
+    projectCode: { $in: [...DEMO_PROJECT_CODES, ...DEMO_LIFECYCLE_PROJECT_CODES] },
   }).select("_id");
   const demoProjectIds = demoProjects.map((p) => p._id);
 
@@ -57,6 +61,16 @@ export async function resetDemoData(seedEnv: SeedEnvSlice): Promise<void> {
   }).select("_id");
   const demoAssetIds = demoAssets.map((a) => a._id);
   if (demoAssetIds.length > 0) {
+    // Maintenance photos (GridFS), their rows, the append-only assessment ledger and conversions go before the assets they point at.
+    const maint = (await MaintenanceRecord.find({ assetId: { $in: demoAssetIds } }).select("_id").lean()).map((m) => String(m._id));
+    const gridDb = mongoose.connection.db;
+    if (gridDb && maint.length) {
+      const files = gridDb.collection("inspectionEvidence.files");
+      const chunks = gridDb.collection("inspectionEvidence.chunks");
+      for (const id of maint) for (const f of await files.find({ filename: { $regex: `^mnt/${id}/` } }).toArray()) { await chunks.deleteMany({ files_id: f._id }); await files.deleteOne({ _id: f._id }); }
+    }
+    await MaintenanceEvidence.deleteMany({ assetId: { $in: demoAssetIds } });
+    await AssetConditionAssessment.collection.deleteMany({ assetId: { $in: demoAssetIds } });
     await MaintenanceRecord.deleteMany({ assetId: { $in: demoAssetIds } });
     await Asset.deleteMany({ _id: { $in: demoAssetIds } });
   }
@@ -89,6 +103,7 @@ export async function resetDemoData(seedEnv: SeedEnvSlice): Promise<void> {
     }
     await InspectionEvidence.deleteMany({ projectId: { $in: demoProjectIds } });
     await ProgressVerification.collection.deleteMany({ projectId: { $in: demoProjectIds } });
+    await AssetConversion.deleteMany({ projectId: { $in: demoProjectIds } });
     await Inspection.deleteMany({ projectId: { $in: demoProjectIds } });
     await Document.deleteMany({ projectId: { $in: demoProjectIds } });
     await ProjectPayment.deleteMany({ projectId: { $in: demoProjectIds } });

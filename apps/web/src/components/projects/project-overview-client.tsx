@@ -1,5 +1,6 @@
 "use client";
 
+import { ProjectAssetsCard } from "@/components/assets/project-assets-card";
 import { OpenFinanceLink } from "@/components/finance/finance-links";
 import { ProjectContractorsCard } from "@/components/contractors/project-contractors-card";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -144,6 +145,7 @@ function OverviewBody({
           </section>
           <OpenFinanceLink projectId={project.id} />
           <ProjectContractorsCard projectId={project.id} projectLabel={`${project.projectCode} ${project.title}`} />
+          <ProjectAssetsCard projectId={project.id} status={project.status} />
         </div>
 
         <div className="spp-col">

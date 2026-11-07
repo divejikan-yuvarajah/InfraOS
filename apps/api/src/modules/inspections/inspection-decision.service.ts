@@ -11,13 +11,17 @@ import { PROJECT_STATUSES_FOR_VERIFICATION, type InspectionType } from "./inspec
 import { inTransaction, loadInspection, notifyInspection, oid, writeInspectionAudit, type Id } from "./inspection.common.js";
 import { canTransition, discrepancyPp, isProgressType, makerCheckerOk, overThreshold, rejectAllowed } from "./inspection.rules.js";
 import type { decisionBody } from "./inspection.schema.js";
+import { Asset } from "../assets/models/asset.model.js";
+import { AssetConditionAssessment } from "../assets/models/asset-condition-assessment.model.js";
+import { notifyAssessment, recordAssessment, type RecordedAssessment } from "../assets/asset-assessment.js";
+import { writeAssetAudit, type AssetRow } from "../assets/asset.common.js";
 import { Inspection } from "./models/inspection.model.js";
 import { ProgressVerification } from "./models/progress-verification.model.js";
 
 const ok = <T>(data: T): Result<T> => ({ ok: true, data });
 export const decisionHooks: { beforeAudit: () => Promise<void> } = { beforeAudit: async () => {} };
 
-type Hold = { verificationId: Id | null; bigGap: boolean; verified: number | null };
+type Hold = { verificationId: Id | null; bigGap: boolean; verified: number | null; assessment?: { asset: AssetRow; rec: RecordedAssessment } };
 
 /** Approve / request revision / reject. One transaction: scope, grant and maker-checker are re-checked inside it; the status+version filter makes exactly one concurrent decider win. */
 export const decideInspection = (actor: AuthenticatedActor, rawId: string, input: z.infer<typeof decisionBody>, requestId: string) => run(async () => {
@@ -70,6 +74,18 @@ export const decideInspection = (actor: AuthenticatedActor, rawId: string, input
         }
         $set.physicalProgress = measured;
         hold.verificationId = ver!._id as Id; hold.bigGap = big; hold.verified = measured;
+      } else if (type === "ASSET_CONDITION") {
+        // The reviewer's approval is what makes the rating a recorded condition. No progress verification is created for this type.
+        const rating = last.reportSnapshot?.conditionRating;
+        const asset = row.assetId ? ((await Asset.findById(row.assetId).session(session).lean()) as AssetRow | null) : null;
+        if (!rating || !asset) throw new Flow(409, "CONFLICT", { reason: "asset_condition_incomplete" });
+        const prev = await AssetConditionAssessment.findOne({ assetId: asset._id, status: "ACTIVE" }).sort({ assessedAt: -1, createdAt: -1 }).session(session).lean();
+        const reported = (last.reportSnapshot?.defects ?? []).map((d) => ({ key: d.key, title: d.title, severity: d.severity, status: "OPEN" as const, ...(d.location ? { location: d.location } : {}) }));
+        // Open issues from the previous assessment that this report does not mention stay OPEN (never silently resolved).
+        const carried = (prev?.issues ?? []).filter((i) => i.status === "OPEN" && !reported.some((r) => r.key === i.key)).map((i) => ({ key: i.key, title: i.title, severity: i.severity, status: "OPEN" as const, ...(i.location ? { location: i.location } : {}) }));
+        const rec = await recordAssessment(session, { asset, condition: rating, basis: "INSPECTION_VERIFIED", assessedAt: row.inspectionDate.getTime() > now.getTime() ? now : row.inspectionDate, observations: last.reportSnapshot?.siteObservations ?? undefined, issues: [...reported, ...carried].slice(0, 20), inspectionId: row._id, assessedBy: row.inspectorId as Id, reviewedBy: oid(actor.userId) });
+        await writeAssetAudit(session, { actor, action: "asset.assessment_recorded", resourceType: "ASSET", resourceId: asset._id, agencyId: asset.agencyId, oldValue: { status: asset.condition }, newValue: { status: rating }, requestId });
+        hold.assessment = { asset, rec };
       }
     } else if (input.decision === "REJECT") { $set.status = "REJECTED"; $set.completedAt = now; }
     else $set.status = "REQUIRES_REVIEW";
@@ -85,6 +101,7 @@ export const decideInspection = (actor: AuthenticatedActor, rawId: string, input
 
   const label = out.status === "VERIFIED" ? "approved" : out.status === "REJECTED" ? "rejected" : "returned for revision";
   await notifyInspection([out.inspector, ...(out.manager ? [out.manager] : [])], { title: `Inspection ${label}`, message: `${out.no} was ${label}.`, inspectionId: out.id, eventKey: `ins-decision:${out.id}:${now.getTime()}` });
+  if (out.hold.assessment) await notifyAssessment(out.hold.assessment.asset, out.hold.assessment.rec, [actor.userId]);
   if (out.hold.bigGap && out.agencyId) {
     const govRole = await Role.findOne({ key: "GOV_ADMIN", isActive: true }).select("_id").lean();
     const gov = govRole ? (await User.find({ roleId: govRole._id, agencyId: out.agencyId, status: "ACTIVE", emailVerified: true }).select("_id").limit(20).lean()).map((u) => u._id as Id) : [];
