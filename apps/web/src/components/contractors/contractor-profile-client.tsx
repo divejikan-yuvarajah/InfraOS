@@ -19,6 +19,8 @@ import { useWorkspaceLocale } from "@/lib/i18n/workspace-locale";
 import "@/styles/site-plan-projects.css";
 import "@/styles/contractors.css";
 
+import { ContractorFinanceCard } from "@/components/finance/finance-links";
+
 import { Initials, Skeleton, StatusBadge } from "./contractor-badges";
 import { AssignDialog, StatusDialog, type StatusTarget } from "./contractor-dialogs";
 import { PerformancePanel } from "./profile-performance";
@@ -116,7 +118,7 @@ export function ContractorProfileClient({ id }: { id: string }) {
               ))}
             </div>
             <div role="tabpanel" id={`ctr-panel-${tab}`} aria-labelledby={`ctr-tab-${tab}`} tabIndex={0}>
-              {tab === "overview" ? <OverviewPanel profile={p} copy={copy} locale={locale} /> : null}
+              {tab === "overview" ? <><OverviewPanel profile={p} copy={copy} locale={locale} /><div style={{ marginTop: "1rem" }}><ContractorFinanceCard contractorId={p.id} /></div></> : null}
               {tab === "projects" ? <ProjectsPanel id={p.id} copy={copy} locale={locale} /> : null}
               {tab === "performance" ? (
                 perf.isLoading ? <div className="sp-surface ctr-panel" aria-busy="true"><Skeleton height="6rem" /></div>

@@ -7,6 +7,10 @@ import { Milestone } from "../../../modules/projects/models/milestone.model.js";
 import { Project } from "../../../modules/projects/models/project.model.js";
 import { Contractor } from "../../../modules/contractors/models/contractor.model.js";
 import { ContractorAssignment } from "../../../modules/contractors/models/contractor-assignment.model.js";
+import { ProjectBudgetRevision } from "../../../modules/finance/models/project-budget-revision.model.js";
+import { ProjectExpense } from "../../../modules/finance/models/project-expense.model.js";
+import { ProjectPayment } from "../../../modules/finance/models/project-payment.model.js";
+import { Inspection } from "../../../modules/inspections/models/inspection.model.js";
 import { Role } from "../../../modules/identity/models/role.model.js";
 import { WorkRequest } from "../../../modules/roadsync/models/work-request.model.js";
 import { CitizenIssue } from "../../../modules/issues/models/citizen-issue.model.js";
@@ -195,6 +199,35 @@ export async function verifyDemoSeed(): Promise<VerifyDemoResult> {
     pass: projects.filter((p) => !["COMPLETED", "CANCELLED"].includes(p.status) && p.contractorId).every((p) => activePrimaryByProject.get(String(p._id)) === String(p.contractorId)),
   });
 
+  // Batch 05: finance.
+  const projectIds = projects.map((p) => p._id);
+  const revisions = await ProjectBudgetRevision.find({ projectId: { $in: projectIds } }).lean();
+  const approvedTotal = (id: unknown) => revisions.filter((r) => String(r.projectId) === String(id) && r.status === "APPROVED").sort((a, b) => b.sequence - a.sequence)[0]?.newTotal.amountMinor;
+  lines.push({
+    name: "Finance: budget ledger matches Project.budget, with an approved and a pending revision and allocations",
+    pass: projects.every((p) => approvedTotal(p._id) === p.budget.amountMinor)
+      && revisions.some((r) => r.kind === "REVISION" && r.status === "APPROVED") && revisions.some((r) => r.status === "PENDING_APPROVAL") && revisions.filter((r) => r.allocations.length > 0).length >= 2,
+    detail: `revisions=${revisions.length}`,
+  });
+  const pays = await ProjectPayment.find({ projectId: { $in: projectIds } }).lean();
+  const exps = await ProjectExpense.find({ projectId: { $in: projectIds } }).lean();
+  const has = (rows: { status: string }[], ...s: string[]) => s.every((x) => rows.some((r) => r.status === x));
+  lines.push({
+    name: "Finance: payments and expenses cover every status, with numbers, across two contractors",
+    pass: has(pays, "PENDING", "APPROVED", "PAID", "REJECTED", "CANCELLED", "REVERSED") && has(exps, "DRAFT", "PENDING_VERIFICATION", "VERIFIED", "REJECTED", "REVERSED")
+      && pays.every((p) => Boolean(p.paymentNo)) && new Set(pays.map((p) => String(p.contractorId))).size >= 2 && pays.length >= 8 && exps.length >= 8,
+    detail: `payments=${pays.length} expenses=${exps.length}`,
+  });
+  const util = (code: string) => {
+    const p = projects.find((x) => x.projectCode === code);
+    const committed = pays.filter((x) => String(x.projectId) === String(p?._id) && (x.status === "APPROVED" || x.status === "PAID")).reduce((s, x) => s + x.amount.amountMinor, 0);
+    return p ? (committed * 10000) / p.budget.amountMinor : 0;
+  };
+  const verifiedInspection = await Inspection.findOne({ projectId: road?._id, status: "VERIFIED", physicalProgress: { $ne: null } }).lean();
+  lines.push({
+    name: "Finance: a near-budget project, a spend-ahead project and a verified-progress project",
+    pass: util("INF-BRIDGE-001") >= 9500 && util("INF-PFAC-001") >= 6000 && Boolean(verifiedInspection) && !(await Inspection.exists({ projectId: projects.find((p) => p.projectCode === "INF-PFAC-001")?._id, status: "VERIFIED" })),
+  });
   const pass = lines.every((line) => line.pass);
   return { lines, pass };
 }

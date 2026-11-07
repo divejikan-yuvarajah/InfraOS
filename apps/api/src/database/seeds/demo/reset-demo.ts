@@ -11,6 +11,8 @@ import { Project } from "../../../modules/projects/models/project.model.js";
 import { RiskAssessment } from "../../../modules/risk/models/risk-assessment.model.js";
 import { WorkRequest } from "../../../modules/roadsync/models/work-request.model.js";
 import { Contractor } from "../../../modules/contractors/models/contractor.model.js";
+import { ProjectBudgetRevision } from "../../../modules/finance/models/project-budget-revision.model.js";
+import { ProjectExpense } from "../../../modules/finance/models/project-expense.model.js";
 import { ContractorAssignment } from "../../../modules/contractors/models/contractor-assignment.model.js";
 import { Agency } from "../../../modules/agencies/models/agency.model.js";
 import {
@@ -60,6 +62,11 @@ export async function resetDemoData(seedEnv: SeedEnvSlice): Promise<void> {
   await HazardZone.deleteMany({ isDemo: true, "source.kind": "DEMO" });
 
   // Assignments of demo projects belong to the demo only; audit rows stay (append-only).
+  if (demoProjectIds.length > 0) {
+    // The budget ledger is append-only through the model, so the reset clears it natively; expenses and payments are ordinary rows.
+    await ProjectBudgetRevision.collection.deleteMany({ projectId: { $in: demoProjectIds } });
+    await ProjectExpense.deleteMany({ projectId: { $in: demoProjectIds } });
+  }
   if (demoProjectIds.length > 0) await ContractorAssignment.deleteMany({ projectId: { $in: demoProjectIds } });
 
   if (demoProjectIds.length > 0) {

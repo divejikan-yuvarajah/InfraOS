@@ -6,6 +6,8 @@ import { ContractorAssignment } from "../../modules/contractors/models/contracto
 import { Contractor } from "../../modules/contractors/models/contractor.model.js";
 import { DocumentChunk } from "../../modules/documents/models/document-chunk.model.js";
 import { Document } from "../../modules/documents/models/document.model.js";
+import { ProjectBudgetRevision } from "../../modules/finance/models/project-budget-revision.model.js";
+import { ProjectExpense } from "../../modules/finance/models/project-expense.model.js";
 import { ProjectPayment } from "../../modules/finance/models/project-payment.model.js";
 import { EmailVerificationChallenge } from "../../modules/identity/models/email-verification-challenge.model.js";
 import { PasswordResetChallenge } from "../../modules/identity/models/password-reset-challenge.model.js";
@@ -63,6 +65,8 @@ export const INDEX_MODELS = [
   Contractor,
   ContractorAssignment,
   ProjectPayment,
+  ProjectBudgetRevision,
+  ProjectExpense,
   Document,
   DocumentChunk,
   Inspection,
