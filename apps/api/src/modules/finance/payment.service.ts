@@ -43,11 +43,13 @@ export async function gateInputFor(project: ProjectDoc, p: { contractorId: Id; a
     dup = Boolean(await d);
   }
   const progress = await physicalProgressOf(project._id, session);
+  const { inspectionHoldFor } = await import("../inspections/inspection.integration.js");
+  const inspectionHold = await inspectionHoldFor(project._id, session);
   return {
     paymentType: p.paymentType, amountMinor: p.amountMinor, projectStatus: project.status, contractor, hasAssignment: Boolean(assignment), budgetMinor: project.budget.amountMinor,
     paidMinor: totals.paidMinor, approvedUnpaidMinor: totals.approvedUnpaidMinor, alreadyCountedMinor: p.alreadyCountedMinor ?? 0,
     contractValueMinor: assignment?.contractValue?.amountMinor ?? null, assignmentCumulativeMinor: cumulative, duplicateInvoice: dup,
-    progress: { valueBp: progress.valueBp, basis: progress.basis }, actorIsRequester: p.actorId && p.requesterId ? String(p.requesterId) === p.actorId : null,
+    progress: { valueBp: progress.valueBp, basis: progress.basis }, ...(inspectionHold ? { inspectionHold } : {}), actorIsRequester: p.actorId && p.requesterId ? String(p.requesterId) === p.actorId : null,
   };
 }
 

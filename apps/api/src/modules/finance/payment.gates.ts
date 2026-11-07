@@ -2,7 +2,7 @@ import { overBy } from "./finance.money.js";
 
 /**
  * Payment Gate Checklist: an array of small pure functions. BLOCK makes approve and mark-paid impossible; WARN is shown, must be acknowledged
- * and is recorded in the audit reason. Batch 06 can append an "inspection hold" gate and Batch 07 an "asset handover" gate to GATES.
+ * and is recorded in the audit reason. Batch 06 added the "inspection hold" gate; Batch 07 can append an "asset handover" gate to GATES.
  */
 export type GateStatus = "PASS" | "WARN" | "BLOCK" | "SKIPPED";
 export type Gate = { key: string; status: GateStatus; message: string; values: Record<string, string | number | null> };
@@ -24,6 +24,8 @@ export type GateInput = {
   assignmentCumulativeMinor: number;
   duplicateInvoice: boolean;
   progress: { valueBp: number | null; basis: ProgressBasis };
+  /** Batch 06: set by the inspections module; absent means no hold information. */
+  inspectionHold?: { rejected: boolean; openCritical: boolean };
   /** null when no actor is evaluated (preview before the requester exists). */
   actorIsRequester: boolean | null;
 };
@@ -89,7 +91,15 @@ export const makerChecker = (i: GateInput): Gate => {
   return i.actorIsRequester ? gate("MAKER_CHECKER", "BLOCK", "You requested this payment, so another person must decide it.", {}) : gate("MAKER_CHECKER", "PASS", "A different person is deciding.", {});
 };
 
-export const GATES: readonly ((i: GateInput) => Gate)[] = [projectEligible, contractorEligible, budgetHeadroom, contractCap, duplicateInvoice, progressSupport, makerChecker];
+export const inspectionHold = (i: GateInput): Gate => {
+  const h = i.inspectionHold;
+  if (!h) return gate("INSPECTION_HOLD", "SKIPPED", "n/a: no inspection findings are recorded for this project.", {});
+  if (h.rejected) return gate("INSPECTION_HOLD", "WARN", "The latest concluded inspection of this project was rejected.", { rejected: 1, openCritical: h.openCritical ? 1 : 0 });
+  if (h.openCritical) return gate("INSPECTION_HOLD", "WARN", "The latest approved inspection recorded a critical defect that no later follow-up inspection has resolved.", { rejected: 0, openCritical: 1 });
+  return gate("INSPECTION_HOLD", "PASS", "No rejected inspection or unresolved critical defect.", { rejected: 0, openCritical: 0 });
+};
+
+export const GATES: readonly ((i: GateInput) => Gate)[] = [projectEligible, contractorEligible, budgetHeadroom, contractCap, duplicateInvoice, progressSupport, inspectionHold, makerChecker];
 export const evaluateGates = (i: GateInput): Gate[] => GATES.map((g) => g(i));
 export const blocked = (gates: readonly Gate[]): Gate[] => gates.filter((g) => g.status === "BLOCK");
 export const warnings = (gates: readonly Gate[]): Gate[] => gates.filter((g) => g.status === "WARN");

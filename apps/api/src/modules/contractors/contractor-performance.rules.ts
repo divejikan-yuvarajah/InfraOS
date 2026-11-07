@@ -11,11 +11,11 @@
  *   STRONG if every value >= BAND.strongAtLeast;
  *   MIXED  otherwise.
  */
-export const RULE_VERSION = "c1";
+export const RULE_VERSION = "c2";
 
-export const MIN_SAMPLE = { completion: 3, schedule: 3, milestones: 5, inspections: 3, activeAssignments: 1 } as const;
+export const MIN_SAMPLE = { completion: 3, schedule: 3, milestones: 5, inspections: 3, rework: 3, activeAssignments: 1 } as const;
 export const BAND = { minIndicators: 3, strongAtLeast: 85, mixedBelow: 70, weakBelow: 60 } as const;
-export const FLAGS = { repeatedDelayMonths: 24, repeatedDelayMin: 2, failedInspectionMonths: 12, failedInspectionMin: 2, qualityStaleDays: 30, claimGapPoints: 10, terminatedMonths: 12, certExpiringDays: 30 } as const;
+export const FLAGS = { repeatedDelayMonths: 24, repeatedDelayMin: 2, failedInspectionMonths: 12, failedInspectionMin: 2, qualityStaleDays: 30, claimGapPoints: 10, reworkHighPercent: 50, terminatedMonths: 12, certExpiringDays: 30 } as const;
 
 export type AssignmentEv = {
   id: string; projectId: string; role: string; status: "ACTIVE" | "ENDED" | "REPLACED" | "TERMINATED";
@@ -24,7 +24,11 @@ export type AssignmentEv = {
   plannedEndDate?: Date | null; actualEndDate?: Date | null;
 };
 export type MilestoneEv = { id: string; projectId: string; title: string; status: string; plannedEnd: Date; actualEnd?: Date | null };
-export type InspectionEv = { id: string; projectId: string; status: string; inspectionDate: Date; physicalProgress?: number | null };
+/** `structured` rows come from Batch 06 reports (attributed through contractorIdsAtInspection); legacy rows have no defects and are attributed by project window. */
+export type DefectEv = { key: string; severity: string; reworkRequired: boolean };
+export type InspectionEv = { id: string; projectId: string; status: string; inspectionDate: Date; physicalProgress?: number | null; structured?: boolean; defects?: DefectEv[]; revisionCycles?: number };
+/** Approved progress verifications (Batch 06): verified vs the reported claim at decision time. */
+export type VerificationEv = { id: string; projectId: string; verified: number; claimed: number | null; asOf: Date };
 export type ClaimEv = { id: string; projectId: string; claimed: number; at: Date };
 export type CertEv = { id: string; name: string; state: "VALID" | "EXPIRING" | "EXPIRED" | "REVOKED"; expiresOn?: Date | null };
 
@@ -32,7 +36,8 @@ export type Evidence = {
   contractorStatus: string;
   assignments: AssignmentEv[];
   milestones: MilestoneEv[];
-  inspections: InspectionEv[]; // source "inspection.v1": coarse outcomes only, replaced by Batch 06
+  inspections: InspectionEv[]; // structured Batch 06 rows plus legacy coarse rows
+  verifications?: VerificationEv[];
   claims: ClaimEv[];
   certifications: CertEv[];
   profileGaps: string[];
@@ -95,16 +100,40 @@ const CONCLUDED = ["VERIFIED", "REJECTED", "REQUIRES_REVIEW"];
 export function inspectionOutcomeRate(ev: Evidence): Indicator {
   const rows = ev.inspections.filter((i) => CONCLUDED.includes(i.status));
   const verified = rows.filter((i) => i.status === "VERIFIED").length;
-  return make("inspectionOutcomeRate", "c1.inspection.coarse", "percent", MIN_SAMPLE.inspections, rows.length, rows.length ? ratio(verified, rows.length) : null,
-    { verified, rejected: rows.filter((i) => i.status === "REJECTED").length, requiresReview: rows.filter((i) => i.status === "REQUIRES_REVIEW").length, source: "inspection.v1", coarse: true },
+  return make("inspectionOutcomeRate", "c2.inspection.outcome", "percent", MIN_SAMPLE.inspections, rows.length, rows.length ? ratio(verified, rows.length) : null,
+    { verified, rejected: rows.filter((i) => i.status === "REJECTED").length, requiresReview: rows.filter((i) => i.status === "REQUIRES_REVIEW").length, source: "inspection.v2", coarse: rows.some((i) => !i.structured), revisionCycles: rows.reduce((n, i) => n + (i.revisionCycles ?? 0), 0) },
     rows.filter((i) => i.status !== "VERIFIED").map((i) => ({ kind: "inspection" as const, id: i.id, label: i.status, projectId: i.projectId })));
 }
 
-/** Claimed progress is labelled claimed. A project counts only when a verified-inspection progress figure exists to compare it with. */
+/** Share of concluded structured inspections that recorded at least one defect needing rework. Lower is better, so it is not part of the reliability band. */
+export function reworkFrequency(ev: Evidence): Indicator {
+  const rows = ev.inspections.filter((i) => i.structured && (i.status === "VERIFIED" || i.status === "REJECTED"));
+  const withRework = rows.filter((i) => i.defects?.some((d) => d.reworkRequired));
+  return make("reworkFrequency", "c2.rework", "percent", MIN_SAMPLE.rework, rows.length, rows.length ? ratio(withRework.length, rows.length) : null,
+    { withRework: withRework.length, concluded: rows.length }, withRework.map((i) => ({ kind: "inspection" as const, id: i.id, label: "REWORK", projectId: i.projectId })));
+}
+
+/** MAJOR and CRITICAL defects in the latest approved structured inspection of each project. */
+export function outstandingQualityFindings(ev: Evidence): Indicator {
+  const latest = new Map<string, InspectionEv>();
+  for (const i of ev.inspections.filter((x) => x.structured && x.status === "VERIFIED")) {
+    const cur = latest.get(i.projectId);
+    if (!cur || i.inspectionDate.getTime() > cur.inspectionDate.getTime()) latest.set(i.projectId, i);
+  }
+  const open = [...latest.values()].flatMap((i) => (i.defects ?? []).filter((d) => d.severity !== "MINOR").map((d) => ({ i, d })));
+  return make("outstandingQualityFindings", "c2.quality", "count", 1, latest.size, latest.size ? open.length : null,
+    { major: open.filter((o) => o.d.severity === "MAJOR").length, critical: open.filter((o) => o.d.severity === "CRITICAL").length, projects: latest.size },
+    open.map((o) => ({ kind: "inspection" as const, id: o.i.id, label: `${o.d.severity}: ${o.d.key}`, projectId: o.i.projectId })));
+}
+
+/** Claimed progress is labelled claimed. Compared with the latest approved verification (or, for legacy rows, a verified inspection figure). */
 export function unverifiedClaims(ev: Evidence): Indicator {
   const activeProjects = new Set(ev.assignments.filter((a) => a.status === "ACTIVE" && a.projectStatus === "ACTIVE").map((a) => a.projectId));
   const latest = <T extends { projectId: string; at: Date }>(rows: T[], id: string) => rows.filter((r) => r.projectId === id).sort((a, b) => b.at.getTime() - a.at.getTime())[0];
-  const verifiedRows = ev.inspections.filter((i) => i.status === "VERIFIED" && typeof i.physicalProgress === "number").map((i) => ({ projectId: i.projectId, at: i.inspectionDate, v: i.physicalProgress as number, id: i.id }));
+  const fromVerifications = (ev.verifications ?? []).map((v) => ({ projectId: v.projectId, at: v.asOf, v: v.verified, id: v.id }));
+  const covered = new Set(fromVerifications.map((v) => v.projectId));
+  const legacy = ev.inspections.filter((i) => i.status === "VERIFIED" && typeof i.physicalProgress === "number" && !covered.has(i.projectId)).map((i) => ({ projectId: i.projectId, at: i.inspectionDate, v: i.physicalProgress as number, id: i.id }));
+  const verifiedRows = [...fromVerifications, ...legacy];
   let compared = 0;
   const hits: EvidenceRef[] = [];
   for (const id of activeProjects) {
@@ -114,7 +143,7 @@ export function unverifiedClaims(ev: Evidence): Indicator {
     compared += 1;
     if (claim.claimed - ver.v > FLAGS.claimGapPoints) hits.push({ kind: "project", id, label: `${claim.claimed}% claimed vs ${ver.v}% verified`, projectId: id });
   }
-  return make("unverifiedClaims", "c1.claims", "count", 1, compared, compared ? hits.length : null, { compared, gapPoints: FLAGS.claimGapPoints, claimed: true }, hits);
+  return make("unverifiedClaims", "c2.claims", "count", 1, compared, compared ? hits.length : null, { compared, gapPoints: FLAGS.claimGapPoints, claimed: true }, hits);
 }
 
 export function contractDataCompleteness(ev: Evidence): Indicator {
@@ -179,6 +208,11 @@ export function riskFlags(ev: Evidence, now: Date): RiskFlag[] {
   const stale = ev.inspections.filter((i) => i.status === "REQUIRES_REVIEW" && now.getTime() - i.inspectionDate.getTime() > FLAGS.qualityStaleDays * DAY);
   if (stale.length) out.push({ code: "UNRESOLVED_QUALITY", severity: "MEDIUM", reason: `${stale.length} inspection${stale.length === 1 ? "" : "s"} requiring review ${stale.length === 1 ? "has" : "have"} been open for over ${FLAGS.qualityStaleDays} days.`, params: { count: stale.length, days: FLAGS.qualityStaleDays }, evidence: stale.map((i) => ({ kind: "inspection" as const, id: i.id, label: "REQUIRES_REVIEW", projectId: i.projectId })), since: earliest(stale.map((i) => i.inspectionDate)) });
 
+  const quality = outstandingQualityFindings(ev);
+  if (!stale.length && quality.status === "OK" && (quality.value ?? 0) > 0) out.push({ code: "UNRESOLVED_QUALITY", severity: (quality.inputs.critical as number) > 0 ? "HIGH" : "MEDIUM", reason: `${quality.value} major or critical defect${quality.value === 1 ? "" : "s"} remain open in the latest approved inspections.`, params: { count: quality.value ?? 0, critical: quality.inputs.critical as number }, evidence: quality.evidence, since: null });
+  const rework = reworkFrequency(ev);
+  if (rework.status === "OK" && (rework.value ?? 0) >= FLAGS.reworkHighPercent) out.push({ code: "EXCESSIVE_REWORK", severity: "MEDIUM", reason: `${rework.value}% of concluded inspections recorded defects that needed rework.`, params: { percent: rework.value ?? 0, sample: rework.sampleSize }, evidence: rework.evidence, since: null });
+
   const claims = unverifiedClaims(ev);
   if (claims.status === "OK" && (claims.value ?? 0) > 0) out.push({ code: "UNVERIFIED_CLAIMS", severity: "MEDIUM", reason: `Claimed progress is more than ${FLAGS.claimGapPoints} points above the latest verified inspection on ${claims.value} active project${claims.value === 1 ? "" : "s"}.`, params: { count: claims.value ?? 0, points: FLAGS.claimGapPoints }, evidence: claims.evidence, since: null });
 
@@ -207,9 +241,11 @@ export function evaluate(ev: Evidence, now: Date) {
   const delay = currentDelayExposure(ev, now);
   const milestones = milestoneTimeliness(ev);
   const inspections = inspectionOutcomeRate(ev);
+  const rework = reworkFrequency(ev);
+  const quality = outstandingQualityFindings(ev);
   const claims = unverifiedClaims(ev);
   const contract = contractDataCompleteness(ev);
-  const indicators = [completion, schedule, delay, milestones, inspections, claims, contract];
+  const indicators = [completion, schedule, delay, milestones, inspections, rework, quality, claims, contract];
   const byKey = Object.fromEntries(indicators.map((i) => [i.key, i]));
   const { band, considered } = reliabilityBand(byKey);
   return { ruleVersion: RULE_VERSION, indicators, evidenceLevel: evidenceLevel(indicators), band, bandBasis: considered, flags: riskFlags(ev, now) };

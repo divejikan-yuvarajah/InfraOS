@@ -160,10 +160,10 @@ export function projectFinance(actor: AuthenticatedActor, projectId: string) {
     });
     // Reported progress history (labelled reported, never verified) and verified inspection points for the timeline chart.
     const { ProgressReport } = await import("../projects/models/progress-report.model.js");
-    const { Inspection } = await import("../inspections/models/inspection.model.js");
+    const { ProgressVerification } = await import("../inspections/models/progress-verification.model.js");
     const [reports, verified, paidRows] = await Promise.all([
       ProgressReport.find({ projectId: project._id }).sort({ reportedAt: 1 }).limit(100).select("reportedPercent reportedAt").lean(),
-      Inspection.find({ projectId: project._id, status: "VERIFIED", physicalProgress: { $ne: null } }).sort({ inspectionDate: 1 }).limit(50).select("physicalProgress inspectionDate").lean(),
+      ProgressVerification.find({ projectId: project._id }).sort({ asOf: 1 }).limit(50).select("verifiedPercent asOf").lean(),
       ProjectPayment.find({ projectId: project._id, status: "PAID", paidAt: { $ne: null } }).sort({ paidAt: 1 }).limit(200).select("amount paidAt").lean(),
     ]);
     let run = 0n;
@@ -176,7 +176,7 @@ export function projectFinance(actor: AuthenticatedActor, projectId: string) {
       project: { id: String(project._id), code: project.projectCode, title: project.title, status: project.status },
       totals: { budgetMinor: project.budget.amountMinor, paidMinor: t.paidMinor, approvedUnpaidMinor: t.approvedUnpaidMinor, pendingMinor: t.pendingMinor, verifiedExpensesMinor: et.verifiedMinor },
       allocations: allocations.map((a) => ({ ...a, spentMinor: et.byCategory[a.category] ?? 0 })), expensesByCategory: et.byCategory, intelligence: intel, strip, actions, revisionPending: Boolean(pending),
-      series: { cumulativePaid, reported: reports.map((r) => ({ at: r.reportedAt.toISOString(), pct: r.reportedPercent })), verified: verified.map((v) => ({ at: v.inspectionDate.toISOString(), pct: v.physicalProgress as number })) },
+      series: { cumulativePaid, reported: reports.map((r) => ({ at: r.reportedAt.toISOString(), pct: r.reportedPercent })), verified: verified.map((v) => ({ at: v.asOf.toISOString(), pct: v.verifiedPercent })) },
       can: { revise: ctx.has("finance.budget.update"), requestPayment: ctx.has("finance.payment.create"), addExpense: ctx.has("finance.expense.create") },
     } };
   });

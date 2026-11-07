@@ -66,8 +66,8 @@ export function contractorPerformance(actor: AuthenticatedActor, rawId: string) 
       ok: true,
       data: {
         contractorId: String(doc._id), generatedAt: new Date().toISOString(), basedOn: "projects you can access", ...c.evaluation, sample: c.meta, series: c.series,
-        // Honest placeholders: these need Batch 06 inspection records, so they are reported as unavailable, never as zero.
-        deferred: [{ key: "reworkFrequency", availableAfter: "inspections" }, { key: "qualityFindings", availableAfter: "inspections" }],
+        // Rework and quality findings are real indicators since Batch 06 (rule set c2); nothing remains deferred.
+        deferred: [],
       },
     };
   });
