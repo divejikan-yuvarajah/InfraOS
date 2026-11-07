@@ -1,5 +1,6 @@
 "use client";
 
+import { ProjectContractorsCard } from "@/components/contractors/project-contractors-card";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -138,6 +139,7 @@ function OverviewBody({
               ]}
             />
           </section>
+          <ProjectContractorsCard projectId={project.id} projectLabel={`${project.projectCode} ${project.title}`} />
         </div>
 
         <div className="spp-col">
