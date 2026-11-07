@@ -11,6 +11,8 @@ import { ProjectBudgetRevision } from "../../../modules/finance/models/project-b
 import { ProjectExpense } from "../../../modules/finance/models/project-expense.model.js";
 import { ProjectPayment } from "../../../modules/finance/models/project-payment.model.js";
 import { Inspection } from "../../../modules/inspections/models/inspection.model.js";
+import { InspectionEvidence } from "../../../modules/inspections/models/inspection-evidence.model.js";
+import { ProgressVerification } from "../../../modules/inspections/models/progress-verification.model.js";
 import { Role } from "../../../modules/identity/models/role.model.js";
 import { WorkRequest } from "../../../modules/roadsync/models/work-request.model.js";
 import { CitizenIssue } from "../../../modules/issues/models/citizen-issue.model.js";
@@ -223,10 +225,22 @@ export async function verifyDemoSeed(): Promise<VerifyDemoResult> {
     const committed = pays.filter((x) => String(x.projectId) === String(p?._id) && (x.status === "APPROVED" || x.status === "PAID")).reduce((s, x) => s + x.amount.amountMinor, 0);
     return p ? (committed * 10000) / p.budget.amountMinor : 0;
   };
-  const verifiedInspection = await Inspection.findOne({ projectId: road?._id, status: "VERIFIED", physicalProgress: { $ne: null } }).lean();
+  const verifiedRoad = await ProgressVerification.findOne({ projectId: road?._id, status: "ACTIVE" }).lean();
+  const pfacId = projects.find((p) => p.projectCode === "INF-PFAC-001")?._id;
+  const verifiedPfac = await ProgressVerification.findOne({ projectId: pfacId, status: "ACTIVE" }).lean();
   lines.push({
     name: "Finance: a near-budget project, a spend-ahead project and a verified-progress project",
-    pass: util("INF-BRIDGE-001") >= 9500 && util("INF-PFAC-001") >= 6000 && Boolean(verifiedInspection) && !(await Inspection.exists({ projectId: projects.find((p) => p.projectCode === "INF-PFAC-001")?._id, status: "VERIFIED" })),
+    pass: util("INF-BRIDGE-001") >= 9500 && util("INF-PFAC-001") >= 6000 && Boolean(verifiedRoad) && Boolean(verifiedPfac),
+  });
+  const inspections = await Inspection.find({ inspectionNo: /^INS-2026-9000/ }).select("status inspectionType").lean();
+  const statuses = new Set(inspections.map((i) => i.status));
+  const verifications = await ProgressVerification.find({ status: "ACTIVE" }).select("discrepancyPp").lean();
+  const evidenceRows = await InspectionEvidence.find({ status: "ACTIVE" }).select("_id inspectionId").lean();
+  lines.push({
+    name: "Inspections: all statuses and types, evidence stored privately, one consistent and one discrepant verification",
+    pass: inspections.length >= 10 && ["SCHEDULED", "IN_PROGRESS", "SUBMITTED", "VERIFIED", "REQUIRES_REVIEW", "REJECTED", "CANCELLED"].every((s) => statuses.has(s as never)) && new Set(inspections.map((i) => i.inspectionType)).size >= 5
+      && evidenceRows.length >= 3 && verifications.some((v) => typeof v.discrepancyPp === "number" && Math.abs(v.discrepancyPp) > 10) && verifications.some((v) => typeof v.discrepancyPp === "number" && Math.abs(v.discrepancyPp) <= 10),
+    detail: `inspections=${inspections.length} evidence=${evidenceRows.length} verifications=${verifications.length}`,
   });
   const pass = lines.every((line) => line.pass);
   return { lines, pass };
