@@ -69,6 +69,8 @@ const contractorSchema = new Schema({
   statusChangedAt: { type: Date },
   statusChangedBy: reference("User", false),
   archivedAt: { type: Date },
+  /** Write-lock counter bumped by assignment and status writes so they conflict instead of racing. Not part of any projection. */
+  lockSeq: { ...nonNegativeInteger(), select: false },
 }, { timestamps: true, strict: "throw", collection: "contractors" });
 
 contractorSchema.index({ taxIdKey: 1 }, { unique: true, sparse: true });

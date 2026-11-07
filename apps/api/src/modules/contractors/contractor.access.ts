@@ -89,6 +89,8 @@ export type ContractorLike = Owned & {
 
 const iso = (d: Date | string | null | undefined) => (d ? new Date(d).toISOString() : null);
 
+export function directoryRow(doc: ContractorLike, agencyName: string | null, now: Date) { return directoryView(doc, agencyName, now); }
+
 function directoryView(doc: ContractorLike, agencyName: string | null, now: Date) {
   return {
     id: doc._id.toString(), name: doc.name, registrationNumber: doc.registrationNumber, status: doc.status,
