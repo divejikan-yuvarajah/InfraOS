@@ -7,6 +7,7 @@ import type { DemoContext } from "./context.js";
 import { loadAgencyMap, seedDemoAgencies } from "./seed-agencies.js";
 import { seedDemoAssignments } from "./seed-assignments.js";
 import { seedDemoContractors } from "./seed-contractors.js";
+import { seedDemoFinance } from "./seed-finance.js";
 import { seedDemoInframapContext } from "./seed-inframap-context.js";
 import { seedDemoProjects } from "./seed-projects.js";
 import { seedDemoSupportingRecords } from "./seed-supporting-records.js";
@@ -20,6 +21,7 @@ export type SeedDemoSummary = {
   fixtureUsers: number;
   contractors: number;
   assignments: number;
+  financeRecords: number;
   projects: number;
   workRequests: number;
   assets: number;
@@ -51,6 +53,7 @@ export async function seedDemoData(
   const assignments = await seedDemoAssignments(context);
   const workRequests = await seedDemoWorkRequests(context);
   const supporting = await seedDemoSupportingRecords(context);
+  const finance = await seedDemoFinance(context);
   const inframap = await seedDemoInframapContext(context);
 
   return {
@@ -60,6 +63,7 @@ export async function seedDemoData(
     fixtureUsers: context.users.size,
     contractors: context.contractors.size,
     assignments,
+    financeRecords: finance.revisions + finance.payments + finance.expenses,
     projects: context.projects.size,
     workRequests,
     assets: supporting.assets,

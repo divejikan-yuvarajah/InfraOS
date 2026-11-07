@@ -1,7 +1,11 @@
+import type mongoose from "mongoose";
+
 import { nextNumber } from "../../shared/database/counter.js";
 import { Project } from "../projects/models/project.model.js";
 import { ProjectBudgetRevision } from "./models/project-budget-revision.model.js";
 import { ProjectPayment } from "./models/project-payment.model.js";
+
+type Id = mongoose.Types.ObjectId;
 
 export type FinanceBackfillReport = {
   mode: "dry-run" | "commit";
@@ -14,10 +18,10 @@ export type FinanceBackfillReport = {
  * budget but no revision, and gives legacy payments a paymentNo, agencyId and requestedAt (createdAt). Legacy PAID rows get paidAt = their
  * existing date. Never invents amounts, invoice references or payment references: those stay empty and are shown as "not recorded".
  */
-export async function backfillFinance(commit: boolean): Promise<FinanceBackfillReport> {
+export async function backfillFinance(commit: boolean, onlyProjectIds?: Id[]): Promise<FinanceBackfillReport> {
   const r: FinanceBackfillReport = { mode: commit ? "commit" : "dry-run", projectsScanned: 0, initialRevisionsToCreate: 0, initialRevisionsCreated: 0, paymentsScanned: 0, paymentsToUpdate: 0, paymentsUpdated: 0 };
 
-  for await (const p of Project.find({ "budget.amountMinor": { $gt: 0 } }).cursor()) {
+  for await (const p of Project.find({ "budget.amountMinor": { $gt: 0 }, ...(onlyProjectIds ? { _id: { $in: onlyProjectIds } } : {}) }).cursor()) {
     r.projectsScanned += 1;
     if (await ProjectBudgetRevision.exists({ projectId: p._id })) continue;
     r.initialRevisionsToCreate += 1;
@@ -31,7 +35,7 @@ export async function backfillFinance(commit: boolean): Promise<FinanceBackfillR
     r.initialRevisionsCreated += 1;
   }
 
-  for await (const pay of ProjectPayment.find({ paymentNo: { $exists: false } }).sort({ createdAt: 1 }).cursor()) {
+  for await (const pay of ProjectPayment.find({ paymentNo: { $exists: false }, ...(onlyProjectIds ? { projectId: { $in: onlyProjectIds } } : {}) }).sort({ createdAt: 1 }).cursor()) {
     r.paymentsScanned += 1;
     r.paymentsToUpdate += 1;
     if (!commit) continue;
