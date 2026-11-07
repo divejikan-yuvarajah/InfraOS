@@ -49,6 +49,9 @@ for (const locale of PUBLIC_LOCALES) {
 
 export const DASHBOARD_PATH = "/dashboard";
 
+/** Where a signed-in user lands by default. Inspectors work from their own queue; everyone else keeps the dashboard. */
+export const landingPathFor = (roleKey: string | null | undefined): string => (roleKey === "INSPECTOR" ? "/inspections/my" : DASHBOARD_PATH);
+
 export function normalizeAppPath(input: string): string {
   const withoutHash = input.split("#")[0] ?? input;
   const path = (withoutHash.split("?")[0] ?? withoutHash).trim();

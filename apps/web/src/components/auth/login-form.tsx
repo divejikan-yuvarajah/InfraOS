@@ -23,7 +23,8 @@ import {
   registerPathForLocale,
   sanitizeNextParam,
 } from "@/lib/auth/redirect";
-import { DASHBOARD_PATH } from "@/lib/auth/route-access";
+import { landingPathFor } from "@/lib/auth/route-access";
+import { getMemorySession } from "@/lib/auth/state";
 import type { AuthFailureCode, AuthLocale } from "@/lib/auth/types";
 
 import { LiquidGlassInput } from "./liquid-glass-input";
@@ -74,7 +75,7 @@ export function LoginForm({ locale, nextParam }: LoginFormProps) {
         setSubmitError(result.code);
         return;
       }
-      const target = sanitizeNextParam(nextParam) ?? DASHBOARD_PATH;
+      const target = sanitizeNextParam(nextParam) ?? landingPathFor(getMemorySession()?.user.roleKey);
       router.replace(target);
     } finally {
       setSubmitting(false);
