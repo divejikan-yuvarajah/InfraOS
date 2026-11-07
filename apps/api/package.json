@@ -19,6 +19,7 @@
     "db:import:hazards": "tsx src/scripts/import-hazard-zones.ts",
     "db:sync:finance-permissions": "tsx src/scripts/sync-finance-permissions.ts",
     "db:sync:inspection-permissions": "tsx src/scripts/sync-inspection-permissions.ts",
+    "db:sync:asset-permissions": "tsx src/scripts/sync-asset-permissions.ts",
     "db:backfill:finance": "tsx src/scripts/backfill-finance-batch05.ts",
     "db:backfill:inspections": "tsx src/scripts/backfill-inspections-batch06.ts",
     "db:cleanup:evidence": "tsx src/scripts/cleanup-evidence.ts",

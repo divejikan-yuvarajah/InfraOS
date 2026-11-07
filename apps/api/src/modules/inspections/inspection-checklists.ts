@@ -28,6 +28,10 @@ export const CHECKLIST_TEMPLATES: Record<InspectionType, ChecklistItem[]> = {
   SAFETY,
   MILESTONE: [...PROGRESS.slice(0, 3), item("milestone_evidence_sighted", "general")],
   FINAL_HANDOVER: HANDOVER,
+  ASSET_CONDITION: [
+    item("structural_integrity", "quality"), item("surface_wear", "quality"), item("drainage_water_ingress", "quality"),
+    item("safety_features", "safety"), item("functionality", "general"),
+  ],
   FOLLOW_UP: [item("previous_defects_rechecked", "quality"), item("rework_completed", "quality"), item("site_safe", "safety")],
 };
 
