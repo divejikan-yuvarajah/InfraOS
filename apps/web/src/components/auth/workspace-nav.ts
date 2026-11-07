@@ -4,6 +4,7 @@ import {
   Building2Icon,
   ClipboardCheckIcon,
   FolderKanbanIcon,
+  HardHatIcon,
   RouteIcon,
   LayoutDashboardIcon,
   MapIcon,
@@ -35,6 +36,7 @@ export const WORKSPACE_NAV: readonly WorkspaceNavGroup[] = [
     items: [
       { href: "/projects", label: "Projects", icon: FolderKanbanIcon, i18n: { si: "ව්‍යාපෘති", ta: "திட்டங்கள்" } },
       { href: "/projects/reviews", label: "Reviews", icon: ClipboardCheckIcon, i18n: { si: "ව්‍යාපෘති සමාලෝචන", ta: "திட்ட மதிப்பாய்வுகள்" } },
+      { href: "/contractors", label: "Contractors", icon: HardHatIcon, i18n: { si: "කොන්ත්‍රාත්කරුවන්", ta: "ஒப்பந்ததாரர்கள்" } },
       { href: "/roadsync", label: "RoadSync Dashboard", icon: LayoutDashboardIcon, i18n: { si: "RoadSync උපකරණ පුවරුව", ta: "RoadSync முகப்புப் பலகை" } },
       { href: "/roadsync/work-requests", label: "Work Requests", icon: RouteIcon, i18n: { si: "වැඩ ඉල්ලීම්", ta: "பணி கோரிக்கைகள்" } },
       { href: "/roadsync/conflicts", label: "Conflicts", icon: SwordsIcon, i18n: { si: "ගැටුම්", ta: "முரண்பாடுகள்" } },

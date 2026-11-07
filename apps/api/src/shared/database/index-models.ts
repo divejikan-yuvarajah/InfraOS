@@ -2,6 +2,7 @@ import { Agency } from "../../modules/agencies/models/agency.model.js";
 import { Asset } from "../../modules/assets/models/asset.model.js";
 import { MaintenanceRecord } from "../../modules/assets/models/maintenance-record.model.js";
 import { AuditLog } from "../../modules/audit/models/audit-log.model.js";
+import { ContractorAssignment } from "../../modules/contractors/models/contractor-assignment.model.js";
 import { Contractor } from "../../modules/contractors/models/contractor.model.js";
 import { DocumentChunk } from "../../modules/documents/models/document-chunk.model.js";
 import { Document } from "../../modules/documents/models/document.model.js";
@@ -60,6 +61,7 @@ export const INDEX_MODELS = [
   Scenario,
   Recommendation,
   Contractor,
+  ContractorAssignment,
   ProjectPayment,
   Document,
   DocumentChunk,

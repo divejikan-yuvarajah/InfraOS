@@ -36,6 +36,12 @@ snapshots, and descriptions remain unindexed.
 | coordinationRequests | `{ conflictId: 1, createdAt: -1 }` | conflict coordination history | Conflict detail timeline |
 | coordinationRequests | `{ fromAgency: 1, createdAt: -1 }` | sent requests | Agency outbox |
 | contractors | `{ registrationNumber: 1 }` | registration lookup | Unique because Step 13 requires this value for every contractor |
+| contractors | `{ taxIdKey: 1 }` | exact duplicate guard | Unique and sparse; the normalised tax id is a hard block, never a warning |
+| contractors | `{ registeredByAgencyId: 1, status: 1 }`, `{ category: 1, status: 1 }`, `{ operatingDistricts: 1 }`, `{ "certifications.expiresOn": 1 }` | directory scope, filters and the certification-expiry watch | Phase 9 Batch 04 |
+| contractors | `{ nameKey: 1 }`, `{ emailKey: 1 }` | possible-duplicate warnings | Non-unique on purpose: a similar name asks for acknowledgement, it does not block |
+| contractorAssignments | `{ projectId: 1 }` where `role: PRIMARY, status: ACTIVE` | one active primary per project | Unique partial index (`one_active_primary_per_project`) |
+| contractorAssignments | `{ projectId: 1, contractorId: 1 }` where `status: ACTIVE` | no duplicate active pair | Unique partial index (`one_active_pair_per_project`) |
+| contractorAssignments | `{ contractorId: 1, status: 1, startDate: -1 }`, `{ agencyId: 1, status: 1 }` | contractor history and agency scope | Rows are ended or replaced, never deleted |
 | documents | `{ projectId: 1, documentType: 1 }` | project documents by type | No text index; RAG/vector search remains separate |
 | documents | `{ projectId: 1, createdAt: -1 }` | recent project documents | Supports all-type project document history |
 | documentChunks | `{ documentId: 1, chunkIndex: 1 }` | ordered chunks for a document | Unique within a document |

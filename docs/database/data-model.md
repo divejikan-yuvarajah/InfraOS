@@ -24,6 +24,7 @@ Mongoose model registration when present. Enums live beside their owning module.
 | RoadSync / Team Leader | Conflict | conflicts | roadsync/models/conflict.model.ts |
 | RoadSync / Team Leader | CoordinationRequest | coordinationRequests | roadsync/models/coordination-request.model.ts |
 | Contractor / Member 5 | Contractor | contractors | contractors/models/contractor.model.ts |
+| Contractor / Phase 9 Batch 04 | ContractorAssignment | contractorAssignments | contractors/models/contractor-assignment.model.ts |
 | Finance / Member 5 | ProjectPayment | projectPayments | finance/models/project-payment.model.ts |
 | DocTrace / Member 4 | Document | documents | documents/models/document.model.ts |
 | DocTrace / Member 4 | DocumentChunk | documentChunks | documents/models/document-chunk.model.ts |

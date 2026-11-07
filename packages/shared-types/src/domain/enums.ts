@@ -13,7 +13,25 @@ export const CONFLICT_STATUSES = ["OPEN", "COORDINATION_PENDING", "UNDER_REVIEW"
 export const COORDINATION_STATUSES = ["PENDING", "ACCEPTED", "COUNTER_PROPOSED", "REJECTED", "CANCELLED"] as const;
 
 export const CONTRACTOR_RISK_LEVELS = ["LOW", "MEDIUM", "HIGH"] as const;
-export const CONTRACTOR_STATUSES = ["ACTIVE", "INACTIVE"] as const;
+export const CONTRACTOR_STATUSES = ["ACTIVE", "SUSPENDED", "INACTIVE", "ARCHIVED"] as const;
+export const CONTRACTOR_CATEGORIES = ["ROAD_CONSTRUCTION", "BRIDGE_STRUCTURAL", "WATER_SEWERAGE", "ELECTRICAL", "TELECOM", "DRAINAGE", "BUILDING", "GENERAL", "OTHER"] as const;
+export const CONTRACTOR_CERT_STATUSES = ["VALID", "EXPIRED", "REVOKED"] as const;
+export const CONTRACTOR_DOCUMENT_TYPES = ["REGISTRATION", "TAX", "CERTIFICATE", "CONTRACT", "OTHER"] as const;
+export const ASSIGNMENT_ROLES = ["PRIMARY", "ADDITIONAL"] as const;
+export const ASSIGNMENT_STATUSES = ["ACTIVE", "ENDED", "REPLACED", "TERMINATED"] as const;
+/** The 25 administrative districts of Sri Lanka (canonical English names), grouped by province for the UI. */
+export const SRI_LANKA_PROVINCES = {
+  Western: ["Colombo", "Gampaha", "Kalutara"],
+  Central: ["Kandy", "Matale", "Nuwara Eliya"],
+  Southern: ["Galle", "Matara", "Hambantota"],
+  Northern: ["Jaffna", "Kilinochchi", "Mannar", "Vavuniya", "Mullaitivu"],
+  Eastern: ["Batticaloa", "Ampara", "Trincomalee"],
+  "North Western": ["Kurunegala", "Puttalam"],
+  "North Central": ["Anuradhapura", "Polonnaruwa"],
+  Uva: ["Badulla", "Monaragala"],
+  Sabaragamuwa: ["Ratnapura", "Kegalle"],
+} as const;
+export const SRI_LANKA_DISTRICTS: readonly string[] = Object.values(SRI_LANKA_PROVINCES).flat();
 export const PAYMENT_TYPES = ["ADVANCE", "INTERIM", "FINAL", "RETENTION", "OTHER"] as const;
 export const PAYMENT_STATUSES = ["PENDING", "APPROVED", "REJECTED", "PAID", "CANCELLED"] as const;
 
@@ -49,6 +67,9 @@ export type ConflictStatus = (typeof CONFLICT_STATUSES)[number];
 export type CoordinationStatus = (typeof COORDINATION_STATUSES)[number];
 export type ContractorRiskLevel = (typeof CONTRACTOR_RISK_LEVELS)[number];
 export type ContractorStatus = (typeof CONTRACTOR_STATUSES)[number];
+export type ContractorCategory = (typeof CONTRACTOR_CATEGORIES)[number];
+export type AssignmentRole = (typeof ASSIGNMENT_ROLES)[number];
+export type AssignmentStatus = (typeof ASSIGNMENT_STATUSES)[number];
 export type PaymentStatus = (typeof PAYMENT_STATUSES)[number];
 export type PaymentType = (typeof PAYMENT_TYPES)[number];
 export type DocumentType = (typeof DOCUMENT_TYPES)[number];
