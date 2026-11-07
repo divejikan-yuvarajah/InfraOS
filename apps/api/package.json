@@ -18,6 +18,7 @@
     "db:seed:verify": "tsx src/scripts/verify-demo-seed.ts",
     "db:import:hazards": "tsx src/scripts/import-hazard-zones.ts",
     "db:sync:finance-permissions": "tsx src/scripts/sync-finance-permissions.ts",
+    "db:sync:inspection-permissions": "tsx src/scripts/sync-inspection-permissions.ts",
     "db:backfill:finance": "tsx src/scripts/backfill-finance-batch05.ts",
     "db:backfill:contractors": "tsx src/scripts/backfill-contractors-batch04.ts",
     "db:seed:reset-demo": "tsx src/scripts/reset-demo-seed.ts",
