@@ -106,7 +106,7 @@ export type ReassignBody = z.infer<typeof reassignBodySchema>;
 export const assignmentListQuerySchema = z.object({
   view: z.enum(["active", "completed", "all"]).default("all"), page: intIn(1, 10_000).default(1), limit: intIn(1, 50).default(20),
 }).strict();
-export const timelineQuerySchema = z.object({ cursor: z.string().regex(/^[A-Za-z0-9_-]{1,120}$/).optional(), limit: intIn(1, 50).default(20) }).strict();
+export const timelineQuerySchema = z.object({ cursor: z.string().regex(/^o\d{1,5}$/).optional(), limit: intIn(1, 50).default(20) }).strict();
 
 /** Rejects repeated keys (arrays) and returns the parsed value or null. */
 export function parseStrict<T>(schema: z.ZodType<T>, input: unknown): T | null {
