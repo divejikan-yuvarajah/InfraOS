@@ -5,11 +5,14 @@ import { Asset } from "../../../modules/assets/models/asset.model.js";
 import { HazardZone } from "../../../modules/risk/models/hazard-zone.model.js";
 import { Milestone } from "../../../modules/projects/models/milestone.model.js";
 import { Project } from "../../../modules/projects/models/project.model.js";
+import { Contractor } from "../../../modules/contractors/models/contractor.model.js";
+import { ContractorAssignment } from "../../../modules/contractors/models/contractor-assignment.model.js";
 import { Role } from "../../../modules/identity/models/role.model.js";
 import { WorkRequest } from "../../../modules/roadsync/models/work-request.model.js";
 import { CitizenIssue } from "../../../modules/issues/models/citizen-issue.model.js";
 import { demoDates } from "../helpers/dates.js";
 import {
+  DEMO_CONTRACTOR_REGS,
   DEMO_LAYER_AGENCY_CODES,
   DEMO_MILESTONE_TITLES,
   DEMO_PROJECT_CODES,
@@ -161,6 +164,35 @@ export async function verifyDemoSeed(): Promise<VerifyDemoResult> {
   lines.push({
     name: "No duplicate demo records",
     pass: duplicateProjects.length === 0,
+  });
+
+  // Batch 04: contractors and assignments.
+  const demoContractors = await Contractor.find({ registrationNumber: { $in: [...DEMO_CONTRACTOR_REGS] } }).select("+lockSeq").lean();
+  const soonLimit = Date.now() + 30 * 86_400_000;
+  const certs = demoContractors.flatMap((c) => c.certifications ?? []);
+  lines.push({
+    name: "Contractors: owner agency, no legacy cache, certification watch",
+    pass: demoContractors.length === DEMO_CONTRACTOR_REGS.length
+      && demoContractors.every((c) => c.registeredByAgencyId && c.category && c.rating === undefined && c.riskLevel === undefined && c.activeProjects === undefined && c.completedProjects === undefined)
+      && certs.some((c) => c.expiresOn && c.expiresOn.getTime() < Date.now())
+      && certs.some((c) => c.expiresOn && c.expiresOn.getTime() > Date.now() && c.expiresOn.getTime() <= soonLimit),
+    detail: `contractors=${demoContractors.length}`,
+  });
+  const demoAssignments = await ContractorAssignment.find({ projectId: { $in: projects.map((p) => p._id) } }).lean();
+  const byId = new Map(demoAssignments.map((a) => [String(a._id), a]));
+  const replaced = demoAssignments.filter((a) => a.status === "REPLACED");
+  const activePrimaryByProject = new Map(demoAssignments.filter((a) => a.role === "PRIMARY" && a.status === "ACTIVE").map((a) => [String(a.projectId), String(a.contractorId)]));
+  lines.push({
+    name: "Assignments: primary, ended, additional, replaced chain",
+    pass: demoAssignments.some((a) => a.role === "PRIMARY" && a.status === "ACTIVE")
+      && demoAssignments.some((a) => a.status === "ENDED")
+      && demoAssignments.some((a) => a.role === "ADDITIONAL")
+      && replaced.length > 0 && replaced.every((a) => a.replacedByAssignmentId && byId.has(String(a.replacedByAssignmentId))),
+    detail: `assignments=${demoAssignments.length}`,
+  });
+  lines.push({
+    name: "Project.contractorId matches the active primary (open projects)",
+    pass: projects.filter((p) => !["COMPLETED", "CANCELLED"].includes(p.status) && p.contractorId).every((p) => activePrimaryByProject.get(String(p._id)) === String(p.contractorId)),
   });
 
   const pass = lines.every((line) => line.pass);

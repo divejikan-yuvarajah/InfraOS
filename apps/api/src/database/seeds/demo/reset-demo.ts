@@ -11,6 +11,7 @@ import { Project } from "../../../modules/projects/models/project.model.js";
 import { RiskAssessment } from "../../../modules/risk/models/risk-assessment.model.js";
 import { WorkRequest } from "../../../modules/roadsync/models/work-request.model.js";
 import { Contractor } from "../../../modules/contractors/models/contractor.model.js";
+import { ContractorAssignment } from "../../../modules/contractors/models/contractor-assignment.model.js";
 import { Agency } from "../../../modules/agencies/models/agency.model.js";
 import {
   assertDemoSeedEnvironment,
@@ -57,6 +58,9 @@ export async function resetDemoData(seedEnv: SeedEnvSlice): Promise<void> {
 
   // Demo hazard zones are identified only by the isDemo flag and the DEMO source kind; imported datasets are never touched.
   await HazardZone.deleteMany({ isDemo: true, "source.kind": "DEMO" });
+
+  // Assignments of demo projects belong to the demo only; audit rows stay (append-only).
+  if (demoProjectIds.length > 0) await ContractorAssignment.deleteMany({ projectId: { $in: demoProjectIds } });
 
   if (demoProjectIds.length > 0) {
     await RiskAssessment.deleteMany({ projectId: { $in: demoProjectIds } });
