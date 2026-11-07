@@ -25,6 +25,9 @@ const snapshotSchema = new Schema({
   dependencyId: reference("ProjectDependency", false),
   prerequisiteProjectId: reference("Project", false),
   contractorId: reference("Contractor", false),
+  // Contractor assignment events: which project and which assignment row. References only, never contract text.
+  projectId: reference("Project", false),
+  assignmentId: reference("ContractorAssignment", false),
   physicalProgress: percentage(),
   financialProgress: percentage(),
   budget: { type: moneySchema },

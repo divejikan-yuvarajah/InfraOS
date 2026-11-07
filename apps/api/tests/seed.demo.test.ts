@@ -16,6 +16,7 @@ import { WorkRequest } from "../src/modules/roadsync/models/work-request.model.j
 import { EnvValidationError } from "../src/config/env.js";
 import { seedCoreIdentity } from "../src/database/seeds/core/identity.js";
 import { seedDemoData } from "../src/database/seeds/demo/seed-demo.js";
+import { ContractorAssignment } from "../src/modules/contractors/models/contractor-assignment.model.js";
 import { resetDemoData } from "../src/database/seeds/demo/reset-demo.js";
 import { verifyDemoSeed } from "../src/database/seeds/demo/verify-demo.js";
 import {
@@ -93,6 +94,9 @@ describe("demo seed architecture", { timeout: 120_000 }, () => {
 
     const verification = await verifyDemoSeed();
     expect(verification.pass).toBe(true);
+    // Batch 04: assignments are seeded once and the contractor lines of the verification really ran.
+    expect(await ContractorAssignment.countDocuments()).toBe(7);
+    expect(verification.lines.filter((l) => /^(Contractors|Assignments|Project.contractorId)/.test(l.name)).every((l) => l.pass)).toBe(true);
 
     expect(await Role.countDocuments()).toBe(SYSTEM_ROLE_KEYS.length);
   });
@@ -102,6 +106,7 @@ describe("demo seed architecture", { timeout: 120_000 }, () => {
     await resetDemoData(TEST_SEED_ENV);
 
     expect(await Project.countDocuments()).toBe(0);
+    expect(await ContractorAssignment.countDocuments()).toBe(0);
     expect(await User.countDocuments()).toBe(0);
     expect(await Role.countDocuments()).toBe(SYSTEM_ROLE_KEYS.length);
     expect(await Agency.countDocuments()).toBeGreaterThanOrEqual(4);
