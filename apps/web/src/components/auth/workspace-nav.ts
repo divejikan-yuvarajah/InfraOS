@@ -16,6 +16,7 @@ import {
   SwordsIcon,
   UserCircleIcon,
   UsersIcon,
+  WalletIcon,
 } from "lucide-react";
 
 export type WorkspaceNavItem = {
@@ -24,6 +25,8 @@ export type WorkspaceNavItem = {
   icon: LucideIcon;
   /** Only strings already present in the module message files (drafts pending native review). */
   i18n?: { si?: string; ta?: string };
+  /** Role hint: the item is hidden for other roles. Only a convenience; the server decides access. */
+  roles?: readonly string[];
 };
 
 export type WorkspaceNavGroup = { label: string; items: readonly WorkspaceNavItem[] };
@@ -37,6 +40,7 @@ export const WORKSPACE_NAV: readonly WorkspaceNavGroup[] = [
       { href: "/projects", label: "Projects", icon: FolderKanbanIcon, i18n: { si: "ව්‍යාපෘති", ta: "திட்டங்கள்" } },
       { href: "/projects/reviews", label: "Reviews", icon: ClipboardCheckIcon, i18n: { si: "ව්‍යාපෘති සමාලෝචන", ta: "திட்ட மதிப்பாய்வுகள்" } },
       { href: "/contractors", label: "Contractors", icon: HardHatIcon, i18n: { si: "කොන්ත්‍රාත්කරුවන්", ta: "ஒப்பந்ததாரர்கள்" } },
+      { href: "/finance", label: "Finance", icon: WalletIcon, i18n: { si: "මූල්‍ය", ta: "நிதி" }, roles: ["SUPER_ADMIN", "GOV_ADMIN", "AGENCY_OFFICER", "PROJECT_MANAGER"] },
       { href: "/roadsync", label: "RoadSync Dashboard", icon: LayoutDashboardIcon, i18n: { si: "RoadSync උපකරණ පුවරුව", ta: "RoadSync முகப்புப் பலகை" } },
       { href: "/roadsync/work-requests", label: "Work Requests", icon: RouteIcon, i18n: { si: "වැඩ ඉල්ලීම්", ta: "பணி கோரிக்கைகள்" } },
       { href: "/roadsync/conflicts", label: "Conflicts", icon: SwordsIcon, i18n: { si: "ගැටුම්", ta: "முரண்பாடுகள்" } },

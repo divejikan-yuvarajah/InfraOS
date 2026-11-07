@@ -372,6 +372,7 @@ describe("project finance (Steps 95-97)", { timeout: 180_000 }, () => {
       expect(mine.body.data.inbox.payments).toBeNull(); // manager cannot approve
       const gov = await as(w.gov.token).get("/summary");
       expect(gov.body.data.inbox.payments).toBe(1);
+      expect(gov.body.data.inbox.revisionProjects).toEqual([]);
       expect((await as(w.gov.token).get("/payments?needsMyApproval=true")).body.data.total).toBe(1);
       const own = await request(app).post(`/api/v1/finance/projects/${s.project._id}/payments`).set("Authorization", `Bearer ${w.gov.token}`).send(pay(s, { amount: "200.00" }));
       expect([201, 403]).toContain(own.status); // gov is not the project's manager: write scope is narrowed

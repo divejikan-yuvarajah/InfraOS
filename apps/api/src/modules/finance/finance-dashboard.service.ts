@@ -120,7 +120,8 @@ export function financeSummary(actor: AuthenticatedActor, q: { agencyId?: string
       ctx.has("finance.payment.read") ? ProjectPayment.find({ $and: [agency, ...(q.dateFrom || q.dateTo ? [{ date: { ...(q.dateFrom ? { $gte: new Date(`${q.dateFrom}T00:00:00Z`) } : {}), ...(q.dateTo ? { $lte: new Date(`${q.dateTo}T23:59:59Z`) } : {}) } }] : [])] }).sort({ updatedAt: -1 }).limit(10).select("paymentNo projectId amount status paymentType updatedAt").lean() : Promise.resolve([]),
       ctx.has("finance.expense.read") ? ProjectExpense.find(agency).sort({ updatedAt: -1 }).limit(10).select("expenseNo projectId amount status category updatedAt").lean() : Promise.resolve([]),
     ]);
-    const pr = await Project.find({ _id: { $in: [...recentPay.map((p) => p.projectId), ...recentExp.map((e) => e.projectId)] } }).select("projectCode").lean();
+    const revWaiting = ctx.has("finance.budget.approve") ? await ProjectBudgetRevision.find({ $and: [agency, { status: "PENDING_APPROVAL", requestedBy: { $ne: oid(actor.userId) } }] }).sort({ requestedAt: 1 }).limit(5).select("projectId sequence").lean() : [];
+    const pr = await Project.find({ _id: { $in: [...recentPay.map((p) => p.projectId), ...recentExp.map((e) => e.projectId), ...revWaiting.map((r) => r.projectId)] } }).select("projectCode").lean();
     const code = new Map(pr.map((p) => [String(p._id), p.projectCode]));
     const recent = [
       ...recentPay.map((p) => ({ kind: "payment" as const, id: String(p._id), number: p.paymentNo ?? null, projectCode: code.get(String(p.projectId)) ?? "", amountMinor: p.amount.amountMinor, status: p.status, at: (p as unknown as { updatedAt: Date }).updatedAt.toISOString() })),
@@ -130,7 +131,7 @@ export function financeSummary(actor: AuthenticatedActor, q: { agencyId?: string
       scope: ctx.scope.kind, projects: rows.length, truncated,
       totals: { budgetMinor: safe(budget), committedMinor: safe(committed), paidMinor: safe(paid), approvedUnpaidMinor: safe(unpaid), pendingMinor: safe(pending), remainingMinor: committed > budget ? 0 : safe(budget - committed), utilizationBp: budget > 0n ? ratioBp(safe(committed), safe(budget)) : null },
       counts: { overBudget: rows.filter((r) => r.intel.flags.some((f) => f.code === "OVER_BUDGET_COMMITMENT")).length, nearBudget: rows.filter((r) => r.intel.flags.some((f) => f.code === "NEAR_BUDGET")).length, flagged: flagged.length },
-      inbox: { payments: payInbox, expenses: expInbox, revisions: revInbox }, recent, topFlags,
+      inbox: { payments: payInbox, expenses: expInbox, revisions: revInbox, revisionProjects: revWaiting.map((r) => ({ projectId: String(r.projectId), code: code.get(String(r.projectId)) ?? "", sequence: r.sequence })) }, recent, topFlags,
     } };
   });
 }
