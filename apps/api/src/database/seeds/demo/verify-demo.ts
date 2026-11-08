@@ -1,6 +1,9 @@
 import { SYSTEM_ROLE_KEYS } from "@infraos/shared-types";
 
 import { Agency } from "../../../modules/agencies/models/agency.model.js";
+import { Document } from "../../../modules/documents/models/document.model.js";
+import { DocumentVersion } from "../../../modules/documents/models/document-version.model.js";
+import { DEMO_DOCUMENT_COUNT } from "./seed-documents.js";
 import { Asset } from "../../../modules/assets/models/asset.model.js";
 import { HazardZone } from "../../../modules/risk/models/hazard-zone.model.js";
 import { Milestone } from "../../../modules/projects/models/milestone.model.js";
@@ -259,6 +262,15 @@ export async function verifyDemoSeed(): Promise<VerifyDemoResult> {
       && assessments.some((a) => a.basis === "INSPECTION_VERIFIED") && assessments.filter((a) => a.status === "ACTIVE").length === 2 && ["REQUESTED", "SCHEDULED", "COMPLETED"].every((st) => maint.some((m) => m.status === st))
       && maint.some((m) => m.status === "COMPLETED" && m.cost) && withHealth >= 1 && withHealth < lifeAssets.length + bridgeAssets.length,
     detail: `assets=${lifeAssets.length + bridgeAssets.length} withHealth=${withHealth} assessments=${assessments.length} maintenance=${maint.length}`,
+  });
+  const seeded = await Document.find({ docNo: /^DOC-2026-9000\d\d$/ }).select("status confidentiality currentVersionNo projectId contractorId paymentId inspectionId assetId origin").lean();
+  const seededVersions = await DocumentVersion.countDocuments({ documentId: { $in: seeded.map((x) => x._id) } });
+  const legacyNoBytes = await Document.countDocuments({ origin: "DOCTRACE", docNo: { $not: /^DOC-2026-9000/ }, currentVersionId: { $exists: false } });
+  lines.push({
+    name: "DocTrace documents: real files, versions, lifecycle states, links and evidence separation",
+    pass: seeded.length === DEMO_DOCUMENT_COUNT && seeded.some((x) => (x.currentVersionNo ?? 0) === 3) && seeded.some((x) => x.status === "DRAFT") && seeded.some((x) => x.status === "ARCHIVED") && seeded.some((x) => x.confidentiality === "SENSITIVE")
+      && seeded.some((x) => !x.projectId) && seeded.some((x) => x.contractorId) && seeded.every((x) => x.origin === "DOCTRACE") && seededVersions === seeded.reduce((n, x) => n + (x.currentVersionNo ?? 1), 0),
+    detail: `documents=${seeded.length} versions=${seededVersions} legacyWithoutFile=${legacyNoBytes} linked(payment=${seeded.filter((x) => x.paymentId).length},inspection=${seeded.filter((x) => x.inspectionId).length},asset=${seeded.filter((x) => x.assetId).length})`,
   });
   const pass = lines.every((line) => line.pass);
   return { lines, pass };

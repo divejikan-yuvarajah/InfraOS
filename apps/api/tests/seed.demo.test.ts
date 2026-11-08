@@ -8,6 +8,10 @@ import {
   it,
 } from "vitest";
 
+import mongoose from "mongoose";
+import { Document } from "../src/modules/documents/models/document.model.js";
+import { DocumentVersion } from "../src/modules/documents/models/document-version.model.js";
+import { DEMO_DOCUMENT_COUNT } from "../src/database/seeds/demo/seed-documents.js";
 import { Agency } from "../src/modules/agencies/models/agency.model.js";
 import { Project } from "../src/modules/projects/models/project.model.js";
 import { Role } from "../src/modules/identity/models/role.model.js";
@@ -100,6 +104,12 @@ describe("demo seed architecture", { timeout: 120_000 }, () => {
     expect(await ProjectPayment.countDocuments()).toBe(12); // 2 legacy + 9 finance demo rows + 1 lifecycle retention row, unchanged by the second seed run
     expect(verification.lines.filter((l) => /^(Contractors|Assignments|Project.contractorId)/.test(l.name)).every((l) => l.pass)).toBe(true);
 
+    // Batch 08: real DocTrace files exist for every seeded document version and the second run added nothing.
+    expect(await Document.countDocuments({ docNo: /^DOC-2026-9000/ })).toBe(DEMO_DOCUMENT_COUNT);
+    expect(await mongoose.connection.collection("documents.files").countDocuments({})).toBe(await DocumentVersion.countDocuments());
+    expect(await Document.countDocuments({ origin: { $exists: false } })).toBe(0); // legacy and evidence rows were shaped by the backfill
+    expect(verification.lines.find((l) => l.name.startsWith("DocTrace documents"))?.pass).toBe(true);
+
     expect(await Role.countDocuments()).toBe(SYSTEM_ROLE_KEYS.length);
   });
 
@@ -108,6 +118,9 @@ describe("demo seed architecture", { timeout: 120_000 }, () => {
     await resetDemoData(TEST_SEED_ENV);
 
     expect(await Project.countDocuments()).toBe(0);
+    expect(await mongoose.connection.collection("documents.files").countDocuments({})).toBe(0); // DocTrace blobs removed
+    expect(await mongoose.connection.collection("documents.chunks").countDocuments({})).toBe(0);
+    expect(await DocumentVersion.countDocuments()).toBe(0);
     expect(await ContractorAssignment.countDocuments()).toBe(0);
     expect(await User.countDocuments()).toBe(0);
     expect(await Role.countDocuments()).toBe(SYSTEM_ROLE_KEYS.length);
