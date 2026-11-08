@@ -282,6 +282,13 @@ export function AdminUsersPageClient() {
             </p>
           </div>
           <div className="flex items-center gap-space-sm shrink-0">
+            <Link
+              href="/admin/registrations"
+              className="h-10 px-4 rounded-lg border border-amber-500/40 bg-amber-500/10 text-amber-900 dark:text-amber-200 font-label-md text-label-md hover:bg-amber-500/20 transition-colors flex items-center gap-2"
+            >
+              <span className="material-symbols-outlined text-[18px]">how_to_reg</span>
+              <span>Pending Registrations</span>
+            </Link>
             <button
               type="button"
               onClick={handleExportRegistry}

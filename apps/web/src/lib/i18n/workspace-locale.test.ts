@@ -29,6 +29,6 @@ describe("nav labels", () => {
     expect(navLabel(settings, "ta")).toBe("Settings"); // no translation yet: falls back to English
     expect(navLabel(work, "ta")).toBe("பணி கோரிக்கைகள்");
     expect(navLabel(work, "si")).toBe("වැඩ ඉල්ලීම්");
-    expect(all).toHaveLength(29); // includes Assets, Maintenance, Agency insights, RoadSync, InfraMap, Contractors, Finance, Public Portal, CORE-03 Governance/Audit/System/Security, DocTrace and AI Processing
+    expect(all).toHaveLength(30); // includes Assets, Maintenance, Agency insights, RoadSync, InfraMap, Contractors, Finance, Public Portal, CORE-03 Governance/Audit/System/Security, DocTrace, AI Processing and Registration Requests
   });
 });

@@ -337,7 +337,11 @@ export async function submitRegistrationWithAuthClient(input: {
       };
     }
 
-    if (response.status === 409 || payload?.error?.code === "CONFLICT") {
+    if (
+      response.status === 409 ||
+      payload?.error?.code === "CONFLICT" ||
+      payload?.error?.code === "DUPLICATE_RESOURCE"
+    ) {
       return {
         ok: false,
         code: "CONFLICT",
