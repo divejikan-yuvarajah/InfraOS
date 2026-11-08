@@ -9,7 +9,7 @@ export function WorkspaceHome() {
   const [locale] = useWorkspaceLocale();
   const copy = getDashboardCopy(locale);
   return (
-    <StaffWorkspaceShell title={copy.title} description={copy.description} wide>
+    <StaffWorkspaceShell title={copy.title} description={copy.description} wide hidePageHeader>
       <ProjectDashboard locale={locale} />
     </StaffWorkspaceShell>
   );

@@ -1,5 +1,11 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Manrope, Noto_Sans_Sinhala, Noto_Sans_Tamil } from "next/font/google";
+import {
+  Geist,
+  Geist_Mono,
+  Manrope,
+  Noto_Sans_Sinhala,
+  Noto_Sans_Tamil,
+} from "next/font/google";
 import { headers } from "next/headers";
 import type { ReactNode } from "react";
 
@@ -63,6 +69,14 @@ export default async function RootLayout({
       lang={locale}
       className={`${geistSans.variable} ${geistMono.variable} ${manrope.variable} ${notoSinhala.variable} ${notoTamil.variable} h-full antialiased`}
     >
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300..900;1,300..900&family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap"
+        />
+      </head>
       <body className="flex min-h-full flex-col bg-background text-foreground">
         <a
           href={`#${MAIN_CONTENT_ID}`}

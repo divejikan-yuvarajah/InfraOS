@@ -12,11 +12,21 @@ import { getHealth, getReady } from "./modules/health/health.controller.js";
 import { createV1Router } from "./routes/v1.js";
 import { failure } from "./shared/http/envelope.js";
 
-function corsOrigin(): string | false {
-  if (env.FRONTEND_ORIGIN === "*") {
-    return false;
-  }
-  return env.FRONTEND_ORIGIN;
+function corsOrigin(): cors.CorsOptions["origin"] {
+  return (origin, callback) => {
+    if (!origin) return callback(null, true);
+    if (env.FRONTEND_ORIGIN === "*") return callback(null, false);
+    if (origin === env.FRONTEND_ORIGIN) return callback(null, true);
+    if (env.NODE_ENV === "development") {
+      if (
+        (env.FRONTEND_ORIGIN === "http://localhost:3000" && origin === "http://127.0.0.1:3000") ||
+        (env.FRONTEND_ORIGIN === "http://127.0.0.1:3000" && origin === "http://localhost:3000")
+      ) {
+        return callback(null, true);
+      }
+    }
+    return callback(null, false);
+  };
 }
 
 export function createApp() {

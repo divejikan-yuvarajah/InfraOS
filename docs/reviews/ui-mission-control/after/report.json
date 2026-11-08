@@ -1,0 +1,16 @@
+[
+ {
+  "role": "manager",
+  "width": 1440,
+  "name": "04-project-timeline",
+  "path": "/projects/6ae5f51370fc615f34070ac1/timeline",
+  "h1": [
+   "Project timeline"
+  ],
+  "scrollW": 1440,
+  "clientW": 1440,
+  "url": "/projects/6ae5f51370fc615f34070ac1/timeline",
+  "overflowX": false,
+  "consoleErrors": []
+ }
+]

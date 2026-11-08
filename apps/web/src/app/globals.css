@@ -11,6 +11,7 @@
 @import "../styles/public-batch-2b-part1.css";
 @import "../styles/public-batch-2b-part2.css";
 @import "../styles/public-batch-2b-part3.css";
+@import "../styles/civic-atlas-command.css";
 
 @custom-variant dark (&:is(.dark *));
 

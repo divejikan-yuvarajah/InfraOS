@@ -8,11 +8,32 @@ export function isAllowedAuthOrigin(req: Request): boolean {
   const allowed = env.FRONTEND_ORIGIN;
   if (!allowed || allowed === "*") return false;
   const origin = req.header("origin");
-  if (origin) return origin === allowed;
+  if (origin) {
+    if (origin === allowed) return true;
+    if (env.NODE_ENV === "development") {
+      if (
+        (allowed === "http://localhost:3000" && origin === "http://127.0.0.1:3000") ||
+        (allowed === "http://127.0.0.1:3000" && origin === "http://localhost:3000")
+      ) {
+        return true;
+      }
+    }
+    return false;
+  }
   const referer = req.header("referer");
   if (!referer) return false;
   try {
-    return new URL(referer).origin === allowed;
+    const parsedOrigin = new URL(referer).origin;
+    if (parsedOrigin === allowed) return true;
+    if (env.NODE_ENV === "development") {
+      if (
+        (allowed === "http://localhost:3000" && parsedOrigin === "http://127.0.0.1:3000") ||
+        (allowed === "http://127.0.0.1:3000" && parsedOrigin === "http://localhost:3000")
+      ) {
+        return true;
+      }
+    }
+    return false;
   } catch {
     return false;
   }
@@ -39,7 +60,7 @@ export function createCredentialRateLimit(limit: number) {
 }
 
 export const loginRateLimit = createCredentialRateLimit(
-  env.NODE_ENV === "test" ? 40 : 10,
+  env.NODE_ENV === "test" ? 40 : env.NODE_ENV === "development" ? 200 : 10,
 );
 
 export const refreshRateLimit = createCredentialRateLimit(
