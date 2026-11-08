@@ -196,7 +196,7 @@ export async function toDtos(d: DCtx, rows: DocRow[]) {
       currentVersionNo: r.currentVersionNo ?? null, fileAvailable: Boolean(r.currentVersionId), tags: r.tags ?? [],
       documentDate: iso(r.documentDate), reference: r.reference ?? null, language: r.language ?? null, expiresAt: iso(r.expiresAt),
       links: Object.fromEntries(DOCUMENT_LINK_KEYS.filter((k) => (r as Record<string, unknown>)[k]).map((k) => [k, String((r as Record<string, unknown>)[k])])),
-      ai: { extractedTextStatus: r.extractedTextStatus, allowed: r.aiProcessingAllowed ?? true, eligibleType: r.aiEligibleType ?? false },
+      ai: { extractedTextStatus: r.extractedTextStatus, allowed: r.aiProcessingAllowed ?? true, eligibleType: r.aiEligibleType ?? false, sensitive: r.confidentiality === "SENSITIVE", errorCode: r.aiIndex?.errorCode ?? null, warningCount: r.aiIndex?.warnings?.length ?? 0, truncated: Boolean(r.aiIndex?.truncated), indexedAt: iso(r.aiIndex?.indexedAt) },
       version: r.version ?? 0, createdAt: iso((r as { createdAt?: Date }).createdAt), updatedAt: iso((r as { updatedAt?: Date }).updatedAt), archivedAt: iso(r.archivedAt), deleted: Boolean(r.deletedAt),
       permissions: caps,
     };

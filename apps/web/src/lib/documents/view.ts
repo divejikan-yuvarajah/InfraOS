@@ -56,10 +56,11 @@ export const SORTS = ["newest", "oldest", "relevance", "title", "size", "updated
 export type Sort = (typeof SORTS)[number];
 export type DocFilters = {
   q: string; category: string[]; group: string; projectId: string; agencyId: string; fileType: string[]; status: string[]; tag: string; mine: boolean; sensitive: boolean; archived: boolean; evidence: boolean;
-  from: string; to: string; sort: Sort; page: number; limit: number; contractorId: string; expiring: boolean; awaiting: boolean; drafts: boolean; thisMonth: boolean;
+  from: string; to: string; sort: Sort; page: number; limit: number; contractorId: string; expiring: boolean; awaiting: boolean; drafts: boolean; thisMonth: boolean; aiStatus: string;
 };
-export const DEFAULT_FILTERS: DocFilters = { q: "", category: [], group: "", projectId: "", agencyId: "", fileType: [], status: [], tag: "", mine: false, sensitive: false, archived: false, evidence: false, from: "", to: "", sort: "newest", page: 1, limit: 25, contractorId: "", expiring: false, awaiting: false, drafts: false, thisMonth: false };
+export const DEFAULT_FILTERS: DocFilters = { q: "", category: [], group: "", projectId: "", agencyId: "", fileType: [], status: [], tag: "", mine: false, sensitive: false, archived: false, evidence: false, from: "", to: "", sort: "newest", page: 1, limit: 25, contractorId: "", expiring: false, awaiting: false, drafts: false, thisMonth: false, aiStatus: "" };
 
+export const AI_STATUSES = ["NOT_STARTED", "QUEUED", "PROCESSING", "COMPLETED", "FAILED", "UNSUPPORTED"];
 const csv = (v: string | null): string[] => (v ? v.split(",").map((x) => x.trim()).filter(Boolean) : []);
 export function parseFilters(get: (k: string) => string | null): DocFilters {
   const sort = get("sort") as Sort;
@@ -69,6 +70,7 @@ export function parseFilters(get: (k: string) => string | null): DocFilters {
     mine: get("mine") === "1", sensitive: get("sensitive") === "1", archived: get("archived") === "1", evidence: get("evidence") === "1", from: get("from") ?? "", to: get("to") ?? "",
     sort: (SORTS as readonly string[]).includes(sort) ? sort : "newest", page: Math.max(1, Math.min(1000, Number(get("page")) || 1)), limit: [10, 25, 50].includes(limit) ? limit : 25,
     contractorId: get("contractorId") ?? "", expiring: get("expiring") === "1", awaiting: get("awaiting") === "1", drafts: get("drafts") === "1", thisMonth: get("thisMonth") === "1",
+    aiStatus: AI_STATUSES.includes(get("aiStatus") ?? "") ? (get("aiStatus") as string) : "",
   };
 }
 /** API query for a filter set. Quick filters that map to server flags are translated here; nothing is filtered client-side. */
@@ -77,7 +79,7 @@ export function toApiQuery(f: DocFilters): Record<string, string | number | bool
   return {
     q: f.q || undefined, category: f.category.join(",") || undefined, group: f.group || undefined, projectId: f.projectId || undefined, agencyId: f.agencyId || undefined, fileType: f.fileType.join(",") || undefined,
     status: status?.join(","), tag: f.tag || undefined, uploadedBy: f.mine ? "me" : undefined, confidentiality: f.sensitive ? "SENSITIVE" : undefined, origin: f.evidence ? "INSPECTION_EVIDENCE" : undefined,
-    from: f.from || undefined, to: f.to || undefined, contractorId: f.contractorId || undefined, expiring: f.expiring ? "30" : undefined, hasFile: f.awaiting ? false : undefined, thisMonth: f.thisMonth ? true : undefined,
+    from: f.from || undefined, to: f.to || undefined, contractorId: f.contractorId || undefined, expiring: f.expiring ? "30" : undefined, hasFile: f.awaiting ? false : undefined, thisMonth: f.thisMonth ? true : undefined, aiStatus: f.aiStatus || undefined,
     sort: f.q && f.sort === "newest" ? "relevance" : f.sort, page: f.page, limit: f.limit,
   };
 }
@@ -86,11 +88,11 @@ export function filterParams(f: DocFilters): Record<string, string | null> {
   return {
     q: s(f.q), category: f.category.join(",") || null, group: s(f.group), projectId: s(f.projectId), agencyId: s(f.agencyId), fileType: f.fileType.join(",") || null, status: f.status.join(",") || null, tag: s(f.tag),
     mine: f.mine ? "1" : null, sensitive: f.sensitive ? "1" : null, archived: f.archived ? "1" : null, evidence: f.evidence ? "1" : null, from: s(f.from), to: s(f.to), sort: f.sort === "newest" ? null : f.sort,
-    limit: f.limit === 25 ? null : String(f.limit), contractorId: s(f.contractorId), expiring: f.expiring ? "1" : null, awaiting: f.awaiting ? "1" : null, drafts: f.drafts ? "1" : null, thisMonth: f.thisMonth ? "1" : null,
+    limit: f.limit === 25 ? null : String(f.limit), contractorId: s(f.contractorId), expiring: f.expiring ? "1" : null, awaiting: f.awaiting ? "1" : null, drafts: f.drafts ? "1" : null, thisMonth: f.thisMonth ? "1" : null, aiStatus: s(f.aiStatus),
   };
 }
 export function activeFilterCount(f: DocFilters): number {
-  return [f.q, f.category.length, f.group, f.projectId, f.agencyId, f.fileType.length, f.status.length, f.tag, f.mine, f.sensitive, f.archived, f.evidence, f.from, f.to, f.contractorId, f.expiring, f.awaiting, f.drafts, f.thisMonth].filter(Boolean).length;
+  return [f.q, f.category.length, f.group, f.projectId, f.agencyId, f.fileType.length, f.status.length, f.tag, f.mine, f.sensitive, f.archived, f.evidence, f.from, f.to, f.contractorId, f.expiring, f.awaiting, f.drafts, f.thisMonth, f.aiStatus].filter(Boolean).length;
 }
 
 /** Saved views: per-user named presets kept in localStorage only (no user-preferences service exists). Max 10, every access guarded. */

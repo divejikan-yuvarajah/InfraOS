@@ -52,6 +52,7 @@ function clauses(q: Q, viewer: DocViewer): Record<string, Filter> {
   if (q.docDateFrom || q.docDateTo) c.docDate = { documentDate: { ...(q.docDateFrom ? { $gte: colomboDay(q.docDateFrom, false) } : {}), ...(q.docDateTo ? { $lte: colomboDay(q.docDateTo, true) } : {}) } };
   if (q.hasFile !== undefined) c.hasFile = q.hasFile ? { currentVersionId: { $exists: true, $ne: null } } : { $or: [{ currentVersionId: { $exists: false } }, { currentVersionId: null }] };
   if (q.aiReady) c.aiReady = { extractedTextStatus: "COMPLETED" };
+  if (q.aiStatus) c.aiStatus = { extractedTextStatus: q.aiStatus };
   if (q.expiring) { const now = new Date(); c.expiring = { expiresAt: { $gte: now, $lte: new Date(now.getTime() + 30 * 86_400_000) } }; }
   if (q.thisMonth) c.thisMonth = { createdAt: { $gte: monthStart() } };
   return c;

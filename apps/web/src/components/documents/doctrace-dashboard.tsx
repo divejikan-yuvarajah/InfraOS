@@ -10,11 +10,13 @@ import { DOCUMENT_CATEGORIES, DOCUMENT_CATEGORY_GROUPS, DOCUMENT_FILE_TYPES } fr
 import { StaffWorkspaceShell } from "@/components/auth/staff-workspace-shell";
 import { ContextBar } from "@/components/site-plan/site-plan";
 import type { AuthLocale } from "@/lib/auth/types";
+import { bulkReprocess } from "@/lib/documents/ai/api";
+import { getAiCopy, type AiCopy } from "@/lib/documents/ai/messages";
 import { bulkAction, downloadRegisterCsv, fetchDocuments, fetchSummary } from "@/lib/documents/api";
 import { getDocCopy, type Copy } from "@/lib/documents/messages";
 import { hintArchivedView, hintExport, hintUpload, useDocKeys } from "@/lib/documents/session";
 import type { DocItem } from "@/lib/documents/types";
-import { activeFilterCount, DEFAULT_FILTERS, filterParams, fill, fmtDate, fmtMonth, fmtNumber, formatSize, loadViews, MAX_VIEWS, parseFilters, saveViews, SORTS, toApiQuery, type DocFilters, type SavedView } from "@/lib/documents/view";
+import { activeFilterCount, AI_STATUSES, DEFAULT_FILTERS, filterParams, fill, fmtDate, fmtMonth, fmtNumber, formatSize, loadViews, MAX_VIEWS, parseFilters, saveViews, SORTS, toApiQuery, type DocFilters, type SavedView } from "@/lib/documents/view";
 import { useUrlParams } from "@/lib/finance/url-state";
 import { useWorkspaceLocale } from "@/lib/i18n/workspace-locale";
 import { Highlighted, AiStatusChip, CategoryChip, ConfidentialityChip, EmptyState, ErrorState, errorText, Field, FileTypeIcon, Shell, Skeletons, StatusChip, VersionBadge } from "./doc-ui";
@@ -22,6 +24,7 @@ import { ArchiveDialog, copyDocLink, DeleteDialog, DocumentPreviewDrawer, downlo
 import { ProjectPicker } from "./project-picker";
 
 type Common = { copy: Copy; locale: AuthLocale };
+const aiStatusLabel = (s: string, a: AiCopy): string => ({ NOT_STARTED: a.chip.notProcessed, QUEUED: a.chip.queued, PROCESSING: a.jobStatus.RUNNING, COMPLETED: a.chip.ready, FAILED: a.chip.failed, UNSUPPORTED: a.chip.unsupported } as Record<string, string>)[s] ?? s;
 const PAGE_SIZES = [10, 25, 50];
 
 function Kpi({ label, value, hint, active, onClick }: { label: string; value: number | undefined; hint: string; active?: boolean; onClick: () => void }) {
@@ -96,7 +99,7 @@ function DocTable({ rows, copy, locale, h, allSelected, toggleAll }: Common & { 
               <td className="dt-tabnum">{formatSize(d.sizeBytes, locale)}</td>
               <td className="dt-tabnum">{fmtDate(d.createdAt, locale)}<br /><span className="ins-muted">{d.ownerName ?? ""}</span></td>
               <td><span className="ctr-row" style={{ flexWrap: "wrap", gap: "0.25rem" }}><StatusChip status={d.status} copy={copy} /><ConfidentialityChip value={d.confidentiality} copy={copy} /></span></td>
-              <td><AiStatusChip ai={d.ai} copy={copy} /></td>
+              <td><AiStatusChip ai={d.ai} docId={d.id} /></td>
               <td><RowMenu doc={d} copy={copy} onPreview={() => h.onPreview(d)} onReplace={() => h.onReplace(d)} onArchive={() => h.onArchive(d)} onDelete={() => h.onDelete(d)} /></td>
             </tr>
           ))}
@@ -115,7 +118,7 @@ function DocCards({ rows, copy, locale, h, className }: Common & { rows: DocItem
           <input className="dt-sel" type="checkbox" aria-label={fill(copy.dashboard.table.select, { title: d.title })} checked={h.selected.has(d.id)} onChange={() => h.toggle(d.id)} />
           <FileTypeIcon mime={d.mimeType} name={d.fileName} large />
           <div style={{ minWidth: 0 }}><Link className="ins-link" href={`/documents/${d.id}`}><Highlighted segments={d.highlights?.title} fallback={d.title} /></Link><br /><span className="ins-muted">{d.docNo ?? "—"} · <VersionBadge n={d.currentVersionNo} /> · {formatSize(d.sizeBytes, locale)}</span></div>
-          <div className="ctr-row" style={{ flexWrap: "wrap", gap: "0.3rem" }}><CategoryChip category={d.category} copy={copy} /><StatusChip status={d.status} copy={copy} /><ConfidentialityChip value={d.confidentiality} copy={copy} /></div>
+          <div className="ctr-row" style={{ flexWrap: "wrap", gap: "0.3rem" }}><CategoryChip category={d.category} copy={copy} /><StatusChip status={d.status} copy={copy} /><ConfidentialityChip value={d.confidentiality} copy={copy} /><AiStatusChip ai={d.ai} docId={d.id} /></div>
           <div className="ctr-row" style={{ justifyContent: "space-between" }}>
             <span className="ins-muted">{d.project?.code ?? copy.dashboard.table.noProject} · {fmtDate(d.createdAt, locale)}</span>
             <RowMenu doc={d} copy={copy} onPreview={() => h.onPreview(d)} onReplace={() => h.onReplace(d)} onArchive={() => h.onArchive(d)} onDelete={() => h.onDelete(d)} />
@@ -152,6 +155,7 @@ function BulkDialogs({ copy, ids, mode, onClose, onDone }: { copy: Copy; ids: st
 export function DocTraceDashboard() {
   const [locale] = useWorkspaceLocale();
   const copy = getDocCopy(locale);
+  const aiCopy = getAiCopy(locale);
   const { key, roleKey, userId } = useDocKeys();
   const url = useUrlParams();
   const filters = useMemo(() => parseFilters((k) => url.get(k) || null), [url]);
@@ -182,6 +186,11 @@ export function DocTraceDashboard() {
   const pages = list.data?.meta.pages ?? 1;
   const selected = selection.scope === scope ? selection.ids : new Set<string>();
   const refresh = () => { void summary.refetch(); void list.refetch(); };
+  const reprocessSel = useMutation({
+    mutationFn: (ids: string[]) => bulkReprocess({ ids }),
+    onSuccess: async (r) => { toast[r.queued ? "success" : "warning"](fill(aiCopy.bulk.result, { n: r.queued, m: r.results.length - r.queued })); clearSelection(); await refresh(); },
+    onError: (e) => toast.error(errorText(e, copy)),
+  });
   const exportCsv = useMutation({ mutationFn: () => downloadRegisterCsv(apiQuery as never), onSuccess: () => toast.success(copy.dashboard.exported), onError: (e) => toast.error(errorText(e, copy)) });
 
   // Keyboard: "/" focuses search, Escape clears it. Search text is debounced into the URL.
@@ -216,6 +225,7 @@ export function DocTraceDashboard() {
   if (filters.group) chips.push({ id: "g", text: label(filters.group, copy.group), clear: () => set({ group: "" }) });
   if (filters.projectId) chips.push({ id: "p", text: projectLabel || copy.dashboard.filters.project, clear: () => { setProjectLabel(""); set({ projectId: "" }); } });
   for (const f of filters.fileType) chips.push({ id: `f${f}`, text: label(f, copy.fileType), clear: () => set({ fileType: filters.fileType.filter((x) => x !== f) }) });
+  if (filters.aiStatus) chips.push({ id: "ai", text: `${aiCopy.filter.aiStatus}: ${aiStatusLabel(filters.aiStatus, aiCopy)}`, clear: () => set({ aiStatus: "" }) });
   for (const s of filters.status) chips.push({ id: `s${s}`, text: label(s, copy.status), clear: () => set({ status: filters.status.filter((x) => x !== s) }) });
   if (filters.tag) chips.push({ id: "t", text: `#${filters.tag}`, clear: () => set({ tag: "" }) });
   if (filters.from) chips.push({ id: "from", text: `${copy.dashboard.filters.dateFrom}: ${filters.from}`, clear: () => set({ from: "" }) });
@@ -248,6 +258,7 @@ export function DocTraceDashboard() {
           <button type="button" aria-pressed={layout === "table"} onClick={() => setLayout("table")}><TableIcon aria-hidden="true" style={{ width: "0.9rem", height: "0.9rem" }} /> {copy.dashboard.viewTable}</button>
           <button type="button" aria-pressed={layout === "grid"} onClick={() => setLayout("grid")}><LayoutGridIcon aria-hidden="true" style={{ width: "0.9rem", height: "0.9rem" }} /> {copy.dashboard.viewGrid}</button>
         </div>
+        {canUpload ? <Link className="ctr-btn" href="/documents/processing">{aiCopy.nav.processing}</Link> : null}
         {canUpload ? <Link className="ctr-btn is-primary" href="/documents/upload"><PlusIcon aria-hidden="true" />{copy.dashboard.upload}</Link> : null}
       </div>} />}>
       <div className="ins dt">
@@ -291,6 +302,7 @@ export function DocTraceDashboard() {
           <div className="dt-more ctr-row" style={{ flexWrap: "wrap", gap: "0.6rem", alignItems: "end", flex: "1 1 100%" }}>
             <Field label={copy.dashboard.filters.project}>{(id) => <ProjectPicker id={id} copy={copy} value={filters.projectId} label={projectLabel} onChange={(pid, l) => { setProjectLabel(l); set({ projectId: pid }); }} />}</Field>
             <Field label={copy.dashboard.filters.fileType}>{(id) => <select id={id} className="ctr-input" value={filters.fileType[0] ?? ""} onChange={(e) => set({ fileType: e.target.value ? [e.target.value] : [] })}><option value="">{copy.common.all}</option>{DOCUMENT_FILE_TYPES.map((f) => <option key={f} value={f}>{(copy.fileType as Record<string, string>)[f]}</option>)}</select>}</Field>
+            <Field label={aiCopy.filter.aiStatus}>{(id) => <select id={id} className="ctr-input" value={filters.aiStatus} onChange={(e) => set({ aiStatus: e.target.value })}><option value="">{aiCopy.filter.any}</option>{AI_STATUSES.map((s) => <option key={s} value={s}>{aiStatusLabel(s, aiCopy)}</option>)}</select>}</Field>
             <Field label={copy.dashboard.filters.status}>{(id) => <select id={id} className="ctr-input" value={filters.status[0] ?? ""} onChange={(e) => set({ status: e.target.value ? [e.target.value] : [], archived: false, drafts: false })}><option value="">{copy.status.ACTIVE}</option>{(["DRAFT", "SUPERSEDED", ...(hintArchivedView(roleKey) ? ["ARCHIVED"] : [])] as const).map((s) => <option key={s} value={s}>{copy.status[s as "DRAFT"]}</option>)}</select>}</Field>
             <Field label={copy.dashboard.filters.dateFrom}>{(id) => <input id={id} type="date" className="ctr-input" value={filters.from} onChange={(e) => set({ from: e.target.value })} />}</Field>
             <Field label={copy.dashboard.filters.dateTo}>{(id) => <input id={id} type="date" className="ctr-input" value={filters.to} onChange={(e) => set({ to: e.target.value })} />}</Field>
@@ -328,6 +340,7 @@ export function DocTraceDashboard() {
             <button type="button" className="ctr-btn" onClick={() => setBulk("ARCHIVE")}>{copy.dashboard.bulk.archive}</button>
             <button type="button" className="ctr-btn" onClick={() => setBulk("ADD_TAG")}>{copy.dashboard.bulk.addTag}</button>
             <button type="button" className="ctr-btn" onClick={() => setBulk("CHANGE_CATEGORY")}>{copy.dashboard.bulk.changeCategory}</button>
+            {canUpload ? <button type="button" className="ctr-btn" disabled={selected.size > 50 || reprocessSel.isPending} title={selected.size > 50 ? aiCopy.center.bulk.body : aiCopy.panel.reprocessWhy} onClick={() => reprocessSel.mutate([...selected])}>{reprocessSel.isPending ? aiCopy.common.working : aiCopy.bulk.reprocess}</button> : null}
             <button type="button" className="ctr-btn is-ghost" style={{ color: "#fff" }} onClick={clearSelection}>{copy.dashboard.bulk.clearSelection}</button>
           </div>
         ) : null}
