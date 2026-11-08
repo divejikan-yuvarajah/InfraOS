@@ -152,19 +152,48 @@ flowchart TB
 
 ```mermaid
 sequenceDiagram
-    participant U as User (browser)
-    participant W as Next.js
+    autonumber
+    actor U as Applicant / Officer
+    actor SA as Super Admin
+    participant W as Next.js Web
     participant A as Express API
-    participant D as MongoDB
+    participant M as MongoDB
+    participant E as Nodemailer / SMTP
 
-    U->>W: Sign in form
+    Note over U,E: 1. Institutional Registration & Verification Gate
+    U->>W: Submit 3-step registration (Account, Org, Responsibility)
+    W->>A: POST /auth/register-request
+    A->>A: Validate input & hash password (bcrypt cost 12)
+    A->>M: Save RegistrationRequest (status: PENDING, accountStatus: pending)
+    A->>E: Send Admin Dossier Alert (divejuthe@gmail.com)
+    A-->>W: 201 Created (Reference: REQ-YYYY-XXXXXX)
+    W-->>U: Verification Pending Confirmation Screen
+    Note over U,A: Unapproved sign-in attempts return 403 ACCOUNT_PENDING_APPROVAL
+
+    Note over SA,E: 2. Super Admin RBAC Review & Approval
+    E-->>SA: Email Notification with "Review & Approve Request" CTA
+    SA->>W: Open /admin/registrations?id=:requestId
+    SA->>W: Sign in (requires user.read & user.create permissions)
+    W->>A: GET /admin/registrations/:id
+    A->>M: Read applicant dossier & requested responsibility
+    A-->>W: Dossier details & institutional context
+    SA->>W: Assign Role & Agency, submit approval
+    W->>A: POST /admin/registrations/:id/approve
+    A->>M: Update Request (APPROVED) & Activate User (status: ACTIVE)
+    A->>E: Send Activation Email to applicant
+    A-->>W: 200 OK (Account Activated)
+    E-->>U: "Account Approved" notification with sign-in link
+
+    Note over U,M: 3. Session Authentication & Rotating Token Lifecycle
+    U->>W: Submit sign-in credentials (email + password)
     W->>A: POST /auth/login
-    A->>D: verify user, status, email verified
-    A-->>W: short-lived access JWT (in memory) + HTTP-only refresh cookie
-    W->>A: API calls with Authorization: Bearer
-    A->>D: re-read live user and role, resolve agency scope
-    A-->>W: data (or 404 when out of scope)
-    Note over W,A: On 401 the client rotates the refresh cookie once.<br/>A moved session discards late results.
+    A->>M: Verify bcrypt hash, status: ACTIVE, emailVerified: true, agency active
+    A->>M: Create RefreshFamily & RefreshSession
+    A-->>W: Short-lived access JWT (memory) + HTTP-only rotating refresh cookie
+    W->>A: API requests with Authorization: Bearer <token>
+    A->>M: Validate JWT, enforce agency scope & RBAC permissions
+    A-->>W: Authorized data (or 404 when out-of-scope)
+    Note over W,A: On 401 access expiry, client calls POST /auth/refresh.<br/>Single-use token rotation with family revocation on replay reuse.
 ```
 
 ### 4.4 Conflict detection and coordination (RoadSync)
