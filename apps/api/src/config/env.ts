@@ -46,6 +46,13 @@ export type AppEnv = {
   R2_SECRET_ACCESS_KEY?: string;
   R2_BUCKET?: string;
   R2_ENDPOINT?: string;
+  ADMIN_APPROVAL_EMAIL?: string;
+  SMTP_HOST?: string;
+  SMTP_PORT?: number;
+  SMTP_USER?: string;
+  SMTP_PASS?: string;
+  SMTP_FROM?: string;
+  SMTP_SECURE?: boolean;
 };
 
 export type EnvIssue = {
@@ -63,6 +70,7 @@ export const SECRET_ENV_NAMES = [
   "QDRANT_API_KEY",
   "R2_ACCESS_KEY_ID",
   "R2_SECRET_ACCESS_KEY",
+  "SMTP_PASS",
 ] as const;
 
 export const REJECTED_ENV_ALIASES: Record<string, string> = {
@@ -433,6 +441,18 @@ export function parseEnv(
   const r2Bucket = read(source, "R2_BUCKET");
   const r2Endpoint = read(source, "R2_ENDPOINT");
 
+  const adminApprovalEmail = read(source, "ADMIN_APPROVAL_EMAIL");
+  const smtpHost = read(source, "SMTP_HOST");
+  const rawSmtpPort = read(source, "SMTP_PORT");
+  const smtpPort = rawSmtpPort
+    ? parseWithSchema(issues, "SMTP_PORT", portSchema, rawSmtpPort)
+    : undefined;
+  const smtpUser = read(source, "SMTP_USER");
+  const smtpPass = read(source, "SMTP_PASS");
+  const smtpFrom = read(source, "SMTP_FROM");
+  const rawSmtpSecure = read(source, "SMTP_SECURE");
+  const smtpSecure = rawSmtpSecure === "true" || rawSmtpSecure === "1";
+
   if (issues.length > 0) {
     throw new EnvValidationError(issues);
   }
@@ -460,6 +480,13 @@ export function parseEnv(
     ...(r2SecretAccessKey ? { R2_SECRET_ACCESS_KEY: r2SecretAccessKey } : {}),
     ...(r2Bucket ? { R2_BUCKET: r2Bucket } : {}),
     ...(r2Endpoint ? { R2_ENDPOINT: r2Endpoint } : {}),
+    ...(adminApprovalEmail ? { ADMIN_APPROVAL_EMAIL: adminApprovalEmail } : {}),
+    ...(smtpHost ? { SMTP_HOST: smtpHost } : {}),
+    ...(smtpPort ? { SMTP_PORT: smtpPort } : {}),
+    ...(smtpUser ? { SMTP_USER: smtpUser } : {}),
+    ...(smtpPass ? { SMTP_PASS: smtpPass } : {}),
+    ...(smtpFrom ? { SMTP_FROM: smtpFrom } : {}),
+    ...(rawSmtpSecure !== undefined ? { SMTP_SECURE: smtpSecure } : {}),
   };
 }
 

@@ -116,6 +116,7 @@ Must still pass `project.read` on that project.
 | `document.ask` | RAG (ACL = readable docs only) |
 | `document.update` | Edit document metadata, status and links within scope (Batch 08) |
 | `document.restrict` | Mark SENSITIVE or exclude from AI processing, with a reason (Batch 08) |
+| `ai.manage` | AI service status, embedding reindex and token-budget detail (GOV_ADMIN, SUPER_ADMIN; Batch 09) |
 
 ### Contractor
 

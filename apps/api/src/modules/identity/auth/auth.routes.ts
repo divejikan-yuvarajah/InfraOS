@@ -29,7 +29,12 @@ import {
   RegistrationConflictError,
   RegistrationDependencyError,
 } from "../registration.service.js";
-import { loginWithPassword } from "./auth.service.js";
+import {
+  AccountPendingApprovalError,
+  AccountRejectedError,
+  AccountSuspendedError,
+  loginWithPassword,
+} from "./auth.service.js";
 import { authNow } from "./auth.clock.js";
 import { clearRefreshCookie, readRefreshCookie, setRefreshCookie } from "./cookies.js";
 import { loginBodySchema } from "./login.schema.js";
@@ -234,6 +239,14 @@ authRouter.post("/login", loginRateLimit, async (req, res, next) => {
     setRefreshCookie(res, issued.refreshToken, issued.refreshExpiresAt, authNow());
     res.status(200).json(success(issued.session, req.requestId));
   } catch (error) {
+    if (
+      error instanceof AccountPendingApprovalError ||
+      error instanceof AccountRejectedError ||
+      error instanceof AccountSuspendedError
+    ) {
+      res.status(403).json(failure(error.code, error.message, req.requestId));
+      return;
+    }
     if (error instanceof AuthDependencyError) {
       res.status(503).json(failure(error.code, error.message, req.requestId));
       return;

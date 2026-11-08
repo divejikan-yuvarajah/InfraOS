@@ -31,6 +31,10 @@ services:
         sync: false
       - key: MONGODB_DB_NAME
         sync: false
+      - key: AI_BASE_URL
+        sync: false # FastAPI service origin, e.g. https://infraos-ai.onrender.com (optional; AI features report unavailable without it)
+      - key: AI_INTERNAL_SECRET
+        sync: false # must equal AI_INTERNAL_SECRET on infraos-ai
 
   - type: web
     name: infraos-web
@@ -45,3 +49,27 @@ services:
         value: "1"
       - key: NEXT_PUBLIC_API_BASE_URL
         sync: false # API origin only, e.g. https://infraos-api.onrender.com (no /api/v1)
+
+  - type: web
+    name: infraos-ai
+    runtime: python
+    plan: free # sleeps when idle; the Express job runner tolerates 30-60 s cold starts
+    rootDir: apps/ai-service
+    buildCommand: pip install .
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.7"
+      - key: APP_ENV
+        value: production
+      - key: AI_EMBED_MODEL
+        value: baai/bge-m3
+      - key: AI_INTERNAL_SECRET
+        sync: false # same value as on infraos-api
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: QDRANT_URL
+        sync: false # Qdrant Cloud cluster URL (https)
+      - key: QDRANT_API_KEY
+        sync: false

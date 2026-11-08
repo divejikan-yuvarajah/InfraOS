@@ -107,6 +107,47 @@ const registrationRequestSchema = new Schema(
       default: "PENDING",
       index: true,
     },
+    accountStatus: {
+      type: String,
+      required: true,
+      enum: ["pending", "approved", "rejected"],
+      default: "pending",
+      index: true,
+    },
+    assignedRoleId: {
+      type: Schema.Types.ObjectId,
+      ref: "Role",
+      default: null,
+    },
+    assignedAgencyId: {
+      type: Schema.Types.ObjectId,
+      ref: "Agency",
+      default: null,
+    },
+    reviewedBy: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
+    reviewedAt: {
+      type: Date,
+      default: null,
+    },
+    rejectionReason: {
+      type: String,
+      trim: true,
+      default: null,
+    },
+    approvalNotes: {
+      type: String,
+      trim: true,
+      default: null,
+    },
+    createdUserId: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
     acceptedTermsAt: {
       type: Date,
       required: true,

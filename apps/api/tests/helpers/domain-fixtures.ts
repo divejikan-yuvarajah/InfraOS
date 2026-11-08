@@ -30,7 +30,11 @@ export const fixtures = {
   Contractor: (patch = {}) => new Contractor({ name: "Synthetic contractor", registrationNumber: "TEST-0001", riskLevel: "LOW", ...patch }),
   ProjectPayment: (patch = {}) => new ProjectPayment({ projectId: id(), contractorId: id(), amount: money, paymentType: "INTERIM", date: dates.start, createdBy: id(), ...patch }),
   Document: (patch = {}) => new Document({ projectId: id(), documentType: "CONTRACT", fileName: "synthetic.pdf", uploadedBy: id(), ...patch }),
-  DocumentChunk: (patch = {}) => new DocumentChunk({ projectId: id(), documentId: id(), chunkIndex: 0, content: "Synthetic test content", ...patch }),
+  DocumentChunk: (patch: Record<string, unknown> = {}) => {
+    const documentId = (patch.documentId as { toString(): string } | undefined) ?? id();
+    const chunkIndex = (patch.chunkIndex as number | undefined) ?? 0;
+    return new DocumentChunk({ projectId: id(), agencyId: id(), documentId, versionNo: 1, chunkIndex, chunkId: `${String(documentId)}:1:${Math.max(0, chunkIndex)}`, content: "Synthetic test content", charCount: 22, tokenEstimate: 6, contentHash: "a".repeat(64), ...patch });
+  },
   Inspection: (patch = {}) => new Inspection({ projectId: id(), inspectorId: id(), inspectionDate: dates.start, ...patch }),
   Asset: (patch = {}) => new Asset({ sourceProjectId: id(), agencyId: id(), assetType: "ROAD", name: "Synthetic road", commissionedAt: dates.end, ...patch }),
   MaintenanceRecord: (patch = {}) => new MaintenanceRecord({ assetId: id(), maintenanceType: "ROUTINE", scheduledDate: dates.end, cost: money, ...patch }),

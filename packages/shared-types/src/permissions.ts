@@ -60,6 +60,7 @@ export const PERMISSION_CATALOG = [
   "document.ask",
   "document.update",
   "document.restrict",
+  "ai.manage",
   "contractor.read",
   "contractor.manage",
   "contractor.performance.read",

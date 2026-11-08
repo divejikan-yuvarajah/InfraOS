@@ -6,6 +6,7 @@ import { emailVerificationRouter } from "../modules/identity/email-verification.
 import { agencyManagementRouter } from "../modules/agencies/management/agency-management.routes.js";
 import { adminPermissionRouter, adminRoleRouter } from "../modules/identity/admin-roles/admin-role.routes.js";
 import { adminUserRouter } from "../modules/identity/admin-users/admin-user.routes.js";
+import { adminRegistrationRouter } from "../modules/identity/admin-registrations/admin-registration.routes.js";
 import { profileRouter } from "../modules/identity/profile/profile.routes.js";
 import { projectRouter } from "../modules/projects/projects.routes.js";
 import { notificationRouter } from "../modules/notifications/notice.routes.js";
@@ -20,6 +21,7 @@ import { assetRouter } from "../modules/assets/asset.routes.js";
 import { documentRouter, projectDocumentsRouter } from "../modules/documents/document.routes.js";
 import { assetMaintenanceRouter, maintenanceRouter } from "../modules/assets/maintenance.routes.js";
 import { adminAuditLogRouter } from "../modules/audit/audit-log.routes.js";
+import { aiDocumentRouter, aiRouter } from "../modules/ai/ai.routes.js";
 import { inframapRouter } from "../modules/inframap/inframap.routes.js";
 
 export function createV1Router(): Router {
@@ -30,6 +32,7 @@ export function createV1Router(): Router {
   router.use("/auth", authRouter);
   router.use("/profile", profileRouter);
   router.use("/admin/users", adminUserRouter);
+  router.use("/admin/registrations", adminRegistrationRouter);
   router.use("/admin/agencies", agencyManagementRouter);
   router.use("/admin/roles", adminRoleRouter);
   router.use("/admin/permissions", adminPermissionRouter);
@@ -47,7 +50,9 @@ export function createV1Router(): Router {
   router.use("/inspections", inspectionRouter);
   router.use("/assets/:assetId/maintenance", assetMaintenanceRouter);
   router.use("/assets", assetRouter);
+  router.use("/documents", aiDocumentRouter);
   router.use("/documents", documentRouter);
+  router.use("/ai", aiRouter);
   router.use("/maintenance", maintenanceRouter);
   router.use("/insights/coordination", coordinationInsightsRouter);
   return router;

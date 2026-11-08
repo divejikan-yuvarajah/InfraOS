@@ -4,11 +4,12 @@ import { grantCeiling } from "../admin-roles/admin-role.policy.js";
 import { Role } from "../models/role.model.js";
 import { SYSTEM_ROLE_PERMISSIONS } from "./system-role-permissions.js";
 
-/** The Batch 08 DocTrace grants (document.update, document.restrict). Only these are ever added, so other customizations on stored roles are never touched. */
+/** The Batch 08 DocTrace grants (document.update, document.restrict) plus the Batch 09 ai.manage grant. Only these are ever added, so other customizations on stored roles are never touched. */
 export const DOCUMENT_BATCH08_GRANTS: Partial<Record<SystemRoleKey, readonly string[]>> = {
-  GOV_ADMIN: ["document.update", "document.restrict"],
+  GOV_ADMIN: ["document.update", "document.restrict", "ai.manage"],
   AGENCY_OFFICER: ["document.update", "document.restrict"],
   PROJECT_MANAGER: ["document.update"],
+  SUPER_ADMIN: ["ai.manage"],
 };
 const ROLES = Object.keys(DOCUMENT_BATCH08_GRANTS) as SystemRoleKey[];
 

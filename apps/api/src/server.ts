@@ -7,6 +7,7 @@ import {
   sanitizeMongoError,
 } from "./config/database.js";
 import { env, requireMongoConfig } from "./config/env.js";
+import { startAiBackground, stopAiBackground } from "./modules/ai/ai.bootstrap.js";
 import { logger } from "./shared/logger.js";
 
 const SHUTDOWN_TIMEOUT_MS = 10_000;
@@ -66,6 +67,7 @@ function registerShutdown(server: Server): void {
     force.unref();
 
     server.close(async (closeError) => {
+      await stopAiBackground().catch(() => undefined);
       if (closeError) {
         logger.error(
           { reason: closeError.message },
@@ -95,6 +97,7 @@ function registerShutdown(server: Server): void {
 async function main(): Promise<void> {
   await connectMongoIfConfigured();
   const server = await startHttpServer();
+  startAiBackground();
   registerShutdown(server);
 }
 

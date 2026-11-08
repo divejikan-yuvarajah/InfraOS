@@ -19,6 +19,7 @@ import {
   SlidersHorizontalIcon,
   SwordsIcon,
   UserCircleIcon,
+  UserCheckIcon,
   UsersIcon,
   WalletIcon,
   WrenchIcon,
@@ -244,6 +245,15 @@ export const WORKSPACE_NAV: readonly WorkspaceNavGroup[] = [
         icon: UsersIcon,
         materialIcon: "badge",
         nodeGlyph: "○",
+      },
+      {
+        href: "/admin/registrations",
+        label: "Registration Requests",
+        icon: UserCheckIcon,
+        materialIcon: "how_to_reg",
+        nodeGlyph: "○",
+        i18n: { si: "ලියාපදිංචි ඉල්ලීම්", ta: "பதிவு கோரிக்கைகள்" },
+        roles: ["SUPER_ADMIN", "GOV_ADMIN"],
       },
       {
         href: "/admin/agencies",

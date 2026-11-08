@@ -4,7 +4,8 @@
   "private": true,
   "description": "INFRAOS Next.js frontend",
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --webpack",
+    "dev:turbo": "next dev",
     "build": "next build --webpack",
     "start": "next start",
     "lint": "eslint",
