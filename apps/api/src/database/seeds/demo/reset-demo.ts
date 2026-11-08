@@ -2,6 +2,8 @@ import { Asset } from "../../../modules/assets/models/asset.model.js";
 import { HazardZone } from "../../../modules/risk/models/hazard-zone.model.js";
 import { MaintenanceRecord } from "../../../modules/assets/models/maintenance-record.model.js";
 import { Document } from "../../../modules/documents/models/document.model.js";
+import { ProgressReport } from "../../../modules/projects/models/progress-report.model.js";
+import { SHOWCASE_CODES } from "./seed-showcase.js";
 import { DocumentUpload } from "../../../modules/documents/models/document-upload.model.js";
 import { DocumentVersion } from "../../../modules/documents/models/document-version.model.js";
 import { ProjectPayment } from "../../../modules/finance/models/project-payment.model.js";
@@ -67,7 +69,7 @@ export async function resetDemoData(seedEnv: SeedEnvSlice): Promise<void> {
   }
 
   const demoProjects = await Project.find({
-    projectCode: { $in: [...DEMO_PROJECT_CODES, ...DEMO_LIFECYCLE_PROJECT_CODES] },
+    projectCode: { $in: [...DEMO_PROJECT_CODES, ...DEMO_LIFECYCLE_PROJECT_CODES, ...SHOWCASE_CODES] },
   }).select("_id");
   const demoProjectIds = demoProjects.map((p) => p._id);
 
@@ -101,6 +103,7 @@ export async function resetDemoData(seedEnv: SeedEnvSlice): Promise<void> {
   if (demoProjectIds.length > 0) {
     // The budget ledger is append-only through the model, so the reset clears it natively; expenses and payments are ordinary rows.
     await ProjectBudgetRevision.collection.deleteMany({ projectId: { $in: demoProjectIds } });
+    await ProgressReport.collection.deleteMany({ projectId: { $in: demoProjectIds } }); // append-only through the model, so cleared natively
     await ProjectExpense.deleteMany({ projectId: { $in: demoProjectIds } });
   }
   if (demoProjectIds.length > 0) await ContractorAssignment.deleteMany({ projectId: { $in: demoProjectIds } });

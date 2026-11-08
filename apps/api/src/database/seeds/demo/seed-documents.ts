@@ -14,6 +14,7 @@ import { Inspection } from "../../../modules/inspections/models/inspection.model
 import { Project } from "../../../modules/projects/models/project.model.js";
 import { d } from "../helpers/dates.js";
 import { ctxId, type DemoContext } from "./context.js";
+import { SHOWCASE_CODES } from "./seed-showcase.js";
 
 type Id = mongoose.Types.ObjectId;
 const PNG = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==", "base64");
@@ -36,7 +37,7 @@ export function makePdf(line: string): Buffer {
 }
 
 type Spec = {
-  no: number; project?: "INF-ROAD-001" | "INF-BRIDGE-001" | "INF-WATER-001"; agency?: string; category: string; title: string; kind: "pdf" | "txt" | "png"; versions?: number;
+  no: number; project?: "INF-ROAD-001" | "INF-BRIDGE-001" | "INF-WATER-001" | (typeof SHOWCASE_CODES)[number]; agency?: string; category: string; title: string; kind: "pdf" | "txt" | "png"; versions?: number;
   status?: "DRAFT" | "ACTIVE" | "ARCHIVED"; sensitive?: boolean; visibility?: "INTERNAL" | "PROJECT_TEAM" | "PUBLIC"; link?: "contractor" | "payment" | "inspection" | "asset"; tags?: string[]; reference?: string; expiresInDays?: number; description?: string;
 };
 
@@ -54,6 +55,19 @@ const SPECS: Spec[] = [
   { no: 11, project: "INF-WATER-001", category: "APPROVAL_DOCUMENT", title: "Environmental Approval Letter (Synthetic)", kind: "pdf", expiresInDays: 20, tags: ["approval"], reference: "ENV-APP-77" },
   { no: 12, project: "INF-WATER-001", category: "TENDER", title: "Pipe Supply Tender Notice (Synthetic)", kind: "txt", tags: ["tender"] },
   { no: 13, agency: "DEMO_RDA", category: "GOVERNMENT_CORRESPONDENCE", title: "Ministry Circular on Road Safety (Synthetic)", kind: "txt", visibility: "PROJECT_TEAM", tags: ["circular"] },
+  { no: 14, project: "INF-SHOW-001", category: "PROJECT_PLAN", title: "Kandy Ring Road Delivery Plan (Synthetic)", kind: "pdf", versions: 2, visibility: "PROJECT_TEAM", tags: ["plan", "road", "kandy"], reference: "PLAN-KDY-001" },
+  { no: 15, project: "INF-SHOW-001", category: "CONTRACT", title: "Ring Road Works Contract (Synthetic)", kind: "pdf", sensitive: true, link: "contractor", tags: ["contract"], reference: "SHOW-CT-001" },
+  { no: 16, project: "INF-SHOW-001", category: "ENGINEERING_DRAWING", title: "Ring Road Typical Cross-Section (Synthetic)", kind: "png", visibility: "PROJECT_TEAM", tags: ["drawing", "kandy"] },
+  { no: 17, project: "INF-SHOW-001", category: "PROGRESS_REPORT", title: "October Progress Report - Draft (Synthetic)", kind: "pdf", status: "DRAFT", tags: ["progress"] },
+  { no: 18, project: "INF-SHOW-002", category: "BOQ", title: "Coastal Pipeline Bill of Quantities (Synthetic)", kind: "txt", link: "contractor", tags: ["boq", "water"] },
+  { no: 19, project: "INF-SHOW-002", category: "INSPECTION_REPORT", title: "Pipe-Laying Inspection Notes (Synthetic)", kind: "pdf", link: "inspection", visibility: "PROJECT_TEAM", tags: ["inspection"] },
+  { no: 20, project: "INF-SHOW-003", category: "APPROVAL_DOCUMENT", title: "Grid Connection Permit (Synthetic)", kind: "pdf", expiresInDays: 12, tags: ["permit", "expiring"], reference: "PERMIT-JFN-12" },
+  { no: 21, project: "INF-SHOW-003", category: "PAYMENT_EVIDENCE", title: "Transformer Advance Voucher (Synthetic)", kind: "pdf", link: "payment", tags: ["payment"] },
+  { no: 22, project: "INF-SHOW-004", category: "COMPLETION_REPORT", title: "Matara Bridge Completion Report (Synthetic)", kind: "pdf", visibility: "PROJECT_TEAM", tags: ["completion", "bridge"] },
+  { no: 23, project: "INF-SHOW-004", category: "MAINTENANCE_DOCUMENT", title: "Bridge Maintenance Plan, Year 1 (Synthetic)", kind: "txt", tags: ["maintenance"] },
+  { no: 24, project: "INF-SHOW-005", category: "GOVERNMENT_CORRESPONDENCE", title: "Land Dispute Notice to the Divisional Secretary (Synthetic)", kind: "txt", tags: ["land", "hold"] },
+  { no: 25, project: "INF-SHOW-006", category: "TENDER", title: "Community Hall Tender Notice (Synthetic)", kind: "txt", tags: ["tender"] },
+  { no: 26, project: "INF-SHOW-006", category: "PROJECT_PROPOSAL", title: "Community Health Hall Proposal (Synthetic)", kind: "pdf", visibility: "PROJECT_TEAM", tags: ["proposal"] },
 ];
 
 function bytesFor(s: Spec, v: number): { bytes: Buffer; mime: string; ext: string } {
@@ -78,7 +92,7 @@ export async function seedDemoDocuments(context: DemoContext): Promise<{ documen
   let versions = 0;
   let documents = 0;
   for (const s of SPECS) {
-    const projectId = s.project ? context.projects.get(s.project) : undefined;
+    const projectId = s.project ? context.projects.get(s.project as never) : undefined;
     const project = projectId ? await Project.findById(projectId).select("agencyId").lean() : null;
     const agencyId = (project?.agencyId as Id | undefined) ?? (s.agency ? context.agencies.get(s.agency) : undefined);
     if (!agencyId) continue;

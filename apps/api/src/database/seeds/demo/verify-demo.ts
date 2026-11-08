@@ -4,6 +4,7 @@ import { Agency } from "../../../modules/agencies/models/agency.model.js";
 import { Document } from "../../../modules/documents/models/document.model.js";
 import { DocumentVersion } from "../../../modules/documents/models/document-version.model.js";
 import { DEMO_DOCUMENT_COUNT } from "./seed-documents.js";
+import { SHOWCASE_CODES } from "./seed-showcase.js";
 import { Asset } from "../../../modules/assets/models/asset.model.js";
 import { HazardZone } from "../../../modules/risk/models/hazard-zone.model.js";
 import { Milestone } from "../../../modules/projects/models/milestone.model.js";
@@ -271,6 +272,19 @@ export async function verifyDemoSeed(): Promise<VerifyDemoResult> {
     pass: seeded.length === DEMO_DOCUMENT_COUNT && seeded.some((x) => (x.currentVersionNo ?? 0) === 3) && seeded.some((x) => x.status === "DRAFT") && seeded.some((x) => x.status === "ARCHIVED") && seeded.some((x) => x.confidentiality === "SENSITIVE")
       && seeded.some((x) => !x.projectId) && seeded.some((x) => x.contractorId) && seeded.every((x) => x.origin === "DOCTRACE") && seededVersions === seeded.reduce((n, x) => n + (x.currentVersionNo ?? 1), 0),
     detail: `documents=${seeded.length} versions=${seededVersions} legacyWithoutFile=${legacyNoBytes} linked(payment=${seeded.filter((x) => x.paymentId).length},inspection=${seeded.filter((x) => x.inspectionId).length},asset=${seeded.filter((x) => x.assetId).length})`,
+  });
+  const showProjects = await Project.find({ projectCode: { $in: [...SHOWCASE_CODES] } }).select("status physicalProgress financialProgress").lean();
+  const showIds = showProjects.map((x) => x._id);
+  const [showMilestones, showAssignments, showPayments, showExpenses, showInspections] = await Promise.all([
+    Milestone.countDocuments({ projectId: { $in: showIds } }), ContractorAssignment.countDocuments({ projectId: { $in: showIds } }), ProjectPayment.countDocuments({ projectId: { $in: showIds } }),
+    ProjectExpense.countDocuments({ projectId: { $in: showIds } }), Inspection.countDocuments({ projectId: { $in: showIds } }),
+  ]);
+  const showDocs = await Document.countDocuments({ projectId: { $in: showIds }, origin: "DOCTRACE" });
+  lines.push({
+    name: "Showcase projects: statuses, milestones, contractors, finance, inspections and documents on every project",
+    pass: showProjects.length === SHOWCASE_CODES.length && ["ACTIVE", "DELAYED", "COMPLETED", "ON_HOLD", "APPROVED"].every((st) => showProjects.some((x) => x.status === st)) && showMilestones >= 18 && showAssignments === SHOWCASE_CODES.length
+      && showPayments >= 10 && showExpenses >= 8 && showInspections >= 4 && showDocs >= 10,
+    detail: `projects=${showProjects.length} milestones=${showMilestones} assignments=${showAssignments} payments=${showPayments} expenses=${showExpenses} inspections=${showInspections} documents=${showDocs}`,
   });
   const pass = lines.every((line) => line.pass);
   return { lines, pass };
