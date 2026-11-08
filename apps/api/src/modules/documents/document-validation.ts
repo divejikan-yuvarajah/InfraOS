@@ -101,7 +101,7 @@ export class FileInspector {
       case "csv": {
         if (this.textError) return fail(this.textError);
         try { this.decoder.decode(); } catch { return fail("FILE_CORRUPT"); }
-        const start = h.subarray(0, 512).toString("utf8").replace(/^﻿/, "").trimStart().toLowerCase();
+        const start = h.subarray(0, 512).toString("utf8").replace(/^\uFEFF/, "").trimStart().toLowerCase();
         if (/^(<!doctype|<html|<svg|<\?xml|<script|<head|<body|<iframe|%pdf-|mz)/.test(start) || h[0] === 0x4d && h[1] === 0x5a || h[0] === 0x7f && h[1] === 0x45) return fail("FILE_SIGNATURE_MISMATCH");
         return { ok: true, sizeBytes: size, activeContent: false };
       }
