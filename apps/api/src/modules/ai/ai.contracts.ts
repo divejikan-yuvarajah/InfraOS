@@ -49,6 +49,7 @@ export const indexResponse = z.object({
 });
 export type IndexResponse = z.infer<typeof indexResponse>;
 
+export const dropCollectionResponse = z.object({ dropped: z.boolean() });
 export const deleteResponse = z.object({ removed: z.number().int().nonnegative() });
 
 export const searchRequest = z.object({

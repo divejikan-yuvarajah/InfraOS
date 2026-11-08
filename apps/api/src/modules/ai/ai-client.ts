@@ -5,7 +5,7 @@ import { AI_ERROR_CODES, type AiErrorCode } from "@infraos/shared-types";
 import { logger } from "../../shared/logger.js";
 import { aiConfig, type AiConfig } from "./ai.config.js";
 import {
-  capabilitiesResponse, deleteResponse, extractChunkResponse, indexRequest, indexResponse, readyResponse, reindexPlanResponse, searchRequest, searchResponse, serviceError,
+  capabilitiesResponse, deleteResponse, dropCollectionResponse, extractChunkResponse, indexRequest, indexResponse, readyResponse, reindexPlanResponse, searchRequest, searchResponse, serviceError,
   type CapabilitiesResponse, type ExtractChunkResponse, type IndexRequest, type IndexResponse, type ReadyResponse, type ReindexPlanResponse, type SearchRequest, type SearchResponse,
 } from "./ai.contracts.js";
 
@@ -139,6 +139,7 @@ export function createAiClient(deps: AiClientDeps = {}) {
       return call("POST", "/v1/extract-chunk", { form, bodyHash: sha256(metadata), timeoutMs: cfg.timeoutsMs.extract, schema: extractChunkResponse });
     },
 
+    dropCollection: (name: string) => jsonPost("/v1/admin/drop-collection", { name }, cfg.timeoutsMs.delete, dropCollectionResponse),
     index: (req: IndexRequest): Promise<IndexResponse> => jsonPost("/v1/index", indexRequest.parse(req), cfg.timeoutsMs.index, indexResponse),
     deleteDocument: (documentId: string, keepVersionNo?: number) => jsonPost("/v1/delete", { documentId, ...(keepVersionNo ? { keepVersionNo } : {}) }, cfg.timeoutsMs.delete, deleteResponse),
     search: (req: SearchRequest): Promise<SearchResponse> => jsonPost("/v1/search", searchRequest.parse(req), cfg.timeoutsMs.search, searchResponse),

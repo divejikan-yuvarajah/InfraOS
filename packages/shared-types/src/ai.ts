@@ -71,6 +71,7 @@ export const AI_AUDIT_ACTIONS = [
   "ai.document_index_purged",
   "ai.reindex_started",
   "ai.retrieval_diagnostic_run",
+  "ai.chunk_preview_viewed",
 ] as const;
 export type AiAuditAction = (typeof AI_AUDIT_ACTIONS)[number];
 

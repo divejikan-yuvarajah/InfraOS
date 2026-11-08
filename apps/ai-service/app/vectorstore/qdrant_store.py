@@ -134,6 +134,9 @@ class QdrantStore:
 
         return self._guard(run)
 
+    def drop_collection(self, name: str) -> None:
+        self._guard(lambda: self.client.delete_collection(name))
+
     def stats(self, name: str) -> dict[str, Any]:
         def run() -> dict[str, Any]:
             return {"name": name, "points": self.client.count(name, exact=True).count}

@@ -181,3 +181,17 @@ def test_batch_planning_respects_limits() -> None:
     groups = plan_batches(texts, max_items=4, max_tokens=250)
     assert all(len(g) <= 2 for g in groups) and sum(len(g) for g in groups) == 10
     assert plan_batches(["x" * 400 * 100], 64, 8000) == [[0]]  # oversized single text still gets a batch
+
+
+def test_drop_collection_guards(api: TestClient) -> None:
+    from qdrant_client import models as qm
+
+    index(api, DOC_A, 1, ["active collection content"])
+    client: QdrantClient = api.app.state.qdrant  # type: ignore[attr-defined]
+    active = [c.name for c in client.get_collections().collections][0]
+    client.create_collection(f"infraos_chunks__old-model__8", vectors_config=qm.VectorParams(size=8, distance=qm.Distance.COSINE))
+    client.create_collection("unrelated_collection", vectors_config=qm.VectorParams(size=8, distance=qm.Distance.COSINE))
+    assert call(api, "/v1/admin/drop-collection", {"name": active}).status_code == 422  # active target is protected
+    assert call(api, "/v1/admin/drop-collection", {"name": "unrelated_collection"}).status_code == 422  # not ours
+    assert call(api, "/v1/admin/drop-collection", {"name": "infraos_chunks__old-model__8"}).json() == {"dropped": True}
+    assert not client.collection_exists("infraos_chunks__old-model__8") and client.collection_exists("unrelated_collection")

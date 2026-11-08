@@ -137,6 +137,14 @@ class CollectionInfo(Strict):
     points: int
 
 
+class DropCollectionRequest(Strict):
+    name: str = Field(min_length=3, max_length=200, pattern=r"^[A-Za-z0-9_.-]+$")
+
+
+class DropCollectionResponse(Strict):
+    dropped: bool
+
+
 class ReindexPlanResponse(Strict):
     configuredModel: str | None
     dimension: int | None
