@@ -1,3 +1,4 @@
+import { BrandMark } from "@/components/common/brand-mark";
 import Link from "next/link";
 import { ArrowLeft, ShieldCheck } from "lucide-react";
 
@@ -87,7 +88,7 @@ export function TopAuthBar({
           className="flex min-w-0 items-center gap-3 text-slate-900"
         >
           <span className="flex items-center gap-1.5">
-            <span className="h-3 w-3 shrink-0 bg-[#FF5B00]" aria-hidden="true" />
+            <BrandMark size={30} />
             <span className="auth-stitch-serif text-xl font-semibold tracking-tight uppercase">
               InfraOS
             </span>

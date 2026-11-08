@@ -1,5 +1,6 @@
 "use client";
 
+import { BrandMark } from "@/components/common/brand-mark";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState, useSyncExternalStore, type ReactNode } from "react";
@@ -143,9 +144,7 @@ function SidebarNavContent({
           onClick={onNavigate}
           className="flex items-center gap-3 min-w-0"
         >
-          <div className="w-8 h-8 rounded bg-secondary-container flex items-center justify-center text-white font-bold tracking-tighter shadow-sm shrink-0">
-            <span className="material-symbols-outlined text-[20px]">hub</span>
-          </div>
+          <BrandMark size={36} />
           {!collapsed && (
             <div className="min-w-0">
               <div className="flex items-center gap-1.5">
