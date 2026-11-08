@@ -15,6 +15,7 @@ import {
   LayoutDashboardIcon,
   MapIcon,
   RouteIcon,
+  ScanSearchIcon,
   ShieldCheckIcon,
   SlidersHorizontalIcon,
   SwordsIcon,
@@ -127,6 +128,15 @@ export const WORKSPACE_NAV: readonly WorkspaceNavGroup[] = [
         nodeGlyph: "○",
         i18n: { si: "ලේඛන (DocTrace)", ta: "ஆவணங்கள் (DocTrace)" },
         roles: ["SUPER_ADMIN", "GOV_ADMIN", "AGENCY_OFFICER", "PROJECT_MANAGER", "INSPECTOR"],
+      },
+      {
+        href: "/documents/processing",
+        label: "AI Processing",
+        icon: ScanSearchIcon,
+        materialIcon: "manage_search",
+        nodeGlyph: "○",
+        i18n: { si: "AI සැකසීම", ta: "AI செயலாக்கம்" },
+        roles: ["SUPER_ADMIN", "GOV_ADMIN", "AGENCY_OFFICER", "PROJECT_MANAGER"],
       },
       {
         href: "/maintenance",
