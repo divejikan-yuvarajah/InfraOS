@@ -1,5 +1,6 @@
 "use client";
 
+import { LinkedDocumentsPanel } from "@/components/documents/linked-documents-panel";
 import { ProjectAssetsCard } from "@/components/assets/project-assets-card";
 import { OpenFinanceLink } from "@/components/finance/finance-links";
 import { ProjectContractorsCard } from "@/components/contractors/project-contractors-card";
@@ -580,6 +581,7 @@ function OverviewBody({
           <OpenFinanceLink projectId={project.id} />
           <ProjectContractorsCard projectId={project.id} projectLabel={`${project.projectCode} ${project.title}`} />
           <ProjectAssetsCard projectId={project.id} status={project.status} />
+          <LinkedDocumentsPanel entity={{ type: "project", id: project.id, label: `${project.projectCode} ${project.title}` }} />
         </div>
 
         {/* CORE-01.04 RIGHT COLUMN: Urgent Clashes, Financial Burn, Contacts & Cadastral Downloads */}

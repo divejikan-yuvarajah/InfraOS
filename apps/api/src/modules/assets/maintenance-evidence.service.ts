@@ -57,7 +57,7 @@ export const createMaintenanceEvidence = (actor: AuthenticatedActor, maintenance
     if (!asset || !project) throw new Flow(404, "NOT_FOUND");
     const evidenceId = new mongoose.Types.ObjectId();
     const ext = input.mimeType === "image/png" ? "png" : input.mimeType === "image/webp" ? "webp" : "jpg";
-    const base = { projectId: project._id, documentType: "SITE_EVIDENCE" as const, uploadedBy: oid(actor.userId), visibility: "INTERNAL" as const };
+    const base = { projectId: project._id, documentType: "SITE_EVIDENCE" as const, uploadedBy: oid(actor.userId), visibility: "INTERNAL" as const, origin: "INSPECTION_EVIDENCE" as const, agencyId: asset.agencyId };
     const [doc] = await Document.create([{ ...base, fileName: `${row.maintenanceNo ?? "maintenance"}-${live.length + 1}.${ext}`, mimeType: input.mimeType, sizeBytes: input.sizeBytes, storageKey: maintenanceKey(String(row._id), String(evidenceId), "full") }], { session });
     const [thumbDoc] = input.thumb ? await Document.create([{ ...base, fileName: `${row.maintenanceNo ?? "maintenance"}-${live.length + 1}-thumb.jpg`, mimeType: "image/jpeg", sizeBytes: input.thumb.sizeBytes, storageKey: maintenanceKey(String(row._id), String(evidenceId), "thumb") }], { session }) : [undefined];
     await MaintenanceEvidence.create([{
