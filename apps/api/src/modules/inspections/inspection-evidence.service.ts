@@ -47,7 +47,7 @@ export const createEvidence = (actor: AuthenticatedActor, rawId: string, input: 
     if (!project) throw new Flow(404, "NOT_FOUND");
     const evidenceId = new mongoose.Types.ObjectId();
     const ext = input.mimeType === "image/png" ? "png" : input.mimeType === "image/webp" ? "webp" : "jpg";
-    const base = { projectId: row.projectId, documentType: "SITE_EVIDENCE" as const, uploadedBy: oid(actor.userId), visibility: "INTERNAL" as const };
+    const base = { projectId: row.projectId, documentType: "SITE_EVIDENCE" as const, uploadedBy: oid(actor.userId), visibility: "INTERNAL" as const, origin: "INSPECTION_EVIDENCE" as const, agencyId: project.agencyId };
     const [doc] = await Document.create([{ ...base, fileName: `${row.inspectionNo ?? "inspection"}-${live.length + 1}.${ext}`, mimeType: input.mimeType, sizeBytes: input.sizeBytes, storageKey: storageKeyFor(String(row._id), String(evidenceId), "full") }], { session });
     const [thumbDoc] = input.thumb ? await Document.create([{ ...base, fileName: `${row.inspectionNo ?? "inspection"}-${live.length + 1}-thumb.jpg`, mimeType: "image/jpeg", sizeBytes: input.thumb.sizeBytes, storageKey: storageKeyFor(String(row._id), String(evidenceId), "thumb") }], { session }) : [undefined];
     const presence = input.location ? sitePresence([input.location.lon, input.location.lat], row.sitePoint ? [row.sitePoint.coordinates[0]!, row.sitePoint.coordinates[1]!] : null, project.geometry as { type: string; coordinates: unknown } | undefined) : null;
