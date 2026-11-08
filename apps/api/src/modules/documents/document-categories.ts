@@ -1,6 +1,7 @@
-import { DOCUMENT_CATEGORIES, categoryDef, fileFamilyOf, type DocumentCategoryDef, type DocumentLinkKey, type LegacyDocumentType } from "@infraos/shared-types";
+import { DOCUMENT_CATEGORIES, categoryDef, suggestCategory, type DocumentLinkKey, type LegacyDocumentType } from "@infraos/shared-types";
 
-export { DOCUMENT_CATEGORIES, categoryDef };
+/** `suggestCategory` lives in shared-types so the API and the upload wizard use one rule set. */
+export { DOCUMENT_CATEGORIES, categoryDef, suggestCategory };
 
 /** Single mapping category -> legacy `documentType`, so existing readers of `documentType` keep working. */
 export const legacyTypeFor = (category: string): LegacyDocumentType => categoryDef(category)?.legacyDocumentType ?? "OTHER";
@@ -18,20 +19,5 @@ export function illegalLink(category: string, links: LinkInput): DocumentLinkKey
 }
 
 export const categoryNeedsProject = (category: string): boolean => categoryDef(category)?.requiresProject ?? true;
-
-/** Not AI: extension/name keywords plus the entity the user is uploading from. The user always confirms. */
-export function suggestCategory(fileName: string, context?: { from?: "inspection" | "payment" | "asset" | "contractor" }): DocumentCategoryDef["key"] {
-  if (context?.from === "inspection") return "INSPECTION_REPORT";
-  if (context?.from === "payment") return "PAYMENT_EVIDENCE";
-  if (context?.from === "asset") return /maint|repair|service/i.test(fileName) ? "MAINTENANCE_DOCUMENT" : "ASSET_HANDOVER_RECORD";
-  const n = fileName.toLowerCase();
-  const rules: [RegExp, string][] = [
-    [/contract|agreement/, "CONTRACT"], [/tender|bid/, "TENDER"], [/\bboq\b|bill.?of.?quant/, "BOQ"], [/invoice|receipt|payment|voucher/, "PAYMENT_EVIDENCE"], [/budget/, "BUDGET_DOCUMENT"],
-    [/inspect/, "INSPECTION_REPORT"], [/drawing|blueprint|\bdwg\b|plan.?view/, "ENGINEERING_DRAWING"], [/proposal/, "PROJECT_PROPOSAL"], [/progress/, "PROGRESS_REPORT"],
-    [/complet|handover/, "COMPLETION_REPORT"], [/approval|permit|licen[cs]e/, "APPROVAL_DOCUMENT"], [/letter|correspond|circular/, "GOVERNMENT_CORRESPONDENCE"], [/maint/, "MAINTENANCE_DOCUMENT"], [/plan|schedule/, "PROJECT_PLAN"],
-  ];
-  for (const [rx, key] of rules) if (rx.test(n)) return key;
-  return fileFamilyOf(fileName) === "image" ? "SITE_EVIDENCE" : "OTHER";
-}
 
 export const aiEligibleFor = (mime: string): boolean => ["application/pdf", "text/plain", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"].includes(mime);

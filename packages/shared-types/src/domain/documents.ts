@@ -101,3 +101,18 @@ export function fileExtension(name: string): string {
 export function fileFamilyOf(name: string): (typeof DOCUMENT_FILE_TYPE_TABLE)[number]["family"] | null {
   return DOCUMENT_FILE_TYPE_TABLE.find((t) => t.ext === fileExtension(name))?.family ?? null;
 }
+
+/** Not AI: extension/name keywords plus the entity the user is uploading from. The user always confirms. */
+export function suggestCategory(fileName: string, context?: { from?: "inspection" | "payment" | "asset" | "contractor" }): string {
+  if (context?.from === "inspection") return "INSPECTION_REPORT";
+  if (context?.from === "payment") return "PAYMENT_EVIDENCE";
+  if (context?.from === "asset") return /maint|repair|service/i.test(fileName) ? "MAINTENANCE_DOCUMENT" : "ASSET_HANDOVER_RECORD";
+  const n = fileName.toLowerCase();
+  const rules: [RegExp, string][] = [
+    [/contract|agreement/, "CONTRACT"], [/tender|bid/, "TENDER"], [/\bboq\b|bill.?of.?quant/, "BOQ"], [/invoice|receipt|payment|voucher/, "PAYMENT_EVIDENCE"], [/budget/, "BUDGET_DOCUMENT"],
+    [/inspect/, "INSPECTION_REPORT"], [/drawing|blueprint|\bdwg\b|plan.?view/, "ENGINEERING_DRAWING"], [/proposal/, "PROJECT_PROPOSAL"], [/progress/, "PROGRESS_REPORT"],
+    [/complet|handover/, "COMPLETION_REPORT"], [/approval|permit|licen[cs]e/, "APPROVAL_DOCUMENT"], [/letter|correspond|circular/, "GOVERNMENT_CORRESPONDENCE"], [/maint/, "MAINTENANCE_DOCUMENT"], [/plan|schedule/, "PROJECT_PLAN"],
+  ];
+  for (const [rx, key] of rules) if (rx.test(n)) return key;
+  return fileFamilyOf(fileName) === "image" ? "SITE_EVIDENCE" : "OTHER";
+}
