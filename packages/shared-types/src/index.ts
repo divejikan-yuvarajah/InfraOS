@@ -184,3 +184,4 @@ export {
 } from "./domain/documents.js";
 
 export * from "./ai.js";
+export * from "./ai-rag.js";
