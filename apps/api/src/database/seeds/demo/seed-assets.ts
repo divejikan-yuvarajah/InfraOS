@@ -137,7 +137,7 @@ export async function seedDemoAssets(context: DemoContext): Promise<{ projects: 
     const evId = (await MaintenanceEvidence.findOne({ maintenanceId: done._id, sha256: sha }).select("_id").lean())?._id ?? new mongoose.Types.ObjectId();
     const key = maintenanceKey(String(done._id), String(evId), "full");
     if (storage) await storage.put(key, bytes, "image/png");
-    const doc = await Document.findOneAndUpdate({ projectId: bridgeProject, fileName: "MNT-2026-900003-1.png" }, { $set: { documentType: "SITE_EVIDENCE", uploadedBy: officer, mimeType: "image/png", sizeBytes: bytes.length, visibility: "INTERNAL", storageKey: key }, $setOnInsert: { projectId: bridgeProject, fileName: "MNT-2026-900003-1.png" } }, { upsert: true, new: true, runValidators: true });
+    const doc = await Document.findOneAndUpdate({ projectId: bridgeProject, fileName: "MNT-2026-900003-1.png" }, { $set: { documentType: "SITE_EVIDENCE", uploadedBy: officer, mimeType: "image/png", sizeBytes: bytes.length, visibility: "INTERNAL", storageKey: key, origin: "INSPECTION_EVIDENCE", status: "ACTIVE", agencyId: rda }, $setOnInsert: { projectId: bridgeProject, fileName: "MNT-2026-900003-1.png" } }, { upsert: true, new: true, runValidators: true });
     await MaintenanceEvidence.findOneAndUpdate({ _id: evId }, { $set: { maintenanceId: done._id, assetId: bridge._id, agencyId: rda, documentId: doc._id, caption: "(Synthetic placeholder) joint seal repair", capturedAt: d("2026-06-12T03:00:00.000Z"), uploadedAt: d("2026-06-12T03:30:00.000Z"), uploadedBy: officer, sha256: sha, mimeType: "image/png", width: 1, height: 1, sizeBytes: bytes.length, status: "ACTIVE" } }, { upsert: true, runValidators: true, setDefaultsOnInsert: true });
   }
   await backfillAssets(true);

@@ -10,6 +10,8 @@ import { seedDemoContractors } from "./seed-contractors.js";
 import { seedDemoFinance } from "./seed-finance.js";
 import { seedDemoInframapContext } from "./seed-inframap-context.js";
 import { seedDemoAssets } from "./seed-assets.js";
+import { seedDemoDocuments } from "./seed-documents.js";
+import { seedDemoShowcase } from "./seed-showcase.js";
 import { seedDemoInspections } from "./seed-inspections.js";
 import { seedDemoProjects } from "./seed-projects.js";
 import { seedDemoSupportingRecords } from "./seed-supporting-records.js";
@@ -37,6 +39,14 @@ export type SeedDemoSummary = {
   citizenIssues: number;
   inframapAssets: number;
   hazardZones: number;
+  showcaseProjects: number;
+  showcaseMilestones: number;
+  showcasePayments: number;
+  showcaseExpenses: number;
+  showcaseInspections: number;
+  showcaseIssues: number;
+  docTraceDocuments: number;
+  docTraceVersions: number;
 };
 
 export async function seedDemoData(
@@ -65,6 +75,8 @@ export async function seedDemoData(
   const finance = await seedDemoFinance(context);
   const inspections = await seedDemoInspections(context);
   const lifecycle = await seedDemoAssets(context);
+  const showcase = await seedDemoShowcase(context);
+  const docTrace = await seedDemoDocuments(context);
   const inframap = await seedDemoInframapContext(context);
 
   return {
@@ -88,5 +100,13 @@ export async function seedDemoData(
     citizenIssues: supporting.issues,
     inframapAssets: inframap.assets,
     hazardZones: inframap.hazardZones,
+    showcaseProjects: showcase.projects,
+    showcaseMilestones: showcase.milestones,
+    showcasePayments: showcase.payments,
+    showcaseExpenses: showcase.expenses,
+    showcaseInspections: showcase.inspections,
+    showcaseIssues: showcase.issues,
+    docTraceDocuments: docTrace.documents,
+    docTraceVersions: docTrace.versions,
   };
 }

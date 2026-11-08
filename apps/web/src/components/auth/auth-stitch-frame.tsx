@@ -1,3 +1,4 @@
+import { BrandMark } from "@/components/common/brand-mark";
 import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
@@ -204,25 +205,7 @@ export function AuthStitchFrame({
               {/* SIGN UP LEFT PANEL: Build Better Infrastructure. Together. */}
               <div className="relative z-10 space-y-2">
                 <div className="flex items-center gap-2.5">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-[#FF5B00] text-white shadow-xs">
-                    <svg
-                      className="h-4.5 w-4.5"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2.2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      aria-hidden="true"
-                    >
-                      <circle cx="6" cy="6" r="2.5" />
-                      <circle cx="18" cy="6" r="2.5" />
-                      <circle cx="12" cy="18" r="2.5" />
-                      <path d="M8.5 6h7" />
-                      <path d="M7.5 8.2 10.8 15.8" />
-                      <path d="M16.5 8.2 13.2 15.8" />
-                    </svg>
-                  </div>
+                  <BrandMark size={36} />
                   <div>
                     <div className="flex items-center gap-2">
                       <span className="auth-stitch-serif text-base font-bold uppercase tracking-tight text-slate-900">
@@ -395,25 +378,7 @@ export function AuthStitchFrame({
               {/* SIGN IN LEFT PANEL: One Nation. Connected Infrastructure. */}
               <div className="relative z-10 space-y-2">
                 <div className="flex items-center gap-2.5">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-900 text-white shadow-xs">
-                    <svg
-                      className="h-4.5 w-4.5 text-[#FF5B00]"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2.2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      aria-hidden="true"
-                    >
-                      <circle cx="6" cy="6" r="2.5" />
-                      <circle cx="18" cy="6" r="2.5" />
-                      <circle cx="12" cy="18" r="2.5" />
-                      <path d="M8.5 6h7" />
-                      <path d="M7.5 8.2 10.8 15.8" />
-                      <path d="M16.5 8.2 13.2 15.8" />
-                    </svg>
-                  </div>
+                  <BrandMark size={36} />
                   <div className="flex items-baseline gap-2">
                     <span className="auth-stitch-serif text-lg font-semibold tracking-tight text-slate-900">
                       InfraOS

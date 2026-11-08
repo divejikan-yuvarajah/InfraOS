@@ -1,5 +1,6 @@
 "use client";
 
+import { BrandMark } from "@/components/common/brand-mark";
 import { MenuIcon } from "lucide-react";
 import { useState } from "react";
 
@@ -44,7 +45,7 @@ export function AppHeader({
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetContent side="left" id="mobile-primary-nav" className="w-72 p-0">
           <SheetHeader className="border-b border-border">
-            <SheetTitle>INFRAOS</SheetTitle>
+            <SheetTitle className="flex items-center gap-2"><BrandMark size={28} />INFRAOS</SheetTitle>
           </SheetHeader>
           <AppSidebar
             showFuturePreview={showFuturePreview}

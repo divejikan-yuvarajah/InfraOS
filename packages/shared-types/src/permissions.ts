@@ -58,6 +58,8 @@ export const PERMISSION_CATALOG = [
   "document.delete",
   "document.process",
   "document.ask",
+  "document.update",
+  "document.restrict",
   "contractor.read",
   "contractor.manage",
   "contractor.performance.read",

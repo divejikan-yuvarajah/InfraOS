@@ -24,6 +24,7 @@ import { ContractorInspectionsCard } from "@/components/inspections/inspection-i
 
 import { Initials, Skeleton, StatusBadge } from "./contractor-badges";
 import { AssignDialog, StatusDialog, type StatusTarget } from "./contractor-dialogs";
+import { LinkedDocumentsPanel } from "@/components/documents/linked-documents-panel";
 import { PerformancePanel } from "./profile-performance";
 import { ProjectsPanel } from "./profile-projects";
 import { ActivityPanel, CompliancePanel, OverviewPanel } from "./profile-sections";
@@ -119,7 +120,7 @@ export function ContractorProfileClient({ id }: { id: string }) {
               ))}
             </div>
             <div role="tabpanel" id={`ctr-panel-${tab}`} aria-labelledby={`ctr-tab-${tab}`} tabIndex={0}>
-              {tab === "overview" ? <><OverviewPanel profile={p} copy={copy} locale={locale} /><div style={{ marginTop: "1rem" }}><ContractorFinanceCard contractorId={p.id} /></div><div style={{ marginTop: "1rem" }}><ContractorInspectionsCard contractorId={p.id} /></div></> : null}
+              {tab === "overview" ? <><OverviewPanel profile={p} copy={copy} locale={locale} /><div style={{ marginTop: "1rem" }}><ContractorFinanceCard contractorId={p.id} /></div><div style={{ marginTop: "1rem" }}><ContractorInspectionsCard contractorId={p.id} /></div><div style={{ marginTop: "1rem" }}><LinkedDocumentsPanel entity={{ type: "contractor", id: p.id }} /></div></> : null}
               {tab === "projects" ? <ProjectsPanel id={p.id} copy={copy} locale={locale} /> : null}
               {tab === "performance" ? (
                 perf.isLoading ? <div className="sp-surface ctr-panel" aria-busy="true"><Skeleton height="6rem" /></div>

@@ -176,3 +176,9 @@ export type {
   UpdateProjectRequest,
   WorkRequestDto,
 } from "./domain/dtos.js";
+
+export {
+  DOCUMENT_CATEGORIES, DOCUMENT_CATEGORY_GROUPS, DOCUMENT_CATEGORY_KEYS, DOCUMENT_CONFIDENTIALITIES, DOCUMENT_ERROR_CODES, DOCUMENT_FILE_TYPES, DOCUMENT_FILE_TYPE_TABLE,
+  DOCUMENT_LANGUAGES, DOCUMENT_LIMITS, DOCUMENT_LINK_KEYS, DOCUMENT_ORIGINS, DOCUMENT_STATUSES, LEGACY_TYPE_TO_CATEGORY, categoryDef, fileExtension, fileFamilyOf, suggestCategory,
+  type DocumentCategoryDef, type DocumentCategoryGroup, type DocumentErrorCode, type DocumentLinkKey, type LegacyDocumentType,
+} from "./domain/documents.js";

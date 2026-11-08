@@ -2,6 +2,10 @@ import { Asset } from "../../../modules/assets/models/asset.model.js";
 import { HazardZone } from "../../../modules/risk/models/hazard-zone.model.js";
 import { MaintenanceRecord } from "../../../modules/assets/models/maintenance-record.model.js";
 import { Document } from "../../../modules/documents/models/document.model.js";
+import { ProgressReport } from "../../../modules/projects/models/progress-report.model.js";
+import { SHOWCASE_CODES } from "./seed-showcase.js";
+import { DocumentUpload } from "../../../modules/documents/models/document-upload.model.js";
+import { DocumentVersion } from "../../../modules/documents/models/document-version.model.js";
 import { ProjectPayment } from "../../../modules/finance/models/project-payment.model.js";
 import { User } from "../../../modules/identity/models/user.model.js";
 import { AssetConditionAssessment } from "../../../modules/assets/models/asset-condition-assessment.model.js";
@@ -33,6 +37,23 @@ import {
   DEMO_PROJECT_CODES,
 } from "./catalog.js";
 
+/** DocTrace demo rows: seeded documents (reserved DOC-2026-9000nn range) with their versions and GridFS blobs, including the project-less correspondence. */
+async function removeDocTraceDemo(demoProjectIds: mongoose.Types.ObjectId[]): Promise<void> {
+  const docs = await Document.find({ $or: [{ docNo: /^DOC-2026-9000\d\d$/ }, { projectId: { $in: demoProjectIds }, origin: "DOCTRACE" }] }).select("_id").lean();
+  const ids = docs.map((x) => x._id);
+  const db = mongoose.connection.db;
+  if (db && ids.length) {
+    const files = db.collection("documents.files");
+    const chunks = db.collection("documents.chunks");
+    for (const id of ids) for (const f of await files.find({ filename: { $regex: `^doc/${String(id)}/` } }).toArray()) { await chunks.deleteMany({ files_id: f._id }); await files.deleteOne({ _id: f._id }); }
+  }
+  if (ids.length) {
+    await DocumentVersion.collection.deleteMany({ documentId: { $in: ids } });
+    await DocumentUpload.deleteMany({ documentId: { $in: ids } });
+    await Document.deleteMany({ _id: { $in: ids } });
+  }
+}
+
 export async function resetDemoData(seedEnv: SeedEnvSlice): Promise<void> {
   assertDemoSeedEnvironment(seedEnv);
 
@@ -48,7 +69,7 @@ export async function resetDemoData(seedEnv: SeedEnvSlice): Promise<void> {
   }
 
   const demoProjects = await Project.find({
-    projectCode: { $in: [...DEMO_PROJECT_CODES, ...DEMO_LIFECYCLE_PROJECT_CODES] },
+    projectCode: { $in: [...DEMO_PROJECT_CODES, ...DEMO_LIFECYCLE_PROJECT_CODES, ...SHOWCASE_CODES] },
   }).select("_id");
   const demoProjectIds = demoProjects.map((p) => p._id);
 
@@ -82,6 +103,7 @@ export async function resetDemoData(seedEnv: SeedEnvSlice): Promise<void> {
   if (demoProjectIds.length > 0) {
     // The budget ledger is append-only through the model, so the reset clears it natively; expenses and payments are ordinary rows.
     await ProjectBudgetRevision.collection.deleteMany({ projectId: { $in: demoProjectIds } });
+    await ProgressReport.collection.deleteMany({ projectId: { $in: demoProjectIds } }); // append-only through the model, so cleared natively
     await ProjectExpense.deleteMany({ projectId: { $in: demoProjectIds } });
   }
   if (demoProjectIds.length > 0) await ContractorAssignment.deleteMany({ projectId: { $in: demoProjectIds } });
@@ -105,6 +127,7 @@ export async function resetDemoData(seedEnv: SeedEnvSlice): Promise<void> {
     await ProgressVerification.collection.deleteMany({ projectId: { $in: demoProjectIds } });
     await AssetConversion.deleteMany({ projectId: { $in: demoProjectIds } });
     await Inspection.deleteMany({ projectId: { $in: demoProjectIds } });
+    await removeDocTraceDemo(demoProjectIds);
     await Document.deleteMany({ projectId: { $in: demoProjectIds } });
     await ProjectPayment.deleteMany({ projectId: { $in: demoProjectIds } });
     await WorkRequest.deleteMany({ projectId: { $in: demoProjectIds } });

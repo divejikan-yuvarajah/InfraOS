@@ -1,0 +1,107 @@
+/* DocTrace (Batch 08). Builds on contractors.css / inspections.css primitives (ctr-*, ins-*). Motion <= 200ms and disabled for reduced-motion. */
+.dt { display: grid; gap: 1rem; }
+.dt-tabnum, .dt td, .dt .ins-muted { font-variant-numeric: tabular-nums; }
+.dt-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr)); gap: 0.6rem; }
+.dt-strip .ctr-card[aria-pressed="true"] { border-color: var(--infra-orange-text); box-shadow: inset 0 0 0 1px var(--infra-orange-text); }
+.dt-rail { display: flex; flex-wrap: wrap; gap: 0.4rem 0.9rem; align-items: center; padding: 0.6rem 0.8rem; border: 1px solid var(--infra-border); border-radius: var(--mc-radius-control); background: #fff; }
+.dt-rail-group { display: inline-flex; flex-wrap: wrap; gap: 0.3rem; align-items: center; }
+.dt-rail-group > b { font-size: 0.7rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--infra-text-secondary); margin-right: 0.15rem; }
+.dt-pill { display: inline-flex; align-items: center; gap: 0.35rem; min-height: 2rem; padding: 0 0.65rem; border: 1px solid var(--infra-border-strong); border-radius: 999px; background: #fff; font: inherit; font-size: 0.8125rem; cursor: pointer; transition: background 150ms ease, border-color 150ms ease; }
+.dt-pill:hover { background: var(--infra-surface); }
+.dt-pill[aria-pressed="true"], .dt-pill[aria-checked="true"] { background: var(--infra-text); color: #fff; border-color: var(--infra-text); }
+.dt-pill:focus-visible { outline: 2px solid var(--infra-orange-text); outline-offset: 2px; }
+.dt-pill small { opacity: 0.75; }
+.dt-charts { display: grid; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); gap: 0.8rem; }
+.dt-panel { padding: 0.9rem 1rem; border: 1px solid var(--infra-border); border-radius: var(--mc-radius-control); background: #fff; display: grid; gap: 0.6rem; align-content: start; }
+.dt-panel h3 { margin: 0; font-size: 0.9rem; }
+.dt-bars { display: grid; gap: 0.35rem; }
+.dt-bar-row { display: grid; grid-template-columns: minmax(6rem, 10rem) 1fr 3rem; gap: 0.5rem; align-items: center; font-size: 0.8125rem; }
+.dt-bar-row > span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dt-bar-track { height: 0.6rem; border-radius: 999px; background: #e9edf2; overflow: hidden; }
+.dt-bar-track i { display: block; height: 100%; background: var(--infra-orange); border-radius: 999px; }
+.dt-bar-row b { text-align: right; font-weight: 600; }
+.dt-spark { display: flex; align-items: flex-end; gap: 0.4rem; height: 6rem; }
+.dt-spark > div { flex: 1; display: grid; gap: 0.2rem; align-content: end; justify-items: center; font-size: 0.7rem; height: 100%; }
+.dt-spark i { width: 100%; min-height: 2px; background: var(--infra-orange); border-radius: 3px 3px 0 0; }
+.dt-filters { display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: end; }
+.dt-chips { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+.dt-chip-x { display: inline-flex; align-items: center; gap: 0.3rem; min-height: 1.9rem; padding: 0 0.35rem 0 0.65rem; border: 1px solid var(--infra-border-strong); border-radius: 999px; background: var(--infra-surface); font-size: 0.8rem; }
+.dt-chip-x button { min-width: 1.5rem; min-height: 1.5rem; border: 0; background: transparent; border-radius: 50%; cursor: pointer; }
+.dt-chip-x button:focus-visible { outline: 2px solid var(--infra-orange-text); }
+.dt-title-cell { display: flex; gap: 0.6rem; align-items: flex-start; min-width: 0; }
+.dt-title-cell > div { min-width: 0; }
+.dt-title-cell .ins-link { overflow-wrap: anywhere; }
+.dt-icon { flex: none; display: grid; place-items: center; width: 2.1rem; height: 2.1rem; border-radius: 8px; background: var(--infra-surface); border: 1px solid var(--infra-border); }
+.dt-icon svg { width: 1.1rem; height: 1.1rem; }
+.dt-icon[data-f="pdf"] { color: #b8482f; } .dt-icon[data-f="docx"] { color: #2b5fa8; } .dt-icon[data-f="xlsx"] { color: #1f7a4c; } .dt-icon[data-f="csv"] { color: #1f7a4c; } .dt-icon[data-f="image"] { color: #7a4fa0; } .dt-icon[data-f="txt"] { color: #5b6573; }
+.dt-mark { background: #ffe9a8; color: inherit; border-radius: 2px; padding: 0 1px; }
+.dt-cat { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.8125rem; }
+.dt-cat svg { width: 0.95rem; height: 0.95rem; }
+.dt-cat[data-g="PLANNING"] svg { color: #2b5fa8; } .dt-cat[data-g="CONTRACT_FINANCE"] svg { color: #8a5a00; } .dt-cat[data-g="INSPECTION_EVIDENCE"] svg { color: #1f7a4c; } .dt-cat[data-g="GOVERNMENT"] svg { color: #7a1f2b; } .dt-cat[data-g="COMPLETION_ASSETS"] svg { color: #5b6573; }
+.dt-ver { display: inline-flex; padding: 0 0.4rem; border-radius: 4px; background: #eef1f5; font-size: 0.75rem; font-weight: 700; }
+.dt-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); gap: 0.8rem; }
+.dt-card { position: relative; display: grid; gap: 0.5rem; padding: 0.8rem; border: 1px solid var(--infra-border); border-radius: var(--mc-radius-control); background: #fff; transition: box-shadow 150ms ease, border-color 150ms ease; }
+.dt-card:hover { box-shadow: var(--sp-lift-0); border-color: var(--infra-border-strong); }
+.dt-tile { display: grid; place-items: center; height: 5.5rem; border-radius: 8px; background: linear-gradient(135deg, var(--infra-surface), #eef1f5); }
+.dt-tile svg { width: 2.2rem; height: 2.2rem; }
+.dt-card .dt-sel { position: absolute; top: 0.6rem; left: 0.6rem; }
+.dt-bulkbar { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; padding: 0.5rem 0.8rem; border-radius: var(--mc-radius-control); background: var(--infra-text); color: #fff; position: sticky; top: 0.5rem; z-index: 5; }
+.dt-bulkbar .ctr-btn { background: #fff; }
+.dt-pager { display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: center; justify-content: space-between; }
+.dt-drawer { position: fixed; inset: 0 0 0 auto; width: min(34rem, 100vw); background: #fff; box-shadow: -8px 0 32px rgba(15, 23, 42, 0.18); z-index: 60; display: grid; grid-template-rows: auto 1fr auto; animation: dt-slide 180ms ease-out; }
+.dt-scrim { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.35); z-index: 55; }
+.dt-drawer-head { display: grid; gap: 0.4rem; padding: 0.9rem 1rem; border-bottom: 1px solid var(--infra-border); }
+.dt-drawer-body { overflow: auto; padding: 0.9rem 1rem; display: grid; gap: 0.9rem; align-content: start; }
+.dt-drawer-foot { display: flex; flex-wrap: wrap; gap: 0.5rem; padding: 0.7rem 1rem; border-top: 1px solid var(--infra-border); }
+@keyframes dt-slide { from { transform: translateX(2rem); opacity: 0; } to { transform: none; opacity: 1; } }
+@media (max-width: 40rem) { .dt-drawer { inset: 0; width: 100vw; animation-name: dt-up; } @keyframes dt-up { from { transform: translateY(1.5rem); opacity: 0; } to { transform: none; opacity: 1; } } }
+.dt-preview { min-height: 16rem; border: 1px solid var(--infra-border); border-radius: var(--mc-radius-control); background: var(--infra-surface); display: grid; place-items: center; overflow: hidden; }
+.dt-preview iframe { width: 100%; height: 60vh; border: 0; background: #fff; }
+.dt-preview img { max-width: 100%; max-height: 60vh; object-fit: contain; }
+.dt-preview pre { margin: 0; width: 100%; max-height: 60vh; overflow: auto; padding: 0.8rem; font-size: 0.8125rem; white-space: pre-wrap; overflow-wrap: anywhere; background: #fff; align-self: stretch; }
+.dt-preview-msg { display: grid; gap: 0.5rem; justify-items: center; padding: 1.5rem; text-align: center; }
+.dt-drop { display: grid; gap: 0.5rem; justify-items: center; padding: 2rem 1rem; text-align: center; border: 2px dashed var(--infra-border-strong); border-radius: var(--mc-radius-control); background: var(--infra-surface); transition: border-color 150ms ease, background 150ms ease; }
+.dt-drop[data-over="true"] { border-color: var(--infra-orange-text); background: #fff7ea; }
+.dt-drop svg { width: 2rem; height: 2rem; color: var(--infra-text-secondary); }
+.dt-steps { display: flex; gap: 0.4rem; margin: 0; padding: 0; list-style: none; flex-wrap: wrap; }
+.dt-step { display: inline-flex; align-items: center; gap: 0.4rem; min-height: 2.25rem; padding: 0 0.8rem; border-radius: 999px; border: 1px solid var(--infra-border-strong); font-size: 0.8125rem; background: #fff; }
+.dt-step[aria-current="step"] { background: var(--infra-text); color: #fff; border-color: var(--infra-text); }
+.dt-step[data-done="true"] { border-color: var(--infra-green); }
+.dt-step b { display: inline-grid; place-items: center; width: 1.4rem; height: 1.4rem; border-radius: 50%; background: #eef1f5; color: var(--infra-text); font-size: 0.75rem; }
+.dt-step[aria-current="step"] b { background: #fff; }
+.dt-files { display: grid; gap: 0.5rem; margin: 0; padding: 0; list-style: none; }
+.dt-file { display: grid; grid-template-columns: auto 1fr auto; gap: 0.7rem; align-items: center; padding: 0.6rem 0.7rem; border: 1px solid var(--infra-border); border-radius: var(--mc-radius-control); background: #fff; }
+.dt-file[data-state="error"] { border-color: var(--infra-maroon); }
+.dt-file[data-state="done"] { border-color: var(--infra-green); }
+.dt-file .ctr-progress { margin-top: 0.3rem; }
+.dt-file-name { overflow-wrap: anywhere; font-weight: 600; }
+.dt-class { display: grid; gap: 0.8rem; padding: 0.9rem; border: 1px solid var(--infra-border); border-radius: var(--mc-radius-control); background: #fff; }
+.dt-catgrid { display: grid; gap: 0.5rem; }
+.dt-catgrid fieldset { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 0.3rem; align-items: center; }
+.dt-catgrid legend { float: left; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: var(--infra-text-secondary); margin-right: 0.4rem; padding: 0; }
+.dt-suggest { font-size: 0.7rem; font-weight: 700; padding: 0 0.35rem; border-radius: 4px; background: #e6f4ec; color: #1f7a4c; }
+.dt-tags { display: flex; flex-wrap: wrap; gap: 0.3rem; padding: 0.3rem; border: 1px solid var(--infra-border-strong); border-radius: var(--mc-radius-control); background: #fff; }
+.dt-tags input { flex: 1 1 8rem; min-height: 2rem; border: 0; outline: 0; font: inherit; }
+.dt-tags:focus-within { outline: 2px solid var(--infra-orange-text); outline-offset: 1px; }
+.dt-hero { display: grid; gap: 0.6rem; padding: 1rem; border: 1px solid var(--infra-border); border-radius: var(--mc-radius-control); background: #fff; }
+.dt-hero h2 { margin: 0; font-size: 1.25rem; overflow-wrap: anywhere; }
+.dt-hero-row { display: flex; flex-wrap: wrap; gap: 0.4rem 0.6rem; align-items: center; }
+.dt-actions { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.dt-vers { margin: 0; padding: 0; list-style: none; display: grid; gap: 0.6rem; }
+.dt-ver-card { display: grid; gap: 0.4rem; padding: 0.7rem 0.9rem; border: 1px solid var(--infra-border); border-left: 4px solid var(--infra-border-strong); border-radius: var(--mc-radius-control); background: #fff; }
+.dt-ver-card[data-current="true"] { border-left-color: var(--infra-green); }
+.dt-ver-card[data-status="REMOVED"] { opacity: 0.65; border-left-color: var(--infra-maroon); }
+.dt-danger { border-color: #e7b9b0; background: #fff8f6; }
+.dt-sticky { position: sticky; bottom: 0; z-index: 4; display: none; gap: 0.4rem; padding: 0.5rem; background: #fff; border-top: 1px solid var(--infra-border); }
+.dt-fab { display: none; }
+.dt-mcards { display: none; }
+@media (max-width: 40rem) {
+  .dt-sticky { display: flex; flex-wrap: wrap; }
+  .dt-fab { display: inline-flex; position: fixed; right: 1rem; bottom: 1rem; z-index: 40; min-height: 3rem; box-shadow: 0 6px 20px rgba(15, 23, 42, 0.25); }
+  .dt-bar-row { grid-template-columns: 6rem 1fr 2.5rem; }
+  .dt-drawer-foot .ctr-btn { flex: 1 1 8rem; }
+  .dt-filters .ctr-field { flex-basis: 100%; }
+}
+@media (prefers-reduced-motion: reduce) { .dt-drawer, .dt-pill, .dt-card, .dt-drop { animation: none; transition: none; } }
+.dt-sheet-toggle { display: none; }
+@media (max-width: 40rem) { .dt-sheet-toggle { display: inline-flex; } .dt-filters[data-collapsed="true"] .dt-more { display: none; } }

@@ -7,6 +7,7 @@ import {
   ClipboardCheckIcon,
   ClipboardListIcon,
   FileCheck2Icon,
+  LibraryIcon,
   FolderKanbanIcon,
   GaugeIcon,
   HandshakeIcon,
@@ -116,6 +117,15 @@ export const WORKSPACE_NAV: readonly WorkspaceNavGroup[] = [
         materialIcon: "inventory_2",
         nodeGlyph: "○",
         i18n: { si: "වත්කම්", ta: "சொத்துகள்" },
+        roles: ["SUPER_ADMIN", "GOV_ADMIN", "AGENCY_OFFICER", "PROJECT_MANAGER", "INSPECTOR"],
+      },
+      {
+        href: "/documents",
+        label: "DocTrace",
+        icon: LibraryIcon,
+        materialIcon: "folder_open",
+        nodeGlyph: "○",
+        i18n: { si: "ලේඛන (DocTrace)", ta: "ஆவணங்கள் (DocTrace)" },
         roles: ["SUPER_ADMIN", "GOV_ADMIN", "AGENCY_OFFICER", "PROJECT_MANAGER", "INSPECTOR"],
       },
       {

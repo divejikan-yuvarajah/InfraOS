@@ -54,7 +54,7 @@ describe("Step 13 domain schema validation (no database)", () => {
     ["Conflict", "workRequestA"], ["Conflict", "workRequestB"],
     ["CoordinationRequest", "conflictId"], ["CoordinationRequest", "fromAgency"], ["CoordinationRequest", "toAgency"],
     ["ProjectPayment", "projectId"], ["ProjectPayment", "contractorId"], ["ProjectPayment", "createdBy"],
-    ["Document", "projectId"], ["Document", "uploadedBy"],
+    ["Document", "uploadedBy"], // projectId became optional in Batch 08 (agency-level documents); the agencyId-or-projectId invariant is tested in documents-model.test.ts
     ["DocumentChunk", "documentId"], ["DocumentChunk", "projectId"],
     ["Inspection", "projectId"], ["Inspection", "inspectorId"],
     ["Asset", "sourceProjectId"], ["Asset", "agencyId"], ["MaintenanceRecord", "assetId"],
