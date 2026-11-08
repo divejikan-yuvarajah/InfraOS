@@ -26,6 +26,7 @@
     "db:backfill:inspections": "tsx src/scripts/backfill-inspections-batch06.ts",
     "db:backfill:assets": "tsx src/scripts/backfill-assets-batch07.ts",
     "db:backfill:documents": "tsx src/scripts/backfill-documents-batch08.ts",
+    "db:migrate:document-chunks": "tsx src/scripts/migrate-document-chunks-batch09.ts",
     "db:cleanup:documents": "tsx src/scripts/cleanup-orphan-uploads.ts",
     "db:recompute:asset-health": "tsx src/scripts/recompute-asset-health.ts",
     "db:cleanup:evidence": "tsx src/scripts/cleanup-evidence.ts",

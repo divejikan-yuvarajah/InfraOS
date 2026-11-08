@@ -47,7 +47,7 @@ describe("Step 14 index declarations", () => {
     expect(hasIndex(CoordinationRequest.schema, { toAgency: 1, status: 1, createdAt: -1 })).toBe(true);
     expect(hasIndex(Contractor.schema, { registrationNumber: 1 }, { unique: true })).toBe(true);
     expect(hasIndex(Document.schema, { projectId: 1, documentType: 1 })).toBe(true);
-    expect(hasIndex(DocumentChunk.schema, { documentId: 1, chunkIndex: 1 }, { unique: true })).toBe(true);
+    expect(hasIndex(DocumentChunk.schema, { documentId: 1, versionNo: 1, chunkIndex: 1 }, { unique: true })).toBe(true);
     expect(hasIndex(ProjectPayment.schema, { projectId: 1, date: -1 })).toBe(true);
     expect(hasIndex(Inspection.schema, { inspectorId: 1, status: 1, inspectionDate: -1 })).toBe(true);
     expect(hasIndex(Asset.schema, { geometry: "2dsphere" })).toBe(true);
