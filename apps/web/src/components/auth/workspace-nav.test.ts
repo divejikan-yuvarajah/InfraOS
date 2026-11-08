@@ -12,6 +12,7 @@ describe("workspace nav", () => {
   });
   it("matches admin and singular routes exactly or by prefix", () => {
     expect(navCurrent("/admin/users", "/admin/users")).toBe(true);
+    expect(navCurrent("/admin/registrations", "/admin/registrations")).toBe(true);
     expect(navCurrent("/admin/users", "/admin/roles")).toBe(false);
     expect(navCurrent("/dashboard", "/dashboard")).toBe(true);
   });

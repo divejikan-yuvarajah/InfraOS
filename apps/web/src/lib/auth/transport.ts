@@ -15,6 +15,30 @@ const REFRESH_PATH = "/api/v1/auth/refresh";
 const LOGOUT_PATH = "/api/v1/auth/logout";
 
 function mapApiFailure(status: number, code: string | undefined): AuthLoginResult {
+  if (code === "ACCOUNT_PENDING_APPROVAL") {
+    return {
+      ok: false,
+      code: "PENDING_APPROVAL",
+      message:
+        "Your registration is currently pending administrator approval. You will receive an email once your account has been reviewed.",
+    };
+  }
+  if (code === "ACCOUNT_REJECTED") {
+    return {
+      ok: false,
+      code: "REJECTED",
+      message:
+        "Your registration request was not approved. Please contact your organization administrator.",
+    };
+  }
+  if (code === "ACCOUNT_SUSPENDED") {
+    return {
+      ok: false,
+      code: "SUSPENDED",
+      message:
+        "Your account has been suspended. Please contact your administrator.",
+    };
+  }
   if (status === 401 && code === "SESSION_EXPIRED") {
     return {
       ok: false,

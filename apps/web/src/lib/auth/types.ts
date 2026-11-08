@@ -44,7 +44,10 @@ export type AuthFailureCode =
   | "SESSION_EXPIRED"
   | "RATE_LIMITED"
   | "UNAVAILABLE"
-  | "NETWORK";
+  | "NETWORK"
+  | "PENDING_APPROVAL"
+  | "REJECTED"
+  | "SUSPENDED";
 
 export type LogoutOutcome = "confirmed" | "unconfirmed";
 

@@ -1,3 +1,4 @@
+import { purgeAiForDocuments } from "../../../modules/ai/processing/demo.js";
 import { Asset } from "../../../modules/assets/models/asset.model.js";
 import { HazardZone } from "../../../modules/risk/models/hazard-zone.model.js";
 import { MaintenanceRecord } from "../../../modules/assets/models/maintenance-record.model.js";
@@ -48,6 +49,8 @@ async function removeDocTraceDemo(demoProjectIds: mongoose.Types.ObjectId[]): Pr
     for (const id of ids) for (const f of await files.find({ filename: { $regex: `^doc/${String(id)}/` } }).toArray()) { await chunks.deleteMany({ files_id: f._id }); await files.deleteOne({ _id: f._id }); }
   }
   if (ids.length) {
+    const ai = await purgeAiForDocuments(ids);
+    if (ai.vectorsUnconfirmed > 0) console.warn(`WARNING: vectors for ${ai.vectorsUnconfirmed} demo document(s) could not be removed from Qdrant (AI service unreachable). Re-run the reset when it is up, or delete the collection manually.`);
     await DocumentVersion.collection.deleteMany({ documentId: { $in: ids } });
     await DocumentUpload.deleteMany({ documentId: { $in: ids } });
     await Document.deleteMany({ _id: { $in: ids } });

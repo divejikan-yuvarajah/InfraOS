@@ -6,6 +6,7 @@ import { useId, useState, type FormEvent } from "react";
 import {
   AlertCircle,
   ArrowRight,
+  Clock,
   Eye,
   EyeOff,
   Info,
@@ -109,13 +110,47 @@ export function LoginForm({ locale, nextParam }: LoginFormProps) {
         <div
           role="alert"
           aria-live="assertive"
-          className="auth-login-error flex items-start gap-2"
+          className={
+            submitError === "PENDING_APPROVAL"
+              ? "rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-900 dark:text-amber-200"
+              : submitError === "REJECTED" || submitError === "SUSPENDED"
+              ? "rounded-lg border border-rose-500/30 bg-rose-500/10 p-3 text-xs text-rose-900 dark:text-rose-200"
+              : "auth-login-error flex items-start gap-2"
+          }
         >
-          <AlertCircle
-            className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#8C1F28]"
-            aria-hidden="true"
-          />
-          <span>{copy.errors[submitError]}</span>
+          {submitError === "PENDING_APPROVAL" ? (
+            <div className="flex items-start gap-2.5">
+              <Clock className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" aria-hidden="true" />
+              <div>
+                <div className="font-semibold uppercase tracking-wider text-[11px] text-amber-700 dark:text-amber-300">
+                  Verification Pending
+                </div>
+                <div className="mt-0.5 leading-relaxed text-amber-800 dark:text-amber-200">
+                  {copy.errors[submitError]}
+                </div>
+              </div>
+            </div>
+          ) : submitError === "REJECTED" ? (
+            <div className="flex items-start gap-2.5">
+              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-rose-600 dark:text-rose-400" aria-hidden="true" />
+              <div>
+                <div className="font-semibold uppercase tracking-wider text-[11px] text-rose-700 dark:text-rose-300">
+                  Access Not Approved
+                </div>
+                <div className="mt-0.5 leading-relaxed text-rose-800 dark:text-rose-200">
+                  {copy.errors[submitError]}
+                </div>
+              </div>
+            </div>
+          ) : (
+            <>
+              <AlertCircle
+                className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#8C1F28]"
+                aria-hidden="true"
+              />
+              <span>{copy.errors[submitError]}</span>
+            </>
+          )}
         </div>
       ) : null}
 
@@ -247,6 +282,16 @@ export function LoginForm({ locale, nextParam }: LoginFormProps) {
           <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
             Quick Fill:
           </span>
+          <button
+            type="button"
+            onClick={() => {
+              setEmail("superadmin@infraos.test");
+              setPassword("Admin@12345678");
+            }}
+            className="rounded-full border border-orange-200 bg-orange-50/50 px-2.5 py-0.5 text-[10.5px] font-semibold text-[#A83900] shadow-2xs transition-colors hover:border-[#FF5B00] hover:bg-orange-100/60 hover:text-[#FF5B00]"
+          >
+            Super Admin
+          </button>
           <button
             type="button"
             onClick={() => {

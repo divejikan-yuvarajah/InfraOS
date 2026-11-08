@@ -182,3 +182,5 @@ export {
   DOCUMENT_LANGUAGES, DOCUMENT_LIMITS, DOCUMENT_LINK_KEYS, DOCUMENT_ORIGINS, DOCUMENT_STATUSES, LEGACY_TYPE_TO_CATEGORY, categoryDef, fileExtension, fileFamilyOf, suggestCategory,
   type DocumentCategoryDef, type DocumentCategoryGroup, type DocumentErrorCode, type DocumentLinkKey, type LegacyDocumentType,
 } from "./domain/documents.js";
+
+export * from "./ai.js";

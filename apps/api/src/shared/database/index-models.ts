@@ -7,6 +7,8 @@ import { MaintenanceRecord } from "../../modules/assets/models/maintenance-recor
 import { AuditLog } from "../../modules/audit/models/audit-log.model.js";
 import { ContractorAssignment } from "../../modules/contractors/models/contractor-assignment.model.js";
 import { Contractor } from "../../modules/contractors/models/contractor.model.js";
+import { ProcessingJob } from "../../modules/ai/processing/job.model.js";
+import { AiUsageRecord } from "../../modules/ai/usage.model.js";
 import { DocumentChunk } from "../../modules/documents/models/document-chunk.model.js";
 import { Document } from "../../modules/documents/models/document.model.js";
 import { DocumentUpload } from "../../modules/documents/models/document-upload.model.js";
@@ -78,6 +80,8 @@ export const INDEX_MODELS = [
   DocumentChunk,
   DocumentVersion,
   DocumentUpload,
+  ProcessingJob,
+  AiUsageRecord,
   Inspection,
   InspectionEvidence,
   ProgressVerification,

@@ -179,6 +179,12 @@ const LOGIN_COPY: Record<AuthLocale, AuthLoginCopy> = {
       RATE_LIMITED: "Too many sign-in attempts. Wait a moment and try again.",
       UNAVAILABLE: "Sign-in is temporarily unavailable. Try again shortly.",
       NETWORK: "Network error while contacting the identity service.",
+      PENDING_APPROVAL:
+        "Your account registration is currently pending Super Admin review. You will receive an email once your account has been approved.",
+      REJECTED:
+        "Your registration request was reviewed and declined. Please contact your organization administrator for details.",
+      SUSPENDED:
+        "Your institutional account has been suspended. Please contact your system administrator.",
     },
   },
   si: {
@@ -242,6 +248,12 @@ const LOGIN_COPY: Record<AuthLocale, AuthLoginCopy> = {
       RATE_LIMITED: "උත්සාහයන් වැඩිය. මොහොතකින් නැවත උත්සාහ කරන්න.",
       UNAVAILABLE: "පිවිසීම තාවකාලිකව ලබා ගත නොහැක.",
       NETWORK: "හඳුනාගැනීමේ සේවාව සම්බන්ධ කර ගැනීමේදී ජාල දෝෂයක් ඇති විය.",
+      PENDING_APPROVAL:
+        "ඔබගේ ලියාපදිංචිය පරිපාලක අනුමැතිය සඳහා රැඳී පවතී. අනුමත වූ පසු ඔබට විද්‍යුත් තැපෑලෙන් දැනුම් දෙනු ලැබේ.",
+      REJECTED:
+        "ඔබගේ ලියාපදිංචි ඉල්ලීම ප්‍රතික්ෂේප කර ඇත. කරුණාකර ඔබගේ ආයතන පරිපාලක අමතන්න.",
+      SUSPENDED:
+        "ඔබගේ ගිණුම අත්හිටුවා ඇත. කරුණාකර පද්ධති පරිපාලක අමතන්න.",
     },
   },
   ta: {
@@ -305,6 +317,12 @@ const LOGIN_COPY: Record<AuthLocale, AuthLoginCopy> = {
       RATE_LIMITED: "மிக அதிக முயற்சிகள். சிறிது நேரம் கழித்து முயற்சிக்கவும்.",
       UNAVAILABLE: "உள்நுழைவு தற்காலிகமாக கிடைக்கவில்லை.",
       NETWORK: "அடையாள சேவையைத் தொடர்பு கொள்ளும்போது பிணைய பிழை ஏற்பட்டது.",
+      PENDING_APPROVAL:
+        "உங்கள் கணக்கு பதிவு நிர்வாகி ஒப்புதலுக்காக நிலுவையில் உள்ளது. அங்கீகரிக்கப்பட்டவுடன் மின்னஞ்சல் அறிவிப்பைப் பெறுவீர்கள்.",
+      REJECTED:
+        "உங்கள் பதிவு கோரிக்கை நிராகரிக்கப்பட்டது. விவரங்களுக்கு உங்கள் நிறுவன நிர்வாகியைத் தொடர்பு கொள்ளவும்.",
+      SUSPENDED:
+        "உங்கள் கணக்கு இடைநிறுத்தப்பட்டுள்ளது. கணினி நிர்வாகியைத் தொடர்பு கொள்ளவும்.",
     },
   },
 };

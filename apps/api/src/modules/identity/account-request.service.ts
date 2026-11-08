@@ -3,6 +3,7 @@ import { hash } from "bcryptjs";
 import { z } from "zod";
 
 import { Agency } from "../agencies/models/agency.model.js";
+import { sendAdminRegistrationNotification } from "./mail/email.service.js";
 import {
   RegistrationRequest,
   REQUESTED_RESPONSIBILITY_KEYS,
@@ -134,6 +135,7 @@ export type AccountRegistrationRequestResult = {
   id: string;
   referenceCode: string;
   status: "PENDING";
+  accountStatus: "pending";
   emailVerified: false;
   requestedResponsibility: RequestedResponsibilityKey;
   organizationCode: string;
@@ -273,13 +275,32 @@ export async function submitAccountRegistrationRequest(
       designation,
       requestedResponsibility,
       status: "PENDING",
+      accountStatus: "pending",
       acceptedTermsAt: new Date(),
     });
+
+    try {
+      await sendAdminRegistrationNotification({
+        requestId: created._id.toString(),
+        referenceCode: created.referenceCode,
+        fullName: created.fullName,
+        email: created.email,
+        organizationCode: created.organizationCode,
+        organizationName: created.organizationName,
+        department: created.department,
+        designation: created.designation,
+        requestedResponsibility: created.requestedResponsibility,
+        registeredAt: created.createdAt,
+      });
+    } catch {
+      // Notification errors must not rollback the successfully persisted registration
+    }
 
     return {
       id: created._id.toString(),
       referenceCode: created.referenceCode,
       status: "PENDING",
+      accountStatus: "pending",
       emailVerified: false,
       requestedResponsibility: created.requestedResponsibility,
       organizationCode: created.organizationCode,

@@ -1,5 +1,5 @@
 import mongoose, { Schema } from "mongoose";
-import { DOCUMENT_CATEGORY_KEYS, DOCUMENT_CONFIDENTIALITIES, DOCUMENT_LANGUAGES, DOCUMENT_LIMITS, DOCUMENT_ORIGINS, DOCUMENT_STATUSES } from "@infraos/shared-types";
+import { AI_ERROR_CODES, AI_WARNING_CODES, DOCUMENT_CATEGORY_KEYS, DOCUMENT_CONFIDENTIALITIES, DOCUMENT_LANGUAGES, DOCUMENT_LIMITS, DOCUMENT_ORIGINS, DOCUMENT_STATUSES } from "@infraos/shared-types";
 import { arrayLimit, nonNegativeInteger, reference, textField } from "../../../shared/database/fields.js";
 import { DOCUMENT_PROCESSING_STATUSES, DOCUMENT_TYPES, DOCUMENT_VISIBILITIES } from "../document.constants.js";
 
@@ -11,6 +11,21 @@ function unsignedStorageUrl(value: string): boolean {
     return false;
   }
 }
+
+/** Result of the last successful AI index (Batch 09). `extractedTextStatus === COMPLETED` is only ever set together with this. */
+const aiIndexSchema = new Schema({
+  indexedVersionNo: { type: Number, min: 1, validate: Number.isInteger },
+  chunkCount: nonNegativeInteger(),
+  pageCount: nonNegativeInteger(),
+  embeddingModel: textField(120),
+  embeddingDimension: nonNegativeInteger(),
+  pipelineVersion: textField(20),
+  indexedAt: Date,
+  lastJobId: reference("DocumentProcessingJob", false),
+  errorCode: { type: String, enum: AI_ERROR_CODES },
+  warnings: { type: [{ type: String, enum: AI_WARNING_CODES }], default: undefined },
+  truncated: Boolean,
+}, { _id: false, strict: "throw" });
 
 /**
  * One collection serves two kinds of rows: DocTrace documents (origin DOCTRACE) and Batch 06/07 inspection or maintenance evidence photos
@@ -57,6 +72,7 @@ const documentSchema = new Schema({
   confidentiality: { type: String, enum: DOCUMENT_CONFIDENTIALITIES },
   aiProcessingAllowed: Boolean,
   aiEligibleType: Boolean,
+  aiIndex: aiIndexSchema,
   origin: { type: String, enum: DOCUMENT_ORIGINS },
   tags: { type: [{ type: String, trim: true, lowercase: true, maxlength: 40 }], default: undefined, validate: arrayLimit(DOCUMENT_LIMITS.maxTags) },
   documentDate: Date,
