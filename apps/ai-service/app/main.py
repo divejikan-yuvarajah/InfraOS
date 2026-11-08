@@ -7,7 +7,9 @@ from starlette.responses import Response
 
 from .config import Settings, get_settings
 from .errors import error_response, install_error_handlers
-from .routers import capabilities, health
+from starlette.datastructures import UploadFile as _UploadFile
+
+from .routers import capabilities, extract, health
 
 
 class BodyLimitMiddleware(BaseHTTPMiddleware):
@@ -41,6 +43,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     install_error_handlers(app)
     app.include_router(health.router)
     app.include_router(capabilities.router)
+    app.include_router(extract.router)
+    _UploadFile.spool_max_size = s.max_body_bytes + 1024 * 1024  # keep uploads in memory: no temp files on disk
     return app
 
 
