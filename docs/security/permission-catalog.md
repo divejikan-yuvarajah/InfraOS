@@ -114,6 +114,8 @@ Must still pass `project.read` on that project.
 | `document.delete` | Privileged delete |
 | `document.process` | Trigger extract/index |
 | `document.ask` | RAG (ACL = readable docs only) |
+| `document.update` | Edit document metadata, status and links within scope (Batch 08) |
+| `document.restrict` | Mark SENSITIVE or exclude from AI processing, with a reason (Batch 08) |
 
 ### Contractor
 
