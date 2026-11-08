@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_dashboard" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300..900;1,300..900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{colors:{"primary-container":"#14202d","on-error-container":"#93000a","on-surface":"#141b2b","tertiary-fixed":"#ffdbcf","on-primary-fixed-variant":"#3c4856","inverse-on-surface":"#edf0ff","primary-fixed-dim":"#bbc8d9","surface-variant":"#dce2f7","surface-container-high":"#e1e8fd","on-primary-container":"#7c8898","surface-bright":"#f9f9ff","on-secondary":"#ffffff","on-error":"#ffffff","tertiary":"#150300","on-secondary-fixed":"#380d00","on-secondary-fixed-variant":"#802a00","on-tertiary":"#ffffff","background":"#f9f9ff","error":"#ba1a1a","surface-dim":"#d3daef","secondary-fixed":"#ffdbce","tertiary-container":"#3e1000","on-tertiary-fixed-variant":"#802a00","secondary":"#a83900","on-primary":"#ffffff","surface-container-lowest":"#ffffff","secondary-container":"#fd5a00","surface-tint":"#535f6f","surface-container-highest":"#dce2f7","on-primary-fixed":"#101c29","primary":"#000712","surface":"#f9f9ff","error-container":"#ffdad6","on-background":"#141b2b","surface-container-low":"#f1f3ff","on-tertiary-container":"#df602b","on-surface-variant":"#44474c","tertiary-fixed-dim":"#ffb59a","on-secondary-container":"#4f1700","secondary-fixed-dim":"#ffb59a","outline":"#74777c","primary-fixed":"#d7e3f6","surface-container":"#e9edff","outline-variant":"#c4c6cc","inverse-surface":"#293040","on-tertiary-fixed":"#380d00","inverse-primary":"#bbc8d9"},borderRadius:{DEFAULT:"0.125rem",lg:"0.25rem",xl:"0.5rem",full:"0.75rem"},spacing:{"space-xs":"0.25rem","gutter-desktop":"2rem","margin-mobile":"1rem","space-xl":"2rem","space-md":"1rem","margin-desktop":"2rem","gutter-mobile":"1rem",margin:"1.5rem",gutter:"1.5rem","space-lg":"1.5rem","space-sm":"0.5rem"},fontFamily:{"body-lg":["Public Sans"],"headline-md":["Public Sans"],"label-sm":["Public Sans"],"label-md":["Public Sans"],"title-lg":["Public Sans"],"headline-lg":["Public Sans"],"headline-lg-mobile":["Public Sans"],"body-sm":["Public Sans"],"title-md":["Public Sans"],"body-md":["Public Sans"],"label-lg":["Public Sans"],"headline-sm":["Public Sans"]},fontSize:{"body-lg":["16px",{lineHeight:"24px",fontWeight:"400"}],"headline-md":["24px",{lineHeight:"32px",fontWeight:"600"}],"label-sm":["11px",{lineHeight:"14px",fontWeight:"700"}],"label-md":["12px",{lineHeight:"16px",fontWeight:"600"}],"title-lg":["18px",{lineHeight:"26px",fontWeight:"600"}],"headline-lg":["32px",{lineHeight:"40px",fontWeight:"700"}],"headline-lg-mobile":["24px",{lineHeight:"32px",fontWeight:"700"}],"body-sm":["12px",{lineHeight:"18px",fontWeight:"400"}],"title-md":["16px",{lineHeight:"24px",fontWeight:"600"}],"body-md":["14px",{lineHeight:"20px",fontWeight:"400"}],"label-lg":["14px",{lineHeight:"20px",fontWeight:"600"}],"headline-sm":["20px",{lineHeight:"28px",fontWeight:"600"}]}}}}</script></head><body class="bg-background font-body-md text-on-surface antialiased"><aside class="fixed left-0 top-0 h-screen w-[264px] bg-primary-container z-50 flex flex-col justify-between overflow-y-auto select-none border-r border-outline-variant/20 shadow-2xl"><div class="flex flex-col"><div class="h-[70px] px-space-md flex items-center gap-space-sm border-b border-outline-variant/15 bg-primary-container"><img alt="InfraOS Monogram" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1VyfsoHmNlycT38w_s-BtxDBZ8YTGGIgxAtvePUrdo_fQbVPEAkHW3D7BthK_klTZZqoMWRvQ2nJacSTBzIG2E3nNpnM1S1XuVH8WoJQlrMiiX2KxseEsMXmTaz9WDG9krdqnczYqu0k5IWGVCQOqk3RouxmORyzYC6Px_XYyjIVg8d8De4b0MBb1soyzZxJiFY-g7FymyzG_dxiyRk3iPDcMK39SaDAcTwc_-zsMM"/><div class="flex flex-col min-w-0"><span class="font-headline-sm text-headline-sm tracking-wider uppercase text-surface-container-lowest leading-none">INFRAOS</span><span class="font-label-sm text-label-sm tracking-tight text-on-primary-container uppercase truncate mt-0.5">Infrastructure Intelligence</span></div></div><nav class="px-space-sm py-space-md flex flex-col gap-space-sm" data-active-classes="bg-secondary text-on-secondary font-label-md rounded-lg"><div class="px-space-sm pt-space-xs pb-1 font-label-sm text-label-sm uppercase tracking-widest text-on-primary-container/70 flex items-center justify-between"><span>Overview</span></div><a class="flex items-center justify-between px-space-sm py-1.5 rounded-lg text-primary-fixed-dim hover:bg-surface-container-high/10 hover:text-surface-container-lowest transition-colors font-body-md text-body-md" data-path="dashboard" href="#"><div class="flex items-center gap-2.5"><span class="text-xs text-on-primary-container">●</span><span>Dashboard</span></div></a><div class="px-space-sm pt-space-md pb-1 font-label-sm text-label-sm uppercase tracking-widest text-on-primary-container/70 flex items-center justify-between"><span>Project Operations</span></div><div class="flex flex-col gap-0.5 relative pl-2.5 before:content-[''] before:absolute before:left-3.5 before:top-2 before:bottom-2 before:w-[1.5px] before:bg-outline-variant/20"><a class="flex items-center justify-between px-space-sm py-1.5 rounded-lg text-primary-fixed-dim hover:bg-surface-container-high/10 hover:text-surface-container-lowest transition-colors font-body-md text-body-md" data-path="projects" href="#"><div class="flex items-center gap-2"><span class="text-xs text-on-primary-container">○</span><span>Projects</span></div></a><a class="flex items-center justify-between px-space-sm py-1.5 rounded-lg text-primary-fixed-dim hover:bg-surface-container-high/10 hover:text-surface-container-lowest transition-colors font-body-md text-body-md" data-path="project-reviews" href="#"><div class="flex items-center gap-2"><span class="text-xs text-on-primary-container">○</span><span>Project Reviews</span></div></a><a class="flex items-center justify-between px-space-sm py-1.5 rounded-lg text-primary-fixed-dim hover:bg-surface-container-high/10 hover:text-surface-container-lowest transition-colors font-body-md text-body-md" data-path="contractors" href="#"><div class="flex items-center gap-2"><span class="text-xs text-on-primary-container">○</span><span>Contractors</span></div></a><a class="flex items-center justify-between px-space-sm py-1.5 rounded-lg text-primary-fixed-dim hover:bg-surface-container-high/10 hover:text-surface-container-lowest transition-colors font-body-md text-body-md" data-path="inspections" href="#"><div class="flex items-center gap-2"><span class="text-xs text-on-primary-container">○</span><span>Inspections</span></div></a><a class="flex items-center justify-between px-space-sm py-1.5 rounded-lg text-primary-fixed-dim hover:bg-surface-container-high/10 hover:text-surface-container-lowest transition-colors font-body-md text-body-md" data-path="assets" href="#"><div class="flex items-center gap-2"><span class="text-xs text-on-primary-container">○</span><span>Assets</span></div></a><a class="flex items-center justify-between px-space-sm py-1.5 rounded-lg text-primary-fixed-dim hover:bg-surface-container-high/10 hover:text-surface-container-lowest transition-colors font-body-md text-body-md" data-path="maintenance" href="#"><div class="flex items-center gap-2"><span class="text-xs text-on-primary-container">○</span><span>Maintenance</span></div></a><a class="flex items-center justify-between px-space-sm py-1.5 rounded-lg text-primary-fixed-dim hover:bg-surface-container-high/10 hover:text-surface-container-lowest transition-colors font-body-md text-body-md" data-path="finance" href="#"><div class="flex items-center gap-2"><span class="text-xs text-on-primary-container">○</span><span>Finance</span></div></a></div><div class="px-space-sm pt-space-md pb-1 font-label-sm text-label-sm uppercase tracking-widest text-on-primary-container/70 flex items-center justify-between"><span>Coordination Intelligence</span></div><div class="flex flex-col gap-0.5 relative pl-2.5 before:content-[''] before:absolute before:left-3.5 before:top-2 before:bottom-2 before:w-[1.5px] before:bg-outline-variant/20"><a class="flex items-center justify-between px-space-sm py-1.5 rounded-lg text-primary-fixed-dim hover:bg-surface-container-high/10 hover:text-surface-container-lowest transition-colors font-body-md text-body-md" data-path="roadsync" href="#"><div class="flex items-center gap-2"><span class="text-xs text-on-primary-container">○</span><span>RoadSync</span></div></a><a class="flex items-center justify-between px-space-sm py-1.5 rounded-lg text-primary-fixed-dim hover:bg-surface-container-high/10 hover:text-surface-container-lowest transition-colors font-body-md text-body-md" data-path="work-requests" href="#"><div class="flex items-center gap-2"><span class="text-xs text-on-primary-container">○</span><span>Work Requests</span></div></a><a class="flex items-center justify-between px-space-sm py-1.5 rounded-lg text-primary-fixed-dim hover:bg-surface-container-high/10 hover:text-surface-container-lowest transition-colors font-body-md text-body-md" data-path="conflicts" href="#"><div class="flex items-center gap-2"><span class="text-xs text-error">◆</span><span>Conflicts</span></div><span class="px-1.5 py-0.5 rounded text-[10px] font-label-sm font-bold bg-error text-on-error">3</span></a><a class="flex items-center justify-between px-space-sm py-1.5 rounded-lg text-primary-fixed-dim hover:bg-surface-container-high/10 hover:text-surface-container-lowest transition-colors font-body-md text-body-md" data-path="coordination" href="#"><div class="flex items-center gap-2"><span class="text-xs text-on-primary-container">○</span><span>Coordination</span></div></a><a class="flex items-center justify-between px-space-sm py-1.5 rounded-lg text-primary-fixed-dim hover:bg-surface-container-high/10 hover:text-surface-container-lowest transition-colors font-body-md text-body-md" data-path="approvals" href="#"><div class="flex items-center gap-2"><span class="text-xs text-on-primary-container">✓</span><span>Approvals</span></div></a><a class="flex items-center justify-between px-space-sm py-1.5 rounded-lg text-primary-fixed-dim hover:bg-surface-container-high/10 hover:text-surface-container-lowest transition-colors font-body-md text-body-md" data-path="inframap" href="#"><div class="flex items-center gap-2"><span class="text-xs text-on-primary-container">○</span><span>InfraMap</span></div></a></div><div class="px-space-sm pt-space-md pb-1 font-label-sm text-label-sm uppercase tracking-widest text-on-primary-container/70 flex items-center justify-between"><span>Administration</span></div><div class="flex flex-col gap-0.5 relative pl-2.5 before:content-[''] before:absolute before:left-3.5 before:top-2 before:bottom-2 before:w-[1.5px] before:bg-outline-variant/20"><a class="flex items-center justify-between px-space-sm py-1.5 rounded-lg text-primary-fixed-dim hover:bg-surface-container-high/10 hover:text-surface-container-lowest transition-colors font-body-md text-body-md" data-path="staff" href="#"><div class="flex items-center gap-2"><span class="text-xs text-on-primary-container">○</span><span>Staff</span></div></a><a class="flex items-center justify-between px-space-sm py-1.5 rounded-lg text-primary-fixed-dim hover:bg-surface-container-high/10 hover:text-surface-container-lowest transition-colors font-body-md text-body-md" data-path="agencies" href="#"><div class="flex items-center gap-2"><span class="text-xs text-on-primary-container">○</span><span>Agencies</span></div></a><a class="flex items-center justify-between px-space-sm py-1.5 rounded-lg text-primary-fixed-dim hover:bg-surface-container-high/10 hover:text-surface-container-lowest transition-colors font-body-md text-body-md" data-path="roles" href="#"><div class="flex items-center gap-2"><span class="text-xs text-on-primary-container">○</span><span>Roles</span></div></a></div><div class="px-space-sm pt-space-md pb-1 font-label-sm text-label-sm uppercase tracking-widest text-on-primary-container/70 flex items-center justify-between"><span>Personal Workspace</span></div><div class="flex flex-col gap-0.5 relative pl-2.5 before:content-[''] before:absolute before:left-3.5 before:top-2 before:bottom-2 before:w-[1.5px] before:bg-outline-variant/20"><a class="flex items-center justify-between px-space-sm py-1.5 rounded-lg text-primary-fixed-dim hover:bg-surface-container-high/10 hover:text-surface-container-lowest transition-colors font-body-md text-body-md" data-path="notifications" href="#"><div class="flex items-center gap-2"><span class="text-xs text-on-primary-container">○</span><span>Notifications</span></div><span class="px-1.5 py-0.5 rounded text-[10px] font-label-sm font-bold bg-secondary text-on-secondary">4</span></a><a class="flex items-center justify-between px-space-sm py-1.5 rounded-lg text-primary-fixed-dim hover:bg-surface-container-high/10 hover:text-surface-container-lowest transition-colors font-body-md text-body-md" data-path="profile" href="#"><div class="flex items-center gap-2"><span class="text-xs text-on-primary-container">○</span><span>Profile</span></div></a><a class="flex items-center justify-between px-space-sm py-1.5 rounded-lg text-primary-fixed-dim hover:bg-surface-container-high/10 hover:text-surface-container-lowest transition-colors font-body-md text-body-md" data-path="settings" href="#"><div class="flex items-center gap-2"><span class="text-xs text-on-primary-container">○</span><span>Settings</span></div></a></div></nav></div><div class="p-space-sm border-t border-outline-variant/15 flex flex-col gap-2 bg-primary-container/95"><div class="flex items-center justify-between"><span class="px-2 py-0.5 border border-dashed border-outline-variant/40 rounded text-[10px] font-label-sm uppercase tracking-wider text-primary-fixed-dim">DEMO ENVIRONMENT</span><button aria-label="Collapse Rail" class="p-1 text-on-primary-container hover:text-surface-container-lowest rounded transition-colors" type="button"><span class="material-symbols-outlined text-[18px]">keyboard_double_arrow_left</span></button></div><div class="px-2 py-1.5 rounded bg-surface-container-highest/10 border border-outline-variant/15 flex flex-col"><span class="font-label-sm text-[10px] uppercase tracking-wide text-secondary font-bold">PROJECT MANAGER</span><span class="font-body-sm text-[11px] text-on-primary-container truncate">Agency Scope · Civil Dev</span></div></div></aside><div class="pl-[264px] min-h-screen flex flex-col bg-background"><header class="fixed top-0 left-[264px] right-0 h-[70px] bg-surface-container-lowest border-b border-outline-variant/30 z-40 flex items-center justify-between px-gutter-desktop"><div class="flex items-center gap-space-md"><button aria-label="Toggle Navigation" class="p-1.5 rounded hover:bg-surface-container text-on-surface-variant transition-colors" type="button"><span class="material-symbols-outlined text-[20px]">menu_open</span></button><div class="flex items-center gap-2 font-body-sm text-body-sm text-on-surface-variant"><span class="hover:text-on-surface cursor-pointer">Civil Command</span><span class="material-symbols-outlined text-[14px] text-outline">chevron_right</span><span class="font-label-md text-label-md text-on-surface">National Infrastructure</span></div></div><div class="flex-1 max-w-xl mx-gutter-desktop"><div class="relative flex items-center"><span class="material-symbols-outlined absolute left-3 text-outline text-[18px]">search</span><input class="w-full h-10 pl-9 pr-4 bg-surface-container-low border border-outline-variant/40 rounded-lg text-body-sm text-on-surface placeholder:text-outline focus:outline-none focus:ring-2 focus:ring-secondary/40 focus:border-secondary transition-all" placeholder="Search projects, work requests, assets... (⌘K / Ctrl+K)" type="text"/></div></div><div class="flex items-center gap-space-md"><span class="hidden xl:inline-flex px-2 py-0.5 border border-dashed border-secondary/40 text-secondary rounded text-[10px] font-label-sm font-bold uppercase tracking-wider">[ DEMO ]</span><div class="flex items-center text-xs font-label-md text-on-surface-variant border border-outline-variant/40 rounded px-1.5 py-1 bg-surface-container-low"><span class="font-bold text-on-surface px-1 cursor-pointer">EN</span><span class="text-outline-variant">|</span><span class="px-1 hover:text-on-surface cursor-pointer">සිංහල</span><span class="text-outline-variant">|</span><span class="px-1 hover:text-on-surface cursor-pointer">தமிழ்</span></div><div class="relative flex items-center justify-center"><button aria-label="Notifications" class="p-2 rounded-full hover:bg-surface-container text-on-surface-variant relative" type="button"><span class="material-symbols-outlined text-[20px]">notifications</span><span class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-secondary ring-2 ring-surface-container-lowest animate-pulse"></span></button></div><div class="hidden lg:flex items-center gap-1.5 px-2 py-1 bg-surface-container-low rounded border border-outline-variant/30 text-xs font-body-sm text-on-surface-variant"><span class="w-2 h-2 rounded-full bg-emerald-600"></span><span class="font-label-sm text-[11px] tracking-tight text-on-surface">Telemetry: Synced</span></div><div class="h-6 w-[1px] bg-outline-variant/30"></div><div class="flex items-center gap-space-sm pl-1"><img alt="Profile" class="w-8 h-8 rounded-full object-cover border border-outline-variant/40" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAl11o1nH00pgi9zJVRSiHkMwurTx0lvTwBAoLd0AX0Mo5HuLI5Re4MjGDmOsXi6AYyK5j_TgeeTYUfnqk_hwqcNiS7wHGsEmaf8Y2usgpK6x39VJroGWP_5BbGjYZJi2CGXLWS_BVtrG4LMCuxLpPWCmwHSB3tzOe1kGsZNYBEdCh2gAuGuHGF8fm8Mo3oqf_9ZtFQX3aLB6EiZGCsJzIdBm2H-JKX4-w1Dw0D8k8"/><div class="flex flex-col text-left"><span class="font-label-md text-label-md text-on-surface leading-tight">Alex Perera</span><span class="font-body-sm text-[11px] text-on-surface-variant leading-tight">Project Manager</span></div></div></div></header><main class="relative pt-[70px] min-h-screen bg-background w-full"><div class="flex flex-col w-full">
+<!-- Command Header Context Strip -->
+<div class="px-gutter-desktop py-space-lg bg-surface-container-low flex flex-col gap-space-md">
+<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-space-md">
+<div class="flex flex-col gap-1">
+<div class="flex items-center gap-space-xs font-label-sm text-label-sm uppercase tracking-widest text-secondary font-bold">
+<span class="inline-block w-2 h-2 rounded-full bg-secondary animate-pulse"></span>
+<span>AGENCY OPERATIONAL COMMAND • ROAD DEVELOPMENT AUTHORITY (RDA)</span>
+<span class="px-1.5 py-0.5 rounded bg-surface-container text-on-surface-variant font-label-sm text-[10px] uppercase tracking-normal">Western Urban Division Desk</span>
+</div>
+<h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight">
+          Agency Operations Command
+        </h1>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-3xl">
+          Coordinate daily infrastructure activity, dispatch work requests, resolve municipal conflicts, and manage agency-level operational priorities across urban primary corridors.
+        </p>
+</div>
+<!-- Quick Command Bar -->
+<div class="flex flex-wrap items-center gap-space-sm">
+<button class="flex items-center gap-2 px-space-md h-10 bg-secondary hover:bg-secondary-container text-on-secondary font-label-md text-label-md rounded-lg shadow-sm transition-all transform active:scale-[0.98]" type="button">
+<span class="material-symbols-outlined text-[18px]">add_circle</span>
+<span>Submit Work Request (WR)</span>
+</button>
+<button class="flex items-center gap-2 px-space-md h-10 bg-surface-container-lowest hover:bg-surface-container text-on-surface font-label-md text-label-md rounded-lg shadow-sm transition-all" type="button">
+<span class="material-symbols-outlined text-[18px] text-secondary">share_location</span>
+<span>RoadSync Spatial Triage</span>
+</button>
+<button class="flex items-center gap-2 px-3 h-10 bg-surface-container-lowest hover:bg-surface-container text-on-surface-variant font-label-md text-label-md rounded-lg shadow-sm transition-all" title="Export Manifest" type="button">
+<span class="material-symbols-outlined text-[18px]">download_for_offline</span>
+<span class="hidden sm:inline">Export Corridor Manifest</span>
+</button>
+</div>
+</div>
+<!-- Agency Scope Telemetry Ribbon -->
+<div class="flex flex-wrap items-center justify-between gap-y-2 pt-space-xs text-on-surface-variant font-body-sm text-body-sm">
+<div class="flex items-center flex-wrap gap-x-6 gap-y-1">
+<div class="flex items-center gap-2">
+<span class="text-secondary font-bold font-label-sm text-label-sm">JURISDICTION</span>
+<span class="font-label-md text-label-md text-on-surface">Western Province (Zone 1 - Colombo Metro)</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="text-outline font-bold font-label-sm text-label-sm">SURVEYED NETWORK</span>
+<span class="font-label-md text-label-md text-on-surface font-mono">1,240.40 km</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="text-outline font-bold font-label-sm text-label-sm">ACTIVE CORRIDORS</span>
+<span class="font-label-md text-label-md text-on-surface">18 Corridors Under Execution</span>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<span class="px-2 py-0.5 rounded text-on-secondary font-label-sm text-[10px] font-bold uppercase tracking-wider bg-primary">CH DATUM: WGS84 / SLD99</span>
+<span class="px-2 py-0.5 rounded bg-surface-container-high text-on-surface font-label-sm text-[10px] font-bold uppercase tracking-wider">[ VERIFIED LIVE ]</span>
+</div>
+</div>
+</div>
+<div class="px-gutter-desktop py-space-xl flex flex-col gap-space-xl">
+<!-- Agency Operational Pulse (KPI Bento) -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-space-md">
+<!-- Metric 1 -->
+<div class="relative flex flex-col p-space-md bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden">
+<div class="absolute top-0 left-0 right-0 h-1 bg-secondary"></div>
+<div class="flex items-center justify-between text-on-surface-variant mb-2">
+<span class="font-label-sm text-label-sm uppercase tracking-wide">Active Corridors</span>
+<span class="material-symbols-outlined text-[20px] text-secondary">alt_route</span>
+</div>
+<div class="flex items-baseline gap-2">
+<span class="font-headline-lg text-headline-lg text-on-surface leading-none">18</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Corridors</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-2">
+          14 Dual Carriageway · 4 Arterial
+        </p>
+</div>
+<!-- Metric 2 -->
+<div class="relative flex flex-col p-space-md bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden">
+<div class="absolute top-0 left-0 right-0 h-1 bg-secondary-container"></div>
+<div class="flex items-center justify-between text-on-surface-variant mb-2">
+<span class="font-label-sm text-label-sm uppercase tracking-wide">Coordination Requests</span>
+<span class="material-symbols-outlined text-[20px] text-secondary-container">sync_alt</span>
+</div>
+<div class="flex items-baseline gap-2">
+<span class="font-headline-lg text-headline-lg text-on-surface leading-none">9</span>
+<span class="font-label-sm text-label-sm text-secondary font-bold">Pending Action</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-2">
+          From NWSDB, CEB, SLT &amp; CMC
+        </p>
+</div>
+<!-- Metric 3 -->
+<div class="relative flex flex-col p-space-md bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden">
+<div class="absolute top-0 left-0 right-0 h-1 bg-error"></div>
+<div class="flex items-center justify-between text-on-surface-variant mb-2">
+<span class="font-label-sm text-label-sm uppercase tracking-wide">Active Spatial Clashes</span>
+<span class="material-symbols-outlined text-[20px] text-error">warning</span>
+</div>
+<div class="flex items-baseline gap-2">
+<span class="font-headline-lg text-headline-lg text-error leading-none">2</span>
+<span class="font-label-sm text-label-sm text-error font-bold">Overlaps</span>
+</div>
+<p class="font-body-sm text-body-sm text-error font-semibold mt-2">
+          1 High Severity Freeze at Dematagoda
+        </p>
+</div>
+<!-- Metric 4 -->
+<div class="relative flex flex-col p-space-md bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden">
+<div class="absolute top-0 left-0 right-0 h-1 bg-primary"></div>
+<div class="flex items-center justify-between text-on-surface-variant mb-2">
+<span class="font-label-sm text-label-sm uppercase tracking-wide">Pavement SLA</span>
+<span class="material-symbols-outlined text-[20px] text-primary">engineering</span>
+</div>
+<div class="flex items-baseline gap-2">
+<span class="font-headline-lg text-headline-lg text-on-surface leading-none">99.4%</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Network</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-2">
+          Reinstatement compliance tracking
+        </p>
+</div>
+<!-- Metric 5 -->
+<div class="relative flex flex-col p-space-md bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden">
+<div class="absolute top-0 left-0 right-0 h-1 bg-primary-fixed-dim"></div>
+<div class="flex items-center justify-between text-on-surface-variant mb-2">
+<span class="font-label-sm text-label-sm uppercase tracking-wide">Wayleaves Granted</span>
+<span class="material-symbols-outlined text-[20px] text-on-surface">assignment_turned_in</span>
+</div>
+<div class="flex items-baseline gap-2">
+<span class="font-headline-lg text-headline-lg text-on-surface leading-none">14</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant font-mono">30D WINDOW</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-2">
+          6 corridor bonds deposited
+        </p>
+</div>
+</div>
+<!-- Main Operational Split: Urgent Priority Actions + Spatial Triage Preview -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-lg items-start">
+<!-- Priority Operations Rail (Urgent Agency Actions) -->
+<div class="lg:col-span-8 flex flex-col gap-space-md">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="font-headline-sm text-headline-sm text-on-surface">Urgent Agency Actions</span>
+<span class="px-2 py-0.5 rounded-full bg-error-container text-on-error-container font-label-sm text-label-sm font-bold">3 Actionable</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Inter-Agency Escalation Queue</span>
+</div>
+<!-- Clash Card (Severe Alert) -->
+<div class="p-space-lg bg-surface-container-lowest rounded-xl shadow-sm flex flex-col gap-space-md relative overflow-hidden">
+<div class="absolute left-0 top-0 bottom-0 w-1.5 bg-error"></div>
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+<div class="flex items-center gap-2">
+<span class="px-2 py-0.5 rounded font-label-sm text-label-sm font-bold bg-error text-on-error uppercase tracking-wider">Spatial Clash</span>
+<span class="font-label-md text-label-md text-on-surface font-mono">#CR-904</span>
+<span class="px-2 py-0.5 rounded bg-surface-container font-label-sm text-[11px] text-on-surface-variant uppercase tracking-wider">[ 48h Emergency Freeze Active ]</span>
+</div>
+<div class="flex items-center gap-1.5 text-error font-label-sm text-label-sm font-bold">
+<span class="material-symbols-outlined text-[16px]">timer</span>
+<span>18h 42m remaining to arbitration</span>
+</div>
+</div>
+<div class="flex flex-col gap-1">
+<h2 class="font-title-lg text-title-lg text-on-surface font-semibold">
+              NWSDB Trenching Across Baseline Road (A002 Corridor)
+            </h2>
+<p class="font-body-md text-body-md text-on-surface-variant">
+              Spatial conflict detected at CH 04+210 (Dematagoda Flyover Junction). NWSDB 450mm ductile iron trunk main excavation intersects scheduled RDA asphalt wearing overlay scheduled under Contract RDA/WP/2026/04.
+            </p>
+</div>
+<!-- Alignment & Chainage Specs -->
+<div class="grid grid-cols-2 sm:grid-cols-4 gap-space-sm p-space-sm bg-surface-container-low rounded-lg font-body-sm text-body-sm">
+<div>
+<span class="block text-outline font-label-sm text-[10px] uppercase">Location</span>
+<span class="font-label-md text-label-md text-on-surface">Dematagoda Junction</span>
+</div>
+<div>
+<span class="block text-outline font-label-sm text-[10px] uppercase">Chainage</span>
+<span class="font-label-md text-label-md text-on-surface font-mono">CH 04+210 to 04+245</span>
+</div>
+<div>
+<span class="block text-outline font-label-sm text-[10px] uppercase">Impact Agency</span>
+<span class="font-label-md text-label-md text-on-surface">NWSDB (Water Supply)</span>
+</div>
+<div>
+<span class="block text-outline font-label-sm text-[10px] uppercase">Statutory Sign-off</span>
+<span class="font-label-md text-label-md text-error">Divisional Engineer Clearance</span>
+</div>
+</div>
+<div class="flex flex-wrap items-center justify-between gap-space-sm pt-2">
+<div class="flex items-center gap-3 text-body-sm text-on-surface-variant">
+<span class="flex items-center gap-1 font-label-sm text-label-sm"><span class="w-2 h-2 rounded-full bg-error"></span> Corridor Locked</span>
+<span>•</span>
+<span class="font-label-sm text-label-sm">Dispatched to Eng. Gamage</span>
+</div>
+<div class="flex items-center gap-space-sm">
+<button class="px-space-md h-9 bg-surface-container hover:bg-surface-container-high text-on-surface font-label-md text-label-md rounded-lg transition-colors" type="button">
+                View Cross-Profile
+              </button>
+<button class="px-space-md h-9 bg-secondary hover:bg-secondary-container text-on-secondary font-label-md text-label-md rounded-lg shadow-sm transition-all flex items-center gap-1.5" type="button">
+<span class="material-symbols-outlined text-[16px]">handshake</span>
+<span>Initiate Accord Protocol</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Work Request Action Card 1 -->
+<div class="p-space-lg bg-surface-container-lowest rounded-xl shadow-sm flex flex-col gap-space-md relative overflow-hidden">
+<div class="absolute left-0 top-0 bottom-0 w-1.5 bg-secondary-container"></div>
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+<div class="flex items-center gap-2">
+<span class="px-2 py-0.5 rounded font-label-sm text-label-sm font-bold bg-secondary-container text-on-secondary uppercase tracking-wider">Work Request</span>
+<span class="font-label-md text-label-md text-on-surface font-mono">#WR-2026-881</span>
+<span class="px-2 py-0.5 rounded bg-surface-container font-label-sm text-[11px] text-on-surface-variant uppercase tracking-wider">[ Sub-surface Drilling ]</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant font-mono">SLA: 22h Remaining</span>
+</div>
+<div class="flex flex-col gap-1">
+<h2 class="font-title-lg text-title-lg text-on-surface font-semibold">
+              CEB 132kV Underground Feeder: Directional Drilling (Galle Road A002)
+            </h2>
+<p class="font-body-md text-body-md text-on-surface-variant">
+              Ceylon Electricity Board requests horizontal directional drilling (HDD) conduit placement at depth 4.8m beneath Kollupitiya Junction carriageway. No open trenching proposed; requires confirmation of pavement structural integrity clearances.
+            </p>
+</div>
+<div class="grid grid-cols-2 sm:grid-cols-4 gap-space-sm p-space-sm bg-surface-container-low rounded-lg font-body-sm text-body-sm">
+<div>
+<span class="block text-outline font-label-sm text-[10px] uppercase">Corridor</span>
+<span class="font-label-md text-label-md text-on-surface">Galle Road (Kollupitiya)</span>
+</div>
+<div>
+<span class="block text-outline font-label-sm text-[10px] uppercase">Chainage</span>
+<span class="font-label-md text-label-md text-on-surface font-mono">CH 02+840 to 02+890</span>
+</div>
+<div>
+<span class="block text-outline font-label-sm text-[10px] uppercase">Sub-surface Depth</span>
+<span class="font-label-md text-label-md text-on-surface font-mono">-4.80m Depth</span>
+</div>
+<div>
+<span class="block text-outline font-label-sm text-[10px] uppercase">Security Deposit</span>
+<span class="font-label-md text-label-md text-secondary font-mono">LKR 4.2M Bond</span>
+</div>
+</div>
+<div class="flex flex-wrap items-center justify-between gap-space-sm pt-2">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-outline">description</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">CEB-GEOTECH-R4.dwg &amp; TMP Attached</span>
+</div>
+<div class="flex items-center gap-space-sm">
+<button class="px-space-md h-9 bg-surface-container hover:bg-surface-container-high text-on-surface font-label-md text-label-md rounded-lg transition-colors" type="button">
+                Review Sub-surface Profile
+              </button>
+<button class="px-space-md h-9 bg-primary hover:bg-inverse-surface text-on-primary font-label-md text-label-md rounded-lg shadow-sm transition-all flex items-center gap-1.5" type="button">
+<span class="material-symbols-outlined text-[16px]">verified</span>
+<span>Grant Wayleave</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Work Request Action Card 2 -->
+<div class="p-space-lg bg-surface-container-lowest rounded-xl shadow-sm flex flex-col gap-space-md relative overflow-hidden">
+<div class="absolute left-0 top-0 bottom-0 w-1.5 bg-primary-container"></div>
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+<div class="flex items-center gap-2">
+<span class="px-2 py-0.5 rounded font-label-sm text-label-sm font-bold bg-primary-container text-surface-container-lowest uppercase tracking-wider">Drainage Tie-In</span>
+<span class="font-label-md text-label-md text-on-surface font-mono">#WR-2026-902</span>
+<span class="px-2 py-0.5 rounded bg-surface-container font-label-sm text-[11px] text-on-surface-variant uppercase tracking-wider">[ Municipal Interface ]</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant font-mono">SLA: 48h Remaining</span>
+</div>
+<div class="flex flex-col gap-1">
+<h2 class="font-title-lg text-title-lg text-on-surface font-semibold">
+              CMC Stormwater Rehabilitation &amp; Outfall Tie-in: Kandy Road (Peliyagoda)
+            </h2>
+<p class="font-body-md text-body-md text-on-surface-variant">
+              Colombo Municipal Council storm drainage connection along the roadside kerb and shoulder lane. Requires nocturnal single-lane closure and temporary traffic management validation.
+            </p>
+</div>
+<div class="flex flex-wrap items-center justify-between gap-space-sm pt-2">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-secondary">traffic</span>
+<span class="font-body-sm text-body-sm text-on-surface">Night Work Window: 22:00 — 05:00 hrs only</span>
+</div>
+<div class="flex items-center gap-space-sm">
+<button class="px-space-md h-9 bg-surface-container-high hover:bg-surface-container text-on-surface font-label-md text-label-md rounded-lg transition-colors" type="button">
+                Inspect Staging Route
+              </button>
+<button class="px-space-md h-9 bg-secondary hover:bg-secondary-container text-on-secondary font-label-md text-label-md rounded-lg shadow-sm transition-all flex items-center gap-1.5" type="button">
+<span class="material-symbols-outlined text-[16px]">traffic</span>
+<span>Approve Traffic Management Plan</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Column: Visual Corridor Map & Partner Response Feed -->
+<div class="lg:col-span-4 flex flex-col gap-space-md">
+<!-- Live Corridor Spatial Inspector (Map Component) -->
+<div class="flex flex-col p-space-md bg-surface-container-lowest rounded-xl shadow-sm gap-space-sm">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-on-surface uppercase tracking-wide">Live Corridor Geography</span>
+<span class="px-2 py-0.5 rounded bg-surface-container text-on-surface-variant font-label-sm text-[10px] font-mono">GIS LAYER 4.2</span>
+</div>
+<div class="w-full h-56 bg-cover bg-center rounded-lg relative overflow-hidden shadow-inner" data-location="Colombo, Sri Lanka" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDFeuhEb9bi0UePqHOvogmH6xWUfV2ACutxCWgUztu5v-qZqbId-kBgim32f9yw_lJnMV2Agv2WE-eCb2lvHfoI_bFjHaF86LR9LN6wnapfPRpFdbizLPsDeTYydpv__Sg50W3JCSNx4XyBABSV6x3z9CXVXicK4JM-TYeH2_agIQ-H-2Ld77mx8MYjcenSUr93vBRkUObOJqvPcqX3ktt23bkr656jC7-et7aiN18')">
+<!-- Simulated GIS HUD Overlay -->
+<div class="absolute inset-0 bg-primary/20 p-space-sm flex flex-col justify-between pointer-events-none">
+<div class="flex items-center justify-between">
+<span class="px-2 py-0.5 rounded bg-primary-container text-surface-container-lowest font-label-sm text-[10px] font-mono">A002 CORRIDOR ZONE</span>
+<span class="w-2.5 h-2.5 rounded-full bg-error animate-ping"></span>
+</div>
+<div class="p-2 bg-primary-container/90 rounded text-surface-container-lowest flex flex-col gap-0.5 backdrop-blur-sm">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-[11px] text-secondary font-bold">SPATIAL CONFLICT PIN</span>
+<span class="font-mono text-[10px] text-primary-fixed-dim">CH 04+210</span>
+</div>
+<span class="font-body-sm text-[11px] text-primary-fixed">Baseline Rd × Dematagoda Cross</span>
+</div>
+</div>
+</div>
+<div class="p-2.5 bg-surface-container-low rounded-lg flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-[20px]">layers</span>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface">Active Micro-trench Buffer</span>
+<span class="font-body-sm text-[11px] text-on-surface-variant">50m clearance perimeter</span>
+</div>
+</div>
+<button class="font-label-md text-label-md text-secondary hover:underline" type="button">Expand GIS</button>
+</div>
+</div>
+<!-- Inter-Agency Coordination Response Feed -->
+<div class="flex flex-col p-space-md bg-surface-container-lowest rounded-xl shadow-sm gap-space-md">
+<div class="flex items-center justify-between">
+<span class="font-headline-sm text-headline-sm text-on-surface">Inter-Agency Feed</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant font-mono">LIVE SLAS</span>
+</div>
+<div class="flex flex-col gap-3">
+<!-- Item 1 -->
+<div class="p-3 bg-surface-container-low rounded-lg flex flex-col gap-1.5">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm font-bold text-on-surface">Ceylon Electricity Board</span>
+<span class="px-1.5 py-0.5 rounded bg-error-container text-on-error-container font-label-sm text-[10px] font-bold">6h 12m ESCALATION</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+                132kV transmission cable crossing wayleave clearance request. Automatic escalation to Ministry if unreviewed.
+              </p>
+<div class="flex items-center justify-between pt-1 font-label-sm text-[11px]">
+<span class="text-outline">Corridor: Sri Jayawardenepura Rd</span>
+<a class="text-secondary hover:underline font-bold" href="#">Review Now →</a>
+</div>
+</div>
+<!-- Item 2 -->
+<div class="p-3 bg-surface-container-low rounded-lg flex flex-col gap-1.5">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm font-bold text-on-surface">Sri Lanka Telecom (SLT)</span>
+<span class="px-1.5 py-0.5 rounded bg-surface-container text-on-surface-variant font-label-sm text-[10px] font-bold">18h REMAINING</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+                Fiber optic duct installation notification across Havelock Road CH 01+120. Pavement bond deposit confirmed.
+              </p>
+<div class="flex items-center justify-between pt-1 font-label-sm text-[11px]">
+<span class="text-outline">Corridor: Havelock Road</span>
+<a class="text-secondary hover:underline font-bold" href="#">Acknowledge →</a>
+</div>
+</div>
+<!-- Item 3 -->
+<div class="p-3 bg-surface-container-low rounded-lg flex flex-col gap-1.5">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm font-bold text-on-surface">Colombo Municipal Council</span>
+<span class="px-1.5 py-0.5 rounded bg-surface-container-high text-on-surface font-label-sm text-[10px] font-bold">SYNCHRONIZED</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+                Gutter clearing and gulley grating replacement scheduled alongside RDA asphalt resurfacing at Kollupitiya.
+              </p>
+<div class="flex items-center justify-between pt-1 font-label-sm text-[11px]">
+<span class="text-outline">Joint Window: Saturday 23:00</span>
+<span class="text-on-surface-variant font-bold">Approved ✓</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Corridor Engineer on Duty -->
+<div class="p-space-md bg-primary-container text-surface-container-lowest rounded-xl flex items-center justify-between">
+<div class="flex items-center gap-space-sm">
+<img class="w-12 h-12 rounded-full object-cover" data-alt="Close-up professional portrait of a senior civil highway engineer wearing safety glasses and an orange reflective high-visibility harness against drafting blueprints." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBU2wXb36w0kUv6NBxzQpQVLp1B-JYBgY3pyvt-dks8hniw1FljR477wWxfQgRU-IjpD0PN0aoK4oRPpWBbWK0xzF1ALlhiVoeRMw-j8mPBukNphFokFQe8leO1ZL9-JO4hMuMvRQ3dDE4NezlF1YLhBtO8qYD86dSpfeaCQWpApimDmnAEULXlecatcA52uVZHaxVR8BfyHnEu5tfdX4VdQGvhuXoZOo7J0yREe1A"/>
+<div class="flex flex-col">
+<span class="font-label-sm text-[10px] uppercase tracking-wider text-secondary font-bold">Divisional Duty Engineer</span>
+<span class="font-label-md text-label-md text-surface-bright">Eng. K. R. Gamage</span>
+<span class="font-body-sm text-[11px] text-primary-fixed-dim">Direct Dispatch: +94 11 288 4902</span>
+</div>
+</div>
+<button class="p-2 rounded bg-surface-container-highest/10 hover:bg-surface-container-highest/20 text-surface-bright transition-colors" title="Contact Engineer" type="button">
+<span class="material-symbols-outlined text-[20px]">call</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Agency Work Requests & Permitting Pipeline (Stage gate) -->
+<div class="flex flex-col p-space-lg bg-surface-container-lowest rounded-xl shadow-sm gap-space-md">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+<div class="flex flex-col">
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Work Request Permitting Pipeline</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">RDA statutory progression from initial draft through RoadSync spatial triage to active excavation wayleaves.</p>
+</div>
+<div class="flex items-center gap-2">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Total Pipeline Volume:</span>
+<span class="font-label-md text-label-md text-on-surface font-mono font-bold">46 Permits Active</span>
+</div>
+</div>
+<!-- Pipeline Stepper / Stages -->
+<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-space-sm pt-2">
+<!-- Stage 1 -->
+<div class="flex flex-col p-3 bg-surface-container-low rounded-lg gap-1 border-t-2 border-outline">
+<div class="flex items-center justify-between text-on-surface-variant">
+<span class="font-label-sm text-[11px] uppercase tracking-wider">01. Draft</span>
+<span class="material-symbols-outlined text-[16px]">edit_note</span>
+</div>
+<span class="font-headline-md text-headline-md text-on-surface leading-tight">2</span>
+<span class="font-body-sm text-[11px] text-on-surface-variant">Internal prep</span>
+</div>
+<!-- Stage 2 -->
+<div class="flex flex-col p-3 bg-surface-container-low rounded-lg gap-1 border-t-2 border-primary">
+<div class="flex items-center justify-between text-on-surface-variant">
+<span class="font-label-sm text-[11px] uppercase tracking-wider">02. Submitted</span>
+<span class="material-symbols-outlined text-[16px]">outbox</span>
+</div>
+<span class="font-headline-md text-headline-md text-on-surface leading-tight">4</span>
+<span class="font-body-sm text-[11px] text-on-surface-variant">Awaiting audit</span>
+</div>
+<!-- Stage 3 -->
+<div class="flex flex-col p-3 bg-surface-container-low rounded-lg gap-1 border-t-2 border-secondary-container">
+<div class="flex items-center justify-between text-secondary">
+<span class="font-label-sm text-[11px] uppercase tracking-wider font-bold">03. Spatial Triage</span>
+<span class="material-symbols-outlined text-[16px]">travel_explore</span>
+</div>
+<span class="font-headline-md text-headline-md text-secondary leading-tight">3</span>
+<span class="font-body-sm text-[11px] text-on-surface-variant">RoadSync scan</span>
+</div>
+<!-- Stage 4 -->
+<div class="flex flex-col p-3 bg-surface-container-low rounded-lg gap-1 border-t-2 border-error">
+<div class="flex items-center justify-between text-on-surface-variant">
+<span class="font-label-sm text-[11px] uppercase tracking-wider">04. Agency Review</span>
+<span class="material-symbols-outlined text-[16px]">groups</span>
+</div>
+<span class="font-headline-md text-headline-md text-on-surface leading-tight">5</span>
+<span class="font-body-sm text-[11px] text-on-surface-variant">Cross-utility signoff</span>
+</div>
+<!-- Stage 5 -->
+<div class="flex flex-col p-3 bg-surface-container-low rounded-lg gap-1 border-t-2 border-primary-fixed-dim">
+<div class="flex items-center justify-between text-on-surface-variant">
+<span class="font-label-sm text-[11px] uppercase tracking-wider">05. Wayleaves</span>
+<span class="material-symbols-outlined text-[16px]">verified</span>
+</div>
+<span class="font-headline-md text-headline-md text-on-surface leading-tight">18</span>
+<span class="font-body-sm text-[11px] text-on-surface-variant">Approved &amp; bonded</span>
+</div>
+<!-- Stage 6 -->
+<div class="flex flex-col p-3 bg-surface-container-low rounded-lg gap-1 border-t-2 border-secondary">
+<div class="flex items-center justify-between text-secondary">
+<span class="font-label-sm text-[11px] uppercase tracking-wider font-bold">06. Active Works</span>
+<span class="material-symbols-outlined text-[16px]">handyman</span>
+</div>
+<span class="font-headline-md text-headline-md text-secondary leading-tight">14</span>
+<span class="font-body-sm text-[11px] text-on-surface-variant">On-site execution</span>
+</div>
+</div>
+</div>
+<!-- Active Corridor Excavation & Rehabilitation Roster -->
+<div class="flex flex-col p-space-lg bg-surface-container-lowest rounded-xl shadow-sm gap-space-md">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-md">
+<div class="flex flex-col">
+<div class="flex items-center gap-2">
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Active Corridor Excavation &amp; Rehabilitation Roster</h2>
+<span class="px-2 py-0.5 rounded bg-surface-container text-on-surface-variant font-label-sm text-[11px] font-mono">18 RECORDS</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Daily road surface status, contractor assignments, and RoadSync spatial lock states.</p>
+</div>
+<!-- Filter Controls -->
+<div class="flex items-center gap-space-sm flex-wrap">
+<div class="flex items-center bg-surface-container-low rounded-lg px-2 py-1">
+<span class="material-symbols-outlined text-outline text-[16px] mr-1">filter_list</span>
+<select aria-label="Filter status" class="bg-transparent text-label-md text-on-surface font-label-md focus:outline-none">
+<option>All Statuses</option>
+<option>Locked Only</option>
+<option>Caution</option>
+<option>Clear</option>
+</select>
+</div>
+<div class="flex items-center bg-surface-container-low rounded-lg px-2 py-1">
+<span class="material-symbols-outlined text-outline text-[16px] mr-1">business</span>
+<select aria-label="Filter contractor" class="bg-transparent text-label-md text-on-surface font-label-md focus:outline-none">
+<option>All Contractors</option>
+<option>Maga Engineering</option>
+<option>Access Engineering</option>
+<option>Sierra Construction</option>
+</select>
+</div>
+</div>
+</div>
+<!-- Data Table -->
+<div class="overflow-x-auto -mx-space-lg px-space-lg">
+<table class="w-full text-left border-collapse min-w-[980px]">
+<thead>
+<tr class="bg-surface-container-low text-on-surface-variant font-label-sm text-label-sm uppercase tracking-wider">
+<th class="py-3 px-4 rounded-l-lg">Corridor &amp; Chainage</th>
+<th class="py-3 px-4">Lead Contractor</th>
+<th class="py-3 px-4">Surface Integrity Phase</th>
+<th class="py-3 px-4">Spatial Lock</th>
+<th class="py-3 px-4">Next Inspection / Milestone</th>
+<th class="py-3 px-4 rounded-r-lg text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container-low font-body-md text-body-md text-on-surface">
+<!-- Row 1 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="py-3.5 px-4">
+<div class="flex flex-col">
+<div class="flex items-center gap-2">
+<span class="font-label-md text-label-md font-bold text-on-surface">Baseline Road (A002)</span>
+<span class="px-1.5 py-0.2 rounded bg-surface-container font-label-sm text-[10px] text-on-surface-variant font-mono">SEC-04</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant font-mono">CH 00+000 to CH 08+400</span>
+</div>
+</td>
+<td class="py-3.5 px-4">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface">Maga Engineering PLC</span>
+<span class="font-body-sm text-[11px] text-on-surface-variant font-mono">Contract #RDA-WP-88</span>
+</div>
+</td>
+<td class="py-3.5 px-4">
+<div class="flex items-center gap-2">
+<span class="w-2.5 h-2.5 rounded-full bg-secondary"></span>
+<span class="font-label-md text-label-md text-on-surface">Asphalt Binder Course</span>
+</div>
+</td>
+<td class="py-3.5 px-4">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-error-container text-on-error-container font-label-sm text-label-sm font-bold uppercase tracking-wide">
+<span class="w-1.5 h-1.5 rounded-full bg-error animate-pulse"></span>
+<span>Locked (Clash #904)</span>
+</span>
+</td>
+<td class="py-3.5 px-4">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface">Compaction Core Test</span>
+<span class="font-body-sm text-[11px] text-on-surface-variant">Tomorrow, 10:30 AM</span>
+</div>
+</td>
+<td class="py-3.5 px-4 text-right">
+<button class="p-1.5 hover:bg-surface-container rounded text-secondary transition-colors" title="Inspect Corridor Detail" type="button">
+<span class="material-symbols-outlined text-[20px]">chevron_right</span>
+</button>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="py-3.5 px-4">
+<div class="flex flex-col">
+<div class="flex items-center gap-2">
+<span class="font-label-md text-label-md font-bold text-on-surface">Marine Drive Extension</span>
+<span class="px-1.5 py-0.2 rounded bg-surface-container font-label-sm text-[10px] text-on-surface-variant font-mono">SEC-01</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant font-mono">CH 02+100 to CH 03+550</span>
+</div>
+</td>
+<td class="py-3.5 px-4">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface">Access Engineering Ltd</span>
+<span class="font-body-sm text-[11px] text-on-surface-variant font-mono">Contract #RDA-WP-92</span>
+</div>
+</td>
+<td class="py-3.5 px-4">
+<div class="flex items-center gap-2">
+<span class="w-2.5 h-2.5 rounded-full bg-primary-fixed-dim"></span>
+<span class="font-label-md text-label-md text-on-surface">Sub-base Stabilization</span>
+</div>
+</td>
+<td class="py-3.5 px-4">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-surface-container-high text-on-surface font-label-sm text-label-sm font-bold uppercase tracking-wide">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+<span>Clear to Excavate</span>
+</span>
+</td>
+<td class="py-3.5 px-4">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface">Benkelman Beam Deflection</span>
+<span class="font-body-sm text-[11px] text-on-surface-variant">28 Mar 2026</span>
+</div>
+</td>
+<td class="py-3.5 px-4 text-right">
+<button class="p-1.5 hover:bg-surface-container rounded text-secondary transition-colors" title="Inspect Corridor Detail" type="button">
+<span class="material-symbols-outlined text-[20px]">chevron_right</span>
+</button>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="py-3.5 px-4">
+<div class="flex flex-col">
+<div class="flex items-center gap-2">
+<span class="font-label-md text-label-md font-bold text-on-surface">High Level Road (A004)</span>
+<span class="px-1.5 py-0.2 rounded bg-surface-container font-label-sm text-[10px] text-on-surface-variant font-mono">SEC-09</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant font-mono">CH 05+300 to CH 07+800</span>
+</div>
+</td>
+<td class="py-3.5 px-4">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface">Sierra Construction Ltd</span>
+<span class="font-body-sm text-[11px] text-on-surface-variant font-mono">Contract #RDA-WP-74</span>
+</div>
+</td>
+<td class="py-3.5 px-4">
+<div class="flex items-center gap-2">
+<span class="w-2.5 h-2.5 rounded-full bg-secondary-container"></span>
+<span class="font-label-md text-label-md text-on-surface">Utility Duct Trenching</span>
+</div>
+</td>
+<td class="py-3.5 px-4">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-secondary-fixed text-on-secondary-fixed-variant font-label-sm text-label-sm font-bold uppercase tracking-wide">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+<span>Caution: Multi-Utility</span>
+</span>
+</td>
+<td class="py-3.5 px-4">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface">Trench Backfill Verification</span>
+<span class="font-body-sm text-[11px] text-on-surface-variant">Today, 16:00 PM</span>
+</div>
+</td>
+<td class="py-3.5 px-4 text-right">
+<button class="p-1.5 hover:bg-surface-container rounded text-secondary transition-colors" title="Inspect Corridor Detail" type="button">
+<span class="material-symbols-outlined text-[20px]">chevron_right</span>
+</button>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="py-3.5 px-4">
+<div class="flex flex-col">
+<div class="flex items-center gap-2">
+<span class="font-label-md text-label-md font-bold text-on-surface">Kandy Road (A001)</span>
+<span class="px-1.5 py-0.2 rounded bg-surface-container font-label-sm text-[10px] text-on-surface-variant font-mono">SEC-02</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant font-mono">CH 01+400 to CH 03+900</span>
+</div>
+</td>
+<td class="py-3.5 px-4">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface">State Development &amp; Const.</span>
+<span class="font-body-sm text-[11px] text-on-surface-variant font-mono">Contract #RDA-WP-104</span>
+</div>
+</td>
+<td class="py-3.5 px-4">
+<div class="flex items-center gap-2">
+<span class="w-2.5 h-2.5 rounded-full bg-on-surface"></span>
+<span class="font-label-md text-label-md text-on-surface">Asphalt Wearing Course</span>
+</div>
+</td>
+<td class="py-3.5 px-4">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-surface-container-high text-on-surface font-label-sm text-label-sm font-bold uppercase tracking-wide">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+<span>Clear to Excavate</span>
+</span>
+</td>
+<td class="py-3.5 px-4">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface">Final Surface Roughness (IRI)</span>
+<span class="font-body-sm text-[11px] text-on-surface-variant">30 Mar 2026</span>
+</div>
+</td>
+<td class="py-3.5 px-4 text-right">
+<button class="p-1.5 hover:bg-surface-container rounded text-secondary transition-colors" title="Inspect Corridor Detail" type="button">
+<span class="material-symbols-outlined text-[20px]">chevron_right</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination / Footer of Table -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-2 text-on-surface-variant font-body-sm text-body-sm">
+<span>Showing 4 of 18 active road corridors in Western Urban Division</span>
+<div class="flex items-center gap-2">
+<button class="px-3 py-1 bg-surface-container-low hover:bg-surface-container rounded text-on-surface font-label-md text-label-md transition-colors" disabled="" type="button">Previous</button>
+<span class="font-mono text-label-md text-on-surface">Page 1 of 5</span>
+<button class="px-3 py-1 bg-surface-container hover:bg-surface-container-high rounded text-on-surface font-label-md text-label-md transition-colors" type="button">Next</button>
+</div>
+</div>
+</div>
+<!-- Agency Resource Readiness & Equipment Allocation Section -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-space-md">
+<!-- Card 1 -->
+<div class="p-space-md bg-surface-container-lowest rounded-xl shadow-sm flex flex-col gap-2">
+<div class="flex items-center justify-between text-on-surface">
+<span class="font-label-md text-label-md uppercase tracking-wider">Pavement Milling Fleet</span>
+<span class="font-mono font-bold text-label-md text-secondary">4/5 ACTIVE</span>
+</div>
+<div class="w-full bg-surface-container-low h-2 rounded-full overflow-hidden">
+<div class="bg-secondary h-full rounded-full" style="width: 80%"></div>
+</div>
+<span class="font-body-sm text-[12px] text-on-surface-variant">Units deployed on Galle Rd and High Level Rd</span>
+</div>
+<!-- Card 2 -->
+<div class="p-space-md bg-surface-container-lowest rounded-xl shadow-sm flex flex-col gap-2">
+<div class="flex items-center justify-between text-on-surface">
+<span class="font-label-md text-label-md uppercase tracking-wider">Asphalt Batch Plants</span>
+<span class="font-mono font-bold text-label-md text-primary">100% ONLINE</span>
+</div>
+<div class="w-full bg-surface-container-low h-2 rounded-full overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 100%"></div>
+</div>
+<span class="font-body-sm text-[12px] text-on-surface-variant">Sapugaskanda &amp; Kotikawatta depots supplying mix</span>
+</div>
+<!-- Card 3 -->
+<div class="p-space-md bg-surface-container-lowest rounded-xl shadow-sm flex flex-col gap-2">
+<div class="flex items-center justify-between text-on-surface">
+<span class="font-label-md text-label-md uppercase tracking-wider">Emergency Traffic Wardens</span>
+<span class="font-mono font-bold text-label-md text-secondary">28 ON DUTY</span>
+</div>
+<div class="w-full bg-surface-container-low h-2 rounded-full overflow-hidden">
+<div class="bg-secondary h-full rounded-full" style="width: 70%"></div>
+</div>
+<span class="font-body-sm text-[12px] text-on-surface-variant">Stationed across Dematagoda &amp; Peliyagoda diversions</span>
+</div>
+</div>
+</div>
+</div></main></div></body></html>

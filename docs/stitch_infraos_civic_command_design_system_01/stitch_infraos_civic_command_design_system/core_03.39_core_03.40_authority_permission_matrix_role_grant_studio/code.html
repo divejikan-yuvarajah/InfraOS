@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_dashboard" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;600;700&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{colors:{"on-error-container":"#93000a","surface-container-high":"#e1e8fd","surface-container-low":"#f1f3ff","on-tertiary-container":"#df602b","inverse-surface":"#293040","outline-variant":"#c4c6cc","inverse-on-surface":"#edf0ff","on-primary":"#ffffff","on-secondary":"#ffffff","inverse-primary":"#bbc8d9","on-secondary-fixed-variant":"#802a00","secondary-fixed":"#ffdbce","on-error":"#ffffff","on-secondary-fixed":"#380d00","tertiary":"#150300","primary-fixed-dim":"#bbc8d9","error-container":"#ffdad6","error":"#ba1a1a","surface-container-lowest":"#ffffff","primary-container":"#14202d","on-tertiary-fixed":"#380d00","tertiary-container":"#3e1000","secondary":"#a83900","on-tertiary-fixed-variant":"#802a00","secondary-container":"#fd5a00","surface-container":"#e9edff","primary":"#000712","surface":"#f9f9ff","on-surface":"#141b2b","surface-container-highest":"#dce2f7","tertiary-fixed-dim":"#ffb59a","background":"#f9f9ff","outline":"#74777c","surface-tint":"#535f6f","on-surface-variant":"#44474c","surface-dim":"#d3daef","on-primary-fixed-variant":"#3c4856","surface-bright":"#f9f9ff","on-tertiary":"#ffffff","primary-fixed":"#d7e3f6","tertiary-fixed":"#ffdbcf","surface-variant":"#dce2f7","on-secondary-container":"#4f1700","on-primary-fixed":"#101c29","secondary-fixed-dim":"#ffb59a","on-background":"#141b2b","on-primary-container":"#7c8898"},borderRadius:{DEFAULT:"0.125rem",lg:"0.25rem",xl:"0.5rem",full:"0.75rem"},spacing:{"margin-mobile":"1rem","space-sm":"0.5rem","space-lg":"1.5rem","space-md":"1rem","space-xl":"2rem",margin:"1.5rem","margin-desktop":"2rem","gutter-desktop":"2rem",gutter:"1.5rem","gutter-mobile":"1rem","space-xs":"0.25rem"},fontFamily:{"headline-lg-mobile":["Public Sans"],"headline-sm":["Public Sans"],"title-md":["Public Sans"],"body-sm":["Public Sans"],"body-md":["Public Sans"],"label-lg":["Public Sans"],"body-lg":["Public Sans"],"headline-md":["Public Sans"],"headline-lg":["Public Sans"],"title-lg":["Public Sans"],"label-md":["Public Sans"],"label-sm":["Public Sans"]},fontSize:{"headline-lg-mobile":["24px",{lineHeight:"32px",fontWeight:"700"}],"headline-sm":["20px",{lineHeight:"28px",fontWeight:"600"}],"title-md":["16px",{lineHeight:"24px",fontWeight:"600"}],"body-sm":["12px",{lineHeight:"18px",fontWeight:"400"}],"body-md":["14px",{lineHeight:"20px",fontWeight:"400"}],"label-lg":["14px",{lineHeight:"20px",fontWeight:"600"}],"body-lg":["16px",{lineHeight:"24px",fontWeight:"400"}],"headline-md":["24px",{lineHeight:"32px",fontWeight:"600"}],"headline-lg":["32px",{lineHeight:"40px",fontWeight:"700"}],"title-lg":["18px",{lineHeight:"26px",fontWeight:"600"}],"label-md":["12px",{lineHeight:"16px",fontWeight:"600"}],"label-sm":["11px",{lineHeight:"14px",fontWeight:"700"}]}}}};</script></head><body class="bg-background font-body-md text-on-surface antialiased"><aside class="fixed left-0 top-0 h-full w-64 bg-primary-container z-50 flex flex-col justify-between shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="flex flex-col"><div class="h-16 px-space-md flex items-center justify-between bg-primary-container"><div class="flex items-center gap-space-sm"><div class="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center text-on-secondary font-headline-sm text-headline-sm font-bold tracking-tight">I</div><div class="flex flex-col"><span class="font-label-lg text-label-lg font-bold text-surface uppercase tracking-wider">INFRAOS</span><span class="font-label-sm text-label-sm text-on-primary-container uppercase tracking-tight">Civic Atlas V2</span></div></div><div class="px-space-xs py-0.5 rounded bg-surface/10 text-surface text-label-sm font-label-sm">SEC-01</div></div><div class="px-space-md py-space-sm"><div class="p-space-sm rounded-lg bg-surface/5 flex items-center gap-space-sm"><span class="material-symbols-outlined text-secondary-fixed text-[18px]">verified_user</span><div class="flex flex-col"><span class="font-label-sm text-label-sm text-surface font-semibold">GovPKI Enclave Active</span><span class="font-label-sm text-label-sm text-on-primary-container">SL-CERT Certified</span></div></div></div><nav class="flex flex-col gap-0.5 px-space-sm mt-space-xs" data-active-classes="bg-surface/15 text-surface font-semibold"><div class="px-space-sm pt-space-sm pb-space-xs text-on-primary-container font-label-sm text-label-sm uppercase tracking-wider font-bold">Operations</div><a class="flex items-center gap-space-sm px-space-sm py-2 rounded-lg text-on-primary-container hover:bg-surface/10 hover:text-surface transition-colors" data-path="overview" href="#"><span class="material-symbols-outlined text-[18px]">grid_view</span><span class="font-body-md text-body-md">Overview</span></a><div class="px-space-sm pt-space-md pb-space-xs text-on-primary-container font-label-sm text-label-sm uppercase tracking-wider font-bold">Governance</div><a class="flex items-center gap-space-sm px-space-sm py-2 rounded-lg text-on-primary-container hover:bg-surface/10 hover:text-surface transition-colors" data-path="staff-identity" href="#"><span class="material-symbols-outlined text-[18px]">badge</span><span class="font-body-md text-body-md">Staff Identity</span></a><a class="flex items-center gap-space-sm px-space-sm py-2 rounded-lg text-on-primary-container hover:bg-surface/10 hover:text-surface transition-colors" data-path="agencies-hierarchy" href="#"><span class="material-symbols-outlined text-[18px]">account_tree</span><span class="font-body-md text-body-md">Agencies &amp; Hierarchy</span></a><a class="flex items-center gap-space-sm px-space-sm py-2 rounded-lg text-on-primary-container hover:bg-surface/10 hover:text-surface transition-colors" data-path="roles-authority" href="#"><span class="material-symbols-outlined text-[18px]">policy</span><span class="font-body-md text-body-md">Roles &amp; Authority</span></a><a class="flex items-center gap-space-sm px-space-sm py-2 rounded-lg text-on-primary-container hover:bg-surface/10 hover:text-surface transition-colors" data-path="audit-ledger" href="#"><span class="material-symbols-outlined text-[18px]">receipt_long</span><span class="font-body-md text-body-md">Audit Ledger</span></a><div class="px-space-sm pt-space-md pb-space-xs text-on-primary-container font-label-sm text-label-sm uppercase tracking-wider font-bold">System Core</div><a class="flex items-center gap-space-sm px-space-sm py-2 rounded-lg text-on-primary-container hover:bg-surface/10 hover:text-surface transition-colors" data-path="health-enclaves" href="#"><span class="material-symbols-outlined text-[18px]">monitor_heart</span><span class="font-body-md text-body-md">Health &amp; Enclaves</span></a><a class="flex items-center gap-space-sm px-space-sm py-2 rounded-lg text-on-primary-container hover:bg-surface/10 hover:text-surface transition-colors" data-path="configuration" href="#"><span class="material-symbols-outlined text-[18px]">tune</span><span class="font-body-md text-body-md">Configuration</span></a><div class="px-space-sm pt-space-md pb-space-xs text-on-primary-container font-label-sm text-label-sm uppercase tracking-wider font-bold">Operator</div><a class="flex items-center gap-space-sm px-space-sm py-2 rounded-lg text-on-primary-container hover:bg-surface/10 hover:text-surface transition-colors" data-path="personal-workspace" href="#"><span class="material-symbols-outlined text-[18px]">terminal</span><span class="font-body-md text-body-md">Personal Workspace</span></a></nav></div><div class="p-space-sm m-space-sm rounded-lg bg-surface/5 flex items-center gap-space-sm"><div class="w-2 h-2 rounded-full bg-secondary"></div><div class="flex flex-col"><span class="font-label-sm text-label-sm text-surface font-semibold">National Registry V2</span><span class="font-label-sm text-label-sm text-on-primary-container">Lat: 6.9271° N, Lon: 79.8612° E</span></div></div></aside><div class="pl-64"><header class="fixed top-0 left-64 right-0 h-16 bg-surface-container-lowest/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-40 flex items-center justify-between px-space-lg"><div class="flex items-center gap-space-md"><div class="flex items-center gap-space-xs font-label-md text-label-md uppercase tracking-wider text-on-surface-variant"><span class="text-secondary font-bold">INFRAOS</span><span>/</span><span class="text-on-surface font-semibold">Platform Governance</span></div><div class="hidden md:flex items-center gap-1.5 px-space-sm py-0.5 rounded bg-surface-container-high text-on-surface font-label-sm text-label-sm"><span class="w-2 h-2 rounded-full bg-secondary-container"></span><span>Cluster: LK-CENTRAL-01</span></div></div><div class="flex items-center gap-space-md"><div class="flex items-center bg-surface-container-low rounded-lg p-0.5 font-label-sm text-label-sm font-semibold"><button class="px-2 py-1 rounded bg-surface-container-lowest text-on-surface shadow-[0_1px_2px_rgba(0,0,0,0.05)]" type="button">EN</button><button class="px-2 py-1 text-on-surface-variant hover:text-on-surface" type="button">සිංහල</button><button class="px-2 py-1 text-on-surface-variant hover:text-on-surface" type="button">தமிழ்</button></div><button class="w-9 h-9 rounded-lg bg-surface-container-low hover:bg-surface-container flex items-center justify-center text-on-surface-variant hover:text-on-surface transition-colors relative" type="button"><span class="material-symbols-outlined text-[20px]">notifications</span><span class="absolute top-2 right-2 w-2 h-2 bg-secondary rounded-full"></span></button><div class="flex items-center gap-space-sm pl-space-sm"><div class="flex flex-col text-right hidden sm:flex"><span class="font-label-lg text-label-lg text-on-surface font-bold leading-tight">Alex Perera</span><span class="font-label-sm text-label-sm text-on-surface-variant leading-tight">Super Administrator</span></div><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="relative pt-16 bg-background w-full px-space-lg"><div class="flex flex-col w-full pb-32">
+<!-- Top Command Ribbon / Header -->
+<section class="flex flex-col gap-space-md py-space-lg">
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-space-md">
+<div class="flex flex-col max-w-3xl">
+<div class="flex items-center gap-space-sm mb-1">
+<span class="inline-block w-2 h-2 rounded-full bg-secondary"></span>
+<span class="font-label-sm text-label-sm text-secondary uppercase tracking-widest font-bold">ACCESS GOVERNANCE &amp; RBAC CEILINGS</span>
+<span class="px-space-xs py-0.5 rounded bg-surface-container-high text-on-surface-variant text-label-sm font-label-sm tracking-tight">SPEC CORE-03.39 / 40</span>
+</div>
+<h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight font-bold">Authority Permission Matrix &amp; Role Studio</h1>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1 leading-relaxed">
+          Fine-grained policy enforcement across 7 predefined system roles, institutional scopes, and immutable governance ceilings. Monitored through sovereign GovPKI Enclaves.
+        </p>
+</div>
+<!-- Action Buttons Ribbon -->
+<div class="flex flex-wrap items-center gap-space-sm self-start md:self-end">
+<button class="flex items-center gap-1.5 px-space-md py-2 rounded-lg bg-surface-container-lowest text-on-surface font-label-md text-label-md shadow-sm hover:bg-surface-container-low transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px]">manage_search</span>
+<span>Permission Catalog</span>
+</button>
+<button class="flex items-center gap-1.5 px-space-md py-2 rounded-lg bg-surface-container-lowest text-on-surface font-label-md text-label-md shadow-sm hover:bg-surface-container-low transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px]">download</span>
+<span>Export Matrix (.CSV)</span>
+</button>
+<button class="flex items-center gap-1.5 px-space-md py-2 rounded-lg bg-secondary text-on-secondary font-label-md text-label-md shadow-sm hover:opacity-95 transition-all" type="button">
+<span class="material-symbols-outlined text-[18px]">rule_folder</span>
+<span>Review Pending (2)</span>
+</button>
+</div>
+</div>
+<!-- Quick Telemetry & Governance Ceiling Chips -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-md pt-space-xs">
+<!-- Card 1 -->
+<div class="p-space-md rounded-lg bg-surface-container-lowest shadow-sm flex items-center justify-between relative overflow-hidden">
+<div class="absolute top-0 left-0 right-0 h-0.5 bg-secondary"></div>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Predefined Roles</span>
+<span class="font-headline-sm text-headline-sm text-on-surface font-bold tracking-tight">7 Active</span>
+</div>
+<div class="w-10 h-10 rounded-lg bg-surface-container-low flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-[22px]">admin_panel_settings</span>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="p-space-md rounded-lg bg-surface-container-lowest shadow-sm flex items-center justify-between relative overflow-hidden">
+<div class="absolute top-0 left-0 right-0 h-0.5 bg-secondary-container"></div>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Authoritative Grants</span>
+<span class="font-headline-sm text-headline-sm text-on-surface font-bold tracking-tight">52 Cataloged</span>
+</div>
+<div class="w-10 h-10 rounded-lg bg-surface-container-low flex items-center justify-center text-on-secondary-container">
+<span class="material-symbols-outlined text-[22px]">key</span>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="p-space-md rounded-lg bg-surface-container-lowest shadow-sm flex items-center justify-between relative overflow-hidden">
+<div class="absolute top-0 left-0 right-0 h-0.5 bg-primary-container"></div>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Duties Separation</span>
+<span class="font-headline-sm text-headline-sm text-on-surface font-bold tracking-tight">Strictly Enforced</span>
+</div>
+<div class="w-10 h-10 rounded-lg bg-surface-container-low flex items-center justify-center text-on-surface">
+<span class="material-symbols-outlined text-[22px]">balance</span>
+</div>
+</div>
+<!-- Card 4 -->
+<div class="p-space-md rounded-lg bg-surface-container-lowest shadow-sm flex items-center justify-between relative overflow-hidden">
+<div class="absolute top-0 left-0 right-0 h-0.5 bg-secondary"></div>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Cryptographic Enclave</span>
+<span class="font-headline-sm text-headline-sm text-on-surface font-bold tracking-tight">GovPKI Tier-1</span>
+</div>
+<div class="w-10 h-10 rounded-lg bg-surface-container-low flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-[22px]">enhanced_encryption</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Interactive Matrix Toolbar & Filter Strip -->
+<section class="flex flex-col sm:flex-row items-center justify-between gap-space-sm p-space-sm rounded-lg bg-surface-container-lowest shadow-sm mb-space-sm">
+<div class="flex items-center gap-space-sm w-full sm:w-auto">
+<div class="relative w-full sm:w-80">
+<span class="material-symbols-outlined absolute left-3 top-2.5 text-on-surface-variant text-[18px]">search</span>
+<input class="w-full pl-9 pr-3 py-1.5 rounded-lg bg-surface-container-low text-on-surface font-body-md text-body-md outline-none focus:bg-surface-container transition-all" placeholder="Filter permissions (e.g. roadsync, seal, ipc)..." type="text"/>
+</div>
+<div class="hidden lg:flex items-center gap-2 pl-2">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase">Legend:</span>
+<span class="inline-flex items-center gap-1 font-label-sm text-label-sm text-on-surface bg-surface-container-low px-2 py-0.5 rounded">
+<span class="material-symbols-outlined text-secondary text-[14px]">verified</span> Granted
+        </span>
+<span class="inline-flex items-center gap-1 font-label-sm text-label-sm text-on-surface-variant bg-surface-container-low px-2 py-0.5 rounded">
+<span class="font-bold text-[12px] leading-none px-1">―</span> Denied
+        </span>
+<span class="inline-flex items-center gap-1 font-label-sm text-label-sm text-on-surface bg-surface-container-low px-2 py-0.5 rounded">
+<span class="material-symbols-outlined text-primary-container text-[14px]">lock</span> Frozen / Enclave
+        </span>
+<span class="inline-flex items-center gap-1 font-label-sm text-label-sm text-on-error-container bg-error-container/40 px-2 py-0.5 rounded">
+<span class="material-symbols-outlined text-error text-[14px]">block</span> SoD Prohibited
+        </span>
+</div>
+</div>
+<div class="flex items-center gap-space-xs self-end sm:self-center">
+<button class="p-1.5 rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors" title="Toggle Compact View" type="button">
+<span class="material-symbols-outlined text-[20px]">density_medium</span>
+</button>
+<button class="p-1.5 rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors" title="Expand All Modules" type="button">
+<span class="material-symbols-outlined text-[20px]">unfold_more</span>
+</button>
+</div>
+</section>
+<!-- RBAC Matrix Data Grid -->
+<div class="w-full overflow-x-auto rounded-lg shadow-sm bg-surface-container-lowest">
+<table class="w-full text-left border-collapse select-none">
+<!-- Matrix Header with 7 Predefined Roles -->
+<thead>
+<tr class="bg-primary-container text-surface">
+<th class="py-space-md px-space-md w-72 sticky left-0 z-20 bg-primary-container shadow-[2px_0_4px_rgba(0,0,0,0.15)]">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-primary-container uppercase tracking-wider">Target Domain</span>
+<span class="font-title-md text-title-md text-surface font-bold">Permissions &amp; Directives</span>
+</div>
+</th>
+<!-- Role 1 -->
+<th class="py-space-md px-space-sm text-center min-w-[130px] border-l border-surface/10">
+<div class="flex flex-col items-center">
+<span class="font-label-sm text-label-sm font-bold tracking-tight text-secondary-fixed">SUPER_ADMIN</span>
+<span class="font-body-sm text-[10px] text-on-primary-container font-mono tracking-tight">Platform Scope</span>
+<span class="mt-1 px-1.5 py-0.2 rounded bg-surface/10 text-[9px] font-mono text-surface">IMMUTABLE_ROOT</span>
+</div>
+</th>
+<!-- Role 2 -->
+<th class="py-space-md px-space-sm text-center min-w-[130px] border-l border-surface/10">
+<div class="flex flex-col items-center">
+<span class="font-label-sm text-label-sm font-bold tracking-tight text-surface">GOV_ADMIN</span>
+<span class="font-body-sm text-[10px] text-on-primary-container font-mono tracking-tight">Sovereign Exec</span>
+<span class="mt-1 px-1.5 py-0.2 rounded bg-surface/10 text-[9px] font-mono text-surface">MINISTERIAL</span>
+</div>
+</th>
+<!-- Role 3 -->
+<th class="py-space-md px-space-sm text-center min-w-[130px] border-l border-surface/10">
+<div class="flex flex-col items-center">
+<span class="font-label-sm text-label-sm font-bold tracking-tight text-surface">AGENCY_OFFICER</span>
+<span class="font-body-sm text-[10px] text-on-primary-container font-mono tracking-tight">Agency Desk</span>
+<span class="mt-1 px-1.5 py-0.2 rounded bg-surface/10 text-[9px] font-mono text-surface">ORGANIZATION</span>
+</div>
+</th>
+<!-- Role 4 -->
+<th class="py-space-md px-space-sm text-center min-w-[130px] border-l border-surface/10">
+<div class="flex flex-col items-center">
+<span class="font-label-sm text-label-sm font-bold tracking-tight text-surface">PROJECT_MGR</span>
+<span class="font-body-sm text-[10px] text-on-primary-container font-mono tracking-tight">Corridor Scope</span>
+<span class="mt-1 px-1.5 py-0.2 rounded bg-surface/10 text-[9px] font-mono text-surface">OPERATIONAL</span>
+</div>
+</th>
+<!-- Role 5 -->
+<th class="py-space-md px-space-sm text-center min-w-[130px] border-l border-surface/10">
+<div class="flex flex-col items-center">
+<span class="font-label-sm text-label-sm font-bold tracking-tight text-surface">CONTRACTOR</span>
+<span class="font-body-sm text-[10px] text-on-primary-container font-mono tracking-tight">Assigned Execution</span>
+<span class="mt-1 px-1.5 py-0.2 rounded bg-surface/10 text-[9px] font-mono text-surface">VENDOR_TIER</span>
+</div>
+</th>
+<!-- Role 6 -->
+<th class="py-space-md px-space-sm text-center min-w-[130px] border-l border-surface/10 bg-secondary/15">
+<div class="flex flex-col items-center">
+<div class="flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+<span class="font-label-sm text-label-sm font-bold tracking-tight text-secondary-fixed">INSPECTOR</span>
+</div>
+<span class="font-body-sm text-[10px] text-on-primary-container font-mono tracking-tight">Field Verification</span>
+<span class="mt-1 px-1.5 py-0.2 rounded bg-secondary/40 text-[9px] font-mono text-surface font-semibold">STAGING ACTIVE</span>
+</div>
+</th>
+<!-- Role 7 -->
+<th class="py-space-md px-space-sm text-center min-w-[130px] border-l border-surface/10">
+<div class="flex flex-col items-center">
+<span class="font-label-sm text-label-sm font-bold tracking-tight text-surface">CITIZEN</span>
+<span class="font-body-sm text-[10px] text-on-primary-container font-mono tracking-tight">Transparency</span>
+<span class="mt-1 px-1.5 py-0.2 rounded bg-surface/10 text-[9px] font-mono text-surface">READ_ONLY</span>
+</div>
+</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container">
+<!-- MODULE 1: IDENTITY & ACCESS GOVERNANCE -->
+<tr class="bg-surface-container-low/70">
+<td class="py-2.5 px-space-md font-label-sm text-label-sm uppercase tracking-wider text-on-surface font-bold flex items-center gap-2" colspan="8">
+<span class="material-symbols-outlined text-secondary text-[16px]">fingerprint</span>
+<span>Module: Identity &amp; Access Governance</span>
+<span class="ml-2 px-1.5 py-0.5 rounded bg-surface-container-high text-on-surface-variant font-mono text-[10px]">6 Endpoints</span>
+</td>
+</tr>
+<!-- row: user.read -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="py-2.5 px-space-md sticky left-0 bg-surface-container-lowest z-10 shadow-[2px_0_4px_rgba(0,0,0,0.03)]">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md font-mono text-on-surface font-semibold">user.read</span>
+<span class="font-body-sm text-[11px] text-on-surface-variant">View identities across authorized scope</span>
+</div>
+</td>
+<!-- SUPER_ADMIN -->
+<td class="text-center py-2"><span class="inline-flex p-1 rounded-full text-secondary"><span class="material-symbols-outlined text-[18px]">verified</span></span></td>
+<!-- GOV_ADMIN -->
+<td class="text-center py-2"><span class="inline-flex p-1 rounded-full text-secondary"><span class="material-symbols-outlined text-[18px]">verified</span></span></td>
+<!-- AGENCY_OFFICER -->
+<td class="text-center py-2"><span class="inline-flex p-1 rounded-full text-secondary"><span class="material-symbols-outlined text-[18px]">verified</span></span></td>
+<!-- PROJECT_MANAGER -->
+<td class="text-center py-2"><span class="inline-flex p-1 rounded-full text-secondary"><span class="material-symbols-outlined text-[18px]">verified</span></span></td>
+<!-- CONTRACTOR -->
+<td class="text-center py-2 text-on-surface-variant font-mono text-[12px] font-bold">―</td>
+<!-- INSPECTOR -->
+<td class="text-center py-2 bg-secondary/5"><span class="inline-flex p-1 rounded-full text-secondary"><span class="material-symbols-outlined text-[18px]">verified</span></span></td>
+<!-- CITIZEN -->
+<td class="text-center py-2 text-on-surface-variant font-mono text-[12px] font-bold">―</td>
+</tr>
+<!-- row: user.create -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="py-2.5 px-space-md sticky left-0 bg-surface-container-lowest z-10 shadow-[2px_0_4px_rgba(0,0,0,0.03)]">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md font-mono text-on-surface font-semibold">user.create</span>
+<span class="font-body-sm text-[11px] text-on-surface-variant">Provision new national staff identities</span>
+</div>
+</td>
+<td class="text-center py-2"><span class="inline-flex p-1 rounded-full text-secondary"><span class="material-symbols-outlined text-[18px]">verified</span></span></td>
+<td class="text-center py-2"><span class="inline-flex p-1 rounded-full text-secondary"><span class="material-symbols-outlined text-[18px]">verified</span></span></td>
+<td class="text-center py-2 text-on-surface-variant font-mono text-[12px] font-bold">―</td>
+<td class="text-center py-2 text-on-surface-variant font-mono text-[12px] font-bold">―</td>
+<td class="text-center py-2 text-on-surface-variant font-mono text-[12px] font-bold">―</td>
+<td class="text-center py-2 bg-secondary/5 text-on-surface-variant font-mono text-[12px] font-bold">―</td>
+<td class="text-center py-2 text-on-surface-variant font-mono text-[12px] font-bold">―</td>
+</tr>
+<!-- row: role.grant.update (FROZEN TO SUPER_ADMIN BY POLICY) -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="py-2.5 px-space-md sticky left-0 bg-surface-container-lowest z-10 shadow-[2px_0_4px_rgba(0,0,0,0.03)]">
+<div class="flex flex-col">
+<div class="flex items-center gap-1.5">
+<span class="font-label-md text-label-md font-mono text-on-surface font-semibold">role.grant.update</span>
+<span class="px-1 py-0.2 rounded bg-surface-container-high text-on-surface-variant text-[9px] font-mono">[ IMMUTABLE ]</span>
+</div>
+<span class="font-body-sm text-[11px] text-on-surface-variant">Modifies role permission assignments</span>
+</div>
+</td>
+<!-- SuperAdmin locked to prevent self-elevation without dual-sign -->
+<td class="text-center py-2" title="Immutable Ceilings: Requires dual GovPKI sign-off">
+<span class="inline-flex items-center gap-0.5 text-primary-container px-2 py-0.5 rounded bg-surface-container-high font-mono text-[11px] font-bold">
+<span class="material-symbols-outlined text-[14px]">lock</span> ROOT_ENCLAVE
+            </span>
+</td>
+<td class="text-center py-2 text-on-surface-variant font-mono text-[12px] font-bold">―</td>
+<td class="text-center py-2 text-on-surface-variant font-mono text-[12px] font-bold">―</td>
+<td class="text-center py-2 text-on-surface-variant font-mono text-[12px] font-bold">―</td>
+<td class="text-center py-2 text-on-surface-variant font-mono text-[12px] font-bold">―</td>
+<td class="text-center py-2 bg-secondary/5 text-on-surface-variant font-mono text-[12px] font-bold">―</td>
+<td class="text-center py-2 text-on-surface-variant font-mono text-[12px] font-bold">―</td>
+</tr>
+<!-- MODULE 2: INSTITUTIONAL AGENCIES -->
+<tr class="bg-surface-container-low/70">
+<td class="py-2.5 px-space-md font-label-sm text-label-sm uppercase tracking-wider text-on-surface font-bold flex items-center gap-2" colspan="8">
+<span class="material-symbols-outlined text-secondary text-[16px]">account_tree</span>
+<span>Module: Institutional Agencies &amp; Reparenting</span>
+<span class="ml-2 px-1.5 py-0.5 rounded bg-surface-container-high text-on-surface-variant font-mono text-[10px]">5 Endpoints</span>
+</td>
+</tr>
+<!-- row: agency.read -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="py-2.5 px-space-md sticky left-0 bg-surface-container-lowest z-10 shadow-[2px_0_4px_rgba(0,0,0,0.03)]">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md font-mono text-on-surface font-semibold">agency.read</span>
+<span class="font-body-sm text-[11px] text-on-surface-variant">View organizational trees and metadata</span>
+</div>
+</td>
+<td class="text-center py-2"><span class="inline-flex p-1 rounded-full text-secondary"><span class="material-symbols-outlined text-[18px]">verified</span></span></td>
+<td class="text-center py-2"><span class="inline-flex p-1 rounded-full text-secondary"><span class="material-symbols-outlined text-[18px]">verified</span></span></td>
+<td class="text-center py-2"><span class="inline-flex p-1 rounded-full text-secondary"><span class="material-symbols-outlined text-[18px]">verified</span></span></td>
+<td class="text-center py-2"><span class="inline-flex p-1 rounded-full text-secondary"><span class="material-symbols-outlined text-[18px]">verified</span></span></td>
+<td class="text-center py-2"><span class="inline-flex p-1 rounded-full text-secondary"><span class="material-symbols-outlined text-[18px]">verified</span></span></td>
+<td class="text-center py-2 bg-secondary/5"><span class="inline-flex p-1 rounded-full text-secondary"><span class="material-symbols-outlined text-[18px]">verified</span></span></td>
+<td class="text-center py-2"><span class="inline-flex p-1 rounded-full text-secondary"><span class="material-symbols-outlined text-[18px]">verified</span></span></td>
+</tr>
+<!-- row: agency.reparent -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="py-2.5 px-space-md sticky left-0 bg-surface-container-lowest z-10 shadow-[2px_0_4px_rgba(0,0,0,0.03)]">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md font-mono text-on-surface font-semibold">agency.reparent</span>
+<span class="font-body-sm text-[11px] text-on-surface-variant">Migrate agency nodes under new ministries</span>
+</div>
+</td>
+<td class="text-center py-2"><span class="inline-flex p-1 rounded-full text-secondary"><span class="material-symbols-outlined text-[18px]">verified</span></span></td>
+<td class="text-center py-2"><span class="inline-flex p-1 rounded-full text-secondary"><span class="material-symbols-outlined text-[18px]">verified</span></span></td>
+<td class="text-center py-2 text-on-surface-variant font-mono text-[12px] font-bold">―</td>
+<td class="text-center py-2 text-on-surface-variant font-mono text-[12px] font-bold">―</td>
+<td class="text-center py-2 text-on-surface-variant font-mono text-[12px] font-bold">―</td>
+<td class="text-center py-2 bg-secondary/5 text-on-surface-variant font-mono text-[12px] font-bold">―</td>
+<td class="text-center py-2 text-on-surface-variant font-mono text-[12px] font-bold">―</td>
+</tr>
+<!-- MODULE 3: INFRASTRUCTURE PROJECTS -->
+<tr class="bg-surface-container-low/70">
+<td class="py-2.5 px-space-md font-label-sm text-label-sm uppercase tracking-wider text-on-surface font-bold flex items-center gap-2" colspan="8">
+<span class="material-symbols-outlined text-secondary text-[16px]">construction</span>
+<span>Module: Infrastructure Projects &amp; Milestones</span>
+<span class="ml-2 px-1.5 py-0.5 rounded bg-surface-container-high text-on-surface-variant font-mono text-[10px]">5 Endpoints</span>
+</td>
+</tr>
+<!-- row: project.lifecycle.approve (SOD STRICTLY PROHIBITED TO SUPER_ADMIN) -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="py-2.5 px-space-md sticky left-0 bg-surface-container-lowest z-10 shadow-[2px_0_4px_rgba(0,0,0,0.03)]">
+<div class="flex flex-col">
+<div class="flex items-center gap-1.5">
+<span class="font-label-md text-label-md font-mono text-on-surface font-semibold">project.lifecycle.approve</span>
+<span class="px-1 py-0.2 rounded bg-error-container text-on-error-container text-[9px] font-mono">[ SoD CEILING ]</span>
+</div>
+<span class="font-body-sm text-[11px] text-on-surface-variant">Authorize commercial transitions &amp; handovers</span>
+</div>
+</td>
+<!-- SoD Prohibited for Super Admin -->
+<td class="text-center py-2">
+<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-error-container text-on-error-container text-[10px] font-mono font-bold" title="SoD Violation: Platform administrators cannot approve sovereign project transitions.">
+<span class="material-symbols-outlined text-[12px]">block</span> SoD_BLOCK
+            </span>
+</td>
+<td class="text-center py-2"><span class="inline-flex p-1 rounded-full text-secondary"><span class="material-symbols-outlined text-[18px]">verified</span></span></td>
+<td class="text-center py-2"><span class="inline-flex p-1 rounded-full text-secondary"><span class="material-symbols-outlined text-[18px]">verified</span></span></td>
+<td class="text-center py-2 text-on-surface-variant font-mono text-[12px] font-bold">―</td>
+<td class="text-center py-2 text-on-surface-variant font-mono text-[12px] font-bold">―</td>
+<td class="text-center py-2 bg-secondary/5 text-on-surface-variant font-mono text-[12px] font-bold">―</td>
+<td class="text-center py-2 text-on-surface-variant font-mono text-[12px] font-bold">―</td>
+</tr>
+<!-- row: milestone.verify -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="py-2.5 px-space-md sticky left-0 bg-surface-container-lowest z-10 shadow-[2px_0_4px_rgba(0,0,0,0.03)]">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md font-mono text-on-surface font-semibold">milestone.verify</span>
+<span class="font-body-sm text-[11px] text-on-surface-variant">Validate geometric and material deliverables</span>
+</div>
+</td>
+<td class="text-center py-2 text-on-surface-variant font-mono text-[12px] font-bold">―</td>
+<td class="text-center py-2"><span class="inline-flex p-1 rounded-full text-secondary"><span class="material-symbols-outlined text-[18px]">verified</span></span></td>
+<td class="text-center py-2"><span class="inline-flex p-1 rounded-full text-secondary"><span class="material-symbols-outlined text-[18px]">verified</span></span></td>
+<td class="text-center py-2"><span class="inline-flex p-1 rounded-full text-secondary"><span class="material-symbols-outlined text-[18px]">verified</span></span></td>
+<td class="text-center py-2 text-on-surface-variant font-mono text-[12px] font-bold">―</td>
+<td class="text-center py-2 bg-secondary/5"><span class="inline-flex p-1 rounded-full text-secondary"><span class="material-symbols-outlined text-[18px]">verified</span></span></td>
+<td class="text-center py-2 text-on-surface-variant font-mono text-[12px] font-bold">―</td>
+</tr>
+<!-- MODULE 4: ROADSYNC SPATIAL & CLASHES -->
+<tr class="bg-surface-container-low/70">
+<td class="py-2.5 px-space-md font-label-sm text-label-sm uppercase tracking-wider text-on-surface font-bold flex items-center gap-2" colspan="8">
+<span class="material-symbols-outlined text-secondary text-[16px]">layers</span>
+<span>Module: RoadSync Spatial &amp; Clashes</span>
+<span class="ml-2 px-1.5 py-0.5 rounded bg-surface-container-high text-on-surface-variant font-mono text-[10px]">4 Endpoints</span>
+</td>
+</tr>
+<!-- row: roadsync.clash.read -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="py-2.5 px-space-md sticky left-0 bg-surface-container-lowest z-10 shadow-[2px_0_4px_rgba(0,0,0,0.03)]">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md font-mono text-on-surface font-semibold">roadsync.clash.read</span>
+<span class="font-body-sm text-[11px] text-on-surface-variant">View multi-utility subsurface spatial clashes</span>
+</div>
+</td>
+<td class="text-center py-2"><span class="inline-flex p-1 rounded-full text-secondary"><span class="material-symbols-outlined text-[18px]">verified</span></span></td>
+<td class="text-center py-2"><span class="inline-flex p-1 rounded-full text-secondary"><span class="material-symbols-outlined text-[18px]">verified</span></span></td>
+<td class="text-center py-2"><span class="inline-flex p-1 rounded-full text-secondary"><span class="material-symbols-outlined text-[18px]">verified</span></span></td>
+<td class="text-center py-2"><span class="inline-flex p-1 rounded-full text-secondary"><span class="material-symbols-outlined text-[18px]">verified</span></span></td>
+<td class="text-center py-2"><span class="inline-flex p-1 rounded-full text-secondary"><span class="material-symbols-outlined text-[18px]">verified</span></span></td>
+<td class="text-center py-2 bg-secondary/5"><span class="inline-flex p-1 rounded-full text-secondary"><span class="material-symbols-outlined text-[18px]">verified</span></span></td>
+<td class="text-center py-2 text-on-surface-variant font-mono text-[12px] font-bold">―</td>
+</tr>
+<!-- row: roadsync.freeze.enjoin -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="py-2.5 px-space-md sticky left-0 bg-surface-container-lowest z-10 shadow-[2px_0_4px_rgba(0,0,0,0.03)]">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md font-mono text-on-surface font-semibold">roadsync.freeze.enjoin</span>
+<span class="font-body-sm text-[11px] text-on-surface-variant">Enforce statutory excavation freezes on corridors</span>
+</div>
+</td>
+<td class="text-center py-2 text-on-surface-variant font-mono text-[12px] font-bold">―</td>
+<td class="text-center py-2"><span class="inline-flex p-1 rounded-full text-secondary"><span class="material-symbols-outlined text-[18px]">verified</span></span></td>
+<td class="text-center py-2"><span class="inline-flex p-1 rounded-full text-secondary"><span class="material-symbols-outlined text-[18px]">verified</span></span></td>
+<td class="text-center py-2 text-on-surface-variant font-mono text-[12px] font-bold">―</td>
+<td class="text-center py-2 text-on-surface-variant font-mono text-[12px] font-bold">―</td>
+<td class="text-center py-2 bg-secondary/5 text-on-surface-variant font-mono text-[12px] font-bold">―</td>
+<td class="text-center py-2 text-on-surface-variant font-mono text-[12px] font-bold">―</td>
+</tr>
+<!-- MODULE 5: FIELD INSPECTION & QA -->
+<tr class="bg-surface-container-low/70">
+<td class="py-2.5 px-space-md font-label-sm text-label-sm uppercase tracking-wider text-on-surface font-bold flex items-center gap-2" colspan="8">
+<span class="material-symbols-outlined text-secondary text-[16px]">fact_check</span>
+<span>Module: Field Inspection &amp; QA</span>
+<span class="ml-2 px-1.5 py-0.5 rounded bg-surface-container-high text-on-surface-variant font-mono text-[10px]">4 Endpoints</span>
+</td>
+</tr>
+<!-- row: inspection.create -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="py-2.5 px-space-md sticky left-0 bg-surface-container-lowest z-10 shadow-[2px_0_4px_rgba(0,0,0,0.03)]">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md font-mono text-on-surface font-semibold">inspection.create</span>
+<span class="font-body-sm text-[11px] text-on-surface-variant">Initiate chainage QA survey sheet</span>
+</div>
+</td>
+<td class="text-center py-2 text-on-surface-variant font-mono text-[12px] font-bold">―</td>
+<td class="text-center py-2"><span class="inline-flex p-1 rounded-full text-secondary"><span class="material-symbols-outlined text-[18px]">verified</span></span></td>
+<td class="text-center py-2 text-on-surface-variant font-mono text-[12px] font-bold">―</td>
+<td class="text-center py-2"><span class="inline-flex p-1 rounded-full text-secondary"><span class="material-symbols-outlined text-[18px]">verified</span></span></td>
+<td class="text-center py-2 text-on-surface-variant font-mono text-[12px] font-bold">―</td>
+<td class="text-center py-2 bg-secondary/5"><span class="inline-flex p-1 rounded-full text-secondary"><span class="material-symbols-outlined text-[18px]">verified</span></span></td>
+<td class="text-center py-2 text-on-surface-variant font-mono text-[12px] font-bold">―</td>
+</tr>
+<!-- row: inspection.seal.sign (CURRENT STAGED EDIT) -->
+<tr class="bg-secondary/10 hover:bg-secondary/15 transition-colors">
+<td class="py-2.5 px-space-md sticky left-0 bg-surface-container-high z-10 shadow-[2px_0_4px_rgba(0,0,0,0.03)] border-l-4 border-secondary">
+<div class="flex flex-col">
+<div class="flex items-center gap-1.5">
+<span class="font-label-md text-label-md font-mono text-secondary font-bold">inspection.seal.sign</span>
+<span class="px-1.5 py-0.5 rounded bg-secondary text-on-secondary font-mono text-[9px] font-bold">STAGED MODIFICATION</span>
+</div>
+<span class="font-body-sm text-[11px] text-on-surface-variant">Cryptographic hardware seal on geodetic readings</span>
+</div>
+</td>
+<td class="text-center py-2 text-on-surface-variant font-mono text-[12px] font-bold">―</td>
+<td class="text-center py-2"><span class="inline-flex p-1 rounded-full text-secondary"><span class="material-symbols-outlined text-[18px]">verified</span></span></td>
+<td class="text-center py-2 text-on-surface-variant font-mono text-[12px] font-bold">―</td>
+<td class="text-center py-2 text-on-surface-variant font-mono text-[12px] font-bold">―</td>
+<td class="text-center py-2 text-on-surface-variant font-mono text-[12px] font-bold">―</td>
+<!-- The Staged Cell -->
+<td class="text-center py-2 bg-secondary/20 relative">
+<div class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-secondary text-on-secondary font-label-sm text-[11px] font-bold animate-pulse">
+<span class="material-symbols-outlined text-[14px]">add_task</span> STAGED +
+            </div>
+</td>
+<td class="text-center py-2 text-on-surface-variant font-mono text-[12px] font-bold">―</td>
+</tr>
+<!-- row: ncr.stopwork.issue -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="py-2.5 px-space-md sticky left-0 bg-surface-container-lowest z-10 shadow-[2px_0_4px_rgba(0,0,0,0.03)]">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md font-mono text-on-surface font-semibold">ncr.stopwork.issue</span>
+<span class="font-body-sm text-[11px] text-on-surface-variant">Issue statutory non-conformance stop-work order</span>
+</div>
+</td>
+<td class="text-center py-2 text-on-surface-variant font-mono text-[12px] font-bold">―</td>
+<td class="text-center py-2"><span class="inline-flex p-1 rounded-full text-secondary"><span class="material-symbols-outlined text-[18px]">verified</span></span></td>
+<td class="text-center py-2"><span class="inline-flex p-1 rounded-full text-secondary"><span class="material-symbols-outlined text-[18px]">verified</span></span></td>
+<td class="text-center py-2 text-on-surface-variant font-mono text-[12px] font-bold">―</td>
+<td class="text-center py-2 text-on-surface-variant font-mono text-[12px] font-bold">―</td>
+<td class="text-center py-2 bg-secondary/5"><span class="inline-flex p-1 rounded-full text-secondary"><span class="material-symbols-outlined text-[18px]">verified</span></span></td>
+<td class="text-center py-2 text-on-surface-variant font-mono text-[12px] font-bold">―</td>
+</tr>
+<!-- MODULE 6: FINANCIAL IPC EXPENDITURE -->
+<tr class="bg-surface-container-low/70">
+<td class="py-2.5 px-space-md font-label-sm text-label-sm uppercase tracking-wider text-on-surface font-bold flex items-center gap-2" colspan="8">
+<span class="material-symbols-outlined text-secondary text-[16px]">account_balance</span>
+<span>Module: Financial IPC Expenditure &amp; Vouchers</span>
+<span class="ml-2 px-1.5 py-0.5 rounded bg-surface-container-high text-on-surface-variant font-mono text-[10px]">3 Endpoints</span>
+</td>
+</tr>
+<!-- row: finance.ipc.read -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="py-2.5 px-space-md sticky left-0 bg-surface-container-lowest z-10 shadow-[2px_0_4px_rgba(0,0,0,0.03)]">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md font-mono text-on-surface font-semibold">finance.ipc.read</span>
+<span class="font-body-sm text-[11px] text-on-surface-variant">Audit interim payment certificates &amp; ledgers</span>
+</div>
+</td>
+<td class="text-center py-2"><span class="inline-flex p-1 rounded-full text-secondary"><span class="material-symbols-outlined text-[18px]">verified</span></span></td>
+<td class="text-center py-2"><span class="inline-flex p-1 rounded-full text-secondary"><span class="material-symbols-outlined text-[18px]">verified</span></span></td>
+<td class="text-center py-2"><span class="inline-flex p-1 rounded-full text-secondary"><span class="material-symbols-outlined text-[18px]">verified</span></span></td>
+<td class="text-center py-2"><span class="inline-flex p-1 rounded-full text-secondary"><span class="material-symbols-outlined text-[18px]">verified</span></span></td>
+<td class="text-center py-2"><span class="inline-flex p-1 rounded-full text-secondary"><span class="material-symbols-outlined text-[18px]">verified</span></span></td>
+<td class="text-center py-2 bg-secondary/5 text-on-surface-variant font-mono text-[12px] font-bold">―</td>
+<td class="text-center py-2 text-on-surface-variant font-mono text-[12px] font-bold">―</td>
+</tr>
+<!-- row: finance.payment.voucher.sign (SOD STRICTLY PROHIBITED TO SUPER_ADMIN) -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="py-2.5 px-space-md sticky left-0 bg-surface-container-lowest z-10 shadow-[2px_0_4px_rgba(0,0,0,0.03)]">
+<div class="flex flex-col">
+<div class="flex items-center gap-1.5">
+<span class="font-label-md text-label-md font-mono text-on-surface font-semibold">finance.payment.voucher.sign</span>
+<span class="px-1 py-0.2 rounded bg-error-container text-on-error-container text-[9px] font-mono">[ SoD CEILING ]</span>
+</div>
+<span class="font-body-sm text-[11px] text-on-surface-variant">Sign commercial treasury disbursement tranche</span>
+</div>
+</td>
+<!-- SoD Prohibited for Super Admin -->
+<td class="text-center py-2">
+<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-error-container text-on-error-container text-[10px] font-mono font-bold" title="SoD Violation: Platform administrators cannot sign financial payment vouchers.">
+<span class="material-symbols-outlined text-[12px]">block</span> SoD_BLOCK
+            </span>
+</td>
+<td class="text-center py-2"><span class="inline-flex p-1 rounded-full text-secondary"><span class="material-symbols-outlined text-[18px]">verified</span></span></td>
+<td class="text-center py-2 text-on-surface-variant font-mono text-[12px] font-bold">―</td>
+<td class="text-center py-2 text-on-surface-variant font-mono text-[12px] font-bold">―</td>
+<td class="text-center py-2 text-on-surface-variant font-mono text-[12px] font-bold">―</td>
+<td class="text-center py-2 bg-secondary/5 text-on-surface-variant font-mono text-[12px] font-bold">―</td>
+<td class="text-center py-2 text-on-surface-variant font-mono text-[12px] font-bold">―</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Bottom Floating / Docked "Role Grant Studio" Drawer (CORE-03.40) -->
+<div class="fixed bottom-3 right-space-lg left-72 z-40">
+<div class="rounded-xl bg-primary-container text-surface shadow-2xl p-space-md border-t-2 border-secondary flex flex-col gap-space-sm backdrop-blur-md">
+<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-space-md">
+<!-- Left: Grant Meta & Staged Details -->
+<div class="flex items-start sm:items-center gap-space-md">
+<div class="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center text-on-secondary shrink-0 shadow-sm">
+<span class="material-symbols-outlined text-[24px]">policy</span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-2 flex-wrap">
+<span class="px-1.5 py-0.5 rounded bg-surface/10 text-surface text-[10px] font-mono tracking-wider">CORE-03.40 ROLE STUDIO</span>
+<span class="font-label-sm text-label-sm text-on-primary-container">Staging Edits For:</span>
+<span class="px-2 py-0.5 rounded bg-secondary/30 text-secondary-fixed font-bold font-mono text-label-sm">INSPECTOR</span>
+<span class="text-on-primary-container">|</span>
+<span class="font-mono text-label-sm text-surface font-semibold">inspection.seal.sign</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-primary-container mt-0.5">
+              Diff: <span class="text-secondary-fixed font-bold font-mono">+ GRANT</span> Enables Leica Robotic Station &amp; Core Soil density attestation signing in field enclaves.
+            </p>
+</div>
+</div>
+<!-- Middle: Mandatory Audit Input -->
+<div class="flex-1 max-w-lg">
+<label class="block font-label-sm text-label-sm text-on-primary-container uppercase tracking-tight mb-1">
+            Mandatory Statutory Reason (Audited Ledger)
+          </label>
+<div class="relative">
+<input class="w-full bg-surface/10 text-surface text-body-sm font-mono px-3 py-1.5 rounded-lg border-0 outline-none focus:ring-1 focus:ring-secondary text-ellipsis" readonly="" type="text" value="Authorized under Gazetted Field Quality Directive 2026-NBRO"/>
+<span class="material-symbols-outlined absolute right-2.5 top-2 text-on-primary-container text-[16px]">lock</span>
+</div>
+</div>
+<!-- Right: Cryptographic Commitment Buttons -->
+<div class="flex items-center gap-space-xs shrink-0 self-end lg:self-center">
+<button class="px-space-md py-2 rounded-lg bg-surface/10 hover:bg-surface/20 text-surface font-label-md text-label-md transition-colors" type="button">
+            Discard Staged
+          </button>
+<button class="flex items-center gap-1.5 px-space-md py-2 rounded-lg bg-secondary text-on-secondary font-label-md text-label-md shadow-md hover:bg-secondary/90 transition-all font-bold" type="button">
+<span class="material-symbols-outlined text-[18px]">verified_user</span>
+<span>Review &amp; Sign Grant</span>
+</button>
+</div>
+</div>
+<!-- Micro Traceability Footer inside Drawer -->
+<div class="flex items-center justify-between pt-1 border-t border-surface/10 text-[11px] font-mono text-on-primary-container">
+<div class="flex items-center gap-3">
+<span>Target Enclave: <span class="text-surface font-semibold">LK-SEC-ENCLAVE-01</span></span>
+<span>•</span>
+<span>Dual Custody: <span class="text-secondary-fixed">Required</span></span>
+</div>
+<div class="flex items-center gap-1 text-[11px]">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+<span>Session Nonce: 8f9b4c02-e21a</span>
+</div>
+</div>
+</div>
+</div>
+</div></main></div></body></html>

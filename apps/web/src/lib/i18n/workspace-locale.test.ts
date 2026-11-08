@@ -29,6 +29,6 @@ describe("nav labels", () => {
     expect(navLabel(settings, "ta")).toBe("Settings"); // no translation yet: falls back to English
     expect(navLabel(work, "ta")).toBe("பணி கோரிக்கைகள்");
     expect(navLabel(work, "si")).toBe("වැඩ ඉල්ලීම්");
-    expect(all).toHaveLength(22); // includes Assets, Maintenance and Agency insights (Batch 07), RoadSync Dashboard (Step 78), Approvals / History (Steps 76-77), InfraMap (Step 81), Contractors (Step 92) and Finance (Step 95)
+    expect(all).toHaveLength(27); // includes Assets, Maintenance, Agency insights, RoadSync, InfraMap, Contractors, Finance, Public Portal (CORE-02.15), and CORE-03 Governance/Audit/System/Security routes
   });
 });

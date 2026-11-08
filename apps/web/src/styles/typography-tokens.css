@@ -11,6 +11,12 @@
   --font-family-mono: var(--font-geist-mono), ui-monospace, "Cascadia Code",
     "Segoe UI Mono", monospace;
 
+  /* Public Sans and Newsreader (loaded via CDN to bypass Turbopack next/font/google bug) */
+  --font-public-sans: "Public Sans", var(--font-family-sans);
+  --font-newsreader: "Newsreader", Georgia, serif;
+  --lp-font-body: "Public Sans", var(--font-family-sans);
+  --lp-font-display: "Newsreader", Georgia, serif;
+
   /* Type scale (responsive where noted) */
   --font-size-display: clamp(2rem, 1.75rem + 1vw, 2.75rem);
   --font-size-page-title: clamp(1.75rem, 1.65rem + 0.4vw, 2rem);
@@ -34,4 +40,9 @@
 
   --letter-spacing-heading: -0.02em;
   --letter-spacing-normal: 0;
+}
+
+.lp-font-vars {
+  --lp-font-body: "Public Sans", var(--font-family-sans);
+  --lp-font-display: "Newsreader", Georgia, serif;
 }
