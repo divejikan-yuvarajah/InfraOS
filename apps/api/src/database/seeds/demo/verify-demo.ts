@@ -1,6 +1,9 @@
 import { SYSTEM_ROLE_KEYS } from "@infraos/shared-types";
 
 import { Agency } from "../../../modules/agencies/models/agency.model.js";
+import { ProcessingJob } from "../../../modules/ai/processing/job.model.js";
+import { AiUsageRecord } from "../../../modules/ai/usage.model.js";
+import { DocumentChunk } from "../../../modules/documents/models/document-chunk.model.js";
 import { Document } from "../../../modules/documents/models/document.model.js";
 import { DocumentVersion } from "../../../modules/documents/models/document-version.model.js";
 import { DEMO_DOCUMENT_COUNT } from "./seed-documents.js";
