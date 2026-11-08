@@ -18,6 +18,7 @@ import { projectInspectionsRouter, projectVerifiedProgressRouter } from "../modu
 import { coordinationInsightsRouter } from "../modules/agencies/coordination-insights.js";
 import { assetRouter } from "../modules/assets/asset.routes.js";
 import { assetMaintenanceRouter, maintenanceRouter } from "../modules/assets/maintenance.routes.js";
+import { adminAuditLogRouter } from "../modules/audit/audit-log.routes.js";
 import { inframapRouter } from "../modules/inframap/inframap.routes.js";
 
 export function createV1Router(): Router {
@@ -31,6 +32,7 @@ export function createV1Router(): Router {
   router.use("/admin/agencies", agencyManagementRouter);
   router.use("/admin/roles", adminRoleRouter);
   router.use("/admin/permissions", adminPermissionRouter);
+  router.use("/admin/audit-logs", adminAuditLogRouter);
   router.use("/projects/:projectId/contractors", projectContractorRouter);
   router.use("/projects/:projectId/inspections", projectInspectionsRouter);
   router.use("/projects/:projectId/verified-progress", projectVerifiedProgressRouter);

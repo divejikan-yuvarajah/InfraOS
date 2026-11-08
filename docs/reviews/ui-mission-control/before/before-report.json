@@ -1,0 +1,756 @@
+[
+ {
+  "role": "officer",
+  "width": 375,
+  "name": "01-dashboard",
+  "file": "01-dashboard-375.png",
+  "path": "/dashboard",
+  "h1": [
+   "ProjectTrace dashboard"
+  ],
+  "h2": 5,
+  "overflowX": false,
+  "scrollW": 375,
+  "clientW": 375,
+  "docH": 3152,
+  "tables": 1,
+  "svgs": 0,
+  "consoleErrors": []
+ },
+ {
+  "role": "officer",
+  "width": 375,
+  "name": "02-projects",
+  "file": "02-projects-375.png",
+  "path": "/projects",
+  "h1": [
+   "Projects"
+  ],
+  "h2": 0,
+  "overflowX": false,
+  "scrollW": 375,
+  "clientW": 375,
+  "docH": 1255,
+  "tables": 1,
+  "svgs": 1,
+  "consoleErrors": []
+ },
+ {
+  "role": "officer",
+  "width": 375,
+  "name": "03-project-overview",
+  "file": "03-project-overview-375.png",
+  "path": "/projects/6ae4ed47b6cf69500428a272/overview",
+  "h1": [
+   "Project overview"
+  ],
+  "h2": 1,
+  "overflowX": false,
+  "scrollW": 375,
+  "clientW": 375,
+  "docH": 2114,
+  "tables": 0,
+  "svgs": 0,
+  "consoleErrors": []
+ },
+ {
+  "role": "officer",
+  "width": 375,
+  "name": "04-project-timeline",
+  "file": "04-project-timeline-375.png",
+  "path": "/projects/6ae4ed47b6cf69500428a272/timeline",
+  "h1": [
+   "Project timeline"
+  ],
+  "h2": 5,
+  "overflowX": false,
+  "scrollW": 375,
+  "clientW": 375,
+  "docH": 1966,
+  "tables": 0,
+  "svgs": 3,
+  "consoleErrors": []
+ },
+ {
+  "role": "officer",
+  "width": 375,
+  "name": "05-project-milestones",
+  "file": "05-project-milestones-375.png",
+  "path": "/projects/6ae4ed47b6cf69500428a272/milestones",
+  "h1": [
+   "Milestones"
+  ],
+  "h2": 1,
+  "overflowX": false,
+  "scrollW": 375,
+  "clientW": 375,
+  "docH": 878,
+  "tables": 0,
+  "svgs": 0,
+  "consoleErrors": []
+ },
+ {
+  "role": "officer",
+  "width": 375,
+  "name": "06-project-progress",
+  "file": "06-project-progress-375.png",
+  "path": "/projects/6ae4ed47b6cf69500428a272/progress",
+  "h1": [
+   "Reported physical progress"
+  ],
+  "h2": 2,
+  "overflowX": false,
+  "scrollW": 375,
+  "clientW": 375,
+  "docH": 1277,
+  "tables": 0,
+  "svgs": 0,
+  "consoleErrors": []
+ },
+ {
+  "role": "officer",
+  "width": 375,
+  "name": "07-project-activity",
+  "file": "07-project-activity-375.png",
+  "path": "/projects/6ae4ed47b6cf69500428a272/activity",
+  "h1": [
+   "Activity history"
+  ],
+  "h2": 1,
+  "overflowX": false,
+  "scrollW": 375,
+  "clientW": 375,
+  "docH": 1019,
+  "tables": 0,
+  "svgs": 0,
+  "consoleErrors": []
+ },
+ {
+  "role": "officer",
+  "width": 375,
+  "name": "08-project-edit",
+  "file": "08-project-edit-375.png",
+  "path": "/projects/6ae4ed47b6cf69500428a272/edit",
+  "h1": [
+   "Edit project draft"
+  ],
+  "h2": 0,
+  "overflowX": false,
+  "scrollW": 375,
+  "clientW": 375,
+  "docH": 812,
+  "tables": 0,
+  "svgs": 0,
+  "consoleErrors": []
+ },
+ {
+  "role": "officer",
+  "width": 375,
+  "name": "09-project-new",
+  "file": "09-project-new-375.png",
+  "path": "/projects/new",
+  "h1": [
+   "Create infrastructure project"
+  ],
+  "h2": 5,
+  "overflowX": false,
+  "scrollW": 375,
+  "clientW": 375,
+  "docH": 2685,
+  "tables": 0,
+  "svgs": 0,
+  "consoleErrors": []
+ },
+ {
+  "role": "officer",
+  "width": 375,
+  "name": "10-notifications",
+  "file": "10-notifications-375.png",
+  "path": "/notifications",
+  "h1": [
+   "Project notices"
+  ],
+  "h2": 0,
+  "overflowX": false,
+  "scrollW": 375,
+  "clientW": 375,
+  "docH": 812,
+  "tables": 0,
+  "svgs": 0,
+  "consoleErrors": []
+ },
+ {
+  "role": "officer",
+  "width": 375,
+  "name": "11-profile",
+  "file": "11-profile-375.png",
+  "path": "/profile",
+  "h1": [
+   "Your profile"
+  ],
+  "h2": 1,
+  "overflowX": false,
+  "scrollW": 375,
+  "clientW": 375,
+  "docH": 1149,
+  "tables": 0,
+  "svgs": 0,
+  "consoleErrors": []
+ },
+ {
+  "role": "officer",
+  "width": 375,
+  "name": "12-settings",
+  "file": "12-settings-375.png",
+  "path": "/settings",
+  "h1": [
+   "Account settings"
+  ],
+  "h2": 1,
+  "overflowX": false,
+  "scrollW": 375,
+  "clientW": 375,
+  "docH": 1185,
+  "tables": 0,
+  "svgs": 0,
+  "consoleErrors": []
+ },
+ {
+  "role": "officer",
+  "width": 375,
+  "name": "13-admin-users-as-officer",
+  "file": "13-admin-users-as-officer-375.png",
+  "path": "/admin/users",
+  "h1": [
+   "Staff directory"
+  ],
+  "h2": 2,
+  "overflowX": false,
+  "scrollW": 375,
+  "clientW": 375,
+  "docH": 1687,
+  "tables": 1,
+  "svgs": 0,
+  "consoleErrors": []
+ },
+ {
+  "role": "officer",
+  "width": 1440,
+  "name": "01-dashboard",
+  "file": "01-dashboard-1440.png",
+  "path": "/dashboard",
+  "h1": [
+   "ProjectTrace dashboard"
+  ],
+  "h2": 5,
+  "overflowX": false,
+  "scrollW": 1440,
+  "clientW": 1440,
+  "docH": 1925,
+  "tables": 1,
+  "svgs": 0,
+  "consoleErrors": []
+ },
+ {
+  "role": "officer",
+  "width": 1440,
+  "name": "02-projects",
+  "file": "02-projects-1440.png",
+  "path": "/projects",
+  "h1": [
+   "Projects"
+  ],
+  "h2": 0,
+  "overflowX": false,
+  "scrollW": 1440,
+  "clientW": 1440,
+  "docH": 900,
+  "tables": 1,
+  "svgs": 1,
+  "consoleErrors": []
+ },
+ {
+  "role": "officer",
+  "width": 1440,
+  "name": "03-project-overview",
+  "file": "03-project-overview-1440.png",
+  "path": "/projects/6ae4ed47b6cf69500428a272/overview",
+  "h1": [
+   "Project overview"
+  ],
+  "h2": 1,
+  "overflowX": false,
+  "scrollW": 1440,
+  "clientW": 1440,
+  "docH": 1611,
+  "tables": 0,
+  "svgs": 0,
+  "consoleErrors": []
+ },
+ {
+  "role": "officer",
+  "width": 1440,
+  "name": "04-project-timeline",
+  "file": "04-project-timeline-1440.png",
+  "path": "/projects/6ae4ed47b6cf69500428a272/timeline",
+  "h1": [
+   "Project timeline"
+  ],
+  "h2": 5,
+  "overflowX": false,
+  "scrollW": 1440,
+  "clientW": 1440,
+  "docH": 1716,
+  "tables": 0,
+  "svgs": 3,
+  "consoleErrors": []
+ },
+ {
+  "role": "officer",
+  "width": 1440,
+  "name": "05-project-milestones",
+  "file": "05-project-milestones-1440.png",
+  "path": "/projects/6ae4ed47b6cf69500428a272/milestones",
+  "h1": [
+   "Milestones"
+  ],
+  "h2": 1,
+  "overflowX": false,
+  "scrollW": 1440,
+  "clientW": 1440,
+  "docH": 900,
+  "tables": 0,
+  "svgs": 0,
+  "consoleErrors": []
+ },
+ {
+  "role": "officer",
+  "width": 1440,
+  "name": "06-project-progress",
+  "file": "06-project-progress-1440.png",
+  "path": "/projects/6ae4ed47b6cf69500428a272/progress",
+  "h1": [
+   "Reported physical progress"
+  ],
+  "h2": 2,
+  "overflowX": false,
+  "scrollW": 1440,
+  "clientW": 1440,
+  "docH": 967,
+  "tables": 0,
+  "svgs": 0,
+  "consoleErrors": []
+ },
+ {
+  "role": "officer",
+  "width": 1440,
+  "name": "07-project-activity",
+  "file": "07-project-activity-1440.png",
+  "path": "/projects/6ae4ed47b6cf69500428a272/activity",
+  "h1": [
+   "Activity history"
+  ],
+  "h2": 1,
+  "overflowX": false,
+  "scrollW": 1440,
+  "clientW": 1440,
+  "docH": 900,
+  "tables": 0,
+  "svgs": 0,
+  "consoleErrors": []
+ },
+ {
+  "role": "officer",
+  "width": 1440,
+  "name": "08-project-edit",
+  "file": "08-project-edit-1440.png",
+  "path": "/projects/6ae4ed47b6cf69500428a272/edit",
+  "h1": [
+   "Edit project draft"
+  ],
+  "h2": 0,
+  "overflowX": false,
+  "scrollW": 1440,
+  "clientW": 1440,
+  "docH": 900,
+  "tables": 0,
+  "svgs": 0,
+  "consoleErrors": []
+ },
+ {
+  "role": "officer",
+  "width": 1440,
+  "name": "09-project-new",
+  "file": "09-project-new-1440.png",
+  "path": "/projects/new",
+  "h1": [
+   "Create infrastructure project"
+  ],
+  "h2": 5,
+  "overflowX": false,
+  "scrollW": 1440,
+  "clientW": 1440,
+  "docH": 1851,
+  "tables": 0,
+  "svgs": 0,
+  "consoleErrors": []
+ },
+ {
+  "role": "officer",
+  "width": 1440,
+  "name": "10-notifications",
+  "file": "10-notifications-1440.png",
+  "path": "/notifications",
+  "h1": [
+   "Project notices"
+  ],
+  "h2": 0,
+  "overflowX": false,
+  "scrollW": 1440,
+  "clientW": 1440,
+  "docH": 900,
+  "tables": 0,
+  "svgs": 0,
+  "consoleErrors": []
+ },
+ {
+  "role": "officer",
+  "width": 1440,
+  "name": "11-profile",
+  "file": "11-profile-1440.png",
+  "path": "/profile",
+  "h1": [
+   "Your profile"
+  ],
+  "h2": 1,
+  "overflowX": false,
+  "scrollW": 1440,
+  "clientW": 1440,
+  "docH": 1081,
+  "tables": 0,
+  "svgs": 0,
+  "consoleErrors": []
+ },
+ {
+  "role": "officer",
+  "width": 1440,
+  "name": "12-settings",
+  "file": "12-settings-1440.png",
+  "path": "/settings",
+  "h1": [
+   "Account settings"
+  ],
+  "h2": 1,
+  "overflowX": false,
+  "scrollW": 1440,
+  "clientW": 1440,
+  "docH": 1033,
+  "tables": 0,
+  "svgs": 0,
+  "consoleErrors": []
+ },
+ {
+  "role": "officer",
+  "width": 1440,
+  "name": "13-admin-users-as-officer",
+  "file": "13-admin-users-as-officer-1440.png",
+  "path": "/admin/users",
+  "h1": [
+   "Staff directory"
+  ],
+  "h2": 2,
+  "overflowX": false,
+  "scrollW": 1440,
+  "clientW": 1440,
+  "docH": 1525,
+  "tables": 1,
+  "svgs": 0,
+  "consoleErrors": []
+ },
+ {
+  "role": "reviewer",
+  "width": 375,
+  "name": "20-dashboard-reviewer",
+  "file": "20-dashboard-reviewer-375.png",
+  "path": "/dashboard",
+  "h1": [
+   "ProjectTrace dashboard"
+  ],
+  "h2": 5,
+  "overflowX": false,
+  "scrollW": 375,
+  "clientW": 375,
+  "docH": 3219,
+  "tables": 1,
+  "svgs": 0,
+  "consoleErrors": []
+ },
+ {
+  "role": "reviewer",
+  "width": 375,
+  "name": "21-review-queue",
+  "file": "21-review-queue-375.png",
+  "path": "/dashboard",
+  "h1": [
+   "ProjectTrace dashboard"
+  ],
+  "h2": 5,
+  "overflowX": false,
+  "scrollW": 375,
+  "clientW": 375,
+  "docH": 3219,
+  "tables": 1,
+  "svgs": 0,
+  "consoleErrors": []
+ },
+ {
+  "role": "reviewer",
+  "width": 375,
+  "name": "22-project-review",
+  "file": "22-project-review-375.png",
+  "path": "/projects/6ae4ed47b6cf69500428a272/review",
+  "h1": [],
+  "h2": 0,
+  "overflowX": false,
+  "scrollW": 375,
+  "clientW": 375,
+  "docH": 812,
+  "tables": 0,
+  "svgs": 0,
+  "consoleErrors": []
+ },
+ {
+  "role": "reviewer",
+  "width": 375,
+  "name": "23-admin-users",
+  "file": "23-admin-users-375.png",
+  "path": "/admin/users",
+  "h1": [
+   "Staff directory"
+  ],
+  "h2": 2,
+  "overflowX": false,
+  "scrollW": 375,
+  "clientW": 375,
+  "docH": 1767,
+  "tables": 1,
+  "svgs": 0,
+  "consoleErrors": []
+ },
+ {
+  "role": "reviewer",
+  "width": 375,
+  "name": "24-admin-agencies",
+  "file": "24-admin-agencies-375.png",
+  "path": "/admin/agencies",
+  "h1": [
+   "Agencies"
+  ],
+  "h2": 1,
+  "overflowX": false,
+  "scrollW": 375,
+  "clientW": 375,
+  "docH": 1257,
+  "tables": 1,
+  "svgs": 0,
+  "consoleErrors": []
+ },
+ {
+  "role": "reviewer",
+  "width": 375,
+  "name": "25-admin-roles",
+  "file": "25-admin-roles-375.png",
+  "path": "/admin/roles",
+  "h1": [
+   "Roles"
+  ],
+  "h2": 1,
+  "overflowX": false,
+  "scrollW": 375,
+  "clientW": 375,
+  "docH": 3924,
+  "tables": 0,
+  "svgs": 0,
+  "consoleErrors": []
+ },
+ {
+  "role": "reviewer",
+  "width": 375,
+  "name": "26-notifications-reviewer",
+  "file": "26-notifications-reviewer-375.png",
+  "path": "/notifications",
+  "h1": [
+   "Project notices"
+  ],
+  "h2": 0,
+  "overflowX": false,
+  "scrollW": 375,
+  "clientW": 375,
+  "docH": 812,
+  "tables": 0,
+  "svgs": 0,
+  "consoleErrors": []
+ },
+ {
+  "role": "reviewer",
+  "width": 1440,
+  "name": "20-dashboard-reviewer",
+  "file": "20-dashboard-reviewer-1440.png",
+  "path": "/dashboard",
+  "h1": [
+   "ProjectTrace dashboard"
+  ],
+  "h2": 5,
+  "overflowX": false,
+  "scrollW": 1440,
+  "clientW": 1440,
+  "docH": 1992,
+  "tables": 1,
+  "svgs": 0,
+  "consoleErrors": []
+ },
+ {
+  "role": "reviewer",
+  "width": 1440,
+  "name": "21-review-queue",
+  "file": "21-review-queue-1440.png",
+  "path": "/projects/reviews",
+  "h1": [
+   "Project reviews"
+  ],
+  "h2": 0,
+  "overflowX": false,
+  "scrollW": 1440,
+  "clientW": 1440,
+  "docH": 900,
+  "tables": 1,
+  "svgs": 2,
+  "consoleErrors": []
+ },
+ {
+  "role": "reviewer",
+  "width": 1440,
+  "name": "22-project-review",
+  "file": "22-project-review-1440.png",
+  "path": "/projects/6ae4ed47b6cf69500428a272/review",
+  "h1": [
+   "Review decision"
+  ],
+  "h2": 1,
+  "overflowX": false,
+  "scrollW": 1440,
+  "clientW": 1440,
+  "docH": 1182,
+  "tables": 0,
+  "svgs": 1,
+  "consoleErrors": []
+ },
+ {
+  "role": "reviewer",
+  "width": 1440,
+  "name": "23-admin-users",
+  "file": "23-admin-users-1440.png",
+  "path": "/admin/users",
+  "h1": [
+   "Staff directory"
+  ],
+  "h2": 2,
+  "overflowX": false,
+  "scrollW": 1440,
+  "clientW": 1440,
+  "docH": 1381,
+  "tables": 0,
+  "svgs": 0,
+  "consoleErrors": []
+ },
+ {
+  "role": "reviewer",
+  "width": 1440,
+  "name": "24-admin-agencies",
+  "file": "24-admin-agencies-1440.png",
+  "path": "/admin/agencies",
+  "h1": [
+   "Agencies"
+  ],
+  "h2": 1,
+  "overflowX": false,
+  "scrollW": 1440,
+  "clientW": 1440,
+  "docH": 1017,
+  "tables": 0,
+  "svgs": 0,
+  "consoleErrors": []
+ },
+ {
+  "role": "reviewer",
+  "width": 1440,
+  "name": "25-admin-roles",
+  "file": "25-admin-roles-1440.png",
+  "path": "/admin/roles",
+  "h1": [
+   "Roles"
+  ],
+  "h2": 0,
+  "overflowX": false,
+  "scrollW": 1440,
+  "clientW": 1440,
+  "docH": 900,
+  "tables": 0,
+  "svgs": 0,
+  "consoleErrors": []
+ },
+ {
+  "role": "reviewer",
+  "width": 1440,
+  "name": "26-notifications-reviewer",
+  "file": "26-notifications-reviewer-1440.png",
+  "path": "/notifications",
+  "h1": [
+   "Project notices"
+  ],
+  "h2": 0,
+  "overflowX": false,
+  "scrollW": 1440,
+  "clientW": 1440,
+  "docH": 900,
+  "tables": 0,
+  "svgs": 0,
+  "consoleErrors": []
+ },
+ {
+  "role": "anonymous",
+  "width": 375,
+  "name": "00-login",
+  "file": "00-login-375.png",
+  "path": "/login",
+  "h1": [
+   "Sign in to INFRAOS"
+  ],
+  "h2": 0,
+  "overflowX": false,
+  "scrollW": 375,
+  "clientW": 375,
+  "docH": 812,
+  "tables": 0,
+  "svgs": 2,
+  "consoleErrors": []
+ },
+ {
+  "role": "anonymous",
+  "width": 1440,
+  "name": "00-login",
+  "file": "00-login-1440.png",
+  "path": "/login",
+  "h1": [
+   "Sign in to INFRAOS"
+  ],
+  "h2": 0,
+  "overflowX": false,
+  "scrollW": 1440,
+  "clientW": 1440,
+  "docH": 900,
+  "tables": 0,
+  "svgs": 2,
+  "consoleErrors": []
+ }
+]

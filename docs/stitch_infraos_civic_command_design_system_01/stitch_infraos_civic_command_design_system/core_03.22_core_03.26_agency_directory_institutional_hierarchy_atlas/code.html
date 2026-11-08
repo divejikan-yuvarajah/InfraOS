@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_dashboard" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;600;700&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{colors:{"on-error-container":"#93000a","surface-container-high":"#e1e8fd","surface-container-low":"#f1f3ff","on-tertiary-container":"#df602b","inverse-surface":"#293040","outline-variant":"#c4c6cc","inverse-on-surface":"#edf0ff","on-primary":"#ffffff","on-secondary":"#ffffff","inverse-primary":"#bbc8d9","on-secondary-fixed-variant":"#802a00","secondary-fixed":"#ffdbce","on-error":"#ffffff","on-secondary-fixed":"#380d00","tertiary":"#150300","primary-fixed-dim":"#bbc8d9","error-container":"#ffdad6","error":"#ba1a1a","surface-container-lowest":"#ffffff","primary-container":"#14202d","on-tertiary-fixed":"#380d00","tertiary-container":"#3e1000","secondary":"#a83900","on-tertiary-fixed-variant":"#802a00","secondary-container":"#fd5a00","surface-container":"#e9edff","primary":"#000712","surface":"#f9f9ff","on-surface":"#141b2b","surface-container-highest":"#dce2f7","tertiary-fixed-dim":"#ffb59a","background":"#f9f9ff","outline":"#74777c","surface-tint":"#535f6f","on-surface-variant":"#44474c","surface-dim":"#d3daef","on-primary-fixed-variant":"#3c4856","surface-bright":"#f9f9ff","on-tertiary":"#ffffff","primary-fixed":"#d7e3f6","tertiary-fixed":"#ffdbcf","surface-variant":"#dce2f7","on-secondary-container":"#4f1700","on-primary-fixed":"#101c29","secondary-fixed-dim":"#ffb59a","on-background":"#141b2b","on-primary-container":"#7c8898"},borderRadius:{DEFAULT:"0.125rem",lg:"0.25rem",xl:"0.5rem",full:"0.75rem"},spacing:{"margin-mobile":"1rem","space-sm":"0.5rem","space-lg":"1.5rem","space-md":"1rem","space-xl":"2rem",margin:"1.5rem","margin-desktop":"2rem","gutter-desktop":"2rem",gutter:"1.5rem","gutter-mobile":"1rem","space-xs":"0.25rem"},fontFamily:{"headline-lg-mobile":["Public Sans"],"headline-sm":["Public Sans"],"title-md":["Public Sans"],"body-sm":["Public Sans"],"body-md":["Public Sans"],"label-lg":["Public Sans"],"body-lg":["Public Sans"],"headline-md":["Public Sans"],"headline-lg":["Public Sans"],"title-lg":["Public Sans"],"label-md":["Public Sans"],"label-sm":["Public Sans"]},fontSize:{"headline-lg-mobile":["24px",{lineHeight:"32px",fontWeight:"700"}],"headline-sm":["20px",{lineHeight:"28px",fontWeight:"600"}],"title-md":["16px",{lineHeight:"24px",fontWeight:"600"}],"body-sm":["12px",{lineHeight:"18px",fontWeight:"400"}],"body-md":["14px",{lineHeight:"20px",fontWeight:"400"}],"label-lg":["14px",{lineHeight:"20px",fontWeight:"600"}],"body-lg":["16px",{lineHeight:"24px",fontWeight:"400"}],"headline-md":["24px",{lineHeight:"32px",fontWeight:"600"}],"headline-lg":["32px",{lineHeight:"40px",fontWeight:"700"}],"title-lg":["18px",{lineHeight:"26px",fontWeight:"600"}],"label-md":["12px",{lineHeight:"16px",fontWeight:"600"}],"label-sm":["11px",{lineHeight:"14px",fontWeight:"700"}]}}}};</script></head><body class="bg-background font-body-md text-on-surface antialiased"><aside class="fixed left-0 top-0 h-full w-64 bg-primary-container z-50 flex flex-col justify-between shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="flex flex-col"><div class="h-16 px-space-md flex items-center justify-between bg-primary-container"><div class="flex items-center gap-space-sm"><div class="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center text-on-secondary font-headline-sm text-headline-sm font-bold tracking-tight">I</div><div class="flex flex-col"><span class="font-label-lg text-label-lg font-bold text-surface uppercase tracking-wider">INFRAOS</span><span class="font-label-sm text-label-sm text-on-primary-container uppercase tracking-tight">Civic Atlas V2</span></div></div><div class="px-space-xs py-0.5 rounded bg-surface/10 text-surface text-label-sm font-label-sm">SEC-01</div></div><div class="px-space-md py-space-sm"><div class="p-space-sm rounded-lg bg-surface/5 flex items-center gap-space-sm"><span class="material-symbols-outlined text-secondary-fixed text-[18px]">verified_user</span><div class="flex flex-col"><span class="font-label-sm text-label-sm text-surface font-semibold">GovPKI Enclave Active</span><span class="font-label-sm text-label-sm text-on-primary-container">SL-CERT Certified</span></div></div></div><nav class="flex flex-col gap-0.5 px-space-sm mt-space-xs" data-active-classes="bg-surface/15 text-surface font-semibold"><div class="px-space-sm pt-space-sm pb-space-xs text-on-primary-container font-label-sm text-label-sm uppercase tracking-wider font-bold">Operations</div><a class="flex items-center gap-space-sm px-space-sm py-2 rounded-lg text-on-primary-container hover:bg-surface/10 hover:text-surface transition-colors" data-path="overview" href="#"><span class="material-symbols-outlined text-[18px]">grid_view</span><span class="font-body-md text-body-md">Overview</span></a><div class="px-space-sm pt-space-md pb-space-xs text-on-primary-container font-label-sm text-label-sm uppercase tracking-wider font-bold">Governance</div><a class="flex items-center gap-space-sm px-space-sm py-2 rounded-lg text-on-primary-container hover:bg-surface/10 hover:text-surface transition-colors" data-path="staff-identity" href="#"><span class="material-symbols-outlined text-[18px]">badge</span><span class="font-body-md text-body-md">Staff Identity</span></a><a class="flex items-center gap-space-sm px-space-sm py-2 rounded-lg text-on-primary-container hover:bg-surface/10 hover:text-surface transition-colors" data-path="agencies-hierarchy" href="#"><span class="material-symbols-outlined text-[18px]">account_tree</span><span class="font-body-md text-body-md">Agencies &amp; Hierarchy</span></a><a class="flex items-center gap-space-sm px-space-sm py-2 rounded-lg text-on-primary-container hover:bg-surface/10 hover:text-surface transition-colors" data-path="roles-authority" href="#"><span class="material-symbols-outlined text-[18px]">policy</span><span class="font-body-md text-body-md">Roles &amp; Authority</span></a><a class="flex items-center gap-space-sm px-space-sm py-2 rounded-lg text-on-primary-container hover:bg-surface/10 hover:text-surface transition-colors" data-path="audit-ledger" href="#"><span class="material-symbols-outlined text-[18px]">receipt_long</span><span class="font-body-md text-body-md">Audit Ledger</span></a><div class="px-space-sm pt-space-md pb-space-xs text-on-primary-container font-label-sm text-label-sm uppercase tracking-wider font-bold">System Core</div><a class="flex items-center gap-space-sm px-space-sm py-2 rounded-lg text-on-primary-container hover:bg-surface/10 hover:text-surface transition-colors" data-path="health-enclaves" href="#"><span class="material-symbols-outlined text-[18px]">monitor_heart</span><span class="font-body-md text-body-md">Health &amp; Enclaves</span></a><a class="flex items-center gap-space-sm px-space-sm py-2 rounded-lg text-on-primary-container hover:bg-surface/10 hover:text-surface transition-colors" data-path="configuration" href="#"><span class="material-symbols-outlined text-[18px]">tune</span><span class="font-body-md text-body-md">Configuration</span></a><div class="px-space-sm pt-space-md pb-space-xs text-on-primary-container font-label-sm text-label-sm uppercase tracking-wider font-bold">Operator</div><a class="flex items-center gap-space-sm px-space-sm py-2 rounded-lg text-on-primary-container hover:bg-surface/10 hover:text-surface transition-colors" data-path="personal-workspace" href="#"><span class="material-symbols-outlined text-[18px]">terminal</span><span class="font-body-md text-body-md">Personal Workspace</span></a></nav></div><div class="p-space-sm m-space-sm rounded-lg bg-surface/5 flex items-center gap-space-sm"><div class="w-2 h-2 rounded-full bg-secondary"></div><div class="flex flex-col"><span class="font-label-sm text-label-sm text-surface font-semibold">National Registry V2</span><span class="font-label-sm text-label-sm text-on-primary-container">Lat: 6.9271° N, Lon: 79.8612° E</span></div></div></aside><div class="pl-64"><header class="fixed top-0 left-64 right-0 h-16 bg-surface-container-lowest/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-40 flex items-center justify-between px-space-lg"><div class="flex items-center gap-space-md"><div class="flex items-center gap-space-xs font-label-md text-label-md uppercase tracking-wider text-on-surface-variant"><span class="text-secondary font-bold">INFRAOS</span><span>/</span><span class="text-on-surface font-semibold">Platform Governance</span></div><div class="hidden md:flex items-center gap-1.5 px-space-sm py-0.5 rounded bg-surface-container-high text-on-surface font-label-sm text-label-sm"><span class="w-2 h-2 rounded-full bg-secondary-container"></span><span>Cluster: LK-CENTRAL-01</span></div></div><div class="flex items-center gap-space-md"><div class="flex items-center bg-surface-container-low rounded-lg p-0.5 font-label-sm text-label-sm font-semibold"><button class="px-2 py-1 rounded bg-surface-container-lowest text-on-surface shadow-[0_1px_2px_rgba(0,0,0,0.05)]" type="button">EN</button><button class="px-2 py-1 text-on-surface-variant hover:text-on-surface" type="button">සිංහල</button><button class="px-2 py-1 text-on-surface-variant hover:text-on-surface" type="button">தமிழ்</button></div><button class="w-9 h-9 rounded-lg bg-surface-container-low hover:bg-surface-container flex items-center justify-center text-on-surface-variant hover:text-on-surface transition-colors relative" type="button"><span class="material-symbols-outlined text-[20px]">notifications</span><span class="absolute top-2 right-2 w-2 h-2 bg-secondary rounded-full"></span></button><div class="flex items-center gap-space-sm pl-space-sm"><div class="flex flex-col text-right hidden sm:flex"><span class="font-label-lg text-label-lg text-on-surface font-bold leading-tight">Alex Perera</span><span class="font-label-sm text-label-sm text-on-surface-variant leading-tight">Super Administrator</span></div><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="relative pt-16 bg-background w-full px-space-lg"><div class="flex flex-col w-full pb-16">
+<!-- Top Command & Status Ribbon -->
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-space-md py-space-md">
+<div class="flex flex-col gap-1">
+<div class="flex items-center gap-space-xs">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+<span class="font-label-sm text-label-sm uppercase tracking-widest text-secondary font-bold">INSTITUTIONAL GOVERNANCE &amp; FEDERATION</span>
+<span class="text-on-surface-variant font-label-sm text-label-sm">•</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider font-semibold">CORE-03.22 &amp; CORE-03.26</span>
+</div>
+<h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight font-bold">Agency Directory &amp; Hierarchy Atlas</h1>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-3xl">Manage national infrastructure ministries, statutory corporations, municipal councils, and parent-child administrative relationships.</p>
+</div>
+<!-- Actions & View Mode Toggle -->
+<div class="flex items-center gap-space-sm flex-wrap">
+<div class="flex items-center bg-surface-container rounded-lg p-0.5 shadow-sm">
+<button class="flex items-center gap-1.5 px-space-md py-2 rounded-lg bg-surface-container-lowest text-on-surface font-label-md text-label-md shadow-sm transition-all" id="view-atlas-btn" type="button">
+<span class="material-symbols-outlined text-[18px] text-secondary">account_tree</span>
+<span>Hierarchy Atlas</span>
+</button>
+<button class="flex items-center gap-1.5 px-space-md py-2 rounded-lg text-on-surface-variant hover:text-on-surface font-label-md text-label-md transition-all" id="view-table-btn" type="button">
+<span class="material-symbols-outlined text-[18px]">table_rows</span>
+<span>Flat Directory</span>
+</button>
+</div>
+<div class="relative min-w-[220px]">
+<input class="w-full bg-surface-container-lowest text-on-surface font-body-md text-body-md pl-9 pr-3 py-2 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-secondary-container" placeholder="Search agencies (e.g. RDA, NWSDB)..." type="text"/>
+<span class="material-symbols-outlined text-[18px] text-on-surface-variant absolute left-2.5 top-2.5">search</span>
+</div>
+<button class="flex items-center gap-1.5 px-space-md py-2 bg-secondary hover:bg-on-tertiary-container text-on-secondary font-label-md text-label-md rounded-lg shadow-sm transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px]">add_circle</span>
+<span>Register Agency</span>
+</button>
+</div>
+</div>
+<!-- Institutional Vital Telemetry Banner (3 Bento Indicators) -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-space-md mt-space-sm mb-space-lg">
+<!-- Stat 1 -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex items-center justify-between relative overflow-hidden">
+<div class="absolute top-0 left-0 right-0 h-1 bg-secondary"></div>
+<div class="flex flex-col gap-0.5">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider font-semibold">Registered Entities</span>
+<div class="flex items-baseline gap-space-xs">
+<span class="font-headline-lg text-headline-lg font-bold text-on-surface">28</span>
+<span class="font-label-sm text-label-sm text-secondary font-semibold">+2 Q3 Onboarded</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant">5 Ministries • 14 Statutory • 9 Municipal</span>
+</div>
+<div class="w-12 h-12 rounded-xl bg-surface-container-high flex items-center justify-center text-primary-container">
+<span class="material-symbols-outlined text-[26px]">corporate_fare</span>
+</div>
+</div>
+<!-- Stat 2 -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex items-center justify-between relative overflow-hidden">
+<div class="absolute top-0 left-0 right-0 h-1 bg-secondary-container"></div>
+<div class="flex flex-col gap-0.5">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider font-semibold">Supervised Infrastructure Corridors</span>
+<div class="flex items-baseline gap-space-xs">
+<span class="font-headline-lg text-headline-lg font-bold text-on-surface">48</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Active Works</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant">1,420 km Chainage Managed</span>
+</div>
+<div class="w-12 h-12 rounded-xl bg-surface-container-high flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-[26px]">alt_route</span>
+</div>
+</div>
+<!-- Stat 3 -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex items-center justify-between relative overflow-hidden">
+<div class="absolute top-0 left-0 right-0 h-1 bg-primary-container"></div>
+<div class="flex flex-col gap-0.5">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider font-semibold">DAG Validation Topology</span>
+<div class="flex items-baseline gap-space-xs">
+<span class="font-headline-lg text-headline-lg font-bold text-on-surface">0</span>
+<span class="font-label-sm text-label-sm px-1.5 py-0.5 rounded bg-surface-container-high text-on-surface font-bold">100% DAG Verified</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Circular dependencies zero-tolerance safe</span>
+</div>
+<div class="w-12 h-12 rounded-xl bg-surface-container-high flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[26px]">verified</span>
+</div>
+</div>
+</div>
+<!-- Primary Workspace: Interactive Hierarchy Atlas & Selected Node Inspector -->
+<div class="grid grid-cols-1 xl:grid-cols-12 gap-space-lg items-start">
+<!-- LEFT 7 COLS: The Visual Hierarchy Atlas Canvas (CORE-03.26) -->
+<div class="xl:col-span-7 bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col gap-space-md relative overflow-hidden">
+<!-- Canvas Header & Map Controls -->
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-secondary text-[22px]">schema</span>
+<div>
+<h2 class="font-title-lg text-title-lg text-on-surface font-bold">Institutional Hierarchy Atlas</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Directed Acyclic Graph (DAG) • Click any agency to inspect authority bounds</p>
+</div>
+</div>
+<div class="flex items-center gap-1 bg-surface-container-low p-1 rounded-lg">
+<button class="w-7 h-7 rounded bg-surface-container-lowest text-on-surface flex items-center justify-center hover:bg-surface-container text-label-sm shadow-sm" title="Zoom in" type="button">
+<span class="material-symbols-outlined text-[16px]">add</span>
+</button>
+<button class="w-7 h-7 rounded bg-surface-container-lowest text-on-surface flex items-center justify-center hover:bg-surface-container text-label-sm shadow-sm" title="Zoom out" type="button">
+<span class="material-symbols-outlined text-[16px]">remove</span>
+</button>
+<button class="w-7 h-7 rounded bg-surface-container-lowest text-on-surface flex items-center justify-center hover:bg-surface-container text-label-sm shadow-sm" title="Center Tree" type="button">
+<span class="material-symbols-outlined text-[16px]">center_focus_strong</span>
+</button>
+</div>
+</div>
+<!-- Architectural Interactive Tree Visualizer -->
+<div class="relative bg-surface rounded-xl p-space-lg overflow-x-auto select-none">
+<!-- Background Cartographic Grid Texture -->
+<div class="absolute inset-0 opacity-[0.03] pointer-events-none" style="background-size: 20px 20px; background-image: radial-gradient(circle, #000712 1px, transparent 1px);"></div>
+<div class="relative min-w-[560px] flex flex-col gap-space-xl">
+<!-- ROOT NODE: LEVEL 1 -->
+<div class="flex flex-col items-center">
+<div class="w-full max-w-md bg-primary-container text-on-primary rounded-xl p-space-md shadow-md flex items-center justify-between cursor-pointer hover:ring-2 hover:ring-secondary-container transition-all">
+<div class="flex items-center gap-space-sm">
+<div class="w-10 h-10 rounded-lg bg-surface-container-lowest/10 flex items-center justify-center text-surface">
+<span class="material-symbols-outlined text-[20px]">account_balance</span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-1.5">
+<span class="font-label-lg text-label-lg font-bold text-surface">MPWUD</span>
+<span class="px-1.5 py-0.2 rounded bg-surface/20 text-surface text-label-sm font-label-sm uppercase">MINISTRY</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-primary-container truncate max-w-[240px]">Min. of Public Works &amp; Urban Dev.</span>
+</div>
+</div>
+<div class="flex flex-col items-end">
+<span class="font-label-sm text-label-sm px-2 py-0.5 rounded-full bg-secondary text-on-secondary font-bold">Root Apex</span>
+<span class="font-body-sm text-body-sm text-on-primary-container">3 Statutory Subs</span>
+</div>
+</div>
+<!-- Central Stem Linework -->
+<div class="w-0.5 h-8 bg-outline-variant"></div>
+</div>
+<!-- CONNECTOR BAR (Level 2 Multi-Drop) -->
+<div class="relative -mt-space-xl">
+<!-- Horizontal Bus Line -->
+<div class="relative h-6 flex items-center justify-center">
+<div class="w-[82%] h-0.5 bg-outline-variant"></div>
+</div>
+<!-- LEVEL 2 NODES GRID (RDA, NWSDB, CMC) -->
+<div class="grid grid-cols-3 gap-space-md pt-2">
+<!-- NODE 1: RDA (SELECTED FOCUS NODE) -->
+<div class="flex flex-col items-center">
+<!-- Drop line from bus -->
+<div class="w-0.5 h-4 bg-secondary -mt-6 mb-2"></div>
+<div class="w-full bg-surface-container-lowest rounded-xl p-space-sm shadow-md ring-2 ring-secondary transition-all cursor-pointer">
+<div class="flex items-center justify-between pb-1 mb-1 bg-secondary-fixed/30 rounded p-1">
+<span class="px-1.5 py-0.2 rounded bg-secondary text-on-secondary font-label-sm text-label-sm font-bold">RDA</span>
+<span class="flex items-center gap-1 font-label-sm text-label-sm text-secondary font-bold">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse"></span> SELECTED
+                    </span>
+</div>
+<h3 class="font-label-lg text-label-lg text-on-surface font-bold leading-tight">Road Development Authority</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant truncate">Statutory Corporation</p>
+<div class="mt-2 pt-2 bg-surface-container-low rounded-lg p-2 flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-on-surface font-semibold">18 Corridors</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">412 Staff</span>
+</div>
+</div>
+<!-- Downward Stem to Level 3 -->
+<div class="w-0.5 h-6 bg-outline-variant"></div>
+<!-- LEVEL 3 CHILDREN (Western & Central Expressway) -->
+<div class="flex flex-col gap-2 w-full pt-1">
+<!-- Child A -->
+<div class="bg-surface-container-low rounded-lg p-2 shadow-sm flex items-center justify-between">
+<div class="flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface font-bold">RDA Western Div</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">11 Corridor Sectors</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant">subdirectory_arrow_right</span>
+</div>
+<!-- Child B -->
+<div class="bg-surface-container-low rounded-lg p-2 shadow-sm flex items-center justify-between">
+<div class="flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface font-bold">Central Expressway</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">7 Corridor Sectors</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant">subdirectory_arrow_right</span>
+</div>
+</div>
+</div>
+<!-- NODE 2: NWSDB -->
+<div class="flex flex-col items-center">
+<div class="w-0.5 h-4 bg-outline-variant -mt-6 mb-2"></div>
+<div class="w-full bg-surface-container-lowest rounded-xl p-space-sm shadow-sm hover:shadow-md transition-all cursor-pointer">
+<div class="flex items-center justify-between pb-1 mb-1">
+<span class="px-1.5 py-0.2 rounded bg-surface-container-high text-on-surface font-label-sm text-label-sm font-bold">NWSDB</span>
+<span class="font-label-sm text-label-sm px-1.5 rounded bg-surface-container text-on-surface font-semibold">WATER</span>
+</div>
+<h3 class="font-label-lg text-label-lg text-on-surface font-bold leading-tight">Nat. Water Supply Board</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant truncate">Statutory Board</p>
+<div class="mt-2 pt-2 bg-surface-container-low rounded-lg p-2 flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-on-surface font-semibold">9 Corridors</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">284 Staff</span>
+</div>
+</div>
+<!-- Downward stem -->
+<div class="w-0.5 h-6 bg-outline-variant"></div>
+<!-- LEVEL 3 CHILD -->
+<div class="w-full pt-1">
+<div class="bg-surface-container-low rounded-lg p-2 shadow-sm flex items-center justify-between">
+<div class="flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-on-surface-variant"></span>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface font-bold">Colombo Pipeline Dir.</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Main Trunk lines</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant">subdirectory_arrow_right</span>
+</div>
+</div>
+</div>
+<!-- NODE 3: CMC -->
+<div class="flex flex-col items-center">
+<div class="w-0.5 h-4 bg-outline-variant -mt-6 mb-2"></div>
+<div class="w-full bg-surface-container-lowest rounded-xl p-space-sm shadow-sm hover:shadow-md transition-all cursor-pointer">
+<div class="flex items-center justify-between pb-1 mb-1">
+<span class="px-1.5 py-0.2 rounded bg-surface-container-high text-on-surface font-label-sm text-label-sm font-bold">CMC</span>
+<span class="font-label-sm text-label-sm px-1.5 rounded bg-surface-container text-on-surface font-semibold">MUNICIPAL</span>
+</div>
+<h3 class="font-label-lg text-label-lg text-on-surface font-bold leading-tight">Colombo Municipal</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant truncate">Local Authority</p>
+<div class="mt-2 pt-2 bg-surface-container-low rounded-lg p-2 flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-on-surface font-semibold">14 Corridors</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">190 Staff</span>
+</div>
+</div>
+<!-- Downward stem -->
+<div class="w-0.5 h-6 bg-outline-variant"></div>
+<!-- Level 3 Leaf Indicator -->
+<div class="w-full pt-1">
+<div class="bg-surface-container-low/70 rounded-lg p-2 flex items-center justify-center text-on-surface-variant">
+<span class="font-body-sm text-body-sm italic">Direct Council Oversight</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Atlas Legend -->
+<div class="flex items-center justify-between pt-2 border-none text-on-surface-variant">
+<div class="flex items-center gap-space-md text-label-sm font-label-sm">
+<div class="flex items-center gap-1.5">
+<span class="w-2.5 h-2.5 rounded-full bg-primary-container"></span>
+<span>Apex Ministry</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="w-2.5 h-2.5 rounded bg-secondary"></span>
+<span>Active Selected Entity</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="w-2.5 h-2.5 rounded bg-surface-container-high"></span>
+<span>Subordinate Department</span>
+</div>
+</div>
+<span class="font-label-sm text-label-sm font-semibold text-secondary">Federated via GovPKI Trust Chain</span>
+</div>
+</div>
+<!-- RIGHT 5 COLS: Selected Agency Passport & Reparenting Workspace -->
+<div class="xl:col-span-5 flex flex-col gap-space-md">
+<!-- Selected Agency Passport Card -->
+<div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col gap-space-md relative overflow-hidden">
+<div class="absolute top-0 left-0 right-0 h-1.5 bg-secondary"></div>
+<div class="flex items-start justify-between">
+<div class="flex flex-col gap-1">
+<div class="flex items-center gap-2">
+<span class="px-2 py-0.5 rounded bg-secondary-fixed text-on-secondary-fixed font-label-sm text-label-sm font-bold">RDA</span>
+<span class="px-2 py-0.5 rounded bg-surface-container-high text-on-surface font-label-sm text-label-sm font-semibold">STATUTORY CORP</span>
+<span class="flex items-center gap-1 px-2 py-0.5 rounded-full bg-surface-container-low text-on-surface font-label-sm text-label-sm font-bold">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span> ACTIVE
+              </span>
+</div>
+<h2 class="font-title-lg text-title-lg text-on-surface font-bold mt-1">Road Development Authority</h2>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Subordinate to Ministry of Public Works &amp; Urban Dev. (MPWUD)</span>
+</div>
+<button class="w-9 h-9 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface flex items-center justify-center shadow-sm" title="Print Agency Dossier" type="button">
+<span class="material-symbols-outlined text-[20px]">print</span>
+</button>
+</div>
+<!-- Agency Geographic & Contact Coordinates -->
+<div class="bg-surface-container-low rounded-lg p-space-md grid grid-cols-2 gap-space-sm font-body-sm text-body-sm">
+<div>
+<span class="text-on-surface-variant block font-label-sm text-label-sm">HQ Jurisdiction</span>
+<span class="text-on-surface font-semibold">Sethsiripaya, Battaramulla</span>
+</div>
+<div>
+<span class="text-on-surface-variant block font-label-sm text-label-sm">Primary Contact Dispatch</span>
+<span class="text-on-surface font-semibold">+94 11 2862793</span>
+</div>
+<div>
+<span class="text-on-surface-variant block font-label-sm text-label-sm">Official Registry Domain</span>
+<span class="text-on-surface font-semibold">dg@rda.gov.lk</span>
+</div>
+<div>
+<span class="text-on-surface-variant block font-label-sm text-label-sm">Gazette Reference</span>
+<span class="text-on-surface font-semibold">Gazette Ex. No. 1982/14</span>
+</div>
+</div>
+<!-- Dependency Metric Ribbons -->
+<div class="grid grid-cols-3 gap-space-xs text-center">
+<div class="bg-surface-container-high/60 rounded-lg p-2.5">
+<span class="font-headline-sm text-headline-sm font-bold text-on-surface block">2</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Active Sub-Depts</span>
+</div>
+<div class="bg-surface-container-high/60 rounded-lg p-2.5">
+<span class="font-headline-sm text-headline-sm font-bold text-secondary block">412</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Federated Staff</span>
+</div>
+<div class="bg-surface-container-high/60 rounded-lg p-2.5">
+<span class="font-headline-sm text-headline-sm font-bold text-on-surface block">18</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Active Corridors</span>
+</div>
+</div>
+<!-- Governance Actions -->
+<div class="flex flex-col gap-2 pt-2">
+<div class="flex items-center gap-2">
+<button class="flex-1 py-2 px-3 rounded-lg bg-surface-container-high hover:bg-surface-container text-on-surface font-label-md text-label-md font-semibold flex items-center justify-center gap-1.5 transition-colors shadow-sm" type="button">
+<span class="material-symbols-outlined text-[18px]">edit_note</span>
+<span>Edit Metadata</span>
+</button>
+<button class="flex-1 py-2 px-3 rounded-lg bg-primary-container text-on-primary hover:bg-primary font-label-md text-label-md font-semibold flex items-center justify-center gap-1.5 transition-colors shadow-sm" type="button">
+<span class="material-symbols-outlined text-[18px]">drive_file_move</span>
+<span>Reparent Agency</span>
+</button>
+</div>
+<!-- Safeguarded Deactivation Button -->
+<div class="relative group mt-1">
+<button class="w-full py-2.5 px-3 rounded-lg bg-error-container/40 text-on-error-container/60 font-label-md text-label-md font-semibold flex items-center justify-center gap-2 cursor-not-allowed" disabled="" type="button">
+<span class="material-symbols-outlined text-[18px]">block</span>
+<span>Deactivate Agency (Locked by DAG Safety)</span>
+</button>
+<!-- Accessible Hover Tooltip -->
+<div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:flex flex-col items-center z-20 pointer-events-none w-72">
+<div class="bg-inverse-surface text-inverse-on-surface p-2.5 rounded-lg text-body-sm font-body-sm shadow-xl text-center">
+                Cannot deactivate: 18 active road corridors and 412 active staff assigned. Reparent or retire dependencies first.
+              </div>
+<div class="w-2 h-2 bg-inverse-surface rotate-45 -mt-1"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Dependency Blocker Safety Callout (CORE-03.30 Safeguard) -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex flex-col gap-space-sm relative overflow-hidden">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-[20px]">shield</span>
+<span class="font-label-lg text-label-lg text-on-surface font-bold">CORE-03.30 Deactivation Blocker Checklist</span>
+</div>
+<span class="px-2 py-0.5 rounded bg-error-container text-on-error-container font-label-sm text-label-sm font-bold">2 Locks Active</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Sri Lanka National Spatial Data Infrastructure (SL-NSDI) integrity rule requires 0 live corridor bindings before agency decommission.</p>
+<!-- Rule Evaluation List -->
+<div class="flex flex-col gap-2 pt-1 font-body-sm text-body-sm">
+<div class="flex items-start gap-2.5 p-2 rounded-lg bg-surface-container-low">
+<span class="material-symbols-outlined text-error text-[18px] mt-0.5">cancel</span>
+<div class="flex flex-col flex-1">
+<span class="text-on-surface font-semibold">Active Excavation &amp; Works Corridors</span>
+<span class="text-on-surface-variant">18 corridors bound to RDA (Requires transfer to Provincial Council or RDA Regional Sub-units).</span>
+</div>
+</div>
+<div class="flex items-start gap-2.5 p-2 rounded-lg bg-surface-container-low">
+<span class="material-symbols-outlined text-error text-[18px] mt-0.5">cancel</span>
+<div class="flex flex-col flex-1">
+<span class="text-on-surface font-semibold">Active Personnel &amp; Inspector Credentials</span>
+<span class="text-on-surface-variant">412 active identities must be reassigned via Staff Identity Federation module.</span>
+</div>
+</div>
+<div class="flex items-start gap-2.5 p-2 rounded-lg bg-surface-container-low">
+<span class="material-symbols-outlined text-secondary text-[18px] mt-0.5">check_circle</span>
+<div class="flex flex-col flex-1">
+<span class="text-on-surface font-semibold">Fiscal Ledger Clearance</span>
+<span class="text-on-surface-variant">Treasury Vote Allocation Account audited for current quarter.</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Reparenting Studio Drawer / Simulation Banner -->
+<div class="mt-space-lg bg-primary-container text-on-primary rounded-xl p-space-lg shadow-md flex flex-col md:flex-row items-center justify-between gap-space-md">
+<div class="flex items-center gap-space-md">
+<div class="w-12 h-12 rounded-xl bg-surface-container-lowest/10 flex items-center justify-center text-surface flex-shrink-0">
+<span class="material-symbols-outlined text-[28px] text-secondary">alt_route</span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-2">
+<span class="font-title-lg text-title-lg font-bold text-surface">Reparenting Studio (DAG Cycle Prevention)</span>
+<span class="font-label-sm text-label-sm px-2 py-0.5 rounded bg-secondary text-on-secondary font-bold">READY</span>
+</div>
+<p class="font-body-md text-body-md text-on-primary-container">Simulate hierarchical restructuring. Any prospective parent agency selection is pre-computed to verify absence of circular reference cycles before committing to GovPKI.</p>
+</div>
+</div>
+<div class="flex items-center gap-space-sm flex-shrink-0">
+<button class="px-space-md py-2 rounded-lg bg-surface-container-lowest/10 hover:bg-surface-container-lowest/20 text-surface font-label-md text-label-md font-semibold transition-colors" type="button">
+        Run Tree Audit
+      </button>
+<button class="px-space-md py-2 rounded-lg bg-secondary hover:bg-on-tertiary-container text-on-secondary font-label-md text-label-md font-semibold transition-colors" type="button">
+        Launch Reparenting Wizard
+      </button>
+</div>
+</div>
+<!-- Flat Directory Table Fallback (Toggleable view) -->
+<div class="hidden mt-space-lg bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex flex-col gap-space-md" id="flat-directory-panel">
+<div class="flex items-center justify-between pb-2">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[20px] text-on-surface-variant">dns</span>
+<h3 class="font-title-md text-title-md text-on-surface font-bold">Registered Agencies Roster (Flat Table Mode)</h3>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Showing 5 of 28 Records</span>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left font-body-md text-body-md">
+<thead>
+<tr class="bg-surface-container text-on-surface-variant font-label-sm text-label-sm uppercase">
+<th class="p-3 rounded-l-lg">Agency Code</th>
+<th class="p-3">Official Entity Name</th>
+<th class="p-3">Category</th>
+<th class="p-3">Direct Parent Agency</th>
+<th class="p-3">Corridors</th>
+<th class="p-3">Staff Users</th>
+<th class="p-3 rounded-r-lg text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y-0 text-on-surface">
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="p-3 font-bold text-secondary">RDA</td>
+<td class="p-3 font-semibold">Road Development Authority</td>
+<td class="p-3"><span class="px-2 py-0.5 rounded bg-surface-container-high font-label-sm text-label-sm">Statutory Corp</span></td>
+<td class="p-3 font-semibold">MPWUD</td>
+<td class="p-3">18</td>
+<td class="p-3">412</td>
+<td class="p-3 text-right"><button class="text-secondary font-label-md text-label-md hover:underline font-bold" type="button">Inspect</button></td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="p-3 font-bold text-on-surface">NWSDB</td>
+<td class="p-3 font-semibold">National Water Supply &amp; Drainage Board</td>
+<td class="p-3"><span class="px-2 py-0.5 rounded bg-surface-container-high font-label-sm text-label-sm">Statutory Board</span></td>
+<td class="p-3 font-semibold">MPWUD</td>
+<td class="p-3">9</td>
+<td class="p-3">284</td>
+<td class="p-3 text-right"><button class="text-secondary font-label-md text-label-md hover:underline font-bold" type="button">Inspect</button></td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="p-3 font-bold text-on-surface">CMC</td>
+<td class="p-3 font-semibold">Colombo Municipal Council</td>
+<td class="p-3"><span class="px-2 py-0.5 rounded bg-surface-container-high font-label-sm text-label-sm">Local Authority</span></td>
+<td class="p-3 font-semibold">MPWUD</td>
+<td class="p-3">14</td>
+<td class="p-3">190</td>
+<td class="p-3 text-right"><button class="text-secondary font-label-md text-label-md hover:underline font-bold" type="button">Inspect</button></td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="p-3 font-bold text-on-surface">CEB</td>
+<td class="p-3 font-semibold">Ceylon Electricity Board</td>
+<td class="p-3"><span class="px-2 py-0.5 rounded bg-surface-container-high font-label-sm text-label-sm">Statutory Corp</span></td>
+<td class="p-3 font-semibold">Min. of Power &amp; Energy</td>
+<td class="p-3">22</td>
+<td class="p-3">560</td>
+<td class="p-3 text-right"><button class="text-secondary font-label-md text-label-md hover:underline font-bold" type="button">Inspect</button></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Interactive script to toggle atlas/table views -->
+<script>
+    (function initViewToggles() {
+      const atlasBtn = document.getElementById('view-atlas-btn');
+      const tableBtn = document.getElementById('view-table-btn');
+      const flatPanel = document.getElementById('flat-directory-panel');
+
+      if (!atlasBtn || !tableBtn || !flatPanel) return;
+
+      tableBtn.addEventListener('click', function() {
+        flatPanel.classList.remove('hidden');
+        tableBtn.classList.add('bg-surface-container-lowest', 'text-on-surface', 'shadow-sm');
+        tableBtn.classList.remove('text-on-surface-variant');
+        atlasBtn.classList.remove('bg-surface-container-lowest', 'text-on-surface', 'shadow-sm');
+        atlasBtn.classList.add('text-on-surface-variant');
+      });
+
+      atlasBtn.addEventListener('click', function() {
+        flatPanel.classList.add('hidden');
+        atlasBtn.classList.add('bg-surface-container-lowest', 'text-on-surface', 'shadow-sm');
+        atlasBtn.classList.remove('text-on-surface-variant');
+        tableBtn.classList.remove('bg-surface-container-lowest', 'text-on-surface', 'shadow-sm');
+        tableBtn.classList.add('text-on-surface-variant');
+      });
+    })();
+  </script>
+</div></main></div></body></html>

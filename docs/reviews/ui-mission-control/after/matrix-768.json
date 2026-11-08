@@ -1,0 +1,88 @@
+[
+ {
+  "width": 768,
+  "drawer": {
+   "trapped": true,
+   "scrollLocked": true,
+   "closed": true,
+   "focusReturned": true,
+   "minTouchRowPx": 32
+  },
+  "pages": [
+   {
+    "name": "Dashboard",
+    "path": "/dashboard",
+    "overflow": false,
+    "h1": 1,
+    "mains": 1,
+    "ariaCurrent": "Dashboard"
+   },
+   {
+    "name": "Projects",
+    "path": "/projects",
+    "overflow": false,
+    "h1": 1,
+    "mains": 1,
+    "ariaCurrent": "Projects|Page 1 of 1"
+   },
+   {
+    "name": "Reviews",
+    "path": "/projects/reviews",
+    "overflow": false,
+    "h1": 1,
+    "mains": 1,
+    "ariaCurrent": "Reviews|Page 1"
+   },
+   {
+    "name": "Notifications",
+    "path": "/notifications",
+    "overflow": false,
+    "h1": 1,
+    "mains": 1,
+    "ariaCurrent": "Notifications"
+   },
+   {
+    "name": "Staff",
+    "path": "/admin/users",
+    "overflow": false,
+    "h1": 1,
+    "mains": 1,
+    "ariaCurrent": "Staff"
+   },
+   {
+    "name": "Agencies",
+    "path": "/admin/agencies",
+    "overflow": false,
+    "h1": 1,
+    "mains": 1,
+    "ariaCurrent": "Agencies"
+   },
+   {
+    "name": "Roles",
+    "path": "/admin/roles",
+    "overflow": false,
+    "h1": 1,
+    "mains": 1,
+    "ariaCurrent": "Roles"
+   },
+   {
+    "name": "Profile",
+    "path": "/profile",
+    "overflow": false,
+    "h1": 1,
+    "mains": 1,
+    "ariaCurrent": "Profile"
+   },
+   {
+    "name": "Settings",
+    "path": "/settings",
+    "overflow": false,
+    "h1": 1,
+    "mains": 1,
+    "ariaCurrent": "Settings"
+   }
+  ],
+  "firstTab": "Skip to content",
+  "consoleErrors": 1
+ }
+]

@@ -476,9 +476,74 @@ export function InframapWorkspace() {
   const filtersUi = <FilterPanel uf={uf} setUf={setUf} facets={facetsQ.data} available={available} copy={copy} c3={c3} locale={locale} onPresetLayers={onPresetLayers} />;
   const legendUi = <Legend copy={copy} locale={locale} visible={shown} />;
 
+  const exportGeoJson = () => {
+    const features = LAYER_KEYS.flatMap((k) =>
+      shown[k] && data[k]?.features
+        ? data[k]!.features.map((f) => ({
+            ...f,
+            properties: { ...f.properties, layerKey: k },
+          }))
+        : [],
+    );
+    const collection = {
+      type: "FeatureCollection",
+      metadata: {
+        crs: "EPSG:5234 (SLD99)",
+        exportedAt: new Date().toISOString(),
+        scope: scopeLabel,
+        totalFeatures: features.length,
+      },
+      features,
+    };
+    const blob = new Blob([JSON.stringify(collection, null, 2)], {
+      type: "application/geo+json",
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `inframap-cadastral-${new Date().toISOString().slice(0, 10)}.geojson`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <StaffWorkspaceShell title={copy.title} description={copy.description} wide>
       <div className="im" data-phone={isPhone}>
+        {/* CORE-01.05: TOP GIS COMMAND HEADER RIBBON */}
+        <div className="bg-[#14202d] text-white rounded-t border border-outline-variant/30 px-4 py-2.5 mb-2 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-xs bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 text-[10px] font-mono font-bold uppercase tracking-wider">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              LIVE CADASTRAL LINK
+            </span>
+            <span className="text-xs font-semibold text-white">
+              National Geospatial Twin &amp; Subsurface Utility Registry
+            </span>
+            <span className="hidden sm:inline-flex px-2 py-0.5 rounded-xs bg-white/10 text-slate-200 text-[10px] font-mono">
+              EPSG:5234 (SLD99)
+            </span>
+            <span className="hidden md:inline-flex text-[11px] font-mono text-slate-300 tabular-nums">
+              {readout.lat !== null && readout.lng !== null
+                ? `LAT ${readout.lat.toFixed(4)}° N, LON ${readout.lng.toFixed(4)}° E`
+                : "LAT 6.9271° N, LON 79.8612° E"}
+            </span>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] font-mono text-slate-300 hidden lg:inline tabular-nums">
+              {totalFeatures} active features · {loadedLayers.length} layers
+            </span>
+            <button
+              type="button"
+              onClick={exportGeoJson}
+              className="inline-flex items-center gap-1.5 px-3 py-1 rounded bg-secondary hover:bg-secondary-container text-white text-xs font-bold transition-colors shadow-2xs"
+            >
+              <span className="material-symbols-outlined text-[14px]">download</span>
+              <span>Export GeoJSON</span>
+            </button>
+          </div>
+        </div>
+
         <p className="rs-help">{copy.demoNote}</p>
         <div className="im-top">
           {!isPhone ? <button type="button" className="rs-btn im-panel-toggle" aria-expanded={sidebarOpen} aria-controls="im-side" onClick={() => setSidebarOpen((o) => !o)}><LayersIcon aria-hidden="true" />{sidebarOpen ? copy.toolbar.hidePanel : copy.toolbar.showPanel}</button> : null}
