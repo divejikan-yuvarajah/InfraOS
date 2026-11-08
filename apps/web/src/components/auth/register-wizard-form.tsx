@@ -514,14 +514,13 @@ export function RegisterWizardForm({
           </div>
 
           {/* Row 1: Official Full Name & Official Agency Email */}
-          <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <LiquidGlassInput
               id="reg-full-name"
               name="fullName"
               type="text"
               autoComplete="name"
               required
-              compact
               label={copy.step1.fullNameLabel}
               icon={<User className="h-4 w-4" />}
               placeholder={copy.step1.fullNamePlaceholder}
@@ -537,7 +536,6 @@ export function RegisterWizardForm({
               inputMode="email"
               autoComplete="email"
               required
-              compact
               label={copy.step1.emailLabel}
               suffixBadge=".gov.lk / .rda.lk"
               icon={<Mail className="h-4 w-4" />}
@@ -555,14 +553,13 @@ export function RegisterWizardForm({
           ) : null}
 
           {/* Row 2: Access Password & Confirm Access Password */}
-          <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <LiquidGlassInput
               id="reg-password"
               name="password"
               type={showPassword ? "text" : "password"}
               autoComplete="new-password"
               required
-              compact
               label={copy.step1.passwordLabel}
               icon={<KeyRound className="h-4 w-4" />}
               placeholder={copy.step1.passwordPlaceholder}
@@ -615,7 +612,6 @@ export function RegisterWizardForm({
               type={showConfirmPassword ? "text" : "password"}
               autoComplete="new-password"
               required
-              compact
               label={copy.step1.confirmPasswordLabel}
               icon={<Lock className="h-4 w-4" />}
               placeholder={copy.step1.confirmPasswordPlaceholder}
@@ -753,7 +749,7 @@ export function RegisterWizardForm({
             <div className="grid grid-cols-1 gap-2 sm:grid-cols-[0.85fr_1.15fr]">
               <div className="relative">
                 <Search
-                  className="pointer-events-none absolute top-1/2 left-3 h-3.5 w-3.5 -translate-y-1/2 text-slate-400"
+                  className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400"
                   aria-hidden="true"
                 />
                 <input
@@ -762,13 +758,13 @@ export function RegisterWizardForm({
                   onChange={(e) => setOrgQuery(e.target.value)}
                   placeholder={copy.step2.organizationSearchPlaceholder}
                   aria-label={copy.step2.organizationSearchPlaceholder}
-                  className="h-9.5 w-full rounded-xl border border-slate-200 bg-slate-50 pr-2.5 pl-8.5 text-xs text-slate-800 placeholder:text-slate-400 focus:border-[#FF5B00] focus:bg-white focus:outline-none"
+                  className="h-11 sm:h-12 w-full rounded-xl border border-slate-200 bg-slate-50 pr-3 pl-9.5 text-[13px] sm:text-sm text-slate-800 placeholder:text-slate-400 focus:border-[#FF5B00] focus:bg-white focus:outline-none transition-colors"
                 />
               </div>
 
               <div className="relative">
                 <Building2
-                  className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400"
+                  className="pointer-events-none absolute top-1/2 left-3 h-4.5 w-4.5 -translate-y-1/2 text-slate-400"
                   aria-hidden="true"
                 />
                 <select
@@ -783,7 +779,7 @@ export function RegisterWizardForm({
                     updateField("organizationName", found?.name ?? code);
                   }}
                   aria-invalid={fieldErrors.organizationCode ? "true" : "false"}
-                  className="h-9.5 w-full rounded-xl border border-slate-300 bg-white pr-7 pl-9 text-xs font-medium text-slate-900 focus:border-[#FF5B00] focus:ring-2 focus:ring-[#FF5B00]/20 focus:outline-none"
+                  className="h-11 sm:h-12 w-full rounded-xl border border-slate-300 bg-white pr-7 pl-10 text-[13px] sm:text-sm font-medium text-slate-900 focus:border-[#FF5B00] focus:ring-2 focus:ring-[#FF5B00]/20 focus:outline-none transition-colors"
                 >
                   {filteredInstitutions.map((inst) => (
                     <option key={inst.code} value={inst.code}>
@@ -802,9 +798,9 @@ export function RegisterWizardForm({
           </div>
 
           {/* Department / Division & Professional Designation */}
-          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div className="auth-login-field">
-              <label htmlFor="reg-department" className="mb-1">
+              <label htmlFor="reg-department" className="mb-1 text-xs font-semibold text-slate-900 sm:text-[13px]">
                 {copy.step2.departmentLabel}{" "}
                 <span className="font-bold text-[#FF5B00]">*</span>
               </label>
@@ -817,7 +813,7 @@ export function RegisterWizardForm({
                 value={values.department}
                 onChange={(e) => updateField("department", e.target.value)}
                 aria-invalid={fieldErrors.department ? "true" : "false"}
-                className={`h-9.5 w-full rounded-xl border bg-white px-3 text-xs text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:outline-none ${
+                className={`h-11 sm:h-12 w-full rounded-xl border bg-white px-3.5 text-[13px] sm:text-sm text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:outline-none transition-colors ${
                   fieldErrors.department
                     ? "border-[#8C1F28] focus:border-[#8C1F28] focus:ring-[#8C1F28]/20"
                     : "border-slate-300 focus:border-[#FF5B00] focus:ring-[#FF5B00]/20"
@@ -831,7 +827,7 @@ export function RegisterWizardForm({
             </div>
 
             <div className="auth-login-field">
-              <label htmlFor="reg-designation" className="mb-1">
+              <label htmlFor="reg-designation" className="mb-1 text-xs font-semibold text-slate-900 sm:text-[13px]">
                 {copy.step2.designationLabel}{" "}
                 <span className="font-bold text-[#FF5B00]">*</span>
               </label>
@@ -845,7 +841,7 @@ export function RegisterWizardForm({
                 value={values.designation}
                 onChange={(e) => updateField("designation", e.target.value)}
                 aria-invalid={fieldErrors.designation ? "true" : "false"}
-                className={`h-9.5 w-full rounded-xl border bg-white px-3 text-xs text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:outline-none ${
+                className={`h-11 sm:h-12 w-full rounded-xl border bg-white px-3.5 text-[13px] sm:text-sm text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:outline-none transition-colors ${
                   fieldErrors.designation
                     ? "border-[#8C1F28] focus:border-[#8C1F28] focus:ring-[#8C1F28]/20"
                     : "border-slate-300 focus:border-[#FF5B00] focus:ring-[#FF5B00]/20"
@@ -877,9 +873,9 @@ export function RegisterWizardForm({
                 return (
                   <label
                     key={key}
-                    className={`flex min-w-0 cursor-pointer items-start gap-2 rounded-xl border px-2.5 py-1.5 text-left transition-colors ${
+                    className={`flex min-w-0 cursor-pointer items-start gap-2.5 rounded-xl border px-3 py-2 text-left transition-colors ${
                       selected
-                        ? "border-[#FF5B00] bg-orange-50/50"
+                        ? "border-[#FF5B00] bg-orange-50/70 shadow-2xs"
                         : "border-slate-200 bg-white hover:border-slate-300"
                     }`}
                   >
@@ -894,13 +890,13 @@ export function RegisterWizardForm({
                           key as RequestedResponsibilityKey,
                         )
                       }
-                      className="mt-0.5 h-3.5 w-3.5 shrink-0 accent-[#FF5B00]"
+                      className="mt-0.5 h-4 w-4 shrink-0 accent-[#FF5B00]"
                     />
                     <span className="min-w-0 flex-1">
-                      <span className="block truncate text-[11px] font-semibold text-slate-900">
+                      <span className="block truncate text-xs font-semibold text-slate-900">
                         {item.label}
                       </span>
-                      <span className="block truncate text-[10px] leading-tight text-slate-500">
+                      <span className="block truncate text-[11px] leading-tight text-slate-500">
                         {item.description}
                       </span>
                     </span>

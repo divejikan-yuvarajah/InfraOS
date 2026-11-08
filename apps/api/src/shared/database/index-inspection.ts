@@ -52,7 +52,12 @@ function sameValue(left: unknown, right: unknown): boolean {
 }
 
 function sameKey(left: IndexKey, right: IndexKey): boolean {
-  return sameValue(Object.entries(left), Object.entries(right));
+  if (sameValue(Object.entries(left), Object.entries(right))) return true;
+  // MongoDB stores text indexes in listIndexes() with key { _fts: "text", _ftsx: 1 }
+  const leftIsText = Object.values(left).some((v) => v === "text") || left._fts === "text";
+  const rightIsText = Object.values(right).some((v) => v === "text") || right._fts === "text";
+  if (leftIsText && rightIsText) return true;
+  return false;
 }
 
 function expectedIndexes(model: IndexModel): ExpectedIndex[] {

@@ -1,4 +1,4 @@
-import { InfraosMark } from "@/components/landing/infraos-mark";
+import Image from "next/image";
 import { cn } from "@/lib/utils";
 
 type WordmarkTone = "on-dark" | "on-light";
@@ -18,7 +18,16 @@ export function InfraosWordmark({
 
   return (
     <span className={cn("cf-wordmark inline-flex items-center gap-3", className)}>
-      <InfraosMark className={markSize} variant={onDark ? "brand" : "light"} />
+      <span className={cn("inline-flex shrink-0 items-center justify-center rounded-lg p-1", onDark ? "bg-white/10 ring-1 ring-white/15" : "bg-white ring-1 ring-black/10 shadow-xs")}>
+        <Image
+          src="/brand/infraos-icon-transparent.png"
+          alt="InfraOS"
+          width={36}
+          height={36}
+          className={cn("shrink-0 object-contain", markSize)}
+          priority
+        />
+      </span>
       <span className="flex min-w-0 flex-col leading-none">
         <span
           className={cn(

@@ -113,6 +113,19 @@ async function connectOnce(
   autoIndex: boolean,
 ): Promise<void> {
   attachLifecycleListeners();
+  try {
+    const dns = await import("node:dns");
+    dns.setDefaultResultOrder?.("ipv4first");
+    if (config.uri.startsWith("mongodb+srv://")) {
+      const servers = dns.getServers();
+      // If local DNS resolver doesn't have public resolvers, add Google & Cloudflare DNS
+      if (!servers.includes("8.8.8.8") && !servers.includes("1.1.1.1")) {
+        dns.setServers([...servers, "8.8.8.8", "1.1.1.1"]);
+      }
+    }
+  } catch {
+    // ignore
+  }
   mongoose.set("strictQuery", true);
   mongoose.set("autoIndex", autoIndex);
   await mongoose.connect(config.uri, {
@@ -160,6 +173,17 @@ export async function connectDatabase(
           "MongoDB connection attempt failed",
         );
         if (attempt < attempts) {
+          if (
+            error instanceof Error &&
+            (error.message.includes("querySrv") || error.message.includes("ENOTFOUND"))
+          ) {
+            try {
+              const dns = await import("node:dns");
+              dns.setServers(["8.8.8.8", "1.1.1.1"]);
+            } catch {
+              // ignore
+            }
+          }
           await sleep(STARTUP_RETRY_MS);
         }
       }
