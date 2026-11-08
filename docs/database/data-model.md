@@ -307,3 +307,10 @@ Validation tests run without a DB. Persistence tests use the existing
 the database `infraos_test`; no external URI is accepted. Tests cover all 16 model
 round-trips, Step 12 relationships/population, BSON dates and timestamps, sensitive
 projections, and append-only audit guards. The isolated process is stopped after tests.
+
+## DocTrace (Phase 10 Batch 08)
+- `documents` is extended additively (docNo, title, category, agencyId, status, tags, links, confidentiality, AI-readiness flags, origin). Batch 06/07 evidence photos stay in the same collection with `origin: INSPECTION_EVIDENCE` and are hidden from the DocTrace library by default.
+- New collections: `documentVersions` (immutable history; `storageRef` is select:false) and `documentUploads` (upload tickets, swept after 24 h).
+- Bytes live in the GridFS bucket `documents` (same Atlas cluster as the data, so keep files modest; default cap 25 MB, lower with `DOCUMENT_MAX_FILE_MB`).
+- Text index `document_text` (title 10, reference 6, tags 5, fileName 4, description 2; stemming off). Metadata search only; content search arrives with Batch 09/10.
+- Operators: `npm run db:sync:document-permissions` (dry run; `-- --apply --confirm-db=<name>`), `db:backfill:documents` (dry run; `-- --commit`), `db:cleanup:documents` (dry run; `-- --commit`).
