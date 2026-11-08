@@ -73,3 +73,11 @@ export function disableAdminUser(id: string, revision: number): Promise<AdminUse
 export function enableAdminUser(id: string, revision: number): Promise<AdminUserRecord> {
   return mutate(`/api/v1/admin/users/${id}/enable`, "POST", { revision });
 }
+
+export function assignAdminUser(
+  id: string,
+  body: { revision: number; roleKey?: string; agencyCode?: string },
+): Promise<AdminUserRecord> {
+  return mutate(`/api/v1/admin/users/${id}/assignment`, "POST", body);
+}
+

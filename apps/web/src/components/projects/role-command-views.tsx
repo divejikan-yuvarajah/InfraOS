@@ -2476,3 +2476,881 @@ export function InspectorCommandView({
     </div>
   );
 }
+
+/* ============================================================================
+ * CORE-02.13: CONTRACTOR — Contractor Execution Command & Field Works Center
+ * ========================================================================== */
+export function ContractorCommandView({
+  data,
+  locale,
+  conflictRecords = [],
+  onExportTelemetry,
+}: RoleCommandSharedProps) {
+  const [shiftModalOpen, setShiftModalOpen] = useState(false);
+  const [ipcModalOpen, setIpcModalOpen] = useState(false);
+  const [selectedIpcDossier, setSelectedIpcDossier] = useState<string | null>(null);
+  const [shiftNote, setShiftNote] = useState("Binder Course 60/70 laying CH 02+100 to 04+200 — 24 operatives, 2 CAT AP555 pavers.");
+  const [shiftCrewCount, setShiftCrewCount] = useState("24");
+  const [shiftChainage, setShiftChainage] = useState("CH: 02+100 → 04+200");
+  const [shiftLoggedMessage, setShiftLoggedMessage] = useState<string | null>(null);
+
+  const [ipcAmountLkr, setIpcAmountLkr] = useState("48500000");
+  const [ipcScopeNote, setIpcScopeNote] = useState("Wearing course & drainage culvert segment CH 07+800");
+  const [ipcClaims, setIpcClaims] = useState([
+    {
+      id: "#04",
+      amountLabel: "LKR 210,450,000.00",
+      status: "Awaiting Sign-off",
+      badgeStyle: "bg-secondary text-on-secondary",
+      scope: "Sub-base & Asphalt Binder Layer · Physical Scope: 100% Verified by NBRO",
+      metaLeft: "Submitted: 24 Jan 2026",
+      metaRight: "Pending RDA Approving Engineer Digital Signature",
+      isPending: true,
+    },
+    {
+      id: "#03",
+      amountLabel: "LKR 184,200,000.00",
+      status: "Escrow Released",
+      badgeStyle: "bg-surface-container-highest text-on-surface",
+      scope: "Clearing, Grubbing & Subgrade Stabilization · Treasury Escrow Settled",
+      metaLeft: "GovPKI Hash: 0x48f7a931...912a",
+      metaRight: "Settled: 12 Jan 2026",
+      isPending: false,
+    },
+  ]);
+
+  const activeProjectsCount = data.counts.active || 4;
+  const holdCount = data.counts.onHold || 2;
+  const clashCount = conflictRecords.length > 0 ? conflictRecords.length : 2;
+  const paidMinor = data.finance?.storedPaidAmountMinor ?? 21040000000;
+
+  const handleLogShift = (e: React.FormEvent) => {
+    e.preventDefault();
+    setShiftLoggedMessage(
+      `Field shift logged for ${shiftChainage} (${shiftCrewCount} operatives) at ${new Date().toLocaleTimeString()}.`,
+    );
+    setShiftModalOpen(false);
+  };
+
+  const handleSubmitIpcClaim = (e: React.FormEvent) => {
+    e.preventDefault();
+    const numeric = Number(ipcAmountLkr.replace(/[^0-9.]/g, "")) || 48500000;
+    const formatted = formatLkrMinor(numeric * 100, locale);
+    const nextNum = `#0${ipcClaims.length + 3}`;
+    setIpcClaims((prev) => [
+      {
+        id: nextNum,
+        amountLabel: formatted,
+        status: "Awaiting Sign-off",
+        badgeStyle: "bg-secondary text-on-secondary",
+        scope: `${ipcScopeNote} · Submitted for Resident Engineer Attestation`,
+        metaLeft: "Submitted: Just now",
+        metaRight: "Pending RDA Approving Engineer Digital Signature",
+        isPending: true,
+      },
+      ...prev,
+    ]);
+    setIpcModalOpen(false);
+    setShiftLoggedMessage(`IPC Milestone Claim ${nextNum} (${formatted}) submitted to statutory attestation queue.`);
+  };
+
+  return (
+    <div className="p-4 sm:p-gutter-desktop flex flex-col gap-space-lg max-w-[1440px] mx-auto w-full">
+      {/* Top Operational Eyebrow & Meta Bar */}
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-space-sm bg-primary-container text-surface-container-lowest p-space-md rounded-lg shadow-2xs">
+        <div className="flex flex-wrap items-center gap-space-sm">
+          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-surface-container-high/15 font-label-sm text-label-sm text-secondary-fixed tracking-widest uppercase">
+            <span className="w-1.5 h-1.5 rounded-full bg-secondary-container" />
+            LK-CENTRAL-01
+          </span>
+          <span className="text-on-primary-container text-body-sm">/</span>
+          <span className="font-label-md text-label-md text-primary-fixed-dim uppercase tracking-wider">
+            Prime EPC Lead: Maga Engineering PLC · Joint Venture Access Engineering
+          </span>
+          <span className="px-2 py-0.5 rounded bg-surface-container-lowest/10 font-label-sm text-label-sm text-surface-container-lowest uppercase tracking-wider">
+            [ SOVEREIGN ASSET COMMAND ]
+          </span>
+        </div>
+        <div className="flex items-center gap-space-md self-end md:self-auto font-label-sm text-label-sm text-on-primary-container">
+          <span className="text-surface-container-lowest font-mono">GRID LOCK: 06°55&apos;42.1&quot;N 79°52&apos;14.3&quot;E</span>
+          <span className="w-1 h-1 rounded-full bg-on-primary-container" />
+          <span className="text-secondary-fixed font-mono">TELEMETRY REFRESH: 12s</span>
+        </div>
+      </div>
+
+      {shiftLoggedMessage && (
+        <div
+          role="status"
+          className="bg-emerald-950/90 text-emerald-100 border border-emerald-500/40 px-4 py-3 rounded-lg flex items-center justify-between gap-3 text-xs"
+        >
+          <div className="flex items-center gap-2">
+            <span className="material-symbols-outlined text-[18px] text-emerald-400">verified</span>
+            <span>{shiftLoggedMessage}</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setShiftLoggedMessage(null)}
+            className="text-emerald-300 hover:text-white font-mono uppercase text-[11px]"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
+
+      {/* Header Section with Key Action Buttons */}
+      <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-space-lg">
+        <div className="flex flex-col gap-1 max-w-3xl">
+          <div className="flex items-center gap-2 font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">
+            <span>DASHBOARD</span>
+            <span>›</span>
+            <span>CONTRACTOR OPERATIONS</span>
+            <span>›</span>
+            <span className="text-secondary font-bold">CONTRACT: RDA-WP-2026-88</span>
+          </div>
+          <h1 className="font-headline-lg text-headline-lg text-on-surface tracking-tight mt-1">
+            Contractor Execution Command &amp; Field Works Center
+          </h1>
+          <p className="font-body-md text-body-md text-on-surface-variant">
+            Real-time progress submission, excavation permitting chainage tracking, heavy equipment telematics, and Interim Payment Certificate (IPC) billing milestones.
+          </p>
+        </div>
+        {/* Action Buttons */}
+        <div className="flex flex-wrap items-center gap-space-sm shrink-0">
+          <button
+            type="button"
+            onClick={() => setShiftModalOpen(true)}
+            className="h-10 px-4 rounded-lg bg-surface-container-highest text-on-surface font-label-lg text-label-lg hover:bg-surface-container-high transition-colors shadow-2xs flex items-center gap-2"
+          >
+            <span className="material-symbols-outlined text-[18px]">edit_note</span>
+            <span>Log Daily Field Shift</span>
+          </button>
+          <Link
+            href="/roadsync/work-requests/new"
+            className="h-10 px-4 rounded-lg bg-surface-container-highest text-on-surface font-label-lg text-label-lg hover:bg-surface-container-high transition-colors shadow-2xs flex items-center gap-2"
+          >
+            <span className="material-symbols-outlined text-[18px]">alt_route</span>
+            <span>Submit Excavation Wayleave</span>
+          </Link>
+          <button
+            type="button"
+            onClick={() => setIpcModalOpen(true)}
+            className="h-10 px-4 rounded-lg bg-secondary text-on-secondary font-label-lg text-label-lg hover:bg-secondary-container transition-colors shadow-2xs flex items-center gap-2"
+          >
+            <span className="material-symbols-outlined text-[18px]">payments</span>
+            <span>Submit IPC Milestone Claim (LKR)</span>
+          </button>
+        </div>
+      </div>
+
+      {/* KPI Metric Strip (4 Metrics) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-space-md">
+        <div className="bg-surface-container-lowest p-space-md rounded-lg shadow-2xs border border-outline-variant/25 flex flex-col justify-between relative overflow-hidden">
+          <div className="absolute top-0 left-0 right-0 h-[3px] bg-secondary-container" />
+          <div className="flex items-center justify-between mb-2">
+            <span className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">
+              Active Site Chainage
+            </span>
+            <span className="font-label-sm text-label-sm px-1.5 py-0.5 rounded bg-error-container text-on-error-container uppercase">
+              {holdCount} Holds
+            </span>
+          </div>
+          <div className="flex items-baseline gap-2">
+            <span className="font-headline-lg text-headline-lg text-on-surface">8.6</span>
+            <span className="font-title-md text-title-md text-on-surface-variant">km Active ({activeProjectsCount} sites)</span>
+          </div>
+          <p className="font-body-sm text-body-sm text-on-surface-variant mt-2 line-clamp-1">
+            Baseline Rd &amp; Marine Drive · {clashCount} Spatial Clashes
+          </p>
+        </div>
+
+        <div className="bg-surface-container-lowest p-space-md rounded-lg shadow-2xs border border-outline-variant/25 flex flex-col justify-between relative overflow-hidden">
+          <div className="absolute top-0 left-0 right-0 h-[3px] bg-primary" />
+          <div className="flex items-center justify-between mb-2">
+            <span className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">
+              Physical Progress
+            </span>
+            <span className="font-label-sm text-label-sm px-1.5 py-0.5 rounded bg-surface-container-highest text-on-surface uppercase">
+              +2.1% Ahead
+            </span>
+          </div>
+          <div className="flex items-baseline gap-2">
+            <span className="font-headline-lg text-headline-lg text-on-surface">68.4%</span>
+            <span className="font-label-md text-label-md text-on-surface-variant">On-Track</span>
+          </div>
+          <p className="font-body-sm text-body-sm text-on-surface-variant mt-2">
+            Baseline Master Gantt deviation inside safety threshold
+          </p>
+        </div>
+
+        <div className="bg-surface-container-lowest p-space-md rounded-lg shadow-2xs border border-outline-variant/25 flex flex-col justify-between relative overflow-hidden">
+          <div className="absolute top-0 left-0 right-0 h-[3px] bg-secondary" />
+          <div className="flex items-center justify-between mb-2">
+            <span className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">
+              Pending IPC Claims
+            </span>
+            <span className="font-label-sm text-label-sm px-1.5 py-0.5 rounded bg-secondary-fixed text-on-secondary-fixed uppercase">
+              Attestation Stage
+            </span>
+          </div>
+          <div className="flex items-baseline gap-2">
+            <span className="font-headline-lg text-headline-lg text-on-surface">
+              { paidMinor > 0 ? "LKR 210.4M" : formatLkrMinor(paidMinor, locale) }
+            </span>
+          </div>
+          <p className="font-body-sm text-body-sm text-on-surface-variant mt-2">
+            Awaiting RDA Engineer Attestation &amp; Escrow Transfer
+          </p>
+        </div>
+
+        <div className="bg-surface-container-lowest p-space-md rounded-lg shadow-2xs border border-outline-variant/25 flex flex-col justify-between relative overflow-hidden">
+          <div className="absolute top-0 left-0 right-0 h-[3px] bg-error" />
+          <div className="flex items-center justify-between mb-2">
+            <span className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">
+              RoadSync Excavation
+            </span>
+            <span className="font-label-sm text-label-sm px-1.5 py-0.5 rounded bg-surface-container-highest text-on-surface uppercase">
+              14 Active
+            </span>
+          </div>
+          <div className="flex items-baseline gap-2">
+            <span className="font-headline-lg text-headline-lg text-error">{clashCount}</span>
+            <span className="font-title-md text-title-md text-error">Triage Clashes</span>
+          </div>
+          <p className="font-body-sm text-body-sm text-on-surface-variant mt-2">
+            CEB 33kV &amp; NWSDB 450mm feeder corridors blocked
+          </p>
+        </div>
+      </div>
+
+      {/* Main Asymmetric 2-Column Desktop Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-space-lg items-start">
+        {/* LEFT COLUMN: 8 Columns */}
+        <div className="lg:col-span-8 flex flex-col gap-space-lg">
+          {/* 1. Active Corridor Work-Shift & Surface Operations Roster */}
+          <div className="bg-surface-container-lowest rounded-lg shadow-2xs border border-outline-variant/25 p-space-lg flex flex-col gap-space-md">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-space-sm pb-space-sm">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-secondary-container animate-pulse" />
+                  <h2 className="font-title-lg text-title-lg text-on-surface">
+                    Corridor Work-Shift &amp; Surface Operations Roster
+                  </h2>
+                </div>
+                <p className="font-body-sm text-body-sm text-on-surface-variant mt-0.5">
+                  Live chainage telemetry, equipment deployment, and field QA inspections
+                </p>
+              </div>
+              <span className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest px-2 py-1 rounded bg-surface-container">
+                SHIFT: DAY 06:00 - 18:00
+              </span>
+            </div>
+
+            <div className="flex flex-col gap-space-md">
+              {/* Card 1: In Progress */}
+              <div className="bg-surface-container-low rounded-lg p-space-md relative overflow-hidden flex flex-col gap-space-sm">
+                <div className="absolute left-0 top-0 bottom-0 w-1 bg-secondary-container" />
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pl-2">
+                  <div className="flex items-center gap-2">
+                    <span className="font-label-lg text-label-lg text-on-surface bg-surface-container-lowest px-2 py-0.5 rounded shadow-2xs font-mono">
+                      CH: 02+100 → 04+200
+                    </span>
+                    <span className="font-label-sm text-label-sm px-2 py-0.5 rounded bg-secondary-fixed text-on-secondary-fixed uppercase font-bold">
+                      IN PROGRESS
+                    </span>
+                  </div>
+                  <span className="font-label-sm text-label-sm text-on-surface-variant font-mono">
+                    NEXT QA COMPACTION: 16:30 TODAY
+                  </span>
+                </div>
+                <div className="pl-2 flex flex-col gap-1">
+                  <div className="font-title-md text-title-md text-on-surface">
+                    Asphalt Binder Course Laying (Contract RDA-WP-88) — Maga Engineering
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-1 font-body-sm text-body-sm text-on-surface-variant">
+                    <div className="flex items-center gap-1.5">
+                      <span className="material-symbols-outlined text-[16px] text-outline">layers</span>
+                      <span>Spec: Binder Course 60/70</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="material-symbols-outlined text-[16px] text-outline">groups</span>
+                      <span>Crew: {shiftCrewCount} operatives</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="material-symbols-outlined text-[16px] text-outline">precision_manufacturing</span>
+                      <span>2 Pavers active (CAT AP555)</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="pl-2 pt-2 flex items-center justify-between">
+                  <div className="w-full max-w-md bg-surface-container-highest rounded-full h-1.5 overflow-hidden">
+                    <div className="bg-secondary h-1.5 rounded-full" style={{ width: "74%" }} />
+                  </div>
+                  <span className="font-label-sm text-label-sm text-on-surface-variant font-mono shrink-0 ml-3">
+                    74% Target Met
+                  </span>
+                </div>
+              </div>
+
+              {/* Card 2: Stop Work Hold (Clash) */}
+              <div className="bg-error-container/20 rounded-lg p-space-md relative overflow-hidden flex flex-col gap-space-sm">
+                <div className="absolute left-0 top-0 bottom-0 w-1 bg-error" />
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pl-2">
+                  <div className="flex items-center gap-2">
+                    <span className="font-label-lg text-label-lg text-on-surface bg-surface-container-lowest px-2 py-0.5 rounded shadow-2xs font-mono">
+                      CH: 04+250
+                    </span>
+                    <span className="font-label-sm text-label-sm px-2 py-0.5 rounded bg-error text-on-error uppercase font-bold">
+                      STOP WORK HOLD
+                    </span>
+                  </div>
+                  <span className="font-label-sm text-label-sm text-error font-mono font-bold">
+                    48H ARBITRATION LOCK ENGAGED
+                  </span>
+                </div>
+                <div className="pl-2 flex flex-col gap-1">
+                  <div className="font-title-md text-title-md text-on-surface">
+                    Dematagoda Intersection Trenching — Spatial Clash
+                  </div>
+                  <p className="font-body-sm text-body-sm text-on-surface-variant">
+                    Active RoadSync conflict detected with National Water Supply &amp; Drainage Board (NWSDB) 450mm DI main. Trenching suspended to avert hydraulic breach.
+                  </p>
+                  <div className="flex flex-wrap items-center gap-space-sm mt-2">
+                    <span className="px-2 py-1 rounded bg-surface-container-lowest text-error font-label-sm text-label-sm font-mono">
+                      CLASH-ID: #RS-2026-NWSDB-09
+                    </span>
+                    <Link
+                      href="/roadsync/conflicts"
+                      className="px-3 py-1 rounded bg-error text-on-error font-label-sm text-label-sm hover:opacity-90 transition-opacity"
+                    >
+                      Open Inter-Agency Arbitration Desk
+                    </Link>
+                  </div>
+                </div>
+              </div>
+
+              {/* Card 3: Cleared / Complete Milestone */}
+              <div className="bg-surface-container-low rounded-lg p-space-md relative overflow-hidden flex flex-col gap-space-sm">
+                <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary" />
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pl-2">
+                  <div className="flex items-center gap-2">
+                    <span className="font-label-lg text-label-lg text-on-surface bg-surface-container-lowest px-2 py-0.5 rounded shadow-2xs font-mono">
+                      CH: 07+800
+                    </span>
+                    <span className="font-label-sm text-label-sm px-2 py-0.5 rounded bg-surface-container-highest text-on-surface uppercase font-bold">
+                      VERIFIED &amp; CLEARED
+                    </span>
+                  </div>
+                  <span className="font-label-sm text-label-sm text-on-surface-variant font-mono">
+                    CERTIFICATE ID: NBRO-QA-2026-441
+                  </span>
+                </div>
+                <div className="pl-2 flex flex-col gap-1">
+                  <div className="font-title-md text-title-md text-on-surface">
+                    Concrete Box Culvert Pre-cast Placing — Access Engineering
+                  </div>
+                  <p className="font-body-sm text-body-sm text-on-surface-variant">
+                    NBRO Certified geological load tests passed. Rebar spacing, tie-wire tensile inspection, and aggregate curing cleared by Resident Engineer.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* 2. Interim Payment Certificate (IPC) Pacing & Financial Claim Ledger */}
+          <div className="bg-surface-container-lowest rounded-lg shadow-2xs border border-outline-variant/25 p-space-lg flex flex-col gap-space-md">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-space-sm">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="material-symbols-outlined text-secondary text-[22px]">account_balance</span>
+                  <h2 className="font-title-lg text-title-lg text-on-surface">
+                    Interim Payment Certificate (IPC) Claim Ledger
+                  </h2>
+                </div>
+                <p className="font-body-sm text-body-sm text-on-surface-variant mt-0.5">
+                  Statutory fiscal attestations, CIDA price adjustments, and Treasury disbursements
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="font-label-sm text-label-sm px-2 py-1 rounded bg-surface-container font-mono text-on-surface-variant">
+                  CURRENCY: LKR
+                </span>
+                {onExportTelemetry && (
+                  <button
+                    type="button"
+                    onClick={onExportTelemetry}
+                    className="h-8 px-2.5 rounded bg-surface-container-highest text-on-surface font-label-sm text-label-sm hover:bg-surface-container-high transition-colors"
+                  >
+                    Export Ledger
+                  </button>
+                )}
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-space-sm">
+              {ipcClaims.map((claim) => (
+                <div
+                  key={claim.id}
+                  className="bg-surface-container-low p-space-md rounded-lg flex flex-col md:flex-row md:items-center justify-between gap-space-md"
+                >
+                  <div className="flex items-start gap-space-md">
+                    <div
+                      className={`w-10 h-10 rounded flex items-center justify-center shrink-0 font-bold font-mono ${
+                        claim.isPending
+                          ? "bg-secondary-fixed text-on-secondary-fixed"
+                          : "bg-surface-container-highest text-on-surface"
+                      }`}
+                    >
+                      {claim.id}
+                    </div>
+                    <div className="flex flex-col">
+                      <div className="flex items-center gap-2">
+                        <span className="font-title-md text-title-md text-on-surface font-mono">
+                          {claim.amountLabel}
+                        </span>
+                        <span
+                          className={`font-label-sm text-label-sm px-1.5 py-0.5 rounded font-bold uppercase ${claim.badgeStyle}`}
+                        >
+                          {claim.status}
+                        </span>
+                      </div>
+                      <span className="font-body-sm text-body-sm text-on-surface-variant mt-0.5">
+                        {claim.scope}
+                      </span>
+                      <div className="flex items-center gap-space-sm mt-1.5 font-label-sm text-label-sm text-on-surface-variant font-mono">
+                        <span>{claim.metaLeft}</span>
+                        <span>•</span>
+                        <span className={claim.isPending ? "text-secondary" : ""}>{claim.metaRight}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setSelectedIpcDossier(selectedIpcDossier === claim.id ? null : claim.id)
+                      }
+                      className="h-9 px-3 rounded bg-surface-container-highest text-on-surface font-label-md text-label-md hover:bg-surface-container-high transition-colors"
+                    >
+                      {claim.isPending ? "View Dossier" : "Audit Receipt"}
+                    </button>
+                    {claim.isPending && (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setShiftLoggedMessage(
+                            `Attestation expedited notification dispatched to RDA Approving Engineer for IPC ${claim.id}.`,
+                          )
+                        }
+                        className="h-9 px-3 rounded bg-secondary text-on-secondary font-label-md text-label-md hover:opacity-95 transition-opacity"
+                      >
+                        Expedite Attestation
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {selectedIpcDossier && (
+              <div className="bg-surface-container-lowest border border-secondary/30 rounded-lg p-space-md flex flex-col gap-2 text-xs">
+                <div className="flex items-center justify-between">
+                  <span className="font-mono font-bold text-on-surface uppercase">
+                    Statutory IPC Dossier Inspection · {selectedIpcDossier}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedIpcDossier(null)}
+                    className="text-on-surface-variant hover:text-on-surface font-semibold"
+                  >
+                    Close
+                  </button>
+                </div>
+                <p className="text-on-surface-variant">
+                  Verified against NBRO laboratory compaction logs (#CR-094), joint chainage survey sheets, and CIDA Price Fluctuation Formula. Separation of Duties enforced: Contractor submits claim; Resident Engineer &amp; Agency Officer execute independent sign-off.
+                </p>
+              </div>
+            )}
+
+            {/* Price Escalation Formula (VOP) Detail Box */}
+            <div className="bg-surface-container p-space-md rounded-lg flex flex-col sm:flex-row sm:items-center justify-between gap-space-md mt-2">
+              <div className="flex items-start gap-3">
+                <span className="material-symbols-outlined text-secondary text-[24px]">calculate</span>
+                <div className="flex flex-col">
+                  <span className="font-label-md text-label-md text-on-surface">
+                    Variation of Price (VOP) — CIDA Bulletin Formula
+                  </span>
+                  <p className="font-body-sm text-body-sm text-on-surface-variant">
+                    Calculated against Sri Lanka Construction Industry Development Authority indices: Bitumen 80/100, Fuel &amp; Steel.
+                  </p>
+                </div>
+              </div>
+              <div className="flex flex-col sm:items-end shrink-0">
+                <span className="font-title-md text-title-md font-mono text-on-surface">+3.20% VOP</span>
+                <span className="font-label-sm text-label-sm text-on-surface-variant">
+                  Within Statutory Ceiling (±5%)
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Inline Visual: Site Chainage Status Ribbon & Milestone Progress */}
+          <div className="bg-surface-container-lowest rounded-lg shadow-2xs border border-outline-variant/25 p-space-lg flex flex-col gap-space-md">
+            <div className="flex items-center justify-between">
+              <h3 className="font-title-md text-title-md text-on-surface">
+                Linear Route Chainage Telemetry &amp; Spatial Alignment
+              </h3>
+              <span className="font-label-sm text-label-sm text-on-surface-variant font-mono">
+                TOTAL: 12.4 km CONTRACT LENGTH
+              </span>
+            </div>
+            <div className="flex flex-col gap-2 pt-2">
+              <div className="relative w-full h-8 bg-surface-container rounded-lg overflow-hidden flex">
+                <div
+                  className="h-full bg-primary flex items-center justify-center text-on-primary font-label-sm text-label-sm font-mono"
+                  style={{ width: "17%" }}
+                >
+                  00+000
+                </div>
+                <div
+                  className="h-full bg-secondary-container flex items-center justify-center text-on-secondary-container font-label-sm text-label-sm font-mono font-bold"
+                  style={{ width: "17%" }}
+                >
+                  BINDER ACTIVE
+                </div>
+                <div
+                  className="h-full bg-error flex items-center justify-center text-on-error font-label-sm text-label-sm font-mono"
+                  style={{ width: "4%" }}
+                >
+                  !
+                </div>
+                <div
+                  className="h-full bg-surface-container-high flex items-center justify-center text-on-surface-variant font-label-sm text-label-sm font-mono"
+                  style={{ width: "27%" }}
+                >
+                  SUB-BASE
+                </div>
+                <div
+                  className="h-full bg-primary-fixed-dim flex items-center justify-center text-on-primary-fixed font-label-sm text-label-sm font-mono"
+                  style={{ width: "6%" }}
+                >
+                  CULVERT
+                </div>
+                <div
+                  className="h-full bg-surface-container-low flex items-center justify-center text-outline font-label-sm text-label-sm font-mono"
+                  style={{ width: "29%" }}
+                >
+                  SCHEDULED
+                </div>
+              </div>
+              <div className="flex flex-wrap items-center justify-between text-on-surface-variant font-body-sm text-body-sm pt-2">
+                <div className="flex items-center gap-2">
+                  <span className="w-3 h-3 rounded-full bg-primary" />
+                  <span>Wearing Course Complete</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="w-3 h-3 rounded bg-secondary-container" />
+                  <span>Active Laying Shift</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="w-3 h-3 rounded bg-error" />
+                  <span>Spatial Triage Lock</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="w-3 h-3 rounded bg-surface-container-high" />
+                  <span>Sub-base Ready</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="w-3 h-3 rounded bg-surface-container-low" />
+                  <span>Unopened Corridor</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* RIGHT COLUMN: 4 Columns */}
+        <div className="lg:col-span-4 flex flex-col gap-space-lg">
+          {/* 1. RoadSync Contractor Utility Clearance & Excavation Moratoriums */}
+          <div className="bg-surface-container-lowest rounded-lg shadow-2xs border border-outline-variant/25 p-space-md flex flex-col gap-space-md">
+            <div className="flex items-center justify-between pb-1">
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-secondary text-[20px]">verified_user</span>
+                <h2 className="font-title-md text-title-md text-on-surface">
+                  RoadSync Utility Clearances
+                </h2>
+              </div>
+              <span className="px-2 py-0.5 rounded bg-surface-container-highest text-on-surface font-label-sm text-label-sm font-mono">
+                2 WAYLEAVES
+              </span>
+            </div>
+            <div className="flex flex-col gap-space-sm">
+              <div className="p-space-sm rounded-lg bg-surface-container-low flex flex-col gap-1">
+                <div className="flex items-center justify-between">
+                  <span className="font-label-md text-label-md text-on-surface font-mono">
+                    RS-PRM-2026-118
+                  </span>
+                  <span className="font-label-sm text-label-sm px-1.5 py-0.5 rounded bg-surface-container-highest text-on-surface uppercase">
+                    Approved
+                  </span>
+                </div>
+                <div className="font-body-sm text-body-sm text-on-surface font-medium">
+                  Galle Road High Level Micro-Trenching
+                </div>
+                <p className="font-body-sm text-body-sm text-on-surface-variant">
+                  Wayleave coordinated with Ceylon Electricity Board (33kV) and SLT-Mobitel dark fiber conduits.
+                </p>
+              </div>
+              <div className="p-space-sm rounded-lg bg-surface-container-low flex flex-col gap-1">
+                <div className="flex items-center justify-between">
+                  <span className="font-label-md text-label-md text-on-surface font-mono">
+                    CMC-NOC-8890
+                  </span>
+                  <span className="font-label-sm text-label-sm px-1.5 py-0.5 rounded bg-secondary-fixed text-on-secondary-fixed uppercase">
+                    Authorized
+                  </span>
+                </div>
+                <div className="font-body-sm text-body-sm text-on-surface font-medium">
+                  Night Work Curfew Exemption
+                </div>
+                <p className="font-body-sm text-body-sm text-on-surface-variant">
+                  Colombo Municipal Council window active: 22:00 — 05:00. Sound attenuation screens mandatory at sensitive wards.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* 2. Heavy Plant & Telematics Tracking */}
+          <div className="bg-surface-container-lowest rounded-lg shadow-2xs border border-outline-variant/25 p-space-md flex flex-col gap-space-md">
+            <div className="flex items-center justify-between pb-1">
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-secondary text-[20px]">commute</span>
+                <h2 className="font-title-md text-title-md text-on-surface">
+                  Heavy Plant Telematics
+                </h2>
+              </div>
+              <span className="w-2 h-2 rounded-full bg-secondary-container" />
+            </div>
+            <div className="flex flex-col gap-space-sm font-body-sm text-body-sm">
+              <div className="flex items-center justify-between p-2 rounded bg-surface-container-low">
+                <div className="flex items-center gap-2">
+                  <span className="material-symbols-outlined text-[18px] text-outline">speed</span>
+                  <span className="text-on-surface">Asphalt Tandem Rollers (4 units)</span>
+                </div>
+                <span className="font-mono text-on-surface font-medium">100% ONLINE</span>
+              </div>
+              <div className="flex items-center justify-between p-2 rounded bg-surface-container-low">
+                <div className="flex items-center gap-2">
+                  <span className="material-symbols-outlined text-[18px] text-outline">construction</span>
+                  <span className="text-on-surface">Cold Milling Machines (2 units)</span>
+                </div>
+                <span className="font-mono text-on-surface font-medium">STATIONARY</span>
+              </div>
+              <div className="flex items-center justify-between p-2 rounded bg-surface-container-low">
+                <div className="flex items-center gap-2">
+                  <span className="material-symbols-outlined text-[18px] text-outline">factory</span>
+                  <span className="text-on-surface">Concrete Batch Plant (Sapugaskanda)</span>
+                </div>
+                <span className="font-mono text-secondary font-medium">DISPATCHING</span>
+              </div>
+            </div>
+            <div className="bg-surface-container p-space-sm rounded-lg flex items-center justify-between">
+              <div className="flex flex-col">
+                <span className="font-label-sm text-label-sm text-on-surface-variant uppercase">
+                  Mix Delivery ETA
+                </span>
+                <span className="font-label-lg text-label-lg text-on-surface">
+                  Batch #42 arriving in 18m
+                </span>
+              </div>
+              <span className="font-mono font-title-md text-title-md text-secondary">42.5°C</span>
+            </div>
+          </div>
+
+          {/* 3. QA/QC Laboratory Attestation Feeds */}
+          <div className="bg-surface-container-lowest rounded-lg shadow-2xs border border-outline-variant/25 p-space-md flex flex-col gap-space-md">
+            <div className="flex items-center justify-between pb-1">
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-secondary text-[20px]">science</span>
+                <h2 className="font-title-md text-title-md text-on-surface">
+                  Laboratory Feeds &amp; QA/QC
+                </h2>
+              </div>
+              <span className="font-label-sm text-label-sm text-outline uppercase font-mono">
+                SEALED
+              </span>
+            </div>
+            <div className="flex flex-col gap-space-sm">
+              <div className="p-space-sm rounded-lg bg-surface-container-low flex flex-col gap-1">
+                <div className="flex items-center justify-between">
+                  <span className="font-label-md text-label-md font-mono text-on-surface">
+                    CORE SAMPLE #CR-094
+                  </span>
+                  <span className="font-label-sm text-label-sm px-1.5 py-0.5 rounded bg-surface-container-highest text-on-surface uppercase font-bold">
+                    PASSED
+                  </span>
+                </div>
+                <div className="font-headline-sm text-headline-sm text-on-surface mt-1">98.4%</div>
+                <p className="font-body-sm text-body-sm text-on-surface-variant">
+                  Modified Proctor Density · Cryptographically signed by NBRO Soil &amp; Materials Testing Lab.
+                </p>
+              </div>
+              <div className="p-space-sm rounded-lg bg-surface-container-low flex flex-col gap-1">
+                <div className="flex items-center justify-between">
+                  <span className="font-label-md text-label-md font-mono text-on-surface">
+                    SLUMP TEST 100MM
+                  </span>
+                  <span className="font-label-sm text-label-sm px-1.5 py-0.5 rounded bg-surface-container-highest text-on-surface uppercase font-bold">
+                    VERIFIED
+                  </span>
+                </div>
+                <div className="font-body-sm text-body-sm text-on-surface font-medium mt-1">
+                  Flyover Pier P-04 Pour
+                </div>
+                <p className="font-body-sm text-body-sm text-on-surface-variant">
+                  Hydraulic retention &amp; workability verified within tolerance. Batch cleared for immediate structural vibration.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Operational Shift Log Callout */}
+          <div className="bg-primary text-surface-container-lowest p-space-md rounded-lg shadow-2xs flex flex-col gap-2">
+            <div className="flex items-center justify-between">
+              <span className="font-label-sm text-label-sm uppercase tracking-wider text-primary-fixed-dim">
+                Site Safety Officer Attestation
+              </span>
+              <span className="font-mono text-body-sm text-secondary-fixed">DAY-88</span>
+            </div>
+            <p className="font-body-sm text-body-sm text-on-primary-container">
+              Zero lost-time injuries (LTI) logged across 186 continuous operational days. PPE &amp; night reflective vests certified at briefing.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Modal: Log Daily Field Shift */}
+      {shiftModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+          <div className="bg-surface-container-lowest border border-outline-variant/40 rounded-lg max-w-lg w-full p-6 shadow-xl flex flex-col gap-4">
+            <div className="flex items-center justify-between">
+              <h3 className="font-title-lg text-title-lg text-on-surface">Log Daily Field Shift</h3>
+              <button
+                type="button"
+                onClick={() => setShiftModalOpen(false)}
+                className="text-on-surface-variant hover:text-on-surface"
+              >
+                ✕
+              </button>
+            </div>
+            <form onSubmit={handleLogShift} className="flex flex-col gap-3">
+              <label className="flex flex-col gap-1 text-xs font-semibold text-on-surface">
+                Active Chainage Segment
+                <input
+                  type="text"
+                  value={shiftChainage}
+                  onChange={(e) => setShiftChainage(e.target.value)}
+                  className="h-9 px-3 rounded border border-outline-variant/50 bg-surface-container-low text-on-surface font-mono"
+                  required
+                />
+              </label>
+              <label className="flex flex-col gap-1 text-xs font-semibold text-on-surface">
+                Deployed Field Operatives
+                <input
+                  type="number"
+                  min={1}
+                  value={shiftCrewCount}
+                  onChange={(e) => setShiftCrewCount(e.target.value)}
+                  className="h-9 px-3 rounded border border-outline-variant/50 bg-surface-container-low text-on-surface font-mono"
+                  required
+                />
+              </label>
+              <label className="flex flex-col gap-1 text-xs font-semibold text-on-surface">
+                Shift Progress &amp; Plant Deployment Summary
+                <textarea
+                  rows={3}
+                  value={shiftNote}
+                  onChange={(e) => setShiftNote(e.target.value)}
+                  className="p-2.5 rounded border border-outline-variant/50 bg-surface-container-low text-on-surface text-xs"
+                  required
+                />
+              </label>
+              <div className="flex justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShiftModalOpen(false)}
+                  className="h-9 px-4 rounded bg-surface-container text-on-surface text-xs font-semibold"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="h-9 px-4 rounded bg-secondary text-on-secondary text-xs font-semibold hover:bg-secondary-container"
+                >
+                  Record Field Shift
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Submit IPC Milestone Claim */}
+      {ipcModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+          <div className="bg-surface-container-lowest border border-outline-variant/40 rounded-lg max-w-lg w-full p-6 shadow-xl flex flex-col gap-4">
+            <div className="flex items-center justify-between">
+              <h3 className="font-title-lg text-title-lg text-on-surface">
+                Submit IPC Milestone Claim (LKR)
+              </h3>
+              <button
+                type="button"
+                onClick={() => setIpcModalOpen(false)}
+                className="text-on-surface-variant hover:text-on-surface"
+              >
+                ✕
+              </button>
+            </div>
+            <form onSubmit={handleSubmitIpcClaim} className="flex flex-col gap-3">
+              <label className="flex flex-col gap-1 text-xs font-semibold text-on-surface">
+                Claim Amount (LKR)
+                <input
+                  type="number"
+                  min={1000}
+                  value={ipcAmountLkr}
+                  onChange={(e) => setIpcAmountLkr(e.target.value)}
+                  className="h-9 px-3 rounded border border-outline-variant/50 bg-surface-container-low text-on-surface font-mono"
+                  required
+                />
+              </label>
+              <label className="flex flex-col gap-1 text-xs font-semibold text-on-surface">
+                Verified Physical Scope &amp; Chainage Reference
+                <textarea
+                  rows={3}
+                  value={ipcScopeNote}
+                  onChange={(e) => setIpcScopeNote(e.target.value)}
+                  className="p-2.5 rounded border border-outline-variant/50 bg-surface-container-low text-on-surface text-xs"
+                  required
+                />
+              </label>
+              <div className="flex justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setIpcModalOpen(false)}
+                  className="h-9 px-4 rounded bg-surface-container text-on-surface text-xs font-semibold"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="h-9 px-4 rounded bg-secondary text-on-secondary text-xs font-semibold hover:bg-secondary-container"
+                >
+                  Transmit Claim for Attestation
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

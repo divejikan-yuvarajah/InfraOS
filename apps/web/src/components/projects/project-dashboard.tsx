@@ -23,6 +23,7 @@ import { fetchRecords, fetchRecordSummary } from "@/lib/roadsync/conflict-record
 import { fetchHubSummary } from "@/lib/roadsync/coordination-api";
 import {
   AgencyOfficerCommandView,
+  ContractorCommandView,
   GovAdminCommandView,
   InspectorCommandView,
   PlatformCommandView,
@@ -30,13 +31,14 @@ import {
 } from "./role-command-views";
 
 type TableFilter = "ALL" | "ATTENTION" | "PENDING" | "ACTIVE";
-type CommandViewMode =
+export type CommandViewMode =
   | "ROLE_DEFAULT"
   | "CIVIC_COMMAND"
   | "SUPER_ADMIN"
   | "GOV_ADMIN"
   | "AGENCY_OFFICER"
   | "PROJECT_MANAGER"
+  | "CONTRACTOR"
   | "INSPECTOR";
 
 function formatLkrMinor(amountMinor: number, locale: AuthLocale): string {
@@ -110,7 +112,13 @@ function stageProgressForStatus(status: string): {
   };
 }
 
-export function ProjectDashboard({ locale }: { locale: AuthLocale }) {
+export function ProjectDashboard({
+  locale,
+  initialViewMode = "ROLE_DEFAULT",
+}: {
+  locale: AuthLocale;
+  initialViewMode?: CommandViewMode;
+}) {
   const copy = getDashboardCopy(locale);
   const epoch = useSyncExternalStore(subscribeAuth, getAuthEpoch, () => 0);
   const hasToken = useSyncExternalStore(
@@ -127,7 +135,7 @@ export function ProjectDashboard({ locale }: { locale: AuthLocale }) {
   const [tableFilter, setTableFilter] = useState<TableFilter>("ALL");
   const [page, setPage] = useState(1);
   const [quarterWindow, setQuarterWindow] = useState<"ALL" | "ACTIVE_ONLY">("ALL");
-  const [viewMode, setViewMode] = useState<CommandViewMode>("ROLE_DEFAULT");
+  const [viewMode, setViewMode] = useState<CommandViewMode>(initialViewMode);
 
   const query = useQuery({
     queryKey: ["projects", "dashboard", epoch],
@@ -225,6 +233,7 @@ export function ProjectDashboard({ locale }: { locale: AuthLocale }) {
         userRole === "GOV_ADMIN" ||
         userRole === "AGENCY_OFFICER" ||
         userRole === "PROJECT_MANAGER" ||
+        userRole === "CONTRACTOR" ||
         userRole === "INSPECTOR"
         ? userRole
         : "CIVIC_COMMAND"
@@ -348,6 +357,16 @@ export function ProjectDashboard({ locale }: { locale: AuthLocale }) {
           conflictRecords={conflictRecordsQuery.data?.items ?? []}
           onExportTelemetry={handleExportTelemetry}
         />
+      ) : effectiveView === "CONTRACTOR" ? (
+        <ContractorCommandView
+          data={data}
+          copy={copy}
+          locale={locale}
+          epoch={epoch}
+          sessionUser={sessionUser}
+          conflictRecords={conflictRecordsQuery.data?.items ?? []}
+          onExportTelemetry={handleExportTelemetry}
+        />
       ) : effectiveView === "INSPECTOR" ? (
         <InspectorCommandView
           data={data}
@@ -400,6 +419,7 @@ function RoleCommandPerspectiveBar({
     userRole === "GOV_ADMIN" ||
     userRole === "AGENCY_OFFICER" ||
     userRole === "PROJECT_MANAGER" ||
+    userRole === "CONTRACTOR" ||
     userRole === "INSPECTOR"
       ? userRole
       : "CIVIC_COMMAND";
@@ -442,6 +462,12 @@ function RoleCommandPerspectiveBar({
           icon: "engineering",
         },
         {
+          id: "CONTRACTOR",
+          label: "Contractor Command",
+          code: "CORE-02.13",
+          icon: "precision_manufacturing",
+        },
+        {
           id: "INSPECTOR",
           label: "Field Inspection",
           code: "CORE-02.14",
@@ -458,13 +484,17 @@ function RoleCommandPerspectiveBar({
                 ? "CORE-02.11"
                 : roleDefaultView === "PROJECT_MANAGER"
                   ? "CORE-02.12"
-                  : "CORE-02.14",
+                  : roleDefaultView === "CONTRACTOR"
+                    ? "CORE-02.13"
+                    : "CORE-02.14",
             icon:
               roleDefaultView === "AGENCY_OFFICER"
                 ? "domain"
                 : roleDefaultView === "PROJECT_MANAGER"
                   ? "engineering"
-                  : "fact_check",
+                  : roleDefaultView === "CONTRACTOR"
+                    ? "precision_manufacturing"
+                    : "fact_check",
           },
           {
             id: "CIVIC_COMMAND",
