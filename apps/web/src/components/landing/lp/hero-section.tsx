@@ -13,8 +13,11 @@ export function HeroSection({ copy }: { copy: LpCopy["hero"] }) {
         <div className="lp-hero__grid">
           <div>
             <div className="lp-hero__badge">
-              <span className="lp-dot" style={{ background: "var(--lp-orange)" }} aria-hidden="true" />
-              {copy.badge}
+              <span className="relative flex h-2 w-2 shrink-0">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#FF5B00] opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-[#FF5B00]" />
+              </span>
+              <span>{copy.badge}</span>
             </div>
             <h1 id="lp-hero-title" className="lp-display lp-h1">
               {copy.title}
@@ -30,9 +33,9 @@ export function HeroSection({ copy }: { copy: LpCopy["hero"] }) {
                 {copy.ctaSecondary}
               </Link>
             </div>
-            <div className="lp-hero__stats">
-              {copy.stats.map((stat) => (
-                <StatPill key={stat.value} {...stat} />
+            <div className="lp-hero__stats" role="group" aria-label="Key infrastructure metrics">
+              {copy.stats.map((stat, idx) => (
+                <StatPill key={stat.value} {...stat} accent={idx === 2} />
               ))}
             </div>
           </div>
@@ -43,7 +46,7 @@ export function HeroSection({ copy }: { copy: LpCopy["hero"] }) {
                 priority
                 src="/landing/lp/hero-coordination.jpg"
                 alt={copy.imageAlt}
-                sizes="(min-width: 1280px) 590px, (min-width: 1024px) 45vw, 100vw"
+                sizes="(min-width: 1280px) 660px, (min-width: 1024px) 52vw, 100vw"
                 label={copy.figLabel}
                 title={copy.figTitle}
                 caption={copy.figCaption}
@@ -52,7 +55,9 @@ export function HeroSection({ copy }: { copy: LpCopy["hero"] }) {
               />
             </div>
             <div className="lp-hero__calibrated">
-              <BadgeCheckIcon aria-hidden="true" />
+              <div className="lp-hero__calibrated-icon">
+                <BadgeCheckIcon aria-hidden="true" width={20} height={20} />
+              </div>
               <div>
                 <strong>{copy.calibratedTitle}</strong>
                 <span>{copy.calibratedNote}</span>

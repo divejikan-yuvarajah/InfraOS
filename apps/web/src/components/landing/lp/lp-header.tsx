@@ -1,7 +1,7 @@
 import Link from "next/link";
+import Image from "next/image";
 import { LandmarkIcon, LockIcon } from "lucide-react";
 
-import { InfraosMark } from "@/components/landing/infraos-mark";
 import type { LpCopy } from "@/lib/landing/lp-copy";
 import type { LpLinks } from "@/lib/landing/lp-data";
 import type { PublicInfoSlug, PublicLocale } from "@/lib/landing/locales";
@@ -28,10 +28,12 @@ export function LpHeader({
       <div className="lp-util">
         <div className="lp-container lp-util__inner">
           <div className="lp-util__who">
-            <LandmarkIcon aria-hidden="true" width={16} height={16} style={{ color: "var(--lp-primary)", flexShrink: 0 }} />
+            <span className="lp-util__crest-wrap">
+              <LandmarkIcon aria-hidden="true" width={13} height={13} />
+            </span>
             <span className="lp-util__text">{copy.affiliation}</span>
             <span className="lp-util__sep" aria-hidden="true">
-              |
+              •
             </span>
             <span className="lp-util__sub">{copy.ministry}</span>
           </div>
@@ -50,7 +52,16 @@ export function LpHeader({
       </div>
       <div className="lp-container lp-nav__inner">
         <Link href={links.home} className="lp-brand" aria-label="INFRAOS">
-          <InfraosMark className="lp-brand__mark" variant="light" />
+          <div className="lp-brand__mark-wrap">
+            <Image
+              src="/brand/infraos-icon-transparent.png"
+              alt="InfraOS"
+              width={40}
+              height={40}
+              priority
+              className="lp-brand__mark-img"
+            />
+          </div>
           <span>
             <span className="lp-brand__name">INFRAOS</span>
             <span className="lp-brand__tag">National Infrastructure Coordination</span>
@@ -75,7 +86,7 @@ export function LpHeader({
         </nav>
         <div className="lp-nav__actions">
           <Link href={links.signIn} className="lp-signin">
-            <LockIcon aria-hidden="true" width={16} height={16} />
+            <LockIcon aria-hidden="true" width={15} height={15} />
             <span>{copy.signIn}</span>
           </Link>
           <LpMobileMenu copy={copy} links={links} locale={locale} infoSlug={infoSlug} />

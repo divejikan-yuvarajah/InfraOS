@@ -43,8 +43,12 @@ const MS_VIEW: Record<MaintenanceStatus, { tone: "success" | "pending" | "critic
   REQUESTED: { tone: "pending", Icon: CalendarClockIcon }, PLANNED: { tone: "active", Icon: CalendarClockIcon }, SCHEDULED: { tone: "active", Icon: CalendarClockIcon }, IN_PROGRESS: { tone: "pending", Icon: PlayCircleIcon },
   COMPLETED: { tone: "success", Icon: CheckCircle2Icon }, CANCELLED: { tone: "neutral", Icon: BanIcon }, REJECTED: { tone: "critical", Icon: XCircleIcon },
 };
-export function MaintStatusChip({ status, overdue, copy }: { status: MaintenanceStatus; overdue?: boolean; copy: Copy }) {
-  const { tone, Icon } = MS_VIEW[status];
+export function MaintStatusChip({ status: rawStatus, overdue: rawOverdue, copy }: { status: MaintenanceStatus; overdue?: boolean; copy: Copy }) {
+  // The API derives OVERDUE for a scheduled job past its date. It has no chip of its own: show it as scheduled plus the Overdue badge.
+  const derivedOverdue = (rawStatus as string) === "OVERDUE";
+  const status: MaintenanceStatus = derivedOverdue ? "SCHEDULED" : rawStatus;
+  const overdue = rawOverdue || derivedOverdue;
+  const { tone, Icon } = MS_VIEW[status] ?? MS_VIEW.SCHEDULED;
   return (
     <span className="ins-status">
       <Chip tone={tone} icon={<Icon aria-hidden="true" />}>{copy.mstatus[status]}</Chip>

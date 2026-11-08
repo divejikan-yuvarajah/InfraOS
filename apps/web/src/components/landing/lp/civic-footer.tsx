@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 
 import type { LpCopy } from "@/lib/landing/lp-copy";
 import { LP_ANCHORS, type LpLinks } from "@/lib/landing/lp-data";
@@ -63,6 +64,46 @@ export function CivicFooter({
             ))}
           </ol>
         </div>
+        <div className="lp-footer__brand-block">
+          <div className="lp-footer__brand-left">
+            <Link href={links.home} className="lp-footer__brand-head" aria-label="INFRAOS Home">
+              <span className="lp-footer__brand-logo-wrap">
+                <Image
+                  src="/brand/infraos-icon-transparent.png"
+                  alt="InfraOS Logo"
+                  width={34}
+                  height={34}
+                  className="lp-footer__brand-logo-icon"
+                />
+              </span>
+              <div>
+                <span className="lp-footer__brand-title">
+                  INFRA<span className="lp-footer__brand-accent">OS</span>
+                </span>
+                <span className="lp-footer__brand-subtitle">
+                  National Infrastructure Intelligence &amp; Coordination Platform
+                </span>
+              </div>
+            </Link>
+            <p className="lp-footer__brand-desc">
+              Democratic Socialist Republic of Sri Lanka · Unified statutory corridor coordination and predictive civil asset registry protecting road moratoriums across provincial networks.
+            </p>
+          </div>
+          <div className="lp-footer__brand-badges">
+            <div className="lp-footer__badge-item">
+              <span className="lp-footer__badge-dot is-green" />
+              <span>Survey Cadastre Calibrated (SL99)</span>
+            </div>
+            <div className="lp-footer__badge-item">
+              <span className="lp-footer__badge-dot is-orange" />
+              <span>5-Year Moratorium Protection</span>
+            </div>
+            <div className="lp-footer__badge-item">
+              <span className="lp-footer__badge-dot is-blue" />
+              <span>ISO 19115 GIS &amp; OCDS Compliant</span>
+            </div>
+          </div>
+        </div>
         <div className="lp-footer__cols">
           <nav aria-label={copy.platformTitle}>
             <h3>{copy.platformTitle}</h3>
@@ -106,18 +147,30 @@ export function CivicFooter({
             <p className="lp-footer__meta">{copy.slaNote}</p>
             <p className="lp-footer__meta">{copy.gazetteRef}</p>
             <p style={{ marginTop: "0.25rem" }}>
-              <Link href={links.contact}>{copy.contactLink}</Link>
+              <Link href={links.contact} className="lp-footer__helpdesk-btn">
+                {copy.contactLink}
+              </Link>
             </p>
           </div>
         </div>
         <div className="lp-footer__bottom">
           <div className="lp-footer__legal">
-            <span>{copy.rights}</span>
+            <span className="lp-footer__legal-brand">
+              <Image
+                src="/brand/infraos-icon-transparent.png"
+                alt=""
+                width={15}
+                height={15}
+                aria-hidden="true"
+                className="lp-footer__bottom-icon"
+              />
+              <span>{copy.rights}</span>
+            </span>
             <Link href={links.privacy}>{copy.privacy}</Link>
             <Link href={links.accessibility}>{copy.accessibility}</Link>
           </div>
           <div className="lp-footer__lang">
-            <span style={{ color: "var(--lp-muted)" }}>{copy.languageLabel}:</span>
+            <span className="lp-footer__lang-label">{copy.languageLabel}:</span>
             <LpLanguageNav locale={locale} label={copy.languageLabel} infoSlug={infoSlug} className="lp-lang--footer" />
           </div>
         </div>
