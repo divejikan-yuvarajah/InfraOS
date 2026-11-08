@@ -26,3 +26,20 @@ describe("DocTrace permission matrix (Batch 08)", () => {
     expect(grantCeiling("PROJECT_MANAGER").has("document.restrict")).toBe(false);
   });
 });
+
+describe("ai.manage permission (Batch 09)", () => {
+  it("is held only by GOV_ADMIN and SUPER_ADMIN and is inside their grant ceiling", () => {
+    expect(PERMISSION_CATALOG).toContain("ai.manage");
+    for (const r of Object.keys(SYSTEM_ROLE_PERMISSIONS) as (keyof typeof SYSTEM_ROLE_PERMISSIONS)[]) {
+      expect(SYSTEM_ROLE_PERMISSIONS[r].includes("ai.manage")).toBe(r === "GOV_ADMIN" || r === "SUPER_ADMIN");
+    }
+    expect(grantCeiling("GOV_ADMIN").has("ai.manage")).toBe(true);
+    expect(grantCeiling("SUPER_ADMIN").has("ai.manage")).toBe(true);
+  });
+  it("sync plan adds ai.manage additively and is idempotent", () => {
+    const old = SYSTEM_ROLE_PERMISSIONS.GOV_ADMIN.filter((p) => p !== "ai.manage");
+    expect(planDocumentSync("GOV_ADMIN", old).add).toEqual(["ai.manage"]);
+    expect(planDocumentSync("GOV_ADMIN", [...old, "ai.manage"]).add).toEqual([]);
+    expect(planDocumentSync("SUPER_ADMIN", SYSTEM_ROLE_PERMISSIONS.SUPER_ADMIN.filter((p) => p !== "ai.manage")).add).toEqual(["ai.manage"]);
+  });
+});
