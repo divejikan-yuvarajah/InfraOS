@@ -1,0 +1,12 @@
+{
+  "configuredModel": "baai/bge-m3",
+  "dimension": 1024,
+  "targetCollection": "infraos_chunks__baai-bge-m3__1024",
+  "collections": [
+    {
+      "name": "infraos_chunks__baai-bge-m3__1024",
+      "points": 12
+    }
+  ],
+  "targetExists": true
+}
