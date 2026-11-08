@@ -1,0 +1,47 @@
+# Render Blueprint for INFRAOS (API + web). See docs/setup/deploy-render.md for the step-by-step guide.
+# Values marked `sync: false` are asked for in the Render dashboard on first deploy and are never stored in Git.
+services:
+  - type: web
+    name: infraos-api
+    runtime: node
+    plan: free
+    buildCommand: npm ci
+    startCommand: npm run start -w @infraos/api
+    healthCheckPath: /api/v1/health
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: NODE_ENV
+        value: production
+      - key: API_PREFIX
+        value: /api/v1
+      - key: LOG_LEVEL
+        value: info
+      - key: ACCESS_TOKEN_TTL
+        value: 15m
+      - key: REFRESH_TOKEN_TTL
+        value: 7d
+      - key: ACCESS_TOKEN_SECRET
+        generateValue: true
+      - key: REFRESH_TOKEN_SECRET
+        generateValue: true
+      - key: FRONTEND_ORIGIN
+        sync: false # exact web origin, e.g. https://infraos-web.onrender.com (no trailing slash)
+      - key: MONGODB_URI
+        sync: false
+      - key: MONGODB_DB_NAME
+        sync: false
+
+  - type: web
+    name: infraos-web
+    runtime: node
+    plan: starter # the Next.js build needs more than the 512 MB of the free plan
+    buildCommand: npm ci && npm run build -w @infraos/web
+    startCommand: npm run start -w @infraos/web
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: NEXT_PUBLIC_AUTH_LOGIN_ENABLED
+        value: "1"
+      - key: NEXT_PUBLIC_API_BASE_URL
+        sync: false # API origin only, e.g. https://infraos-api.onrender.com (no /api/v1)
