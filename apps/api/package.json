@@ -10,7 +10,8 @@
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "build": "tsc -p tsconfig.build.json",
-    "start": "node dist/server.js",
+    "start": "tsx src/server.ts",
+    "start:dist": "node dist/server.js",
     "db:check": "tsx src/scripts/db-check.ts",
     "db:indexes:check": "tsx src/scripts/check-indexes.ts",
     "db:seed:core": "tsx src/scripts/seed-core.ts",
@@ -36,6 +37,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "tsx": "^4.23.15",
     "@infraos/shared-types": "*",
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.6",
@@ -58,7 +60,6 @@
     "eslint": "^9.39.5",
     "mongodb-memory-server": "^10.2.3",
     "supertest": "^7.3.0",
-    "tsx": "^4.23.15",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.71.0",
     "vitest": "^3.2.7"
