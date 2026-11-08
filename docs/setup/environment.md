@@ -79,7 +79,7 @@ Empty values in `.env.example` are valid until the feature is implemented. When 
 | Authentication | `ACCESS_TOKEN_SECRET`, `ACCESS_TOKEN_TTL`, `REFRESH_TOKEN_SECRET`, `REFRESH_TOKEN_TTL` |
 | AI service | `AI_BASE_URL`, `AI_INTERNAL_SECRET`, `OPENROUTER_API_KEY` |
 | RAG | `QDRANT_URL`, `QDRANT_API_KEY` |
-| AI processing (Batch 09) | API: `AI_PROCESSING_ENABLED`, `AI_JOB_CONCURRENCY`, `AI_EMBED_DAILY_TOKEN_BUDGET`, `AI_EMBED_MAX_TOKENS_PER_DOC`, `AI_EMBED_PRICE_PER_M_TOKENS_MINOR` (only when verified). FastAPI: `APP_ENV`, `PORT`, `AI_EMBED_MODEL` (canonical; `EMBEDDING_MODEL` is retired), `EMBED_BASE_URL`, `QDRANT_COLLECTION` |
+| AI processing (Batch 09) | API: `AI_PROCESSING_ENABLED`, `AI_JOB_CONCURRENCY`, `AI_EMBED_DAILY_TOKEN_BUDGET`, `AI_EMBED_MAX_TOKENS_PER_DOC`, `AI_EMBED_PRICE_PER_M_TOKENS_MINOR` (US cents per million tokens; only when verified against the provider catalog. `baai/bge-m3` = 1). FastAPI: `APP_ENV`, `PORT`, `AI_EMBED_MODEL` (canonical; `EMBEDDING_MODEL` is retired), `EMBED_BASE_URL`, `QDRANT_COLLECTION` |
 | Storage | `STORAGE_PROVIDER`, `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET`, `R2_ENDPOINT` |
 | Maps (public) | `NEXT_PUBLIC_MAP_STYLE_URL` |
 

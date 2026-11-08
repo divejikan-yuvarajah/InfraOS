@@ -34,6 +34,8 @@
     "db:seed:demo": "npm run db:seed:demo -w @infraos/api",
     "db:seed:verify": "npm run db:seed:verify -w @infraos/api",
     "db:seed:reset-demo": "npm run db:seed:reset-demo -w @infraos/api",
-    "db:set-password": "npm run db:set-password -w @infraos/api"
+    "db:set-password": "npm run db:set-password -w @infraos/api",
+    "ai:smoke": "npm run ai:smoke -w @infraos/api",
+    "ai:demo-process": "npm run ai:demo-process -w @infraos/api"
   }
 }

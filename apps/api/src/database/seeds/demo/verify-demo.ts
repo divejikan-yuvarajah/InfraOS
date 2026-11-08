@@ -1,6 +1,9 @@
 import { SYSTEM_ROLE_KEYS } from "@infraos/shared-types";
 
 import { Agency } from "../../../modules/agencies/models/agency.model.js";
+import { ProcessingJob } from "../../../modules/ai/processing/job.model.js";
+import { AiUsageRecord } from "../../../modules/ai/usage.model.js";
+import { DocumentChunk } from "../../../modules/documents/models/document-chunk.model.js";
 import { Document } from "../../../modules/documents/models/document.model.js";
 import { DocumentVersion } from "../../../modules/documents/models/document-version.model.js";
 import { DEMO_DOCUMENT_COUNT } from "./seed-documents.js";
@@ -285,6 +288,16 @@ export async function verifyDemoSeed(): Promise<VerifyDemoResult> {
     pass: showProjects.length === SHOWCASE_CODES.length && ["ACTIVE", "DELAYED", "COMPLETED", "ON_HOLD", "APPROVED"].every((st) => showProjects.some((x) => x.status === st)) && showMilestones >= 18 && showAssignments === SHOWCASE_CODES.length
       && showPayments >= 10 && showExpenses >= 8 && showInspections >= 4 && showDocs >= 10,
     detail: `projects=${showProjects.length} milestones=${showMilestones} assignments=${showAssignments} payments=${showPayments} expenses=${showExpenses} inspections=${showInspections} documents=${showDocs}`,
+  });
+  // AI index honesty (counts only): a document is "AI-ready" only if it has ACTIVE chunks for its indexed version.
+  const aiReady = await Document.find({ extractedTextStatus: "COMPLETED" }).select("_id aiIndex.indexedVersionNo").lean();
+  let aiReadyWithoutChunks = 0;
+  for (const doc of aiReady) if (!(await DocumentChunk.exists({ documentId: doc._id, versionNo: doc.aiIndex?.indexedVersionNo ?? -1, status: "ACTIVE" }))) aiReadyWithoutChunks += 1;
+  const [aiChunks, aiJobs, aiUsage] = await Promise.all([DocumentChunk.countDocuments({}), ProcessingJob.countDocuments({}), AiUsageRecord.countDocuments({})]);
+  lines.push({
+    name: "AI processing state is truthful (no AI-ready document without active chunks)",
+    pass: aiReadyWithoutChunks === 0,
+    detail: `aiReady=${aiReady.length} withoutChunks=${aiReadyWithoutChunks} chunks=${aiChunks} jobs=${aiJobs} usageRows=${aiUsage}`,
   });
   const pass = lines.every((line) => line.pass);
   return { lines, pass };
