@@ -191,26 +191,52 @@
 .auth-login-form-wrap {
   width: 100%;
   min-width: 0;
-  max-width: 31rem;
-  margin: auto;
+  max-width: 35.5rem;
+  margin-inline: auto;
+}
+
+@media (min-width: 1440px) {
+  .auth-login-form-wrap {
+    max-width: 38.5rem;
+  }
 }
 
 .auth-register-form-wrap {
   width: 100%;
   min-width: 0;
-  max-width: 37rem;
-  margin: auto;
+  max-width: 44rem;
+  margin-inline: auto;
+}
+
+@media (min-width: 1440px) {
+  .auth-register-form-wrap {
+    max-width: 48rem;
+  }
 }
 
 /* Liquid Glass Card Surface */
 .auth-liquid-card {
-  background: rgba(255, 255, 255, 0.94);
-  backdrop-filter: blur(16px);
-  border: 1px solid rgba(226, 232, 240, 0.85);
-  border-radius: 1.25rem;
-  box-shadow: 0 20px 45px -15px rgba(15, 23, 42, 0.07),
-    inset 0 1px 1px rgba(255, 255, 255, 0.9);
-  padding: clamp(1.1rem, 2.2vh, 2rem) clamp(1.1rem, 2.2vw, 2.25rem);
+  background: rgba(255, 255, 255, 0.96);
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(226, 232, 240, 0.95);
+  border-radius: 1.5rem;
+  box-shadow: 0 24px 50px -12px rgba(15, 23, 42, 0.08),
+    0 4px 12px rgba(15, 23, 42, 0.03),
+    inset 0 1px 1px rgba(255, 255, 255, 1);
+  padding: 1.35rem 1.25rem;
+}
+
+@media (min-width: 640px) {
+  .auth-liquid-card {
+    padding: 1.85rem 2.25rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .auth-liquid-card {
+    padding: clamp(1.75rem, 2.5vh, 2.6rem) clamp(2rem, 2.5vw, 2.85rem);
+  }
 }
 
 .auth-login-banner {

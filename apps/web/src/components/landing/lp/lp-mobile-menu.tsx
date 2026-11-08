@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { LockIcon, MenuIcon, XIcon } from "lucide-react";
 import { useCallback, useRef, useState } from "react";
 
@@ -58,9 +59,20 @@ export function LpMobileMenu({
         >
           <div style={{ padding: "1rem", overflowY: "auto" }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-              <SheetTitle className="lp-display" style={{ fontSize: 20, fontWeight: 600 }}>
-                {copy.menuTitle}
-              </SheetTitle>
+              <div style={{ display: "flex", alignItems: "center", gap: "0.625rem" }}>
+                <span className="lp-brand__mark-wrap" style={{ width: 32, height: 32, borderRadius: 8 }}>
+                  <Image
+                    src="/brand/infraos-icon-transparent.png"
+                    alt=""
+                    width={22}
+                    height={22}
+                    className="lp-brand__mark-img"
+                  />
+                </span>
+                <SheetTitle className="lp-brand__name" style={{ fontSize: 18, margin: 0 }}>
+                  INFRA<span style={{ color: "var(--lp-orange)" }}>OS</span>
+                </SheetTitle>
+              </div>
               <SheetClose asChild>
                 <button type="button" className="lp-iconbtn" style={{ display: "inline-flex" }} aria-label={copy.closeMenu}>
                   <XIcon aria-hidden="true" />

@@ -12,6 +12,7 @@ import {
   Loader2,
   Lock,
   Mail,
+  ShieldCheck,
 } from "lucide-react";
 
 import { getAuthAvailability } from "@/lib/auth/availability";
@@ -226,6 +227,57 @@ export function LoginForm({ locale, nextParam }: LoginFormProps) {
             </>
           )}
         </PillButton>
+      </div>
+
+      {/* Statutory Security & Quick Role Assistance Panel */}
+      <div className="rounded-xl border border-slate-200/90 bg-[#F8FAFC] p-3 text-left">
+        <div className="mb-1 flex items-center justify-between gap-2">
+          <span className="flex items-center gap-1.5 text-[11px] font-bold text-slate-800">
+            <ShieldCheck className="h-3.5 w-3.5 text-[#279541]" aria-hidden="true" />
+            Statutory GovTech Clearance
+          </span>
+          <span className="auth-stitch-mono rounded bg-white px-2 py-0.5 text-[9.5px] font-semibold text-slate-600 border border-slate-200 shadow-2xs">
+            TLS 1.3 FIPS-140-3
+          </span>
+        </div>
+        <p className="text-[11px] leading-relaxed text-slate-600">
+          Authorized personnel only. Multi-agency sessions are recorded and audited under Gazette No. 2341/14.
+        </p>
+        <div className="mt-2.5 flex flex-wrap items-center gap-1.5 border-t border-slate-200/80 pt-2">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+            Quick Fill:
+          </span>
+          <button
+            type="button"
+            onClick={() => {
+              setEmail("officer@transport.gov.lk");
+              setPassword("GovPass#2025");
+            }}
+            className="rounded-full border border-slate-200 bg-white px-2.5 py-0.5 text-[10.5px] font-semibold text-slate-700 shadow-2xs transition-colors hover:border-[#FF5B00] hover:text-[#FF5B00]"
+          >
+            RDA Officer
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setEmail("director@rda.gov.lk");
+              setPassword("GovPass#2025");
+            }}
+            className="rounded-full border border-slate-200 bg-white px-2.5 py-0.5 text-[10.5px] font-semibold text-slate-700 shadow-2xs transition-colors hover:border-[#FF5B00] hover:text-[#FF5B00]"
+          >
+            Agency Director
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setEmail("engineer@ceb.lk");
+              setPassword("GovPass#2025");
+            }}
+            className="rounded-full border border-slate-200 bg-white px-2.5 py-0.5 text-[10.5px] font-semibold text-slate-700 shadow-2xs transition-colors hover:border-[#FF5B00] hover:text-[#FF5B00]"
+          >
+            CEB Engineer
+          </button>
+        </div>
       </div>
 
       {/* Institutional Account Creation / Invitation Footer */}

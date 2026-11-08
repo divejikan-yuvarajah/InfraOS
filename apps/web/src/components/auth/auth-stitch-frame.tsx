@@ -628,86 +628,43 @@ export function AuthStitchFrame({
 
           {/* Mobile Corridor Telemetry Plate (< 1024px, Sign In & Recovery) */}
           {!isRegister ? (
-            <div className="mb-3 space-y-2.5 lg:hidden">
-              <div className="flex items-center justify-between px-0.5">
-                <div>
-                  <p className="auth-stitch-mono text-[10px] font-semibold uppercase tracking-wider text-slate-500">
-                    GOV.LK DIGITAL • SL-NIP CORRIDOR
-                  </p>
-                </div>
-                <div className="inline-flex items-center gap-1.5 rounded-md bg-slate-100 px-2 py-0.5">
-                  <span className="h-2 w-2 animate-pulse rounded-full bg-[#279541]" />
-                  <span className="auth-stitch-mono text-[9.5px] font-bold uppercase tracking-widest text-slate-600">
-                    Corridor Live
-                  </span>
-                </div>
-              </div>
-
-              <div className="relative h-[132px] w-full overflow-hidden rounded-2xl bg-slate-900 shadow-xs">
-                <Image
-                  src="/landing/lp/aerial-highway.jpg"
-                  alt="Aerial documentary photograph of a highway interchange corridor in suburban Colombo"
-                  fill
-                  sizes="100vw"
-                  className="object-cover"
-                  priority
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-950/30 to-transparent" />
-                {/* Cadastral Contour Lines Overlay */}
-                <svg
-                  className="pointer-events-none absolute inset-0 h-full w-full opacity-25"
-                  preserveAspectRatio="none"
-                  viewBox="0 0 360 142"
-                  aria-hidden="true"
-                >
-                  <path
-                    d="M0,35 Q90,50 180,20 T360,45"
-                    fill="none"
-                    stroke="#FFFFFF"
-                    strokeDasharray="3,3"
-                    strokeWidth="0.8"
-                  />
-                  <path
-                    d="M0,85 Q110,60 220,95 T360,70"
-                    fill="none"
-                    stroke="#FFFFFF"
-                    strokeDasharray="4,2"
-                    strokeWidth="0.8"
-                  />
-                  <line
-                    stroke="#FF5B00"
-                    strokeOpacity="0.7"
-                    strokeWidth="1.2"
-                    x1="28"
-                    x2="28"
-                    y1="0"
-                    y2="142"
-                  />
-                </svg>
-                <div className="absolute top-2.5 right-2.5 left-2.5 flex items-center justify-between gap-1">
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-900/75 px-2.5 py-0.5 text-[10px] font-semibold text-white backdrop-blur-xs">
-                    <span className="h-2 w-2 animate-pulse rounded-full bg-[#279541]" />
-                    Corridor WP-A1 • National Highway Spine
-                  </span>
-                </div>
-                <div className="absolute right-3 bottom-2.5 left-3 flex items-end justify-between text-white">
-                  <div className="flex items-center gap-1.5">
-                    <span className="flex h-3.5 w-3.5 items-center justify-center rounded-full bg-[#FF5B00] ring-4 ring-[#FF5B00]/30">
-                      <span className="h-1.5 w-1.5 rounded-full bg-white" />
-                    </span>
-                    <span className="text-[11px] font-semibold tracking-tight text-white">
-                      Datum 0+000 Datum Pin (RDA)
+            <div className="mb-3 lg:hidden">
+              <div className="flex items-center justify-between rounded-xl border border-slate-200/90 bg-[#F2F4F6] p-2.5 shadow-2xs">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="relative h-9 w-9 shrink-0 overflow-hidden rounded-lg bg-slate-900 shadow-2xs">
+                    <Image
+                      src="/landing/lp/aerial-highway.jpg"
+                      alt=""
+                      fill
+                      sizes="36px"
+                      className="object-cover"
+                      priority
+                    />
+                    <div className="absolute inset-0 bg-slate-900/40" />
+                    <span className="absolute inset-0 flex items-center justify-center">
+                      <span className="h-2 w-2 rounded-full bg-[#FF5B00] animate-pulse" />
                     </span>
                   </div>
-                  <span className="auth-stitch-mono text-[9.5px] font-semibold tracking-widest text-slate-200 uppercase">
-                    Verified Grid
-                  </span>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-1.5">
+                      <span className="h-1.5 w-1.5 rounded-full bg-[#279541]" />
+                      <span className="text-xs font-bold text-slate-900 truncate">
+                        Corridor WP-A1 Live
+                      </span>
+                    </div>
+                    <p className="text-[10px] font-medium text-slate-500 truncate">
+                      RDA • NWSDB • CEB • SLD99 Grid
+                    </p>
+                  </div>
                 </div>
+                <span className="auth-stitch-mono shrink-0 rounded bg-white px-2 py-0.5 text-[9.5px] font-bold text-emerald-700 border border-emerald-200/70 shadow-2xs">
+                  VERIFIED
+                </span>
               </div>
             </div>
           ) : null}
 
-          {/* Centered Form Slot with Mobile Left Survey Line Axis on Login */}
+          {/* Centered Form Slot */}
           <div
             className={
               isRegister
@@ -715,42 +672,7 @@ export function AuthStitchFrame({
                 : "auth-login-form-wrap relative my-auto"
             }
           >
-            {!isRegister ? (
-              <div className="relative pl-9 lg:pl-0">
-                {/* Mobile Left-Edge Signature Orange Survey Line Axis (0+000 -> 0+150 -> 0+300 -> 0+500) */}
-                <aside
-                  className="absolute top-1 bottom-3 left-0 flex w-8 flex-col items-center select-none lg:hidden"
-                  aria-hidden="true"
-                >
-                  <div className="absolute top-0 bottom-5 left-1/2 w-[2px] -translate-x-1/2 bg-[#FF5B00]/30" />
-                  <div className="absolute top-0 left-1/2 h-24 w-[2px] -translate-x-1/2 bg-gradient-to-b from-[#FF5B00] to-transparent" />
-                  <div className="auth-stitch-mono relative z-10 flex h-full flex-col items-center justify-between pt-2 pb-5 text-[8px] text-slate-500">
-                    <div className="flex items-center gap-0.5">
-                      <span className="h-px w-1.5 bg-[#FF5B00]" />
-                      <span className="font-bold text-[#A83900]">0+000</span>
-                    </div>
-                    <div className="flex items-center gap-0.5">
-                      <span className="h-px w-1 bg-slate-300" />
-                      <span>0+150</span>
-                    </div>
-                    <div className="flex items-center gap-0.5">
-                      <span className="h-px w-1 bg-slate-300" />
-                      <span>0+300</span>
-                    </div>
-                    <div className="flex items-center gap-0.5">
-                      <span className="flex h-2.5 w-2.5 items-center justify-center rounded-full bg-[#FF5B00] ring-2 ring-[#FF5B00]/25">
-                        <span className="h-1 w-1 rounded-full bg-white" />
-                      </span>
-                      <span className="font-bold text-[#A83900]">0+500</span>
-                    </div>
-                  </div>
-                </aside>
-
-                <div className="auth-liquid-card">{children}</div>
-              </div>
-            ) : (
-              <div className="auth-liquid-card">{children}</div>
-            )}
+            <div className="auth-liquid-card">{children}</div>
           </div>
 
           {/* Statutory Gazette & Computer Crimes Act Legal Footnote */}

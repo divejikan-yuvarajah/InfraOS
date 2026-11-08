@@ -36,9 +36,12 @@ export function AppHeader({
       >
         <MenuIcon aria-hidden="true" />
       </Button>
-      <p className="type-label text-text-primary">
-        INFRA<span className="text-infra-orange">OS</span>
-      </p>
+      <div className="flex items-center gap-2.5">
+        <BrandMark size={32} />
+        <p className="type-label text-text-primary font-bold text-base tracking-tight">
+          INFRA<span className="text-infra-orange">OS</span>
+        </p>
+      </div>
       {contextLabel ? (
         <p className="ml-auto min-w-0 truncate type-caption text-text-secondary">{contextLabel}</p>
       ) : null}
