@@ -99,7 +99,7 @@ export const removeVersion = (actor: AuthenticatedActor, rawId: string, rawN: st
     const doc = await loadDocument(d, rawId, session);
     if (d.viewer.roleKey !== "GOV_ADMIN" || !capsOf(d, doc).canArchive) throw new Flow(403, "FORBIDDEN");
     if (n === doc.currentVersionNo) throw new Flow(409, "CONFLICT", { reason: "current_version" });
-    const ver = await DocumentVersion.findOneAndUpdate({ documentId: doc._id, versionNo: n, status: { $ne: "REMOVED" } }, { $set: { status: "REMOVED", removedAt: new Date(), removedBy: oid(actor.userId), removeReason: input.reason } }, { session, new: false }).select("+storageRef").lean();
+    const ver = await DocumentVersion.findOneAndUpdate({ documentId: doc._id, versionNo: n, status: { $ne: "REMOVED" } }, { $set: { status: "REMOVED", removedAt: new Date(), removedBy: oid(actor.userId), removeReason: input.reason }, $unset: { storageRef: "" } }, { session, new: false }).select("+storageRef").lean();
     if (!ver) throw new Flow(404, "NOT_FOUND");
     await writeDocAudit(session, { actor, action: "document.updated", documentId: doc._id, agencyId: doc.agencyId as Id, newValue: { reason: input.reason }, requestId });
     const shared = ver.storageRef ? await DocumentVersion.exists({ storageRef: ver.storageRef, status: { $ne: "REMOVED" } }).session(session) : null;

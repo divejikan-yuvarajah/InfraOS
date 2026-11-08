@@ -17,7 +17,7 @@ import { inspectionRouter } from "../modules/inspections/inspection.routes.js";
 import { projectInspectionsRouter, projectVerifiedProgressRouter } from "../modules/inspections/inspection.project.routes.js";
 import { coordinationInsightsRouter } from "../modules/agencies/coordination-insights.js";
 import { assetRouter } from "../modules/assets/asset.routes.js";
-import { documentRouter } from "../modules/documents/document.routes.js";
+import { documentRouter, projectDocumentsRouter } from "../modules/documents/document.routes.js";
 import { assetMaintenanceRouter, maintenanceRouter } from "../modules/assets/maintenance.routes.js";
 import { adminAuditLogRouter } from "../modules/audit/audit-log.routes.js";
 import { inframapRouter } from "../modules/inframap/inframap.routes.js";
@@ -37,6 +37,7 @@ export function createV1Router(): Router {
   router.use("/projects/:projectId/contractors", projectContractorRouter);
   router.use("/projects/:projectId/inspections", projectInspectionsRouter);
   router.use("/projects/:projectId/verified-progress", projectVerifiedProgressRouter);
+  router.use("/projects/:projectId/documents", projectDocumentsRouter);
   router.use("/projects", projectRouter);
   router.use("/notifications", notificationRouter);
   router.use("/roadsync", roadsyncRouter);

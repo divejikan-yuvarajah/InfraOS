@@ -5,9 +5,10 @@ import { handle, invalid, limiter, noStore, param, reply, sendFailure } from "..
 import { parseStrict } from "../contractors/contractor.schema.js";
 import { requireAuthenticated } from "../identity/auth/require-authenticated.js";
 import { requirePermission } from "../identity/authorization/require-permission.js";
-import { openFile, listVersions, removeVersion, restoreVersion } from "./document-files.js";
+import { listVersions, openFile, removeVersion, restoreVersion } from "./document-files.js";
+import { archiveDocument, bulkAction, deleteDocument, documentActivity, documentSummary, exportRegister, getDocument, listCategories, listDocuments, patchDocument, projectDocuments, restoreDocument, restrictDocument, setStatus } from "./document.service.js";
 import { abortUpload, commitUpload, initUpload, initVersionUpload, streamUpload } from "./document-upload.service.js";
-import { commitBody, downloadQuery, removeVersionBody, restoreVersionBody, uploadInit, versionInit } from "./document.schema.js";
+import { activityQuery, archiveBody, bulkBody, commitBody, deleteBody, downloadQuery, exportQuery, listQuery, patchBody, projectDocsQuery, removeVersionBody, restoreBody, restoreVersionBody, restrictBody, statusBody, uploadInit, versionInit } from "./document.schema.js";
 
 /** Mounted at /api/v1/documents. Static paths are declared before `/:id`. */
 export const documentRouter = Router();
@@ -17,6 +18,36 @@ const write = limiter(60);
 const uploads = limiter(60); // init/commit; content is separately capped below
 const content = limiter(30);
 const files = limiter(120);
+
+// ---- library, search, dashboard numbers, registry (static paths first) ----
+function bad(res: Response, req: Request): void { noStore(res); res.status(400).json(failure("VALIDATION_ERROR", "request could not be completed", req.requestId)); }
+documentRouter.get("/", ...auth, requirePermission("document.read"), read, handle({}, async (req, res, actor) => {
+  const q = parseStrict(listQuery, req.query);
+  if (!q) return invalid(res, req);
+  reply(res, req, await listDocuments(actor, q));
+}));
+documentRouter.get("/summary", ...auth, requirePermission("document.read"), read, handle({}, async (req, res, actor) => { reply(res, req, await documentSummary(actor)); }));
+documentRouter.get("/categories", ...auth, requirePermission("document.read"), read, handle({}, async (req, res, actor) => { reply(res, req, await listCategories(actor)); }));
+documentRouter.get("/export.csv", ...auth, requirePermission("report.export"), limiter(10), async (req: Request, res: Response) => {
+  const actor = req.actor;
+  if (!actor) return;
+  const q = parseStrict(exportQuery, req.query);
+  if (!q) return bad(res, req);
+  try {
+    const r = await exportRegister(actor, q as never, req.requestId);
+    noStore(res);
+    if (!r.ok) { sendFailure(res, req, r); return; }
+    res.setHeader("Content-Type", "text/csv; charset=utf-8");
+    res.setHeader("Content-Disposition", `attachment; filename="document-register-${new Date().toISOString().slice(0, 10)}.csv"`);
+    res.setHeader("X-Content-Type-Options", "nosniff");
+    res.status(200).send(`\uFEFF${r.data.csv}`);
+  } catch { noStore(res); res.status(503).json(failure("SERVICE_UNAVAILABLE", "service is temporarily unavailable", req.requestId)); }
+});
+documentRouter.post("/bulk", ...auth, requirePermission("document.read"), write, handle({ body: true }, async (req, res, actor) => {
+  const b = bulkBody.safeParse(req.body);
+  if (!b.success) return invalid(res, req);
+  reply(res, req, await bulkAction(actor, b.data, req.requestId));
+}));
 
 // ---- upload protocol: init -> stream -> commit | abort ----
 documentRouter.post("/uploads", ...auth, requirePermission("document.upload"), uploads, handle({ body: true }, async (req, res, actor) => {
@@ -96,3 +127,49 @@ async function sendFile(req: Request, res: Response, mode: "download" | "preview
 }
 documentRouter.get("/:id/download", ...auth, requirePermission("document.download"), files, (req, res) => void sendFile(req, res, "download"));
 documentRouter.get("/:id/preview", ...auth, requirePermission("document.read"), files, (req, res) => void sendFile(req, res, "preview"));
+
+// ---- one document ----
+documentRouter.get("/:id", ...auth, requirePermission("document.read"), read, handle({}, async (req, res, actor) => { reply(res, req, await getDocument(actor, param(req.params.id))); }));
+documentRouter.patch("/:id", ...auth, requirePermission("document.read"), write, handle({ body: true }, async (req, res, actor) => {
+  const b = patchBody.safeParse(req.body);
+  if (!b.success) return invalid(res, req);
+  reply(res, req, await patchDocument(actor, param(req.params.id), b.data, req.requestId));
+}));
+documentRouter.post("/:id/status", ...auth, requirePermission("document.read"), write, handle({ body: true }, async (req, res, actor) => {
+  const b = statusBody.safeParse(req.body);
+  if (!b.success) return invalid(res, req);
+  reply(res, req, await setStatus(actor, param(req.params.id), b.data, req.requestId));
+}));
+documentRouter.post("/:id/archive", ...auth, requirePermission("document.read"), write, handle({ body: true }, async (req, res, actor) => {
+  const b = archiveBody.safeParse(req.body);
+  if (!b.success) return invalid(res, req);
+  reply(res, req, await archiveDocument(actor, param(req.params.id), b.data, req.requestId));
+}));
+documentRouter.post("/:id/restore", ...auth, requirePermission("document.read"), write, handle({ body: true }, async (req, res, actor) => {
+  const b = restoreBody.safeParse(req.body ?? {});
+  if (!b.success) return invalid(res, req);
+  reply(res, req, await restoreDocument(actor, param(req.params.id), b.data, req.requestId));
+}));
+documentRouter.post("/:id/restrict", ...auth, requirePermission("document.restrict"), write, handle({ body: true }, async (req, res, actor) => {
+  const b = restrictBody.safeParse(req.body);
+  if (!b.success) return invalid(res, req);
+  reply(res, req, await restrictDocument(actor, param(req.params.id), b.data, req.requestId));
+}));
+documentRouter.delete("/:id", ...auth, requirePermission("document.delete"), write, handle({ body: true }, async (req, res, actor) => {
+  const b = deleteBody.safeParse(req.body);
+  if (!b.success) return invalid(res, req);
+  reply(res, req, await deleteDocument(actor, param(req.params.id), b.data, req.requestId));
+}));
+documentRouter.get("/:id/activity", ...auth, requirePermission("document.read"), read, handle({}, async (req, res, actor) => {
+  const q = parseStrict(activityQuery, req.query);
+  if (!q) return invalid(res, req);
+  reply(res, req, await documentActivity(actor, param(req.params.id), q));
+}));
+
+/** Mounted at /api/v1/projects/:projectId/documents */
+export const projectDocumentsRouter = Router({ mergeParams: true });
+projectDocumentsRouter.get("/", ...auth, requirePermission("document.read"), read, handle({}, async (req, res, actor) => {
+  const q = parseStrict(projectDocsQuery, req.query);
+  if (!q) return invalid(res, req);
+  reply(res, req, await projectDocuments(actor, param(req.params.projectId), q));
+}));
