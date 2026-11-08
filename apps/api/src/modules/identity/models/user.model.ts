@@ -79,6 +79,36 @@ const userSchema = new Schema(
       ref: "User",
       default: null,
     },
+    department: {
+      type: String,
+      trim: true,
+      default: null,
+    },
+    designation: {
+      type: String,
+      trim: true,
+      default: null,
+    },
+    organizationCode: {
+      type: String,
+      trim: true,
+      default: null,
+    },
+    organizationName: {
+      type: String,
+      trim: true,
+      default: null,
+    },
+    requestedResponsibility: {
+      type: String,
+      trim: true,
+      default: null,
+    },
+    registrationRequestId: {
+      type: Schema.Types.ObjectId,
+      ref: "RegistrationRequest",
+      default: null,
+    },
   },
   {
     timestamps: true,

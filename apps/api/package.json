@@ -38,7 +38,6 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "tsx": "^4.23.15",
     "@infraos/shared-types": "*",
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.6",
@@ -47,8 +46,10 @@
     "helmet": "^8.3.0",
     "jose": "6.2.13",
     "mongoose": "^8.24.4",
+    "nodemailer": "^10.4.0",
     "pino": "^10.3.1",
     "pino-http": "^11.0.0",
+    "tsx": "^4.23.15",
     "zod": "^4.6.5"
   },
   "devDependencies": {
@@ -57,6 +58,7 @@
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/node": "^20.19.43",
+    "@types/nodemailer": "^8.0.2",
     "@types/supertest": "^7.2.1",
     "eslint": "^9.39.5",
     "mongodb-memory-server": "^10.2.3",
