@@ -1,0 +1,28 @@
+{
+  "output": {
+    "status": "ANSWERED",
+    "answer": "LKR 25,000 per day.",
+    "claims": [
+      {
+        "text": "LKR 25,000 per day",
+        "citations": [
+          1
+        ]
+      }
+    ],
+    "citations": [
+      {
+        "n": 1,
+        "quote": "LKR 25,000 per day"
+      }
+    ],
+    "missing_info": []
+  },
+  "usage": {
+    "inputTokens": 120,
+    "outputTokens": 40
+  },
+  "model": "google/gemini-2.5-flash-lite",
+  "promptVersion": "qa.v1",
+  "structuredMode": "json_schema"
+}

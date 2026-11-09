@@ -12,9 +12,10 @@ import { ContextBar } from "@/components/site-plan/site-plan";
 import type { AuthLocale } from "@/lib/auth/types";
 import { bulkReprocess } from "@/lib/documents/ai/api";
 import { getAiCopy, type AiCopy } from "@/lib/documents/ai/messages";
+import { getRagCopy } from "@/lib/documents/ai/rag-messages";
 import { bulkAction, downloadRegisterCsv, fetchDocuments, fetchSummary } from "@/lib/documents/api";
 import { getDocCopy, type Copy } from "@/lib/documents/messages";
-import { hintArchivedView, hintExport, hintUpload, useDocKeys } from "@/lib/documents/session";
+import { hintArchivedView, hintAsk, hintExport, hintUpload, useDocKeys } from "@/lib/documents/session";
 import type { DocItem } from "@/lib/documents/types";
 import { activeFilterCount, AI_STATUSES, DEFAULT_FILTERS, filterParams, fill, fmtDate, fmtMonth, fmtNumber, formatSize, loadViews, MAX_VIEWS, parseFilters, saveViews, SORTS, toApiQuery, type DocFilters, type SavedView } from "@/lib/documents/view";
 import { useUrlParams } from "@/lib/finance/url-state";
@@ -40,6 +41,8 @@ function BarList({ rows, max }: { rows: { label: string; n: number; text?: strin
 }
 
 function RowMenu({ doc, copy, onPreview, onReplace, onArchive, onDelete }: { doc: DocItem; copy: Copy; onPreview: () => void; onReplace: () => void; onArchive: () => void; onDelete: () => void }) {
+  const [menuLocale] = useWorkspaceLocale();
+  const { roleKey } = useDocKeys();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -59,6 +62,7 @@ function RowMenu({ doc, copy, onPreview, onReplace, onArchive, onDelete }: { doc
         <div className="ins-menu-list" role="menu">
           <Link role="menuitem" className="ctr-btn is-ghost" href={`/documents/${doc.id}`} style={{ justifyContent: "flex-start" }}>{copy.dashboard.menu.open}</Link>
           {!evidence && doc.fileAvailable ? item(copy.dashboard.menu.preview, onPreview) : null}
+          {!evidence && hintAsk(roleKey) && doc.ai.eligibleType && doc.ai.allowed && doc.ai.extractedTextStatus === "COMPLETED" ? <Link role="menuitem" className="ctr-btn is-ghost" href={`/documents/ai?doc=${doc.id}`} style={{ justifyContent: "flex-start" }}>{getRagCopy(menuLocale).nav.askAboutDoc}</Link> : null}
           {!evidence && doc.fileAvailable && p.canDownload ? item(copy.dashboard.menu.download, () => void downloadDoc(doc.id, doc.fileName).catch((e) => toast.error(errorText(e, copy)))) : null}
           {p.canReplace ? item(copy.dashboard.menu.replace, onReplace) : null}
           {p.canEdit ? <Link role="menuitem" className="ctr-btn is-ghost" href={`/documents/${doc.id}?edit=1`} style={{ justifyContent: "flex-start" }}>{copy.dashboard.menu.edit}</Link> : null}

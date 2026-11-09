@@ -13,6 +13,7 @@ import { getDocumentStorage } from "../../../modules/inspections/evidence-storag
 import { Inspection } from "../../../modules/inspections/models/inspection.model.js";
 import { Project } from "../../../modules/projects/models/project.model.js";
 import { d } from "../helpers/dates.js";
+import { AI_DEMO_BODIES, makePdfLines } from "./demo-ai-corpus.js";
 import { ctxId, type DemoContext } from "./context.js";
 import { SHOWCASE_CODES } from "./seed-showcase.js";
 
@@ -68,10 +69,17 @@ const SPECS: Spec[] = [
   { no: 24, project: "INF-SHOW-005", category: "GOVERNMENT_CORRESPONDENCE", title: "Land Dispute Notice to the Divisional Secretary (Synthetic)", kind: "txt", tags: ["land", "hold"] },
   { no: 25, project: "INF-SHOW-006", category: "TENDER", title: "Community Hall Tender Notice (Synthetic)", kind: "txt", tags: ["tender"] },
   { no: 26, project: "INF-SHOW-006", category: "PROJECT_PROPOSAL", title: "Community Health Hall Proposal (Synthetic)", kind: "pdf", visibility: "PROJECT_TEAM", tags: ["proposal"] },
+  { no: 27, project: "INF-ROAD-001", category: "CONTRACT", title: "Bridge Rehabilitation Works Contract (Synthetic)", kind: "pdf", tags: ["contract", "ai-demo"], reference: "CNT-RAG-001" },
+  { no: 28, project: "INF-ROAD-001", category: "INSPECTION_REPORT", title: "Culvert Inspection Report (Synthetic)", kind: "txt", visibility: "PROJECT_TEAM", tags: ["inspection", "ai-demo"] },
+  { no: 29, project: "INF-ROAD-001", category: "PROGRESS_REPORT", title: "Monthly Progress Report - October (Synthetic)", kind: "txt", tags: ["progress", "ai-demo"] },
+  { no: 30, project: "INF-ROAD-001", category: "GOVERNMENT_CORRESPONDENCE", title: "Public Notice in English, Sinhala and Tamil (Synthetic)", kind: "txt", visibility: "PROJECT_TEAM", tags: ["notice", "ai-demo"] },
+  { no: 31, project: "INF-ROAD-001", category: "OTHER", title: "Meeting Minutes with Embedded Instruction (Synthetic)", kind: "txt", tags: ["minutes", "ai-demo", "injection-test"] },
 ];
 
 function bytesFor(s: Spec, v: number): { bytes: Buffer; mime: string; ext: string } {
   const label = `${s.title} - version ${v}`;
+  const real = AI_DEMO_BODIES[s.no];
+  if (real) return real.kind === "pdf" ? { bytes: makePdfLines(real.text.split(String.fromCharCode(10))), mime: "application/pdf", ext: "pdf" } : { bytes: Buffer.from(real.text, "utf8"), mime: "text/plain", ext: "txt" };
   if (s.kind === "png") return { bytes: Buffer.concat([PNG, Buffer.from(`synthetic-${s.no}-${v}`)]), mime: "image/png", ext: "png" };
   if (s.kind === "txt") return { bytes: Buffer.from(`${label}\nSynthetic demo content for DocTrace. Not official data.\n`, "utf8"), mime: "text/plain", ext: "txt" };
   return { bytes: makePdf(label), mime: "application/pdf", ext: "pdf" };

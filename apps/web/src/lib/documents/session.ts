@@ -16,5 +16,6 @@ export function useDocKeys() {
 
 /** Role hints only choose what to render; the server is the authority and every action re-checks. */
 export const hintUpload = (r: string): boolean => ["SUPER_ADMIN", "GOV_ADMIN", "AGENCY_OFFICER", "PROJECT_MANAGER"].includes(r);
+export const hintAsk = (r: string): boolean => ["SUPER_ADMIN", "GOV_ADMIN", "AGENCY_OFFICER", "PROJECT_MANAGER", "INSPECTOR"].includes(r);
 export const hintExport = (r: string): boolean => ["SUPER_ADMIN", "GOV_ADMIN", "AGENCY_OFFICER", "PROJECT_MANAGER", "CONTRACTOR", "INSPECTOR"].includes(r);
 export const hintArchivedView = (r: string): boolean => ["GOV_ADMIN", "AGENCY_OFFICER"].includes(r);

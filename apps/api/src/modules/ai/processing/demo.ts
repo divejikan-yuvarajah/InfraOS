@@ -3,6 +3,7 @@ import type mongoose from "mongoose";
 import { DocumentChunk } from "../../documents/models/document-chunk.model.js";
 import { aiClient } from "../ai-client.js";
 import { ProcessingJob } from "./job.model.js";
+import { AiArtifact } from "../rag/artifact.model.js";
 import { AiUsageRecord } from "../usage.model.js";
 
 /**
@@ -17,6 +18,7 @@ export async function purgeAiForDocuments(ids: mongoose.Types.ObjectId[]): Promi
   for (const id of withChunks) {
     try { await client.deleteDocument(String(id)); } catch { unconfirmed += 1; }
   }
+  await AiArtifact.deleteMany({ documentId: { $in: ids } });
   const [chunks, jobs, usage] = await Promise.all([
     DocumentChunk.deleteMany({ documentId: { $in: ids } }),
     ProcessingJob.deleteMany({ documentId: { $in: ids } }),

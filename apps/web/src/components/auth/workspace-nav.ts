@@ -16,6 +16,7 @@ import {
   MapIcon,
   RouteIcon,
   ScanSearchIcon,
+  SparklesIcon,
   ShieldCheckIcon,
   SlidersHorizontalIcon,
   SwordsIcon,
@@ -128,6 +129,15 @@ export const WORKSPACE_NAV: readonly WorkspaceNavGroup[] = [
         materialIcon: "folder_open",
         nodeGlyph: "○",
         i18n: { si: "ලේඛන (DocTrace)", ta: "ஆவணங்கள் (DocTrace)" },
+        roles: ["SUPER_ADMIN", "GOV_ADMIN", "AGENCY_OFFICER", "PROJECT_MANAGER", "INSPECTOR"],
+      },
+      {
+        href: "/documents/ai",
+        label: "AI Documents",
+        icon: SparklesIcon,
+        materialIcon: "auto_awesome",
+        nodeGlyph: "○",
+        i18n: { si: "AI ලේඛන", ta: "AI ஆவணங்கள்" },
         roles: ["SUPER_ADMIN", "GOV_ADMIN", "AGENCY_OFFICER", "PROJECT_MANAGER", "INSPECTOR"],
       },
       {

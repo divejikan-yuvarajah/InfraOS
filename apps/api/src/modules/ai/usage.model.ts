@@ -1,10 +1,11 @@
 import mongoose, { Schema } from "mongoose";
-import { AI_USAGE_KINDS, AI_USAGE_STATUSES } from "@infraos/shared-types";
+import { AI_USAGE_KINDS, AI_USAGE_PURPOSES, AI_USAGE_STATUSES } from "@infraos/shared-types";
 import { nonNegativeInteger, reference, textField } from "../../shared/database/fields.js";
 
 /** Token usage ledger (embeddings now; chat/vision later). estimatedCostMinor is set only when a verified price constant is configured. */
 const usageSchema = new Schema({
   kind: { type: String, enum: AI_USAGE_KINDS, required: true },
+  purpose: { type: String, enum: AI_USAGE_PURPOSES },
   agencyId: reference("Agency"),
   userId: reference("User", false),
   documentId: reference("Document", false),
