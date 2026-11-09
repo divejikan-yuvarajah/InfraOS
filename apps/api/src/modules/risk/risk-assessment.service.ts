@@ -9,8 +9,8 @@ import type {
 import type { AuthenticatedActor } from "../identity/auth/require-authenticated.js";
 import {
   projectReadFilter,
-  resolveResourceScope,
-} from "../identity/authorization/resource-scope.js";
+  resolveRiskScope,
+} from "./risk-scope.js";
 import { Project } from "../projects/models/project.model.js";
 import {
   computeEffectiveResolutionStatus,
@@ -46,16 +46,17 @@ export async function assessProject(
     .lean();
 
   // 3. Unchanged idempotency check (§4.7)
-  const isUnchanged =
+  const ttlMs = trigger === "SCHEDULED" ? 7 * DAY_MS : DAY_MS;
+  const isWithinTtl =
     latestDoc &&
     latestDoc.inputsHash &&
     !options?.force &&
-    now.getTime() - new Date(latestDoc.createdAt).getTime() < DAY_MS;
+    now.getTime() - new Date(latestDoc.createdAt).getTime() < ttlMs;
 
   // Run pure engine
   const result = evaluateRisk(inputs, now, latestDoc as any);
 
-  if (isUnchanged && latestDoc.inputsHash === result.inputsHash) {
+  if (isWithinTtl && latestDoc.inputsHash === result.inputsHash) {
     return {
       assessment: latestDoc as unknown as RiskAssessmentDto,
       unchanged: true,
@@ -162,7 +163,7 @@ export async function getProjectLatestAssessment(
   canAssess: boolean;
   canResolve: boolean;
 }> {
-  const scope = await resolveResourceScope(actor);
+  const scope = await resolveRiskScope(actor);
   if (!mongoose.Types.ObjectId.isValid(projectId)) {
     throw new RiskAccessError(404, "NOT_FOUND", "Project not found");
   }
@@ -234,7 +235,7 @@ export async function getProjectAssessmentById(
   assessmentId: string,
   viewerPermissions: ViewerPermissions,
 ): Promise<RiskAssessmentDto> {
-  const scope = await resolveResourceScope(actor);
+  const scope = await resolveRiskScope(actor);
   if (
     !mongoose.Types.ObjectId.isValid(projectId) ||
     !mongoose.Types.ObjectId.isValid(assessmentId)
@@ -270,7 +271,7 @@ export async function getProjectRiskHistory(
   projectId: string,
   query: { limit?: number; cursor?: string },
 ): Promise<{ items: RiskAssessmentSummaryDto[]; nextCursor: string | null }> {
-  const scope = await resolveResourceScope(actor);
+  const scope = await resolveRiskScope(actor);
   if (!mongoose.Types.ObjectId.isValid(projectId)) {
     throw new RiskAccessError(404, "NOT_FOUND", "Project not found");
   }

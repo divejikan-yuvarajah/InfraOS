@@ -6,8 +6,8 @@ import type {
 import type { AuthenticatedActor } from "../identity/auth/require-authenticated.js";
 import {
   projectWriteFilter,
-  resolveResourceScope,
 } from "../identity/authorization/resource-scope.js";
+import { resolveRiskScope } from "./risk-scope.js";
 import { Project } from "../projects/models/project.model.js";
 import { RiskAssessment } from "./models/risk-assessment.model.js";
 import { RiskResolution } from "./models/risk-resolution.model.js";
@@ -26,7 +26,7 @@ export async function listProjectResolutions(
   actor: AuthenticatedActor,
   projectId: string,
 ): Promise<RiskResolutionDto[]> {
-  const scope = await resolveResourceScope(actor);
+  const scope = await resolveRiskScope(actor);
   if (!mongoose.Types.ObjectId.isValid(projectId)) {
     throw new RiskAccessError(404, "NOT_FOUND", "Project not found");
   }
@@ -53,7 +53,7 @@ export async function updateResolution(
   fingerprint: string,
   input: UpdateResolutionInput,
 ): Promise<RiskResolutionDto> {
-  const scope = await resolveResourceScope(actor);
+  const scope = await resolveRiskScope(actor);
   if (!mongoose.Types.ObjectId.isValid(projectId)) {
     throw new RiskAccessError(404, "NOT_FOUND", "Project not found");
   }

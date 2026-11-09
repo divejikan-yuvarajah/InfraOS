@@ -3,6 +3,7 @@ import { z } from "zod";
 import { failure, success } from "../../shared/http/envelope.js";
 import { requireAuthenticated } from "../identity/auth/require-authenticated.js";
 import { requirePermission } from "../identity/authorization/require-permission.js";
+import { resolveRiskScope } from "./risk-scope.js";
 import { Role } from "../identity/models/role.model.js";
 import {
   assessProject,
@@ -24,6 +25,11 @@ import {
   listProjectResolutions,
   updateResolution,
 } from "./risk-resolution.service.js";
+import {
+  getRecentRuns,
+  getRunById,
+  startAdminBulkRun,
+} from "./risk-scheduler.js";
 import type { ViewerPermissions } from "./risk-tiering.js";
 
 function noStore(res: Response): void {
@@ -190,6 +196,89 @@ riskRouter.get(
         `attachment; filename="risk-projects-${new Date().toISOString().slice(0, 10)}.csv"`,
       );
       res.send(csv);
+    } catch (err) {
+      handleRouteError(err, req, res);
+    }
+  },
+);
+
+// POST /risk/assess-all (admin bulk assess)
+riskRouter.post(
+  "/assess-all",
+  requireAuthenticated,
+  requirePermission("risk.request"),
+  async (req, res) => {
+    try {
+      noStore(res);
+      const actor = req.actor!;
+      if (actor.roleKey !== "SUPER_ADMIN" && actor.roleKey !== "GOV_ADMIN") {
+        throw new RiskAccessError(
+          403,
+          "FORBIDDEN",
+          "Bulk assessment requires GOV_ADMIN or SUPER_ADMIN role",
+        );
+      }
+      const scope = await resolveRiskScope(actor);
+      const scopeStr =
+        scope.kind === "platform"
+          ? "platform"
+          : scope.kind === "agencies"
+            ? (scope.agencyIds[0]?.toString() ?? "platform")
+            : "none";
+      const run = await startAdminBulkRun(actor, scopeStr);
+      res.status(202).json(success({ runId: run.runId, id: run._id.toString(), status: run.status }, req.requestId));
+    } catch (err) {
+      handleRouteError(err, req, res);
+    }
+  },
+);
+
+// GET /risk/runs
+riskRouter.get(
+  "/runs",
+  requireAuthenticated,
+  requirePermission("risk.request"),
+  async (req, res) => {
+    try {
+      noStore(res);
+      const actor = req.actor!;
+      if (actor.roleKey !== "SUPER_ADMIN" && actor.roleKey !== "GOV_ADMIN") {
+        throw new RiskAccessError(
+          403,
+          "FORBIDDEN",
+          "Viewing runs requires GOV_ADMIN or SUPER_ADMIN role",
+        );
+      }
+      const runs = await getRecentRuns();
+      res.json(success(runs, req.requestId));
+    } catch (err) {
+      handleRouteError(err, req, res);
+    }
+  },
+);
+
+// GET /risk/runs/:id
+riskRouter.get(
+  "/runs/:id",
+  requireAuthenticated,
+  requirePermission("risk.request"),
+  async (req, res) => {
+    try {
+      noStore(res);
+      const actor = req.actor!;
+      if (actor.roleKey !== "SUPER_ADMIN" && actor.roleKey !== "GOV_ADMIN") {
+        throw new RiskAccessError(
+          403,
+          "FORBIDDEN",
+          "Viewing run details requires GOV_ADMIN or SUPER_ADMIN role",
+        );
+      }
+      const id = paramStr(req.params.id);
+      const run = await getRunById(id);
+      if (!run) {
+        throw new RiskAccessError(404, "NOT_FOUND", "Risk run not found");
+      }
+      res.json(success(run, req.requestId));
     } catch (err) {
       handleRouteError(err, req, res);
     }

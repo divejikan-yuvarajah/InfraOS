@@ -1,6 +1,6 @@
 import type { ClientSession } from "mongoose";
 import type { AuthenticatedActor } from "../identity/auth/require-authenticated.js";
-import { resolveResourceScope } from "../identity/authorization/resource-scope.js";
+import { resolveRiskScope } from "./risk-scope.js";
 import type { RiskInputs, SourceEnvelope } from "./engine/types.js";
 import {
   fetchContractorSource,
@@ -49,7 +49,7 @@ export async function assembleRiskInputs(
   now: Date,
   session?: ClientSession,
 ): Promise<RiskInputs> {
-  const scope = await resolveResourceScope(actor);
+  const scope = await resolveRiskScope(actor);
 
   // 1. Fetch core project within actor's scope
   const projectEnv = await fetchProjectSource(projectId, scope, session);

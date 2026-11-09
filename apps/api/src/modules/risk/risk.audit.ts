@@ -9,6 +9,8 @@ export type RiskAuditAction =
   | "risk.resolution_updated"
   | "risk.narrative_generated"
   | "risk.bulk_assessment_started"
+  | "risk.run_completed"
+  | "risk.run_started"
   | "risk.exported";
 
 export interface WriteRiskAuditOptions {
@@ -19,6 +21,7 @@ export interface WriteRiskAuditOptions {
   status?: string;
   reason?: string;
   requestId?: string;
+  resourceType?: "PROJECT" | "RISK_ASSESSMENT" | "SYSTEM";
 }
 
 /**
@@ -43,7 +46,7 @@ export async function writeRiskAudit(
       {
         ...(opts.actorUserId ? { userId: oid(opts.actorUserId) } : {}),
         action: opts.action,
-        resourceType: "PROJECT",
+        resourceType: opts.resourceType ?? "PROJECT",
         resourceId: oid(opts.resourceId),
         ...(opts.agencyId ? { agencyId: oid(opts.agencyId) } : {}),
         ...(Object.keys(snap).length ? { newValue: snap } : {}),

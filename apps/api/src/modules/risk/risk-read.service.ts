@@ -16,8 +16,8 @@ import { colomboDayStart } from "./engine/math.js";
 import type { AuthenticatedActor } from "../identity/auth/require-authenticated.js";
 import {
   projectReadFilter,
-  resolveResourceScope,
-} from "../identity/authorization/resource-scope.js";
+  resolveRiskScope,
+} from "./risk-scope.js";
 import { Agency } from "../agencies/models/agency.model.js";
 import { Project } from "../projects/models/project.model.js";
 import { RiskAssessment } from "./models/risk-assessment.model.js";
@@ -66,7 +66,7 @@ export interface RiskProjectsQuery {
 export async function getRiskOverview(
   actor: AuthenticatedActor,
 ): Promise<RiskOverviewDto> {
-  const scope = await resolveResourceScope(actor);
+  const scope = await resolveRiskScope(actor);
   const now = new Date();
   const today = colomboDayStart(now);
   const staleThreshold = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
@@ -209,7 +209,7 @@ export async function getRiskProjects(
   actor: AuthenticatedActor,
   query: RiskProjectsQuery,
 ): Promise<RiskProjectsListDto> {
-  const scope = await resolveResourceScope(actor);
+  const scope = await resolveRiskScope(actor);
   const now = new Date();
   const today = colomboDayStart(now);
   const staleThreshold = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
@@ -405,7 +405,7 @@ export async function getRiskProjects(
 export async function getRiskScatter(
   actor: AuthenticatedActor,
 ): Promise<RiskScatterPointDto[]> {
-  const scope = await resolveResourceScope(actor);
+  const scope = await resolveRiskScope(actor);
   const filter = {
     $and: [
       projectReadFilter(scope),
@@ -438,7 +438,7 @@ export async function getPortfolioTrend(
   actor: AuthenticatedActor,
   rangeWeeks: number = 12,
 ): Promise<RiskPortfolioTrendDto> {
-  const scope = await resolveResourceScope(actor);
+  const scope = await resolveRiskScope(actor);
   const projects = await Project.find(projectReadFilter(scope))
     .select("_id")
     .lean();

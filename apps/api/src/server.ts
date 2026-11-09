@@ -8,6 +8,7 @@ import {
 } from "./config/database.js";
 import { env, requireMongoConfig } from "./config/env.js";
 import { startAiBackground, stopAiBackground } from "./modules/ai/ai.bootstrap.js";
+import { startRiskScheduler } from "./modules/risk/risk-scheduler.js";
 import { logger } from "./shared/logger.js";
 
 const SHUTDOWN_TIMEOUT_MS = 10_000;
@@ -50,7 +51,10 @@ async function connectMongoIfConfigured(): Promise<void> {
   }
 }
 
-function registerShutdown(server: Server): void {
+function registerShutdown(
+  server: Server,
+  cleanupHooks: (() => Promise<void>)[] = [],
+): void {
   let shuttingDown = false;
 
   async function shutdown(signal: string): Promise<void> {
@@ -67,6 +71,9 @@ function registerShutdown(server: Server): void {
     force.unref();
 
     server.close(async (closeError) => {
+      for (const hook of cleanupHooks) {
+        await hook().catch(() => undefined);
+      }
       await stopAiBackground().catch(() => undefined);
       if (closeError) {
         logger.error(
@@ -98,7 +105,8 @@ async function main(): Promise<void> {
   await connectMongoIfConfigured();
   const server = await startHttpServer();
   startAiBackground();
-  registerShutdown(server);
+  const riskScheduler = startRiskScheduler();
+  registerShutdown(server, [async () => riskScheduler.stop()]);
 }
 
 main().catch((error: unknown) => {
