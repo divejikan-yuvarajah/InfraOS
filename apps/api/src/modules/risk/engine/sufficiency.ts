@@ -191,6 +191,10 @@ export function evaluateCategorySufficiency(
         missing.push("roadsync_unavailable");
         return { sufficiency: "INSUFFICIENT", missing };
       }
+      if (!project?.startDate || !project?.plannedEndDate) {
+        missing.push("project_dates_missing");
+        return { sufficiency: "INSUFFICIENT", missing };
+      }
       if (!inputs.contractor.available) {
         missing.push("contractor_data_unavailable");
         return { sufficiency: "LIMITED", missing };

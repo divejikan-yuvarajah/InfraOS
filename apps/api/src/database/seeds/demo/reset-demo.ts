@@ -21,6 +21,8 @@ import { CitizenIssue } from "../../../modules/issues/models/citizen-issue.model
 import { Milestone } from "../../../modules/projects/models/milestone.model.js";
 import { Project } from "../../../modules/projects/models/project.model.js";
 import { RiskAssessment } from "../../../modules/risk/models/risk-assessment.model.js";
+import { RiskResolution } from "../../../modules/risk/models/risk-resolution.model.js";
+import { RiskRun } from "../../../modules/risk/models/risk-run.model.js";
 import { WorkRequest } from "../../../modules/roadsync/models/work-request.model.js";
 import { Contractor } from "../../../modules/contractors/models/contractor.model.js";
 import { ProjectBudgetRevision } from "../../../modules/finance/models/project-budget-revision.model.js";
@@ -37,6 +39,7 @@ import {
   DEMO_LAYER_AGENCY_CODES,
   DEMO_LIFECYCLE_PROJECT_CODES,
   DEMO_PROJECT_CODES,
+  DEMO_RISK_PROJECT_CODES,
 } from "./catalog.js";
 
 /** DocTrace demo rows: seeded documents (reserved DOC-2026-9000nn range) with their versions and GridFS blobs, including the project-less correspondence. */
@@ -73,7 +76,14 @@ export async function resetDemoData(seedEnv: SeedEnvSlice): Promise<void> {
   }
 
   const demoProjects = await Project.find({
-    projectCode: { $in: [...DEMO_PROJECT_CODES, ...DEMO_LIFECYCLE_PROJECT_CODES, ...SHOWCASE_CODES] },
+    projectCode: {
+      $in: [
+        ...DEMO_PROJECT_CODES,
+        ...DEMO_LIFECYCLE_PROJECT_CODES,
+        ...DEMO_RISK_PROJECT_CODES,
+        ...SHOWCASE_CODES,
+      ],
+    },
   }).select("_id");
   const demoProjectIds = demoProjects.map((p) => p._id);
 
@@ -115,6 +125,8 @@ export async function resetDemoData(seedEnv: SeedEnvSlice): Promise<void> {
 
   if (demoProjectIds.length > 0) {
     await RiskAssessment.deleteMany({ projectId: { $in: demoProjectIds } });
+    await RiskResolution.deleteMany({ projectId: { $in: demoProjectIds } });
+    await RiskRun.deleteMany({});
     // Evidence bytes (GridFS), evidence rows and the append-only verification ledger go before the inspections they point at.
     const inspectionIds = (await Inspection.find({ projectId: { $in: demoProjectIds } }).select("_id").lean()).map((i) => String(i._id));
     const db = mongoose.connection.db;

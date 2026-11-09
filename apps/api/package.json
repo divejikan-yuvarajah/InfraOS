@@ -24,6 +24,8 @@
     "db:sync:document-permissions": "tsx src/scripts/sync-document-permissions.ts",
     "db:sync:risk-permissions": "tsx src/scripts/sync-risk-permissions.ts",
     "risk:migrate": "tsx src/scripts/migrate-risk-batch11.ts",
+    "risk:smoke": "tsx src/scripts/risk-smoke.ts",
+    "risk:demo-sequence": "tsx src/scripts/risk-demo-sequence.ts",
     "db:backfill:finance": "tsx src/scripts/backfill-finance-batch05.ts",
     "db:backfill:inspections": "tsx src/scripts/backfill-inspections-batch06.ts",
     "db:backfill:assets": "tsx src/scripts/backfill-assets-batch07.ts",
