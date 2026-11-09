@@ -30,6 +30,7 @@ import {
   getRunById,
   startAdminBulkRun,
 } from "./risk-scheduler.js";
+import { generateRiskNarrative } from "./risk-narrative.service.js";
 import type { ViewerPermissions } from "./risk-tiering.js";
 
 function noStore(res: Response): void {
@@ -411,6 +412,35 @@ projectRiskRouter.get(
         viewerPermissions,
       );
       res.json(success(assessment, req.requestId));
+    } catch (err) {
+      handleRouteError(err, req, res);
+    }
+  },
+);
+
+// POST /projects/:projectId/risk/assessments/:aid/explain (optional AI narrative)
+const explainBodySchema = z.object({
+  language: z.enum(["en", "si", "ta"]).optional(),
+  regenerate: z.boolean().optional(),
+});
+
+projectRiskRouter.post(
+  "/assessments/:aid/explain",
+  requireAuthenticated,
+  requirePermission("risk.request"),
+  async (req, res) => {
+    try {
+      noStore(res);
+      const projectId = paramStr(req.params.projectId);
+      const aid = paramStr(req.params.aid);
+      const body = explainBodySchema.parse(req.body ?? {});
+      const narrative = await generateRiskNarrative(
+        req.actor!,
+        projectId,
+        aid,
+        body,
+      );
+      res.json(success(narrative, req.requestId));
     } catch (err) {
       handleRouteError(err, req, res);
     }
