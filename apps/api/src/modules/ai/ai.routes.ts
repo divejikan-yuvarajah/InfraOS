@@ -11,6 +11,7 @@ import { aiStatus, bulkReprocess, cancelDocumentJob, diagnosticSearch, getDocume
 import { askQuestion } from "./rag/rag.service.js";
 import { ragHandle } from "./rag/http.js";
 import { chunkContext, deleteThread, getInteraction, getThread, listThreads, scopePreview, submitFeedback } from "./rag/qa.service.js";
+import { createSummary, listSummaries, readSummary, summaryBody } from "./rag/summary.service.js";
 import { askBody, chunkContextParams, feedbackBody, scopePreviewQuery, threadParam, threadsQuery } from "./rag/rag.schema.js";
 import { RagFlow } from "./rag/http.js";
 import { aiConfig } from "./ai.config.js";
@@ -95,3 +96,11 @@ aiDocumentRouter.get("/:id/ai/chunks/:chunkId/context", ...auth, requirePermissi
   const p = chunkContextParams.safeParse({ chunkId: param(req.params.chunkId) });
   return p.success ? chunkContext(actor, param(req.params.id), p.data.chunkId) : bad();
 }));
+
+// ---- Batch 10: summaries (async, cached artifacts; document.ask + document access)
+aiDocumentRouter.get("/:id/ai/summaries", ...auth, requirePermission("document.ask"), read, ragHandle({}, async (req, _res, actor) => listSummaries(actor, param(req.params.id))));
+aiDocumentRouter.post("/:id/ai/summaries", ...auth, requirePermission("document.ask"), qaLimit, ragHandle({ body: true }, async (req, _res, actor) => {
+  const b = summaryBody.safeParse(req.body);
+  return b.success ? createSummary(actor, param(req.params.id), b.data, req.requestId) : bad();
+}));
+aiDocumentRouter.get("/:id/ai/summaries/:artifactId", ...auth, requirePermission("document.ask"), read, ragHandle({}, async (req, _res, actor) => readSummary(actor, param(req.params.id), param(req.params.artifactId))));

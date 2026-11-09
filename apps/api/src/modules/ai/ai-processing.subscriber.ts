@@ -2,6 +2,7 @@ import { logger } from "../../shared/logger.js";
 import { onDocumentEvent } from "../documents/document-events.js";
 import { aiConfig } from "./ai.config.js";
 import { enqueueJob, loadAiDocument } from "./processing/job.service.js";
+import { markArtifactsStale } from "./rag/artifact.common.js";
 import { purgeDocument } from "./processing/purge.js";
 
 /**
@@ -25,6 +26,7 @@ export function registerAiProcessingSubscribers(): () => void {
   unregisterAiProcessingSubscribers();
   registered = [
     onDocumentEvent("document.version_ready", (e) => safe("version_ready", async () => {
+      await markArtifactsStale(e.documentId, e.versionNo);
       if (!aiConfig.processingEnabled) return;
       await enqueueJob({ documentId: e.documentId, versionNo: e.versionNo, trigger: e.versionNo > 1 ? "REPLACE" : "UPLOAD" });
     })),
