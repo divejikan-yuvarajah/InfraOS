@@ -33,6 +33,8 @@ import { Milestone } from "../../modules/projects/models/milestone.model.js";
 import { Project } from "../../modules/projects/models/project.model.js";
 import { HazardZone } from "../../modules/risk/models/hazard-zone.model.js";
 import { RiskAssessment } from "../../modules/risk/models/risk-assessment.model.js";
+import { RiskResolution } from "../../modules/risk/models/risk-resolution.model.js";
+import { RiskRun } from "../../modules/risk/models/risk-run.model.js";
 import { Candidate } from "../../modules/roadsync/models/candidate.model.js";
 import { Conflict } from "../../modules/roadsync/models/conflict.model.js";
 import { ConflictRead, ConflictRecord, RoadsyncCounter } from "../../modules/roadsync/models/conflict-record.model.js";
@@ -97,6 +99,8 @@ export const INDEX_MODELS = [
   CitizenIssue,
   Notification,
   RiskAssessment,
+  RiskResolution,
+  RiskRun,
   HazardZone,
   AuditLog,
 ] as const;
