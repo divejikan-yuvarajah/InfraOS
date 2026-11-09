@@ -65,3 +65,4 @@ export type RiskRunDocument = mongoose.InferSchemaType<
 export const RiskRun =
   (mongoose.models.RiskRun as mongoose.Model<RiskRunDocument> | undefined) ??
   mongoose.model<RiskRunDocument>("RiskRun", riskRunSchema);
+

@@ -41,3 +41,4 @@ main().catch((error: unknown) => {
   console.error("sync failed:", error instanceof Error ? sanitizeMongoError(error) : "unknown");
   process.exit(1);
 });
+

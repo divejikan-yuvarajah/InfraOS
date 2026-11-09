@@ -52,3 +52,4 @@ export async function syncRiskPermissions(apply: boolean): Promise<(RiskSyncPlan
   }
   return out;
 }
+
