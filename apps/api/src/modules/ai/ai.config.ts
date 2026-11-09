@@ -63,7 +63,7 @@ export function loadAiConfig(): AiConfig {
       summaryMaxInputTokens: int("AI_SUMMARY_MAX_INPUT_TOKENS", 200_000, 1000, 2_000_000), redactContext: bool("AI_REDACT_CONTEXT", true), interactionTtlDays: int("AI_INTERACTION_TTL_DAYS", 90, 1, 3650),
       priceInputPerMMinor: num("AI_CHAT_PRICE_INPUT_PER_M_MINOR"), priceOutputPerMMinor: num("AI_CHAT_PRICE_OUTPUT_PER_M_MINOR"),
     },
-    rag: { topK: int("RAG_TOP_K", 24, 4, 50), contextChunks: int("RAG_CONTEXT_CHUNKS", 8, 1, 20), contextMaxChars: int("RAG_CONTEXT_MAX_CHARS", 12_000, 1000, 60_000), minScore: dec("RAG_MIN_SCORE", 0.45), perDocCap: int("RAG_PER_DOC_CAP", 4, 1, 10), requestsPer10Min: int("AI_REQUESTS_PER_10_MIN", 20, 1, 500) },
+    rag: { topK: int("RAG_TOP_K", 24, 4, 50), contextChunks: int("RAG_CONTEXT_CHUNKS", 8, 1, 20), contextMaxChars: int("RAG_CONTEXT_MAX_CHARS", 12_000, 1000, 60_000), minScore: dec("RAG_MIN_SCORE", 0.4), perDocCap: int("RAG_PER_DOC_CAP", 4, 1, 10), requestsPer10Min: int("AI_REQUESTS_PER_10_MIN", 20, 1, 500) },
   };
 }
 
