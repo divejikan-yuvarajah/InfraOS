@@ -157,7 +157,7 @@ export const listJobs = (actor: AuthenticatedActor, q: z.infer<typeof jobsQuery>
   // Authorization = the same read filter every other document query uses; jobs are visible only for documents the caller can read.
   const visible = await Document.find({ $and: docFilter }).select("_id").limit(5000).lean();
   const jf: Record<string, unknown> = { documentId: { $in: visible.map((v) => v._id) } };
-  if (q.status) jf.status = q.status;
+  if (q.status) jf.status = q.status === "ACTIVE" ? { $in: ["QUEUED", "RUNNING", "DEFERRED"] } : q.status;
   if (q.trigger) jf.trigger = q.trigger;
   if (q.from || q.to) jf.createdAt = { ...(q.from ? { $gte: new Date(`${q.from}T00:00:00.000Z`) } : {}), ...(q.to ? { $lte: new Date(`${q.to}T23:59:59.999Z`) } : {}) };
   const [total, rows] = await Promise.all([

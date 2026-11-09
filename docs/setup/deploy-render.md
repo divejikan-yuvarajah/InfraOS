@@ -1,6 +1,6 @@
 # Deploying INFRAOS to Render
 
-Two Render **Web Services** from one GitHub repository (npm workspaces): the **API** (Express) and the **web app** (Next.js). The database stays on **MongoDB Atlas**. The optional AI service is not part of this guide.
+Two Render **Web Services** from one GitHub repository (npm workspaces): the **API** (Express) and the **web app** (Next.js). The database stays on **MongoDB Atlas**. The optional **AI service** (FastAPI, `infraos-ai` in `render.yaml`) is described in the section at the end of this guide.
 
 ```text
 Browser ──► infraos-web (Next.js)  ──► infraos-api (Express) ──► MongoDB Atlas
@@ -154,3 +154,11 @@ npm run db:set-password -- <email> <new-password>
 Push to the deployed branch. Render redeploys automatically. If you change a `NEXT_PUBLIC_*` value, trigger a web redeploy (with *Clear build cache*), because those values are compiled into the build.
 
 When you continue development, keep deploying from `main` (merge reviewed work into `development`, then into `main`) so the live demo only changes when you intend it to.
+
+## Optional: AI service (Phase 10 Batch 09)
+
+1. **Qdrant Cloud**: create a free cluster, copy its HTTPS URL and an API key (never commit them).
+2. Render creates `infraos-ai` from `render.yaml` (Python, `rootDir apps/ai-service`, build `pip install .`, start `uvicorn app.main:app --host 0.0.0.0 --port $PORT`, health `/health`). Set `AI_INTERNAL_SECRET` (random, 48+ bytes), `OPENROUTER_API_KEY`, `QDRANT_URL`, `QDRANT_API_KEY`; `AI_EMBED_MODEL` defaults to `baai/bge-m3`.
+3. On `infraos-api` set `AI_BASE_URL` to the `infraos-ai` origin and the **same** `AI_INTERNAL_SECRET`. Without them the API boots normally and DocTrace reports AI processing as unavailable.
+4. Free instances sleep; the API job runner wakes the service (up to about 70 s) and retries with backoff. Run `npm run ai:smoke` locally against the deployed URL to verify.
+5. Existing databases: run `npm run db:migrate:document-chunks` (dry run first, then `-- --commit`) and `npm run db:sync:document-permissions` (dry run, then `-- --apply --confirm-db=<name>`) once, after owner approval.

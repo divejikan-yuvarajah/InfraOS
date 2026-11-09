@@ -1,0 +1,58 @@
+{
+  "fileSha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "pipelineVersion": "p1",
+  "pageCount": 2,
+  "pages": [
+    {
+      "page": 1,
+      "charCount": 120
+    },
+    {
+      "page": 2,
+      "charCount": 80
+    }
+  ],
+  "chunks": [
+    {
+      "chunkId": "aaaaaaaaaaaaaaaaaaaaaaaa:1:0",
+      "chunkIndex": 0,
+      "text": "1. Definitions The Contractor shall complete the works.",
+      "pageStart": 1,
+      "pageEnd": 2,
+      "section": "1. Definitions",
+      "contentHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "charCount": 54,
+      "tokenEstimate": 14
+    },
+    {
+      "chunkId": "aaaaaaaaaaaaaaaaaaaaaaaa:1:1",
+      "chunkIndex": 1,
+      "text": "ඉදිකිරීම්කරු මාස 12ක් ඇතුළත වැඩ නිම කළ යුතුය.",
+      "pageStart": null,
+      "pageEnd": null,
+      "section": null,
+      "contentHash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "charCount": 40,
+      "tokenEstimate": 20
+    }
+  ],
+  "stats": {
+    "pages": 2,
+    "chars": 200,
+    "chunks": 2,
+    "duplicatesDropped": 0,
+    "truncated": false,
+    "scripts": {
+      "si": 30,
+      "ta": 0,
+      "latin": 50
+    },
+    "dominantScripts": [
+      "latin",
+      "si"
+    ]
+  },
+  "warnings": [
+    "PARTIAL_TEXT"
+  ]
+}

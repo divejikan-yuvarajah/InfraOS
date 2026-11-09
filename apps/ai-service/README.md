@@ -12,7 +12,7 @@ Stateless **Python 3.12 + FastAPI** compute service (Phase 10, Batch 09). It ext
 
 ## Endpoints
 
-`GET /health` (open) · `GET /ready` · `GET /v1/capabilities` · `POST /v1/extract-chunk` · `POST /v1/index` · `POST /v1/delete` · `POST /v1/search` · `POST /v1/admin/reindex-plan`. Errors: `{ code, message, retryable, requestId }`.
+`GET /health` (open) · `GET /ready` · `GET /v1/capabilities` · `POST /v1/extract-chunk` · `POST /v1/index` · `POST /v1/delete` · `POST /v1/search` · `POST /v1/admin/reindex-plan` · `POST /v1/admin/drop-collection` (reindex finalise; refuses the active collection). Errors: `{ code, message, retryable, requestId }`.
 
 ## Local run
 
@@ -25,6 +25,8 @@ docker run -p 6333:6333 qdrant/qdrant
 .venv\Scripts\python -m uvicorn app.main:app --port 8000
 .venv\Scripts\python -m pytest
 ```
+
+Live check (service + Qdrant + embeddings running): `npm run ai:smoke` from the repo root. It prints SKIPPED, never a fake pass, when credentials are missing.
 
 Env names (values never in Git): `APP_ENV`, `PORT`, `AI_INTERNAL_SECRET` (must equal the API's), `OPENROUTER_API_KEY`, `AI_EMBED_MODEL` (canonical model variable; default `baai/bge-m3`), `EMBED_BASE_URL`, `QDRANT_URL`, `QDRANT_API_KEY`, `QDRANT_COLLECTION`. Catalog: [../../docs/setup/environment.md](../../docs/setup/environment.md).
 

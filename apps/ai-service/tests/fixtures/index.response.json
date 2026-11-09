@@ -1,0 +1,8 @@
+{
+  "embedded": 1,
+  "skipped": 0,
+  "tokens": 12,
+  "model": "BAAI/bge-m3",
+  "dimension": 1024,
+  "collection": "infraos_chunks__baai-bge-m3__1024"
+}

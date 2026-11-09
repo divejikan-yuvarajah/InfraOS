@@ -11,7 +11,7 @@ const intIn = (min: number, max: number) => z.coerce.number().int().min(min).max
 export const chunkQuery = z.object({ page: intIn(1, 1000).default(1), limit: intIn(1, 20).default(10) }).strict();
 
 export const jobsQuery = z.object({
-  status: z.enum(AI_JOB_STATUSES).optional(), trigger: z.enum(AI_JOB_TRIGGERS).optional(), from: dayStr.optional(), to: dayStr.optional(),
+  status: z.enum([...AI_JOB_STATUSES, "ACTIVE"] as [string, ...string[]]).optional(), trigger: z.enum(AI_JOB_TRIGGERS).optional(), from: dayStr.optional(), to: dayStr.optional(),
   documentId: objectId.optional(), agencyId: objectId.optional(), q: z.string().trim().max(100).refine(clean, "control characters").optional(),
   page: intIn(1, 1000).default(1), limit: intIn(1, 50).default(25),
 }).strict();

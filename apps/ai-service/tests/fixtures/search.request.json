@@ -1,0 +1,7 @@
+{
+  "query": "payment terms",
+  "allowedDocumentIds": [
+    "aaaaaaaaaaaaaaaaaaaaaaaa"
+  ],
+  "topK": 5
+}
