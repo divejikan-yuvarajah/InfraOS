@@ -26,3 +26,9 @@ export async function budgetState(now = new Date(), pendingEstimate = 0, budget 
   const used = await tokensUsedToday(now);
   return { used, budget, remaining: Math.max(0, budget - used), exceeded: used + pendingEstimate > budget, resetsAt: nextColomboMidnight(now) };
 }
+
+/** Chat/summary/extraction token budget (separate from the embedding budget). `pendingEstimate` guards a single large job from blowing far past the cap. */
+export async function chatBudgetState(now = new Date(), pendingEstimate = 0, budget = aiConfig.chat.dailyTokenBudget): Promise<BudgetState> {
+  const used = await tokensUsedToday(now, "CHAT");
+  return { used, budget, remaining: Math.max(0, budget - used), exceeded: used + pendingEstimate > budget, resetsAt: nextColomboMidnight(now) };
+}

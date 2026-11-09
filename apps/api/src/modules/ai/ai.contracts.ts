@@ -53,7 +53,7 @@ export const dropCollectionResponse = z.object({ dropped: z.boolean() });
 export const deleteResponse = z.object({ removed: z.number().int().nonnegative() });
 
 export const searchRequest = z.object({
-  query: z.string().min(1).max(1000), allowedDocumentIds: z.array(objectId).min(1).max(500), topK: z.number().int().min(1).max(20).optional(),
+  query: z.string().min(1).max(1000), allowedDocumentIds: z.array(objectId).min(1).max(500), topK: z.number().int().min(1).max(50).optional(),
   filters: z.object({ category: z.string().max(60).optional(), projectId: objectId.optional() }).optional(),
 });
 export type SearchRequest = z.infer<typeof searchRequest>;
@@ -62,7 +62,7 @@ export const searchResponse = z.object({
   hits: z.array(z.object({
     chunkId: z.string(), documentId: objectId, versionNo: z.number().int().positive(), score: z.number(),
     pageStart: z.number().int().positive().nullable(), pageEnd: z.number().int().positive().nullable(),
-  })).max(20),
+  })).max(50),
   model: z.string(), dimension: z.number().int().positive(), tokens: z.number().int().nonnegative(),
 });
 export type SearchResponse = z.infer<typeof searchResponse>;

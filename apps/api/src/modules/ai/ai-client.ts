@@ -1,17 +1,19 @@
 import { createHash, createHmac, randomUUID } from "node:crypto";
 import type { z } from "zod";
 
-import { AI_ERROR_CODES, type AiErrorCode } from "@infraos/shared-types";
+import { AI_ERROR_CODES, type AiErrorCode, type AiRagErrorCode } from "@infraos/shared-types";
 import { logger } from "../../shared/logger.js";
 import { aiConfig, type AiConfig } from "./ai.config.js";
 import {
+  answerRequest, answerResponse, extractRequest, extractResponse, mapRequest, mapResponse, reduceRequest, reduceResponse,
+  type AnswerRequest, type AnswerResponse, type ExtractResponse, type MapResponse, type ReduceResponse,
   capabilitiesResponse, deleteResponse, dropCollectionResponse, extractChunkResponse, indexRequest, indexResponse, readyResponse, reindexPlanResponse, searchRequest, searchResponse, serviceError,
   type CapabilitiesResponse, type ExtractChunkResponse, type IndexRequest, type IndexResponse, type ReadyResponse, type ReindexPlanResponse, type SearchRequest, type SearchResponse,
 } from "./ai.contracts.js";
 
 /** Express -> FastAPI client. Signed per request, bounded by timeouts, guarded by a circuit breaker, zod-validated. Never logs bodies, text or secrets. */
 export class AiClientError extends Error {
-  constructor(readonly code: AiErrorCode, readonly retryable: boolean, readonly circuitOpen = false) {
+  constructor(readonly code: AiErrorCode, readonly retryable: boolean, readonly circuitOpen = false, readonly llm?: AiRagErrorCode) {
     super(code);
   }
 }
@@ -19,6 +21,11 @@ export class AiClientError extends Error {
 const KNOWN = new Set<string>(AI_ERROR_CODES);
 /** Service codes that are not in the shared enum but have a clear equivalent. */
 const ALIAS: Record<string, AiErrorCode> = { PAYLOAD_TOO_LARGE: "TOO_LARGE", HASH_MISMATCH: "CORRUPT_FILE" };
+/** Chat-layer codes keep their identity in `llm` while `code` stays inside the Batch 09 enum. */
+const LLM_CODES: Record<string, { code: AiErrorCode; llm: AiRagErrorCode }> = {
+  LLM_UNAVAILABLE: { code: "AI_SERVICE_UNAVAILABLE", llm: "LLM_UNAVAILABLE" }, LLM_TIMEOUT: { code: "AI_SERVICE_TIMEOUT", llm: "LLM_TIMEOUT" }, LLM_RATE_LIMITED: { code: "AI_SERVICE_UNAVAILABLE", llm: "LLM_RATE_LIMITED" },
+  LLM_CONTEXT_TOO_LONG: { code: "TOO_LARGE", llm: "LLM_CONTEXT_TOO_LONG" }, LLM_INVALID_OUTPUT: { code: "INTERNAL_ERROR", llm: "LLM_INVALID_OUTPUT" },
+};
 const TRANSIENT_STATUS = (s: number) => s >= 500 || s === 408 || s === 429;
 
 export class CircuitBreaker {
@@ -44,7 +51,7 @@ export function createAiClient(deps: AiClientDeps = {}) {
   const breaker = deps.breaker ?? new CircuitBreaker();
   const sleep = deps.sleep ?? ((ms: number) => new Promise<void>((r) => setTimeout(r, ms)));
 
-  async function call<T>(method: "GET" | "POST", path: string, opts: { body?: string; form?: FormData; bodyHash: string; timeoutMs: number; schema: z.ZodType<T>; requestId?: string; authenticated?: boolean }): Promise<T> {
+  async function call<T>(method: "GET" | "POST", path: string, opts: { body?: string; form?: FormData; bodyHash: string; timeoutMs: number; schema: z.ZodType<T>; requestId?: string; authenticated?: boolean; signal?: AbortSignal }): Promise<T> {
     if (!cfg.baseUrl || !cfg.secret) throw new AiClientError("AI_SERVICE_UNAVAILABLE", true);
     if (breaker.isOpen) throw new AiClientError("AI_SERVICE_UNAVAILABLE", true, true);
     const rid = opts.requestId ?? randomUUID();
@@ -57,6 +64,7 @@ export function createAiClient(deps: AiClientDeps = {}) {
     if (opts.body !== undefined) headers["Content-Type"] = "application/json";
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), opts.timeoutMs);
+    if (opts.signal) { if (opts.signal.aborted) controller.abort(); else opts.signal.addEventListener("abort", () => controller.abort(), { once: true }); }
     let res: Response;
     try {
       res = await doFetch(`${cfg.baseUrl}${path}`, { method, headers, body: opts.form ?? opts.body, signal: controller.signal, redirect: "error" });
@@ -76,6 +84,11 @@ export function createAiClient(deps: AiClientDeps = {}) {
       if (transient) breaker.failure(); else breaker.success();
       let code: AiErrorCode = "AI_SERVICE_UNAVAILABLE";
       let retryable = true;
+      const llmMapped = parsed.success ? LLM_CODES[parsed.data.code] : undefined;
+      if (llmMapped && parsed.success) {
+        logger.warn({ path, requestId: rid, status: res.status, code: parsed.data.code }, "ai service error");
+        throw new AiClientError(llmMapped.code, parsed.data.retryable, false, llmMapped.llm);
+      }
       const svc = parsed.success ? (ALIAS[parsed.data.code] ?? parsed.data.code) : null;
       if (parsed.success && svc && KNOWN.has(svc)) { code = svc as AiErrorCode; retryable = parsed.data.retryable; }
       else if (!transient) { code = "INTERNAL_ERROR"; retryable = false; }
@@ -91,9 +104,9 @@ export function createAiClient(deps: AiClientDeps = {}) {
     return ok.data;
   }
 
-  const jsonPost = <T>(path: string, payload: unknown, timeoutMs: number, schema: z.ZodType<T>) => {
+  const jsonPost = <T>(path: string, payload: unknown, timeoutMs: number, schema: z.ZodType<T>, signal?: AbortSignal) => {
     const body = JSON.stringify(payload);
-    return call("POST", path, { body, bodyHash: sha256(body), timeoutMs, schema });
+    return call("POST", path, { body, bodyHash: sha256(body), timeoutMs, schema, ...(signal ? { signal } : {}) });
   };
 
   return {
@@ -139,6 +152,10 @@ export function createAiClient(deps: AiClientDeps = {}) {
       return call("POST", "/v1/extract-chunk", { form, bodyHash: sha256(metadata), timeoutMs: cfg.timeoutsMs.extract, schema: extractChunkResponse });
     },
 
+    answer: (req: AnswerRequest, signal?: AbortSignal): Promise<AnswerResponse> => jsonPost("/v1/llm/answer", answerRequest.parse(req), cfg.timeoutsMs.answer, answerResponse, signal),
+    summarizeMap: (req: z.infer<typeof mapRequest>): Promise<MapResponse> => jsonPost("/v1/llm/summarize-map", mapRequest.parse(req), cfg.timeoutsMs.map, mapResponse),
+    summarizeReduce: (req: z.infer<typeof reduceRequest>): Promise<ReduceResponse> => jsonPost("/v1/llm/summarize-reduce", reduceRequest.parse(req), cfg.timeoutsMs.reduce, reduceResponse),
+    llmExtract: (req: z.infer<typeof extractRequest>): Promise<ExtractResponse> => jsonPost("/v1/llm/extract", extractRequest.parse(req), cfg.timeoutsMs.extractLlm, extractResponse),
     dropCollection: (name: string) => jsonPost("/v1/admin/drop-collection", { name }, cfg.timeoutsMs.delete, dropCollectionResponse),
     index: (req: IndexRequest): Promise<IndexResponse> => jsonPost("/v1/index", indexRequest.parse(req), cfg.timeoutsMs.index, indexResponse),
     deleteDocument: (documentId: string, keepVersionNo?: number) => jsonPost("/v1/delete", { documentId, ...(keepVersionNo ? { keepVersionNo } : {}) }, cfg.timeoutsMs.delete, deleteResponse),
