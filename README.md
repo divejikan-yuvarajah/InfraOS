@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="docs/Logo/InfraOS_Logo_Full.png" alt="InfraOS - National Infrastructure Intelligence & Coordination Platform" width="520" />
+<img src="docs/Logo/InfraOS_Logo_Full.png" alt="InfraOS - National Infrastructure Intelligence & Coordination Platform" width="540" />
 
 # INFRAOS
 
@@ -9,14 +9,16 @@
 
 **Connect Infrastructure. Coordinate Agencies. Build Smarter.**
 
-![Node](https://img.shields.io/badge/Node-22_LTS-339933?logo=node.js&logoColor=white)
-![Next.js](https://img.shields.io/badge/Next.js-16-000000?logo=next.js)
-![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)
-![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)
-![Express](https://img.shields.io/badge/Express-5-000000?logo=express)
-![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-47A248?logo=mongodb&logoColor=white)
-![MapLibre](https://img.shields.io/badge/MapLibre-GL-396CB2)
-![FastAPI](https://img.shields.io/badge/FastAPI-AI_service-009688?logo=fastapi&logoColor=white)
+[![Node.js](https://img.shields.io/badge/Node.js-22_LTS-339933?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
+[![Next.js](https://img.shields.io/badge/Next.js-16_(React_19)-000000?style=for-the-badge&logo=next.js&logoColor=white)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Express](https://img.shields.io/badge/Express-5.0-000000?style=for-the-badge&logo=express&logoColor=white)](https://expressjs.com/)
+[![MongoDB Atlas](https://img.shields.io/badge/MongoDB-Atlas_8.0-47A248?style=for-the-badge&logo=mongodb&logoColor=white)](https://www.mongodb.com/atlas)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind-CSS_4-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
+[![MapLibre GL](https://img.shields.io/badge/MapLibre-GL_Geospatial-396CB2?style=for-the-badge&logo=maplibre&logoColor=white)](https://maplibre.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-AI_Service-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![Languages](https://img.shields.io/badge/Trilingual-EN_%7C_SI_%7C_TA-FF5B00?style=for-the-badge)](docs/ux/README.md)
+[![License](https://img.shields.io/badge/License-Academic_Portfolio-64748B?style=for-the-badge)](README.md)
 
 </div>
 
@@ -29,43 +31,44 @@
 
 1. [What is INFRAOS?](#1-what-is-infraos)
 2. [Key features](#2-key-features)
-3. [User roles](#3-user-roles)
-4. [System architecture](#4-system-architecture)
-5. [Technology stack](#5-technology-stack)
-6. [Repository structure](#6-repository-structure)
-7. [Database](#7-database)
-8. [Security model](#8-security-model)
-9. [Installation](#9-installation)
-10. [Environment configuration](#10-environment-configuration)
-11. [Database setup and seed data](#11-database-setup-and-seed-data)
-12. [Running the application](#12-running-the-application)
-13. [Testing and quality checks](#13-testing-and-quality-checks)
-14. [API overview](#14-api-overview)
-15. [Deployment](#15-deployment)
-16. [Troubleshooting](#16-troubleshooting)
-17. [Documentation map](#17-documentation-map)
-18. [Contributing and branch strategy](#18-contributing-and-branch-strategy)
-19. [Team and licence](#19-team-and-licence)
+3. [Visual platform showcase](#3-visual-platform-showcase)
+4. [User roles & RBAC](#4-user-roles--rbac)
+5. [System architecture & flows](#5-system-architecture--flows)
+6. [Technology stack](#6-technology-stack)
+7. [Repository structure](#7-repository-structure)
+8. [Database design](#8-database-design)
+9. [Security model & governance](#9-security-model--governance)
+10. [Installation & setup](#10-installation--setup)
+11. [Environment configuration](#11-environment-configuration)
+12. [Database setup, seeding & default credentials](#12-database-setup-seeding--default-credentials)
+13. [Running the application](#13-running-the-application)
+14. [Testing & quality verification](#14-testing--quality-verification)
+15. [API overview](#15-api-overview)
+16. [Deployment](#16-deployment)
+17. [Troubleshooting](#17-troubleshooting)
+18. [Documentation map](#18-documentation-map)
+19. [Contributing & branch strategy](#19-contributing--branch-strategy)
+20. [Team & licence](#20-team--licence)
 
 ---
 
 ## 1. What is INFRAOS?
 
-Public infrastructure is built by many agencies that rarely see each other's plans. The result is familiar: a road is resurfaced, and weeks later another agency digs it up for a water main.
+Public infrastructure is built by many autonomous agencies that historically operated in silos with minimal visibility into each other's schedules. The consequence is well known: a municipal road is paved and resurfaced, only for a utility agency to excavate it weeks later for water mains, telecommunication conduits, or power lines.
 
-**INFRAOS** gives agencies one shared, map-aware workspace to **plan, coordinate, approve, build, verify, monitor, complete and maintain** infrastructure work, with geographic and schedule awareness so conflicts are found *before* the excavator arrives.
+**INFRAOS** gives statutory authorities a unified, geospatial, and schedule-aware coordination operating system to **plan, coordinate, approve, construct, inspect, account, hand over, and maintain** national infrastructure assets with spatial collision detection *before* physical works begin.
 
 ```text
-Create Project → Map Project → Create Work Request → Detect Conflict
-→ Coordinate Agencies → Resolve Conflict → Track Progress
-→ Verify on Site → Pay and Account → Hand Over as an Asset → Maintain → Audit everything
+Create Project → Map Project (GeoJSON) → File Work Request → Detect Spatial Conflict
+→ Inter-Agency Coordination Thread → Formal Resolution & Ledger → Track Milestone Progress
+→ Field Inspection Verification → Maker-Checker Payments → Asset Handover & Passport → Lifecycle Maintenance → Immutable Audit
 ```
 
-Design principles:
+Core design tenets:
 
-- **Honest data.** Unknown means an honest "unavailable" state. No fabricated counts, trends or "live" indicators. Reported 100% is not "officially completed". Financial figures stay provisional.
-- **Server-side authority.** Authentication, role permissions, agency scope, approval segregation and audit are enforced by the API. Hiding a button is never security.
-- **Private by default.** Files never live in ordinary database documents and storage locations are never exposed. Every byte goes through authenticated streaming.
+- **Truthful data.** Unknown states are rendered as an honest "unavailable". No fabricated metrics, artificial trends, or deceptive "real-time" indicators. Uninspected progress is never reported as officially verified.
+- **Server-side authority.** Access control, institutional permissions, agency boundaries, dual-approval segregation, and audit logging are strictly enforced by the backend API. Hiding a client-side button is never security.
+- **Privacy by default.** Files and physical evidence never live in unencrypted database records. Storage endpoints are never leaked to browsers. All bytes stream through authenticated, MIME-validated endpoints.
 
 ---
 
@@ -73,41 +76,81 @@ Design principles:
 
 | Module | What it does |
 |---|---|
-| **ProjectTrace** | Project lifecycle (draft → review → approved → active → completed), milestones, dependencies and timeline, reported progress, dashboards, activity history. |
-| **RoadSync** | Work requests, spatial and schedule **conflict detection**, assessment, cross-agency coordination threads, resolution with amendments and a ledger, scenario simulator, advisor. |
-| **InfraMap** | MapLibre GL map of projects, assets, utilities and hazard zones with layer controls, restricted layers by role, and context panels. |
-| **Contractors** | Registry, certifications, performance evidence, assignments (primary, additional, replaced, ended) and contract references. |
-| **Finance** | Budget ledger with revisions, payments (maker-checker approval), expenses, verified spending, cost-efficiency conclusions and CSV export. |
-| **Inspections** | Scheduled inspections by type, structured checklists, defects, private photo evidence, reviewer decisions, and verified-progress records compared with reported progress. |
-| **Assets and Maintenance** | Convert completed projects into assets (approval gate), condition assessments, evidence-gated health scores, maintenance requests, scheduling, completion and recurrence. |
-| **DocTrace** | Secure document management: validated streamed uploads, immutable versions, authenticated preview and download, archive-first deletion, categories, tags, metadata search with safe highlighting, facets and saved views. |
-| **Citizen Issues** | Citizens report problems (pothole, leak, drainage, streetlight...) that are routed to the responsible agency. |
-| **Notifications and Audit** | In-app notices after committed events, plus an append-only audit log written in the same transaction as every state change. |
-| **Identity and Admin** | Registration with email verification, rotating sessions, role and permission administration, agency management, user lifecycle. |
-| **AI service** *(optional)* | Separate FastAPI process for decision support: document extraction and chunking, embeddings, retrieval over **authorised** document chunks, and risk analysis. It never decides roles or writes project, conflict or payment status. |
-| **Mission Control UI** | Premium, responsive workspace in **English, Sinhala and Tamil**, role-aware navigation, accessible components and a Sri Lankan flag-inspired palette used as accents. |
+| **RoadSync (Conflict Engine)** | Work requests with GeoJSON coordinates and planned timelines. Runs automated 2D spatial & schedule clash detection to identify overlapping excavations, facilitates cross-agency coordination threads, scenario simulation, and audit ledgers. |
+| **InfraMap (Geospatial Intelligence)** | High-performance MapLibre GL map of national capital works, road networks, public utilities, and hazard zones with dynamic layer toggles, role-restricted filters, and spatial inspection probes. |
+| **ProjectTrace (Project Intelligence)** | Complete lifecycle tracking (Draft → Submitted → Approved → Active → On-Hold → Delayed → Completed), milestones, Gantt dependency timelines, physical vs financial progress curves, and audit trails. |
+| **Admin-Approved Registration** | Multi-step statutory applicant registration wizard with bcrypt password hashing (cost 12), institutional access requests, automated branded HTML email alerts to administrators, and a dedicated Super Admin review portal (`/admin/registrations`) with role and agency assignments. |
+| **AI Document Intelligence & Processing** | Background processing pipeline: automated text extraction (PDF/DOCX), recursive semantic chunking, Qdrant vector indexing, interactive Document AI Q&A panel strictly grounded in authorized versions, and AI risk analysis. |
+| **DocTrace (Classified Documents)** | Enterprise document management: validated streamed uploads (magic bytes, ZIP bomb inspection), immutable versioning, secure preview/download, archive-first deletion, metadata tagging, and full-text search. |
+| **Finance & Maker-Checker Ledger** | Immutable project budget ledgers with formal revisions, dual-authorization payment disbursements (maker-checker separation of duties), expense tracking, verified spending comparisons, and CSV reporting. |
+| **Field Inspections & Evidence** | Milestone-gated inspections with structured checklists, defect logging, GPS-tagged photographic evidence in GridFS, reviewer sign-offs, and verified physical progress comparisons. |
+| **Asset Passports & Maintenance** | Formal conversion of completed capital projects into long-term statutory assets (approval gate), condition assessments, evidence-gated health scores, and recurring maintenance schedules. |
+| **Contractor Registry** | Accredited contractor database, capacity grades, official certifications, performance history, and active project staffing assignments. |
+| **Citizen Infrastructure Portal** | Public issue reporting (potholes, water leaks, electrical hazards, drainage blockages) with automatic routing to responsible statutory agencies and progress notifications. |
+| **Trilingual Civic Atlas** | Complete localized user interface in **English, Sinhala (සිංහල), and Tamil (தமிழ்)** with instant language switching and Google Gemini dynamic AI translation integration. |
+| **Security & Governance** | Cryptographic short-lived in-memory JWTs, host-only rotating refresh cookies with family-based replay protection, append-only transactions, and strict RBAC. |
 
 ---
 
-## 3. User roles
+## 3. Visual platform showcase
+
+<div align="center">
+
+### National Infrastructure Platform in Action
+
+| Public Portal & Civic Atlas | Statutory Sign-In & Onboarding |
+|:---:|:---:|
+| <a href="docs/Screen/08-public-landing-page.png"><img src="docs/Screen/08-public-landing-page.png" alt="Public Landing Page" width="460" /></a> | <a href="docs/Screen/09-sign-in.png"><img src="docs/Screen/09-sign-in.png" alt="Statutory Sign-In" width="460" /></a> |
+| *Civic Atlas landing page with interactive corridor radar and GIS preview* | *Statutory GovTech login with Quick Fill and Admin Approval gates* |
+
+| RoadSync Spatial Conflict Engine | InfraMap Geospatial Intelligence |
+|:---:|:---:|
+| <a href="docs/Screen/02-roadsync-infrastructure-coordination.png"><img src="docs/Screen/02-roadsync-infrastructure-coordination.png" alt="RoadSync Coordination" width="460" /></a> | <a href="docs/Screen/03-inframap-infrastructure-intelligence.png"><img src="docs/Screen/03-inframap-infrastructure-intelligence.png" alt="InfraMap GIS" width="460" /></a> |
+| *Multi-agency excavation clash detection and synchronous scheduling* | *Multi-layered infrastructure mapping with restricted utility overlays* |
+
+| ProjectTrace National Monitoring | DocTrace & AI Document Intelligence |
+|:---:|:---:|
+| <a href="docs/Screen/01-project-intelligence-monitoring.png"><img src="docs/Screen/01-project-intelligence-monitoring.png" alt="ProjectTrace" width="460" /></a> | <a href="docs/Screen/05-doctrace-document-intelligence.png"><img src="docs/Screen/05-doctrace-document-intelligence.png" alt="DocTrace" width="460" /></a> |
+| *National project portfolio monitoring, milestone tracking, and audit trail* | *Classified document management, versioning, and AI vector search* |
+
+| Finance & Contractor Management | Field Inspections & Photographic Evidence |
+|:---:|:---:|
+| <a href="docs/Screen/06-finance-contractor-asset-management.png"><img src="docs/Screen/06-finance-contractor-asset-management.png" alt="Finance & Contractors" width="460" /></a> | <a href="docs/Screen/17-inspections.png"><img src="docs/Screen/17-inspections.png" alt="Field Inspections" width="460" /></a> |
+| *Maker-checker payment disbursements, budget ledgers, and contractor records* | *On-site inspection checklists, defect logging, and GPS-tagged evidence* |
+
+| Asset Passport & Health Scoring | System Administration & Audit Registry |
+|:---:|:---:|
+| <a href="docs/Screen/18-assets-register.png"><img src="docs/Screen/18-assets-register.png" alt="Assets Register" width="460" /></a> | <a href="docs/Screen/25-admin-users.png"><img src="docs/Screen/25-admin-users.png" alt="Admin Users" width="460" /></a> |
+| *Asset lifecycle records, condition assessments, and maintenance requests* | *Role-based access control, pending approvals, and immutable audit logs* |
+
+| AI Risk & Predictive Intelligence | Citizen Infrastructure Portal |
+|:---:|:---:|
+| <a href="docs/Screen/04-ai-risk-project-intelligence.png"><img src="docs/Screen/04-ai-risk-project-intelligence.png" alt="AI Risk Intelligence" width="460" /></a> | <a href="docs/Screen/07-citizen-infrastructure-portal.png"><img src="docs/Screen/07-citizen-infrastructure-portal.png" alt="Citizen Infrastructure Portal" width="460" /></a> |
+| *Predictive project risk assessment, delay factors, and AI mitigation insights* | *Public citizen grievance redressal, geospatial issue logging, and status tracking* |
+
+</div>
+
+---
+
+## 4. User roles & RBAC
 
 | Role | Scope | Typical work |
 |---|---|---|
-| **Super Administrator** | Platform | Identity and governance, platform-wide read and oversight. Cannot verify inspections or approve its own submissions. |
-| **Government / Ministry Administrator** | Own agency and descendants | Approvals, conflict resolution, administration inside the organisation tree. |
-| **Agency Officer** | Own agency | Day-to-day operations: work requests, coordination, documents, maintenance. |
-| **Project Manager** | Assigned projects | Writes on managed projects, reads agency context for coordination. |
-| **Inspector** | Assigned inspections | Field inspections, evidence capture, reports. Sees only inspection-relevant documents. |
-| **Contractor** | Narrow, assigned fields | Reported progress on assigned work. No payment approval. |
-| **Citizen** | Self | Reports issues, views the public portal. |
+| **Super Administrator** | Platform | Identity and governance, platform-wide read and oversight, user registration approvals, and audit review. Cannot verify inspections or approve its own submissions. |
+| **Government / Ministry Administrator** | Own agency and descendants | Statutory project approvals, conflict resolution, inter-agency coordination, and administration inside the organisation tree. |
+| **Agency Officer** | Own agency | Day-to-day operations: filing work requests, inter-agency coordination messages, document management, and maintenance requests. |
+| **Project Manager** | Assigned projects | Project authoring and milestone management, contractor assignments, reads agency spatial context for work coordination. |
+| **Inspector** | Assigned inspections | Field inspections, GPS-tagged photographic evidence capture, defect logging, and physical progress verification against reported claims. |
+| **Contractor** | Narrow, assigned fields | Reported physical progress on assigned milestones and defect resolution notes. No payment or budget approval authority. |
+| **Citizen** | Self | Reports public infrastructure defects (potholes, bursts, hazards) and tracks resolution on the public portal. |
 
 Permissions follow a locked `resource.action` catalog (for example `project.read`, `finance.payment.create`, `document.restrict`). Out-of-scope identifiers return **404**, never 403, so existence is not leaked. See [docs/security](docs/security/README.md).
 
 ---
 
-## 4. System architecture
+## 5. System architecture & flows
 
-### 4.1 High-level view
+### 5.1 High-level view
 
 ```mermaid
 flowchart LR
@@ -137,7 +180,7 @@ flowchart LR
     AI --> LLM
 ```
 
-### 4.2 Layers inside the API
+### 5.2 Layers inside the API
 
 ```mermaid
 flowchart TB
@@ -148,26 +191,55 @@ flowchart TB
     S -. "after commit" .-> N["Notices and typed events"]
 ```
 
-### 4.3 Authentication flow
+### 5.3 Authentication flow
 
 ```mermaid
 sequenceDiagram
-    participant U as User (browser)
-    participant W as Next.js
+    autonumber
+    actor U as Applicant / Officer
+    actor SA as Super Admin
+    participant W as Next.js Web
     participant A as Express API
-    participant D as MongoDB
+    participant M as MongoDB
+    participant E as Nodemailer / SMTP
 
-    U->>W: Sign in form
+    Note over U,E: 1. Institutional Registration & Verification Gate
+    U->>W: Submit 3-step registration (Account, Org, Responsibility)
+    W->>A: POST /auth/register-request
+    A->>A: Validate input & hash password (bcrypt cost 12)
+    A->>M: Save RegistrationRequest (status: PENDING, accountStatus: pending)
+    A->>E: Send Admin Dossier Alert (divejuthe@gmail.com)
+    A-->>W: 201 Created (Reference: REQ-YYYY-XXXXXX)
+    W-->>U: Verification Pending Confirmation Screen
+    Note over U,A: Unapproved sign-in attempts return 403 ACCOUNT_PENDING_APPROVAL
+
+    Note over SA,E: 2. Super Admin RBAC Review & Approval
+    E-->>SA: Email Notification with "Review & Approve Request" CTA
+    SA->>W: Open /admin/registrations?id=:requestId
+    SA->>W: Sign in (requires user.read & user.create permissions)
+    W->>A: GET /admin/registrations/:id
+    A->>M: Read applicant dossier & requested responsibility
+    A-->>W: Dossier details & institutional context
+    SA->>W: Assign Role & Agency, submit approval
+    W->>A: POST /admin/registrations/:id/approve
+    A->>M: Update Request (APPROVED) & Activate User (status: ACTIVE)
+    A->>E: Send Activation Email to applicant
+    A-->>W: 200 OK (Account Activated)
+    E-->>U: "Account Approved" notification with sign-in link
+
+    Note over U,M: 3. Session Authentication & Rotating Token Lifecycle
+    U->>W: Submit sign-in credentials (email + password)
     W->>A: POST /auth/login
-    A->>D: verify user, status, email verified
-    A-->>W: short-lived access JWT (in memory) + HTTP-only refresh cookie
-    W->>A: API calls with Authorization: Bearer
-    A->>D: re-read live user and role, resolve agency scope
-    A-->>W: data (or 404 when out of scope)
-    Note over W,A: On 401 the client rotates the refresh cookie once.<br/>A moved session discards late results.
+    A->>M: Verify bcrypt hash, status: ACTIVE, emailVerified: true, agency active
+    A->>M: Create RefreshFamily & RefreshSession
+    A-->>W: Short-lived access JWT (memory) + HTTP-only rotating refresh cookie
+    W->>A: API requests with Authorization: Bearer <token>
+    A->>M: Validate JWT, enforce agency scope & RBAC permissions
+    A-->>W: Authorized data (or 404 when out-of-scope)
+    Note over W,A: On 401 access expiry, client calls POST /auth/refresh.<br/>Single-use token rotation with family revocation on replay reuse.
 ```
 
-### 4.4 Conflict detection and coordination (RoadSync)
+### 5.4 Conflict detection and coordination (RoadSync)
 
 ```mermaid
 flowchart LR
@@ -180,7 +252,7 @@ flowchart LR
     DET -->|no overlap| OK["Proceed"]
 ```
 
-### 4.5 Project to asset lifecycle
+### 5.5 Project to asset lifecycle
 
 ```mermaid
 stateDiagram-v2
@@ -200,7 +272,7 @@ stateDiagram-v2
     MAINTENANCE --> ASSET
 ```
 
-### 4.6 DocTrace upload protocol
+### 5.6 DocTrace upload protocol
 
 ```mermaid
 sequenceDiagram
@@ -222,7 +294,7 @@ sequenceDiagram
     Note over A,S: Any validation failure removes the partial blob<br/>and writes a minimal upload_rejected audit row.
 ```
 
-### 4.7 Deployment topology
+### 5.7 Deployment topology
 
 ```mermaid
 flowchart LR
@@ -238,45 +310,45 @@ flowchart LR
 
 ---
 
-## 5. Technology stack
+## 6. Technology stack
 
 | Layer | Technology |
 |---|---|
 | **Frontend** | Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS 4, shadcn/Radix UI, TanStack Query, react-hook-form, zod, MapLibre GL, Sonner toasts, Lucide icons |
-| **Backend** | Node.js 22, Express 5, TypeScript, Mongoose 8, zod 4, jose (JWT), bcryptjs, helmet, express-rate-limit, pino |
-| **Database** | MongoDB Atlas (Mongoose, 2dsphere geo indexes, transactions, GridFS for files) |
-| **AI (optional)** | Python 3.12, FastAPI, Qdrant vector search, OpenAI-compatible embeddings and LLM gateway |
-| **Maps** | MapLibre GL with an OSM-compatible style (configurable) |
-| **Testing** | Vitest, Supertest, mongodb-memory-server (replica set), Testing Library |
-| **Tooling** | npm workspaces, ESLint, TypeScript strict mode, Conventional Commits |
-| **Hosting** | Vercel (web), Render (API and AI), MongoDB Atlas (data) |
+| **Backend** | Node.js 22, Express 5, TypeScript, Mongoose 8, zod 4, jose (JWT), bcryptjs (cost 12), Nodemailer, helmet, express-rate-limit, pino |
+| **Database** | MongoDB Atlas (Mongoose, 2dsphere geo indexes, multi-document transactions, GridFS for binary files) |
+| **AI & Search** | Python 3.12, FastAPI, Qdrant vector database, OpenAI-compatible embeddings, Google Gemini 3.5 Flash Lite translation gateway |
+| **Geospatial Maps** | MapLibre GL with OSM-compatible vector style & statutory layer control |
+| **Testing** | Vitest, Supertest, mongodb-memory-server (isolated replica sets), Testing Library |
+| **Tooling & Monorepo** | npm workspaces, ESLint, TypeScript strict mode, Conventional Commits |
+| **Hosting & Cloud** | Vercel (web), Render (API and AI), MongoDB Atlas (data), Qdrant Cloud |
 
 ---
 
-## 6. Repository structure
+## 7. Repository structure
 
 ```text
 InfraOS/
 ├── apps/
-│   ├── web/                 Next.js frontend (App Router, Tailwind, MapLibre)
+│   ├── web/                 Next.js frontend (App Router, Tailwind 4, MapLibre GL)
 │   │   ├── src/app/         Routes: dashboard, projects, roadsync, inframap, finance,
 │   │   │                    inspections, assets, maintenance, documents, admin, ...
-│   │   ├── src/components/  Feature and shared UI
+│   │   ├── src/components/  Modular feature and design system components
 │   │   ├── src/lib/         API clients, i18n dictionaries (en/si/ta), view helpers
-│   │   └── public/brand/    Optimised logo files
-│   ├── api/                 Express API
+│   │   └── public/brand/    Brand logos, marks, and official visual identity
+│   ├── api/                 Express 5 API
 │   │   ├── src/modules/     identity, agencies, projects, roadsync, inframap, contractors,
 │   │   │                    finance, inspections, assets, documents, issues, notifications,
 │   │   │                    risk, audit, health
-│   │   ├── src/database/    Seeds (core + demo), helpers
-│   │   ├── src/scripts/     DB checks, seed, backfill, sync and cleanup scripts
-│   │   └── tests/           Vitest suites (isolated in-memory MongoDB)
-│   └── ai-service/          FastAPI service (optional, internal only)
+│   │   ├── src/database/    Seeds (core + demo), migration helpers
+│   │   ├── src/scripts/     Database checks, seeds, password resets, backfills
+│   │   └── tests/           Comprehensive Vitest test suites (in-memory MongoDB)
+│   └── ai-service/          FastAPI AI microservice (document chunking, Qdrant vectors)
 ├── packages/
-│   └── shared-types/        Contracts shared by web and API (permissions, categories, enums)
-├── docs/                    Architecture, ADRs, security, database, UX, setup, reviews, logo
-├── Prompts/                 Implementation prompts for each roadmap step
-├── CLAUDE.md                Working rules for AI-assisted development
+│   └── shared-types/        Shared TypeScript contracts (permissions, categories, DTOs)
+├── docs/                    Architecture, ADRs, security, database, UX, setup, reviews, logos, screenshots
+├── Prompts/                 Implementation prompt archives for each development phase
+├── CLAUDE.md                Guidelines for AI-assisted development
 └── CONTRIBUTING.md          Team and Git workflow
 ```
 
@@ -284,11 +356,11 @@ Details: [docs/architecture/repository-structure.md](docs/architecture/repositor
 
 ---
 
-## 7. Database
+## 8. Database design
 
-INFRAOS uses **MongoDB Atlas** through Mongoose. Every schema is `strict: "throw"`, money is stored as integer cents (LKR), and geometry is GeoJSON with 2dsphere indexes.
+INFRAOS uses **MongoDB Atlas** via Mongoose with strict transactional guarantees. Every schema enforces `strict: "throw"`, monetary values are stored as integer cents (LKR) to eliminate floating-point drift, and coordinates use GeoJSON standards backed by `2dsphere` indexes.
 
-### 7.1 Entity relationship overview
+### 8.1 Entity relationship overview
 
 ```mermaid
 erDiagram
@@ -324,341 +396,318 @@ erDiagram
     USER ||--o{ AUDIT_LOG : "acts"
     USER ||--o{ NOTIFICATION : "receives"
     USER ||--o{ CITIZEN_ISSUE : "reports"
+    USER ||--o{ REGISTRATION_REQUEST : "submits"
 ```
 
-### 7.2 Collections
+### 8.2 Collections
 
 | Area | Collections |
 |---|---|
-| **Identity** | `users`, `roles`, `agencies`, `refresh_sessions`, `refresh_families`, `email_verification_challenges`, `password_reset_challenges`, `account_registration_requests`, `admin_lifecycle_locks` |
-| **Projects** | `projects`, `milestones`, `projectDependencies`, `dependencyGraphLocks`, `progressReports`, `progressVerifications` |
-| **RoadSync** | `workRequests`, `roadsync_conflicts`, `roadsync_candidates`, `roadsync_coordination_requests`, `roadsync_coordination_messages`, `roadsync_resolutions`, `roadsync_amendments`, `roadsync_ledger`, `roadsync_scenarios`, `roadsync_recommendations`, `roadsync_counters` |
-| **Contractors and Finance** | `contractors`, `contractorAssignments`, `projectBudgetRevisions`, `projectPayments`, `projectExpenses` |
-| **Inspections** | `inspections`, `inspectionEvidence` (photos in GridFS bucket `inspectionEvidence`) |
-| **Assets** | `assets`, `assetConversions`, `assetConditionAssessments`, `maintenanceRecords`, `maintenanceEvidence` |
-| **DocTrace** | `documents`, `documentVersions`, `documentUploads`, `documentChunks` (files in GridFS bucket `documents`) |
-| **Map and risk** | `hazardZones`, `riskAssessments` |
-| **Citizens and system** | `citizenIssues`, `notifications`, `auditLogs` (append-only), `counters` |
+| **Identity & Access** | `users`, `roles`, `agencies`, `refresh_sessions`, `refresh_families`, `account_registration_requests`, `email_verification_challenges`, `password_reset_challenges`, `admin_lifecycle_locks` |
+| **Projects & Milestones** | `projects`, `milestones`, `projectDependencies`, `dependencyGraphLocks`, `progressReports`, `progressVerifications` |
+| **RoadSync Engine** | `workRequests`, `roadsync_conflicts`, `roadsync_candidates`, `roadsync_coordination_requests`, `roadsync_coordination_messages`, `roadsync_resolutions`, `roadsync_amendments`, `roadsync_ledger`, `roadsync_scenarios`, `roadsync_recommendations`, `roadsync_counters` |
+| **Contractors & Finance** | `contractors`, `contractorAssignments`, `projectBudgetRevisions`, `projectPayments`, `projectExpenses` |
+| **Inspections & Evidence** | `inspections`, `inspectionEvidence` (binary image data in GridFS bucket `inspectionEvidence`) |
+| **Assets & Maintenance** | `assets`, `assetConversions`, `assetConditionAssessments`, `maintenanceRecords`, `maintenanceEvidence` |
+| **DocTrace & AI Vectors** | `documents`, `documentVersions`, `documentUploads`, `documentChunks`, `processingJobs`, `aiUsageRecords` (files in GridFS bucket `documents`) |
+| **Map & Risk Intelligence** | `hazardZones`, `riskAssessments` |
+| **Governance & System** | `citizenIssues`, `notifications`, `auditLogs` (append-only), `counters` |
 
-### 7.3 Design rules
+### 8.3 Design rules
 
-- **Files are never stored in ordinary documents.** Bytes live in GridFS; rows hold only an opaque reference that is never serialised.
-- **Immutable history.** Document versions, budget revisions, progress reports and audit rows are append-only.
-- **Atomic counters** produce human numbers (`PAY-YYYY-NNNNNN`, `INS-...`, `AST-...`, `DOC-YYYY-NNNNNN`) and never use `count()`.
-- **Optimistic concurrency** (`version` field) protects edits; the loser sees a conflict and reloads.
-- **Index check:** `npm run db:indexes:check` verifies every expected index exists without changing anything. Details in [docs/database](docs/database/README.md).
+- **Binary isolation:** Large files and photographic evidence are never stored inline in JSON documents. Binary streams live in dedicated GridFS buckets with opaque hashes.
+- **Immutable version history:** Document versions, budget revisions, inspection findings, and audit rows are strictly append-only.
+- **Atomic sequential identifiers:** Human-readable sequential numbers (`REQ-YYYY-NNNNNN`, `PAY-YYYY-NNNNNN`, `INS-...`, `AST-...`, `DOC-...`) use atomic sequence counters rather than error-prone `count()` scans.
+- **Optimistic concurrency:** Critical records carry version fields to prevent lost updates in multi-agency workflows.
+- **Index verification:** `npm run db:indexes:check` automatically audits required indexes against running databases.
 
 ---
 
-## 8. Security model
+## 9. Security model & governance
 
 | Concern | How INFRAOS handles it |
 |---|---|
-| Authentication | Short-lived JWT access token **in memory only**, rotating refresh token in an **HTTP-only cookie**, email verification, login rate limits. |
-| Authorisation | Locked permission catalog plus **agency scope** resolved from the live user and role on every request. Out-of-scope ids return 404. |
-| Segregation of duties | Maker-checker on payments, budget revisions and project approval. Nobody approves their own submission. |
-| Files | Extension allowlist + declared MIME + **magic bytes** + size, ZIP-bomb guard, safe download headers (`nosniff`, `no-store`, sandbox CSP), no storage URLs in responses, logs or audit rows. |
-| Audit | `AuditLog` is append-only and written **inside the same transaction** as each state change, with allow-listed snapshots (no file names or content). |
-| Input | Strict zod schemas that reject unknown and repeated keys. User text is never used as a regular expression. |
-| Secrets | Per-app `.env` files only, never committed. Rejected aliases: `JWT_SECRET`, `CLIENT_URL`. |
-
-Production readiness is a separate audit and is **not** claimed by this README. See [docs/security](docs/security/README.md).
+| **Admin-Approved Registration** | 3-step institutional signup flow; password hashed with bcrypt (cost 12); accounts are created in `PENDING` state and completely blocked from logging in (403 `ACCOUNT_PENDING_APPROVAL`) until reviewed and activated by a Super Admin. |
+| **Admin Email Alerts** | Submissions automatically dispatch an InfraOS-branded notification email with the applicant's dossier and a secure approval link to the designated administrator (`ADMIN_APPROVAL_EMAIL`). |
+| **Token Architecture** | Short-lived access JWTs (15m expiry) kept **in client memory only**; rotating refresh tokens (7d expiry) delivered in **SameSite HTTP-only cookies** with family-based replay attack invalidation. |
+| **Multi-Agency Isolation** | Strict organizational tenant scoping. Queries verify live user and role permissions; out-of-scope identifiers return **404 Not Found** (never 403) to prevent resource existence leaks. |
+| **Segregation of Duties** | Maker-checker protocols on capital payments, budget revisions, and project approvals. Initiators cannot approve their own requests. |
+| **File Upload Sanitation** | Multi-gate defense: extension allowlists, declared MIME validation, **magic byte verification**, size quotas, and ZIP bomb inspection. No raw storage URLs are ever exposed. |
+| **Immutable Audit Logging** | `AuditLog` rows are committed **inside the same database transaction** as the business state change, capturing actor identity, IP, and sanitized change diffs. |
+| **Input Validation** | Strict Zod schemas with unknown-key rejection on all HTTP bodies and queries. User input is never injected into dynamic regular expressions. |
+| **Credential Rotation** | Instant session invalidation via `credentialEpoch` increment upon password reset, admin suspension, or credential modification. |
 
 ---
 
-## 9. Installation
+## 10. Installation & setup
 
 ### Prerequisites
 
 | Tool | Version | Notes |
 |---|---|---|
-| Node.js | **22 LTS** (see `.nvmrc`) | Use `nvm use` if you have nvm |
-| npm | **10+** | npm workspaces. Do not add Yarn or pnpm lockfiles |
+| Node.js | **22 LTS** (see `.nvmrc`) | Use `nvm use` if you have nvm installed |
+| npm | **10+** | npm workspaces. Do not use Yarn or pnpm |
 | Git | 2.x | |
-| MongoDB | Atlas cluster **or** local replica set | Transactions need a replica set |
-| Python | 3.12+ | Only for the optional AI service |
+| MongoDB | Atlas cluster **or** local replica set | Transactions require a replica set |
+| Python | 3.12+ | Optional; required only for the AI microservice |
 
 ### Steps
 
 ```powershell
-# 1. Clone
+# 1. Clone repository
 git clone https://github.com/divejikan-yuvarajah/InfraOS.git
 cd InfraOS
 
-# 2. Install all workspaces
+# 2. Install workspace dependencies
 npm install
 
-# 3. Create per-app environment files (never a root .env with secrets)
+# 3. Create per-app environment configuration files
 Copy-Item apps\web\.env.example apps\web\.env.local
 Copy-Item apps\api\.env.example apps\api\.env
 ```
 
-Then edit the two new files as described in the next section.
-
 ---
 
-## 10. Environment configuration
+## 11. Environment configuration
 
-Configuration lives **per app**. Names and safe defaults are in each `.env.example`; the full catalog is [docs/setup/environment.md](docs/setup/environment.md).
+Configuration is scoped **per app**. Safe local defaults are documented in each `.env.example`; the canonical variable catalog is in [docs/setup/environment.md](docs/setup/environment.md).
 
-### 10.1 API: `apps/api/.env`
+### 11.1 API: `apps/api/.env`
 
-| Variable | Required | Purpose / example |
+| Variable | Required | Purpose / Example |
 |---|---|---|
-| `NODE_ENV` | yes | `development` locally |
+| `NODE_ENV` | yes | `development` locally, `production` when deployed |
 | `PORT` | yes | `4000` |
-| `FRONTEND_ORIGIN` | yes | Must equal the web origin, e.g. `http://localhost:3000` |
+| `FRONTEND_ORIGIN` | yes | Must match the web origin, e.g. `http://localhost:3000` |
 | `API_PREFIX` | yes | `/api/v1` |
-| `LOG_LEVEL` | no | `info` |
-| `MONGODB_URI` | yes to connect | Atlas connection string (URL-encode special characters in the password) |
-| `MONGODB_DB_NAME` | yes | `infraos_dev` (seeding is only allowed on `infraos_dev` or `infraos_test`) |
-| `ACCESS_TOKEN_SECRET` | yes for login | Random, 32+ characters |
-| `ACCESS_TOKEN_TTL` | yes for login | e.g. `15m` |
-| `REFRESH_TOKEN_SECRET` | yes for login | Random, 32+ characters, **different** from the access secret |
-| `REFRESH_TOKEN_TTL` | yes for login | e.g. `7d` |
-| `STORAGE_PROVIDER` | no | Empty or `gridfs` (built in). `r2` is reserved for a later provider |
+| `LOG_LEVEL` | no | `info` (or `debug`, `warn`, `error`) |
+| `MONGODB_URI` | yes | MongoDB Atlas connection string (URL-encode special characters) |
+| `MONGODB_DB_NAME` | yes | `infraos_dev` (`_test` for automated tests) |
+| `ACCESS_TOKEN_SECRET` | yes | 32+ character cryptographic secret for access JWTs |
+| `ACCESS_TOKEN_TTL` | yes | e.g. `15m` |
+| `REFRESH_TOKEN_SECRET` | yes | 32+ character cryptographic secret for rotating refresh tokens |
+| `REFRESH_TOKEN_TTL` | yes | e.g. `7d` |
+| `ADMIN_APPROVAL_EMAIL` | yes | Administrator inbox receiving applicant registration dossiers (e.g. `divejuthe23@gmail.com`) |
+| `SMTP_HOST` | yes (for email) | SMTP server hostname (e.g. `smtp.gmail.com`) |
+| `SMTP_PORT` | yes (for email) | SMTP port (`587` for STARTTLS, `465` for SSL) |
+| `SMTP_USER` | yes (for email) | Authenticated SMTP username / email address |
+| `SMTP_PASS` | yes (for email) | SMTP password or 16-character Google App Password |
+| `SMTP_FROM` | yes (for email) | Formatted sender (e.g. `"InfraOS Platform <divejuthe23@gmail.com>"`) |
+| `SMTP_SECURE` | no | `false` for port 587 (STARTTLS), `true` for port 465 |
+| `GEMINI_API_KEY` | optional | Google Gemini API key for server-side dynamic EN/SI/TA translation |
+| `GEMINI_MODEL` | optional | Default: `gemini-3.5-flash-lite` |
+| `STORAGE_PROVIDER` | no | Empty or `gridfs` (built in). `r2` reserved for Cloudflare R2 |
 | `DOCUMENT_MAX_FILE_MB` | no | Lowers the 25 MB per-file upload cap |
-| `AI_BASE_URL`, `AI_INTERNAL_SECRET` | AI only | Address and shared secret of the FastAPI service |
-| `OPENROUTER_API_KEY` | AI only | Embedding / LLM gateway key |
-| `QDRANT_URL`, `QDRANT_API_KEY` | AI only | Vector database |
-| `R2_*` | later | Object storage (not needed for GridFS) |
+| `AI_BASE_URL` | AI only | Address of the FastAPI AI service (e.g. `http://localhost:8000`) |
+| `AI_INTERNAL_SECRET` | AI only | Shared secret between Express API and FastAPI service |
+| `OPENROUTER_API_KEY` | AI only | Embedding & LLM gateway key |
+| `QDRANT_URL`, `QDRANT_API_KEY` | AI only | Vector database endpoint and optional API key |
 
-Generate a secret locally:
+Generate a cryptographic secret in your terminal:
 
 ```powershell
 node -e "console.log(require('node:crypto').randomBytes(48).toString('hex'))"
 ```
 
-### 10.2 Web: `apps/web/.env.local`
+### 11.2 Web: `apps/web/.env.local`
 
-| Variable | Purpose |
-|---|---|
-| `NEXT_PUBLIC_API_BASE_URL` | API origin only, **no** `/api/v1` suffix, e.g. `http://localhost:4000` |
-| `NEXT_PUBLIC_AUTH_LOGIN_ENABLED` | `1` to enable real login against a running API |
-| `NEXT_PUBLIC_MAP_STYLE_URL` | Optional HTTPS MapLibre style. Empty uses the built-in default |
-| `NEXT_PUBLIC_AUTH_FIXTURE` | Testing only. Keep `0` |
+| Variable | Required | Purpose |
+|---|---|---|
+| `NEXT_PUBLIC_API_BASE_URL` | yes | API origin without prefix, e.g. `http://localhost:4000` |
+| `NEXT_PUBLIC_AUTH_LOGIN_ENABLED` | yes | `1` to enable real authentication against the API |
+| `NEXT_PUBLIC_MAP_STYLE_URL` | optional | HTTPS MapLibre style URL. Empty uses the built-in cartographic style |
+| `NEXT_PUBLIC_AUTH_FIXTURE` | no | Keep `0` for live development |
 
-> `NEXT_PUBLIC_*` values are visible in the browser. Never put database, JWT, AI or storage secrets there.
-
-### 10.3 MongoDB Atlas quick setup
-
-1. Create a free cluster and a **dev-only** database user.
-2. Add your IP to the network access list.
-3. Copy the connection string into `MONGODB_URI` and set `MONGODB_DB_NAME=infraos_dev`.
-4. Verify: `npm run db:check`.
-
-Full guide: [docs/setup/mongodb-atlas.md](docs/setup/mongodb-atlas.md).
+> [!WARNING]
+> Variables prefixed with `NEXT_PUBLIC_*` are bundled into browser scripts. Never place database URIs, JWT secrets, or SMTP credentials in `apps/web/.env.local`.
 
 ---
 
-## 11. Database setup and seed data
+## 12. Database setup, seeding & default credentials
 
-All commands run from the repository root. **Never run seeds or tests against a production database.**
+All commands run from the repository root. **Never execute seeds against a production database.**
 
 ```powershell
-# Connectivity and index checks (read-only)
+# Verify connectivity and index schema integrity (read-only)
 npm run db:check
 npm run db:indexes:check
 
-# 1. Core identity: the seven system roles and core agencies
+# 1. Core identity: seed system roles and core ministerial agencies
 npm run db:seed:core
 
-# 2. Full demo data (idempotent, safe to re-run)
+# 2. Seed comprehensive demo scenario (idempotent, safe to re-run)
 npm run db:seed:demo
 
-# 3. Verify the demo data
+# 3. Audit demo seed veracity
 npm run db:seed:verify
 
-# Remove only the demo layer (keeps roles and core agencies)
+# Reset demo records (preserves core roles and agencies)
 npm run db:seed:reset-demo
 ```
 
-What the demo seed creates (all labelled *Synthetic*):
+### 12.1 Default Local Development Credentials
 
-- Agencies, fixture users, three contractors and their assignments
-- 16 projects across road, water, electricity, bridge, drainage and public-facility types, in every lifecycle status, with milestones
-- Work requests and a RoadSync conflict scenario
-- Finance: budget ledger, payments and expenses in every status
-- Inspections in every status and type, with evidence, and verified-progress records
-- Assets, condition assessments and maintenance records
-- DocTrace: documents with **real tiny files**, a 3-version document, draft, archived, sensitive and agency-level records
-- Citizen issues and InfraMap hazard zones
+After running `npm run db:seed:demo`, the following accounts are pre-configured:
 
-Demo fixture users are **non-login**. Create a real account through the registration flow, or have an administrator provision one, then sign in. A **Super Administrator** or **Government Administrator** account sees the most demo data.
+| Account Type | Email Address | Password | Permissions & Scope |
+|---|---|---|---|
+| **Super Administrator** | `superadmin@infraos.test` | `Admin@12345678` | Platform-wide oversight, User & Agency Management, Registration Approvals (`/admin/registrations`) |
+| **Government Admin** | `govadmin@infraos.test` | `GovPass#2025` | Ministry-level coordination, project approvals |
+| **Agency Officer** | `officer@transport.gov.lk` | `GovPass#2025` | Road Development Authority work requests |
+| **Agency Director** | `director@rda.gov.lk` | `GovPass#2025` | RDA departmental oversight |
+| **CEB Engineer** | `engineer@ceb.lk` | `GovPass#2025` | Ceylon Electricity Board utility coordination |
 
-### Upgrading an existing database
-
-```powershell
-# Grants new permissions to stored system roles (dry run by default)
-npm run db:sync:document-permissions
-npm run db:sync:document-permissions -- --apply --confirm-db=<MONGODB_DB_NAME>
-
-# Shape legacy document rows (dry run by default)
-npm run db:backfill:documents
-npm run db:backfill:documents -- --commit
-
-# Remove stale upload tickets and unreferenced blobs (dry run by default)
-npm run db:cleanup:documents -- --commit
-```
-
-Other idempotent maintenance scripts: `db:sync:finance-permissions`, `db:sync:inspection-permissions`, `db:sync:asset-permissions`, `db:backfill:finance|inspections|assets|contractors`, `db:recompute:asset-health`, `db:cleanup:evidence`.
+> [!TIP]
+> The sign-in page (`/login`) includes **Quick Fill** buttons for `[ Super Admin ]`, `[ RDA Officer ]`, `[ Agency Director ]`, and `[ CEB Engineer ]`.
+> To update or reset any user's password from the terminal:
+> ```powershell
+> npm run db:set-password -w @infraos/api -- superadmin@infraos.test "NewPassword#123"
+> ```
 
 ---
 
-## 12. Running the application
+## 13. Running the application
 
-Open two terminals in the repository root.
+Open two separate terminals in the repository root:
 
 ```powershell
-# Terminal 1: API (http://localhost:4000)
+# Terminal 1: Backend Express API (http://localhost:4000)
 npm run dev:api
 
-# Terminal 2: Web (http://localhost:3000)
+# Terminal 2: Frontend Next.js Web (http://localhost:3000)
 npm run dev:web
 ```
 
-| URL | What |
-|---|---|
-| http://localhost:3000 | Public landing page and sign-in |
-| http://localhost:3000/dashboard | Staff workspace (after sign-in) |
-| http://localhost:4000/api/v1/health | API liveness |
-| http://localhost:4000/api/v1/ready | Readiness (503 until MongoDB is connected) |
+| URL | Component | Access |
+|---|---|---|
+| `http://localhost:3000` | Public Landing Page & Civic Atlas | Public |
+| `http://localhost:3000/login` | Statutory Sign-In & Quick Fill | Public |
+| `http://localhost:3000/auth/register` | 3-Step Institutional Registration | Public |
+| `http://localhost:3000/dashboard` | National Mission Control Dashboard | Authenticated Staff |
+| `http://localhost:3000/admin/registrations` | Pending Registration Requests | Super Admin |
+| `http://localhost:3000/documents/processing` | AI Document Processing Center | Agency Staff |
+| `http://localhost:4000/api/v1/health` | API Liveness Probe | Public |
+| `http://localhost:4000/api/v1/ready` | API Readiness Probe (503 until DB connected) | Public |
 
-Before starting, check that the ports are free:
-
-```powershell
-Get-NetTCPConnection -LocalPort 3000,4000 -State Listen -ErrorAction SilentlyContinue |
-  Select-Object LocalPort, OwningProcess
-```
-
-### Production build
-
-```powershell
-npm run build          # web, then api
-npm run build:web      # Next.js production build
-npm run build:api      # TypeScript compile
-```
-
-### Optional: AI service
-
-The FastAPI service is a separate Python process (not an npm workspace). Create a virtual environment inside `apps/ai-service/.venv`, install its requirements, set `AI_BASE_URL` and `AI_INTERNAL_SECRET` in the API `.env`, and start it on its own port. It only accepts internal calls with the shared secret and is optional for the core coordination path. See [apps/ai-service/README.md](apps/ai-service/README.md).
+> [!NOTE]
+> On Windows, `@infraos/web` defaults to running Next.js with `--webpack` (`npm run dev:web`) to eliminate known Windows filesystem file-locking (`EPERM`) errors during Turbopack atomic manifest renames.
 
 ---
 
-## 13. Testing and quality checks
+## 14. Testing & quality verification
 
 ```powershell
-npm run test:api       # API suites (in-memory MongoDB replica set, no network)
-npm run test:web       # Web unit and component tests
-npm run type-check     # TypeScript, both apps
-npm run lint           # ESLint, both apps
+# Run backend API test suites (in-memory MongoDB replica set)
+npm run test:api
+
+# Run frontend React & component test suites
+npm run test:web
+
+# Static TypeScript type check across all workspaces
+npm run type-check
+
+# ESLint code style and quality check
+npm run lint
 ```
 
-Run one file while developing:
-
-```powershell
-npm run test -w @infraos/api -- tests/documents-api.test.ts
-npm run test -w @infraos/web -- src/lib/documents/documents.test.ts
-```
-
-Tests never touch Atlas: they start an isolated `mongodb-memory-server` replica set. Highlights of what is covered: role and agency isolation (a second agency can never read, count or search another agency's records), approval segregation, audit atomicity, file validation (spoofed types, ZIP bombs, path traversal), search safety, and seed idempotency.
+Tests run in complete isolation: they automatically spawn a disposable `mongodb-memory-server` replica set and never contact external databases or networks.
 
 ---
 
-## 14. API overview
+## 15. API overview
 
-Base URL: `http://localhost:4000/api/v1`. Every response uses one envelope:
+Base URL: `http://localhost:4000/api/v1`. Every endpoint responds with a standardized JSON envelope:
 
 ```json
-{ "success": true, "data": { }, "meta": { "requestId": "..." } }
-{ "success": false, "error": { "code": "NOT_FOUND", "message": "resource was not found" }, "meta": { "requestId": "..." } }
+{ "success": true, "data": { }, "meta": { "requestId": "req-123456" } }
+{ "success": false, "error": { "code": "NOT_FOUND", "message": "resource was not found" }, "meta": { "requestId": "req-123456" } }
 ```
 
-| Prefix | Purpose |
+| Route Prefix | Scope & Purpose |
 |---|---|
-| `/health`, `/ready` | Liveness and readiness |
-| `/auth/*`, `/profile` | Register, verify email, login, refresh, logout, password reset, self-service |
-| `/admin/users`, `/admin/roles`, `/admin/agencies`, `/admin/audit-logs` | Administration |
-| `/projects` and `/projects/:id/*` | Projects, milestones, timeline, dependencies, activity, documents, inspections |
-| `/roadsync/*` | Work requests, conflicts, coordination, resolution, advisor, simulator |
-| `/inframap/*` | Map layers, search, asset and hazard context |
-| `/contractors/*` | Registry, assignments, performance |
-| `/finance/*` | Budgets, payments, expenses, exports |
-| `/inspections/*` | Inspections, evidence, reviews |
-| `/assets/*`, `/maintenance/*` | Assets, conversions, assessments, maintenance |
-| `/documents/*` | DocTrace: library, uploads, versions, preview, download, archive, activity |
-| `/notifications`, `/insights/coordination` | Notices and agency insights |
-
-Documentation: [docs/api](docs/api/README.md) and [docs/backend/conventions.md](docs/backend/conventions.md).
+| `/health`, `/ready` | Service liveness and MongoDB readiness probes |
+| `/auth/login`, `/auth/refresh`, `/auth/logout` | Session lifecycle with rotating HTTP-only refresh cookies |
+| `/auth/register-request` | 3-step institutional registration with admin email alert |
+| `/auth/verify-email`, `/auth/password-reset` | Email challenges and password reset tokens |
+| `/profile` | Authenticated user profile and session security |
+| `/admin/registrations` | Review, approve (with role/agency assignment), or reject pending applicants |
+| `/admin/users`, `/admin/roles`, `/admin/agencies`, `/admin/audit-logs` | Platform identity, RBAC governance, and audit trails |
+| `/projects` and `/projects/:id/*` | Projects, milestones, dependencies, physical/financial progress, activity |
+| `/roadsync/*` | Work requests, 2D spatial & schedule clash detection, coordination ledger |
+| `/inframap/*` | Map layers, GIS search, infrastructure assets and hazard context |
+| `/contractors/*` | Contractor registry, certifications, active project assignments |
+| `/finance/*` | Maker-checker payments, budget ledger revisions, expenses, CSV export |
+| `/inspections/*` | Inspections, checklists, defect logs, GridFS photo evidence |
+| `/assets/*`, `/maintenance/*` | Asset registry, conversions, condition health scoring, maintenance schedules |
+| `/documents/*` | DocTrace secure file uploads, immutable versions, streaming downloads, archive |
+| `/documents/processing/*` | AI document chunking, Qdrant vector indexing, and background jobs |
+| `/ai/*` | AI semantic search, document Q&A, and project risk assessments |
+| `/notifications`, `/issues/*` | In-app notification bell, citizen issue ticketing and routing |
 
 ---
 
-## 15. Deployment
+## 16. Deployment
 
-| Component | Target | Notes |
+| Component | Target Platform | Deployment Notes |
 |---|---|---|
-| Web | Vercel | Set `NEXT_PUBLIC_API_BASE_URL` to the HTTPS API origin and rebuild |
-| API | Render | Set all API variables as service secrets; `FRONTEND_ORIGIN` must equal the web origin; cookies need HTTPS |
-| Database | MongoDB Atlas | Use a separate production database name; seeds refuse production |
-| AI | Render (optional) | Internal-only; shared secret; no browser traffic |
-
-Release rules: `main` is submission-ready; deploy only from reviewed, squash-merged work. A separate readiness audit is required before any real use.
+| **Web** | Render | Next.js Web Service via `render.yaml` Blueprint; set `NEXT_PUBLIC_API_BASE_URL` to the production API origin (see [docs/setup/deploy-render.md](docs/setup/deploy-render.md)) |
+| **API** | Render | Express Web Service via `render.yaml` Blueprint; configure environment variables in Render Dashboard and set `FRONTEND_ORIGIN` to the production Web URL |
+| **Database** | MongoDB Atlas | Dedicated M-tier cluster; seeding scripts refuse production database names |
+| **AI Service** | Render (Optional) | Internal FastAPI web service; authenticated via `AI_INTERNAL_SECRET` |
 
 ---
 
-## 16. Troubleshooting
+## 17. Troubleshooting
 
-| Symptom | Fix |
+| Symptom | Cause & Solution |
 |---|---|
-| `/ready` returns 503 | `MONGODB_URI` is empty or unreachable. Check Atlas network access and run `npm run db:check`. |
-| Login does nothing | Set `NEXT_PUBLIC_AUTH_LOGIN_ENABLED=1` in `apps/web/.env.local`, make `FRONTEND_ORIGIN` match the web origin, and restart both servers. |
-| CORS or cookie errors | `FRONTEND_ORIGIN` must be the exact web origin (scheme, host and port). |
-| `next build` says another build is running | A dev server holds the `.next` lock. Build into another folder: `$env:INFRAOS_NEXT_DIST_DIR=".next-verify"; npm run build:web`. |
-| Seed refuses to run | Seeds only run on `NODE_ENV=development` or `test` with `MONGODB_DB_NAME` set to `infraos_dev` or `infraos_test`. |
-| Uploads fail with "storage unavailable" | `STORAGE_PROVIDER` is `r2`, or MongoDB is not connected. Leave it empty to use GridFS. |
-| Demo users cannot sign in | They are non-login fixtures by design. Register a real account. |
+| `/ready` returns 503 | `MONGODB_URI` is empty or unreachable. Check Atlas Network Access (IP Whitelist) and run `npm run db:check`. |
+| Sign-in returns 403 `ACCOUNT_PENDING_APPROVAL` | The account was registered through the public portal and is awaiting Super Admin verification. Log in as Super Admin (`superadmin@infraos.test`) and approve the dossier at `/admin/registrations`. |
+| `EPERM: operation not permitted, rename ... server-reference-manifest.js` | Windows Turbopack file-lock collision. Run `npm run dev:web`, which uses `--webpack` to bypass atomic file lock retries. |
+| SMTP delivery fails or returns `535-5.7.8` | When using Gmail SMTP, generate a 16-character **Google App Password** (under Google Account Security → 2-Step Verification → App Passwords). InfraOS automatically sanitizes spaces. |
+| Login does nothing or buttons unresponsive | Ensure `NEXT_PUBLIC_AUTH_LOGIN_ENABLED=1` is set in `apps/web/.env.local`, make `FRONTEND_ORIGIN` match the browser origin, and restart both dev servers. |
+| CORS or Cookie issues | `FRONTEND_ORIGIN` in `apps/api/.env` must match the exact web origin (scheme, host, and port). |
+| Upload fails with "storage unavailable" | GridFS is the default built-in storage provider. Ensure `STORAGE_PROVIDER` is empty or set to `gridfs` and MongoDB is connected. |
 
 ---
 
-## 17. Documentation map
+## 18. Documentation map
 
-| Topic | Link |
+| Topic | Primary Guide |
 |---|---|
-| Docs index | [docs/README.md](docs/README.md) |
-| Product and scope | [docs/planning](docs/planning/README.md) |
-| Architecture and ADRs | [docs/architecture](docs/architecture/README.md) · [docs/adr](docs/adr/README.md) |
-| Security and permissions | [docs/security](docs/security/README.md) |
-| Routes and UX | [docs/ux](docs/ux/README.md) · [docs/design](docs/design) |
-| Environment | [docs/setup/environment.md](docs/setup/environment.md) |
-| MongoDB Atlas and schema | [docs/setup/mongodb-atlas.md](docs/setup/mongodb-atlas.md) · [docs/database](docs/database/README.md) |
-| Frontend | [docs/frontend/setup.md](docs/frontend/setup.md) · [conventions](docs/frontend/conventions.md) |
-| Backend | [docs/backend/setup.md](docs/backend/setup.md) · [conventions](docs/backend/conventions.md) |
-| Storage provider decision | [docs/adr/ADR-010-file-storage-provider.md](docs/adr/ADR-010-file-storage-provider.md) |
+| **Documentation Index** | [docs/README.md](docs/README.md) |
+| **System Architecture & ADRs** | [docs/architecture](docs/architecture/README.md) · [docs/adr](docs/adr/README.md) |
+| **Security & RBAC Catalog** | [docs/security](docs/security/README.md) |
+| **UX & Design System** | [docs/ux](docs/ux/README.md) · [docs/design](docs/design) |
+| **Environment Configuration** | [docs/setup/environment.md](docs/setup/environment.md) |
+| **MongoDB Atlas Setup** | [docs/setup/mongodb-atlas.md](docs/setup/mongodb-atlas.md) · [docs/database](docs/database/README.md) |
+| **Render Deployment Guide** | [docs/setup/deploy-render.md](docs/setup/deploy-render.md) |
+| **Frontend Setup & Conventions** | [docs/frontend/setup.md](docs/frontend/setup.md) · [conventions](docs/frontend/conventions.md) |
+| **Backend Setup & Conventions** | [docs/backend/setup.md](docs/backend/setup.md) · [conventions](docs/backend/conventions.md) |
 
 ---
 
-## 18. Contributing and branch strategy
+## 19. Contributing & branch strategy
 
-- `main`: submission-ready
-- `development`: integration branch
-- `feature/*`, `fix/*`, `chore/*`, `docs/*`: work branches, **squash-merged** into `development`
-- Never force-push `main` or `development`
-- Conventional Commits (`feat(documents): ...`, `fix(api): ...`, `docs: ...`)
-- Before opening a PR: `npm run type-check`, `npm run lint`, and the focused tests for what you changed
+- **`main`**: Production & submission-ready branch.
+- **`development`**: Integration branch for active phase developments.
+- **`feature/*`**, **`fix/*`**, **`chore/*`**: Dedicated topic branches, squash-merged into `development`.
+- **Commit Format**: Conventional Commits standard (`feat(auth): ...`, `fix(api): ...`, `docs: ...`).
+- **Pre-PR Quality Checklist**: Run `npm run type-check`, `npm run lint`, and unit tests prior to opening PRs.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) and [docs/team/git-workflow.md](docs/team/git-workflow.md).
 
 ---
 
-## 19. Team and licence
+## 20. Team & licence
 
 **INFRAOS Development Team**, South Eastern University of Sri Lanka.
 
-Use and extend INFRAOS as an academic and portfolio project. Demo and seed data is synthetic and must not be presented as an official government dataset.
+Academic and portfolio project. All demo datasets and seed scenarios are synthetic and do not represent official government records.
 
 <div align="center">
 
-<img src="docs/Logo/InfraOS%20Logo%20Icon.png" alt="InfraOS mark" width="72" />
+<img src="docs/Logo/InfraOS%20Logo%20Icon.png" alt="InfraOS Icon Mark" width="72" />
 
 **INFRAOS** · Connect Infrastructure. Coordinate Agencies. Build Smarter.
 
