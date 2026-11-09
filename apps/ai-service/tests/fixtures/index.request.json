@@ -1,0 +1,18 @@
+{
+  "documentId": "aaaaaaaaaaaaaaaaaaaaaaaa",
+  "versionNo": 1,
+  "projectId": null,
+  "agencyId": "bbbbbbbbbbbbbbbbbbbbbbbb",
+  "category": "CONTRACT",
+  "chunks": [
+    {
+      "chunkId": "aaaaaaaaaaaaaaaaaaaaaaaa:1:0",
+      "chunkIndex": 0,
+      "text": "Clause text",
+      "pageStart": 1,
+      "pageEnd": 1,
+      "section": null,
+      "contentHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    }
+  ]
+}

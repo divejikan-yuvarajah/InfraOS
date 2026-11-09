@@ -17,13 +17,15 @@ import { useDocKeys } from "@/lib/documents/session";
 import type { DocDetail, Visibility } from "@/lib/documents/types";
 import { fill, fmtDate, fmtDateTime, formatSize } from "@/lib/documents/view";
 import { useUrlParams } from "@/lib/finance/url-state";
+import { getAiCopy } from "@/lib/documents/ai/messages";
 import { useWorkspaceLocale } from "@/lib/i18n/workspace-locale";
 
 import { AiStatusChip, CategoryChip, Chip, ConfidentialityChip, EmptyState, ErrorState, errorText, Field, FileTypeIcon, Skeletons, StatusChip, VersionBadge } from "./doc-ui";
 import { ArchiveDialog, copyDocLink, DeleteDialog, downloadDoc, PreviewPane, ReplaceDialog, RestoreAction, RestrictDialog, useRefreshDocs, VersionActionDialog } from "./document-parts";
+import { AiProcessingPanel } from "./ai/ai-processing-panel";
 import { CategoryPicker, TagsInput } from "./form-parts";
 
-const TABS = ["overview", "preview", "versions", "links", "activity", "access"] as const;
+const TABS = ["overview", "preview", "ai", "versions", "links", "activity", "access"] as const;
 type Tab = (typeof TABS)[number];
 const meta = z.object({
   title: z.string().trim().min(1).max(200), description: z.string().trim().max(2000), reference: z.string().trim().max(100), tags: z.array(z.string()).max(15),
@@ -289,11 +291,13 @@ export function DocumentDetail({ id }: { id: string }) {
             </header>
 
             <div role="tablist" aria-label={copy.nav.title} className="ctr-tabs">
-              {TABS.map((t) => <button key={t} id={`dt-tab-${t}`} type="button" role="tab" aria-selected={tab === t} aria-controls={`dt-panel-${t}`} className="ctr-tab" onClick={() => goTab(t)}>{copy.detail.tabs[t]}</button>)}
+              {TABS.map((t) => <button key={t} id={`dt-tab-${t}`} type="button" role="tab" aria-selected={tab === t} aria-controls={`dt-panel-${t}`} className="ctr-tab" onClick={() => goTab(t)}>{t === "ai" ? getAiCopy(locale).panel.title : copy.detail.tabs[t]}</button>)}
             </div>
             <div role="tabpanel" id={`dt-panel-${tab}`} aria-labelledby={`dt-tab-${tab}`}>
               {tab === "overview" ? <OverviewTab key={`${doc.id}:${doc.version}`} doc={doc} copy={copy} locale={locale} startEditing={url.get("edit") === "1"} /> : null}
-              {tab === "preview" ? <PreviewPane doc={doc} copy={copy} mime={doc.mimeType} activeContent={doc.currentVersion?.activeContent} /> : null}
+              {tab === "preview" ? <PreviewPane doc={doc} copy={copy} mime={doc.mimeType} activeContent={doc.currentVersion?.activeContent} {...(Number(url.get("page")) > 0 ? { page: Number(url.get("page")) } : {})} /> : null}
+              {tab === "ai" && doc.origin === "DOCTRACE" ? <AiProcessingPanel doc={doc} locale={locale} {...(p.canRestrict ? { onRestrict: () => setDlg("restrict") } : {})} onOpenPage={(n) => url.set({ tab: "preview", page: String(n) })} /> : null}
+              {tab === "ai" && doc.origin !== "DOCTRACE" ? <EmptyState title={getAiCopy(locale).reason.NOT_DOCTRACE} body={getAiCopy(locale).reasonHelp.NOT_DOCTRACE} /> : null}
               {tab === "versions" ? <VersionsTab doc={doc} copy={copy} locale={locale} /> : null}
               {tab === "links" ? <LinksTab doc={doc} copy={copy} /> : null}
               {tab === "activity" ? <ActivityTab doc={doc} copy={copy} locale={locale} /> : null}

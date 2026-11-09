@@ -67,7 +67,7 @@ export const listQuery = z.object({
   q: z.string().max(200).optional(), category: csv(DOCUMENT_CATEGORY_KEYS).optional(), group: z.string().max(40).optional(), projectId: objectId.optional(), agencyId: objectId.optional(),
   contractorId: objectId.optional(), assetId: objectId.optional(), inspectionId: objectId.optional(), fileType: csv(DOCUMENT_FILE_TYPES).optional(), status: csv(DOCUMENT_STATUSES).optional(),
   confidentiality: z.enum(DOCUMENT_CONFIDENTIALITIES).optional(), visibility: z.enum(DOCUMENT_VISIBILITIES).optional(), tag: z.string().max(700).optional(), uploadedBy: idOrMe.optional(),
-  from: dayStr.optional(), to: dayStr.optional(), docDateFrom: dayStr.optional(), docDateTo: dayStr.optional(), hasFile: yes.optional(), origin: z.enum(DOCUMENT_ORIGINS).optional(), aiReady: yes.optional(),
+  from: dayStr.optional(), to: dayStr.optional(), docDateFrom: dayStr.optional(), docDateTo: dayStr.optional(), hasFile: yes.optional(), origin: z.enum(DOCUMENT_ORIGINS).optional(), aiReady: yes.optional(), aiStatus: z.enum(["NOT_STARTED", "QUEUED", "PROCESSING", "COMPLETED", "FAILED", "UNSUPPORTED"]).optional(),
   expiring: z.enum(["30"]).optional(), thisMonth: yes.optional(),
   sort: z.enum(SORTS).default("newest"), page: z.coerce.number().int().min(1).max(1000).default(1), limit: z.coerce.number().int().min(1).max(50).default(25),
 }).strict();

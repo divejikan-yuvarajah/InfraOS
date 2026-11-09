@@ -1,0 +1,15 @@
+{
+  "hits": [
+    {
+      "chunkId": "aaaaaaaaaaaaaaaaaaaaaaaa:1:0",
+      "documentId": "aaaaaaaaaaaaaaaaaaaaaaaa",
+      "versionNo": 1,
+      "score": 0.83,
+      "pageStart": 1,
+      "pageEnd": 1
+    }
+  ],
+  "model": "BAAI/bge-m3",
+  "dimension": 1024,
+  "tokens": 4
+}

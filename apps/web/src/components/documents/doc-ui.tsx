@@ -8,7 +8,10 @@ import type { ReactNode } from "react";
 import { categoryDef } from "@infraos/shared-types";
 
 import { Chip, EmptyState, Field, Skeletons } from "@/components/inspections/inspection-ui";
+import { AiChip } from "./ai/ai-ui";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { getAiCopy } from "@/lib/documents/ai/messages";
+import { useWorkspaceLocale } from "@/lib/i18n/workspace-locale";
 import { failureOf } from "@/lib/documents/api";
 import type { Copy } from "@/lib/documents/messages";
 import type { DocItem, DocStatus, Segment } from "@/lib/documents/types";
@@ -43,10 +46,10 @@ export function ConfidentialityChip({ value, copy }: { value: "STANDARD" | "SENS
   if (value !== "SENSITIVE") return null;
   return <Chip tone="critical" icon={<ShieldAlertIcon aria-hidden="true" />} title={copy.confidentiality.sensitiveHint}>{copy.confidentiality.SENSITIVE}</Chip>;
 }
-/** Read-only and honest: nothing here claims processing. Neutral grey in this batch. */
-export function AiStatusChip({ ai, copy }: { ai: DocItem["ai"]; copy: Copy }) {
-  const label = !ai.allowed ? copy.ai.excluded : !ai.eligibleType ? copy.ai.notEligible : copy.ai.notProcessed;
-  return <Chip tone="neutral" title={copy.ai.hint}>{label}</Chip>;
+/** Real AI status from the server (Batch 09). Icon + text for every state; links to the AI tab when `docId` is given. */
+export function AiStatusChip({ ai, docId }: { ai: DocItem["ai"]; copy?: Copy; docId?: string }) {
+  const [locale] = useWorkspaceLocale();
+  return <AiChip ai={ai} aiCopy={getAiCopy(locale)} locale={locale} {...(docId ? { docId } : {})} />;
 }
 export const VersionBadge = ({ n }: { n: number | null }) => <span className="dt-ver">v{n ?? 1}</span>;
 

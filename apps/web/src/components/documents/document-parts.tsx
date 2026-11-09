@@ -36,7 +36,7 @@ function PreviewImage({ src, alt }: { src: string; alt: string }) {
 type PreviewData = { kind: "image" | "pdf"; url: string } | { kind: "text"; text: string };
 
 /** Authenticated blob preview. PDF/image render from a short-lived object URL (revoked on unmount); text is shown in a <pre>. DOCX/XLSX never hit the server for preview. */
-export function PreviewPane({ doc, version, copy, mime, activeContent }: { doc: Pick<DocItem, "id" | "fileAvailable" | "fileName">; version?: number; copy: Copy; mime: string | null; activeContent?: boolean }) {
+export function PreviewPane({ doc, version, copy, mime, activeContent, page }: { doc: Pick<DocItem, "id" | "fileAvailable" | "fileName">; version?: number; copy: Copy; mime: string | null; activeContent?: boolean; page?: number }) {
   const { key } = useDocKeys();
   const can = doc.fileAvailable && isPreviewMime(mime) && !activeContent;
   const q = useQuery({
@@ -62,7 +62,7 @@ export function PreviewPane({ doc, version, copy, mime, activeContent }: { doc: 
       {q.isPending ? <div className="dt-preview-msg" role="status">{copy.drawer.loadingPreview}</div> : null}
       {q.isError ? <div className="dt-preview-msg"><span>{failureOf(q.error).status === 404 ? copy.drawer.fileUnavailable : copy.drawer.previewFailed}</span><button type="button" className="ctr-btn" onClick={() => void q.refetch()}>{copy.common.retry}</button></div> : null}
       {q.data?.kind === "image" ? <PreviewImage src={q.data.url} alt={doc.fileName} /> : null}
-      {q.data?.kind === "pdf" ? <iframe title={doc.fileName} src={q.data.url} /> : null}
+      {q.data?.kind === "pdf" ? <iframe title={doc.fileName} src={page ? `${q.data.url}#page=${page}` : q.data.url} /> : null}
       {q.data?.kind === "text" ? <pre tabIndex={0}>{q.data.text}</pre> : null}
     </div>
   );
@@ -96,7 +96,7 @@ export function DocumentPreviewDrawer({ doc, copy, locale, onClose, onPrev, onNe
           </div>
           <strong style={{ overflowWrap: "anywhere" }}>{doc.title}</strong>
           <div className="ctr-row" style={{ flexWrap: "wrap" }}>
-            <span className="ins-muted">{doc.docNo ?? "—"}</span><VersionBadge n={doc.currentVersionNo} /><StatusChip status={doc.status} copy={copy} /><ConfidentialityChip value={doc.confidentiality} copy={copy} /><AiStatusChip ai={doc.ai} copy={copy} />
+            <span className="ins-muted">{doc.docNo ?? "—"}</span><VersionBadge n={doc.currentVersionNo} /><StatusChip status={doc.status} copy={copy} /><ConfidentialityChip value={doc.confidentiality} copy={copy} /><AiStatusChip ai={doc.ai} docId={doc.id} />
           </div>
         </div>
         <div className="dt-drawer-body">

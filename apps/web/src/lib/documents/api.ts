@@ -14,9 +14,9 @@ function moved(atEpoch: number, tokenAtStart: string) {
   if (getAuthEpoch() !== atEpoch || getMemoryAccessToken() !== tokenAtStart) throw new ApiError("session moved", 401, { code: "AUTH_REQUIRED" });
 }
 
-type Method = "GET" | "POST" | "PATCH" | "DELETE";
+export type Method = "GET" | "POST" | "PATCH" | "DELETE";
 /** One request with the session guard: a result arriving after sign-out or a user switch is discarded. Titles, notes and file names are never logged. */
-async function call<T>(method: Method, path: string, body?: unknown, signal?: AbortSignal): Promise<T> {
+export async function call<T>(method: Method, path: string, body?: unknown, signal?: AbortSignal): Promise<T> {
   const { atEpoch, tokenAtStart } = guard();
   const payload = await apiClient<{ data: T }>(`/api/v1${path}`, { method, authenticated: true, ...(body !== undefined ? { body } : {}), ...(signal ? { signal } : {}) });
   moved(atEpoch, tokenAtStart);

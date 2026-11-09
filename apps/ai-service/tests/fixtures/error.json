@@ -1,0 +1,6 @@
+{
+  "code": "SCANNED_NO_TEXT",
+  "message": "The document appears to be scanned and has no extractable text. OCR is not available.",
+  "retryable": false,
+  "requestId": "req-1"
+}

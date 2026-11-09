@@ -10,7 +10,7 @@ export type DocItem = {
   origin: "DOCTRACE" | "INSPECTION_EVIDENCE" | "SYSTEM"; projectId: string | null; project: { id: string; title: string; code: string | null } | null; agencyId: string | null; agencyName: string | null;
   ownerId: string; ownerName: string | null; fileName: string; mimeType: string | null; sizeBytes: number | null; contentHash: string | null; currentVersionNo: number | null; fileAvailable: boolean;
   tags: string[]; documentDate: string | null; reference: string | null; language: string | null; expiresAt: string | null; links: Record<string, string>;
-  ai: { extractedTextStatus: string; allowed: boolean; eligibleType: boolean }; version: number; createdAt: string | null; updatedAt: string | null; archivedAt: string | null; permissions: DocCaps;
+  ai: { extractedTextStatus: string; allowed: boolean; eligibleType: boolean; sensitive?: boolean; errorCode?: string | null; warningCount?: number; truncated?: boolean; indexedAt?: string | null }; version: number; createdAt: string | null; updatedAt: string | null; archivedAt: string | null; permissions: DocCaps;
   highlights?: { title: Segment[]; description: Segment[]; reference: Segment[]; tags: Segment[][] } | null;
 };
 export type DocDetail = DocItem & {

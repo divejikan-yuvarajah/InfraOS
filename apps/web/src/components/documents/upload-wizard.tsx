@@ -16,6 +16,7 @@ import type { Confidentiality, UploadInit, Visibility } from "@/lib/documents/ty
 import { checkClientFile, fill, formatSize, mimeForName } from "@/lib/documents/view";
 import { useWorkspaceLocale } from "@/lib/i18n/workspace-locale";
 
+import { UploadAiLine, UploadAiNote } from "./ai/upload-ai";
 import { EmptyState, errorText, Field, FileTypeIcon } from "./doc-ui";
 import { useRefreshDocs } from "./document-parts";
 import { CategoryPicker, TagsInput } from "./form-parts";
@@ -222,6 +223,8 @@ export function UploadWizard({ prefill, copy, locale, onFinished, canSensitive }
                 <div>
                   <span className="dt-file-name">{i.title || i.file.name}</span><br />
                   <span className="ins-muted">{i.file.name} · {formatSize(i.file.size, locale)} · {(copy.category as Record<string, string>)[i.category]}</span>
+                  <br /><UploadAiNote mime={i.file.type || null} name={i.file.name} sensitive={i.confidentiality === "SENSITIVE"} locale={locale ?? "en"} />
+                  {i.state === "done" && i.docId ? <><br /><UploadAiLine docId={i.docId} locale={locale ?? "en"} /></> : null}
                   {i.state === "uploading" ? <div className="ctr-progress" role="progressbar" aria-label={`${copy.wizard.review.uploading} ${i.file.name}`} aria-valuenow={Math.round(i.progress * 100)} aria-valuemin={0} aria-valuemax={100}><i style={{ width: `${i.progress * 100}%` }} /></div> : null}
                   {i.state === "duplicate" && i.dup ? (
                     <div className="ctr-note" role="alert" style={{ marginTop: "0.4rem" }}>{copy.wizard.review.duplicate} <strong>{i.dup.docNo ?? ""} {i.dup.title}</strong>
