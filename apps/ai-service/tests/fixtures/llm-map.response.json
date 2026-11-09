@@ -1,0 +1,22 @@
+{
+  "output": {
+    "notes": [
+      {
+        "text": "Damages are LKR 25,000 per day.",
+        "citations": [
+          {
+            "n": 1,
+            "quote": "LKR 25,000 per day"
+          }
+        ]
+      }
+    ]
+  },
+  "usage": {
+    "inputTokens": 120,
+    "outputTokens": 40
+  },
+  "model": "google/gemini-2.5-flash-lite",
+  "promptVersion": "sum-map.v1",
+  "structuredMode": "json_schema"
+}

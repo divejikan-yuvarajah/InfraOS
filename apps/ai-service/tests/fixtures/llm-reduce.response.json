@@ -1,0 +1,28 @@
+{
+  "output": {
+    "sections": [
+      {
+        "key": "dates",
+        "items": [
+          {
+            "text": "Completion",
+            "date": "2026-12-31",
+            "citations": [
+              {
+                "n": 1,
+                "quote": "LKR 25,000 per day"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "usage": {
+    "inputTokens": 120,
+    "outputTokens": 40
+  },
+  "model": "google/gemini-2.5-flash-lite",
+  "promptVersion": "sum-reduce.v1",
+  "structuredMode": "json_schema"
+}

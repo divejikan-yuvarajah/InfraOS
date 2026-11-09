@@ -22,6 +22,18 @@ class Settings(BaseSettings):
     embed_base_url: str = "https://openrouter.ai/api/v1"
     ai_embed_model: str = ""
 
+    # Chat/LLM layer (Batch 10). Model ids come only from env; the default is the live-probed low-cost model.
+    ai_chat_model: str = ""
+    ai_chat_model_strong: str = ""
+    chat_base_url: str = ""
+    llm_structured_mode: str = "json_schema"  # json_schema | json_object (set by the capability check)
+    llm_concurrency: int = 3
+    llm_answer_timeout_s: float = 45.0
+    llm_map_timeout_s: float = 30.0
+    llm_reduce_timeout_s: float = 40.0
+    llm_extract_timeout_s: float = 40.0
+    llm_max_retries: int = 2
+
     qdrant_url: str = ""
     qdrant_api_key: SecretStr = Field(default=SecretStr(""))
     qdrant_collection: str = "infraos_chunks"
@@ -61,6 +73,14 @@ class Settings(BaseSettings):
     @property
     def is_test(self) -> bool:
         return self.app_env == "test"
+
+    @property
+    def chat_url(self) -> str:
+        return (self.chat_base_url or self.embed_base_url).rstrip("/")
+
+    @property
+    def chat_key(self) -> str:
+        return self.embed_key
 
     @property
     def embed_key(self) -> str:
