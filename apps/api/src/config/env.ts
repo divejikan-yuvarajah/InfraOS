@@ -53,6 +53,9 @@ export type AppEnv = {
   SMTP_PASS?: string;
   SMTP_FROM?: string;
   SMTP_SECURE?: boolean;
+  RISK_SCHEDULE_ENABLED?: boolean;
+  RISK_SCHEDULE_HOUR?: number;
+  RISK_MAX_PROJECTS_PER_RUN?: number;
 };
 
 export type EnvIssue = {
@@ -112,6 +115,15 @@ const secretSchema = z
 const storageProviderSchema = z.enum(STORAGE_PROVIDERS, {
   error: "must be r2, local or gridfs",
 });
+const riskScheduleHourSchema = z.coerce
+  .number({ error: "must be an integer between 0 and 23" })
+  .int({ error: "must be an integer between 0 and 23" })
+  .min(0, { error: "must be an integer between 0 and 23" })
+  .max(23, { error: "must be an integer between 0 and 23" });
+const riskMaxProjectsSchema = z.coerce
+  .number({ error: "must be a positive integer" })
+  .int({ error: "must be a positive integer" })
+  .min(1, { error: "must be at least 1" });
 
 export class EnvValidationError extends Error {
   readonly issues: EnvIssue[];
@@ -453,6 +465,19 @@ export function parseEnv(
   const rawSmtpSecure = read(source, "SMTP_SECURE");
   const smtpSecure = rawSmtpSecure === "true" || rawSmtpSecure === "1";
 
+  const rawRiskScheduleEnabled = read(source, "RISK_SCHEDULE_ENABLED");
+  const riskScheduleEnabled = rawRiskScheduleEnabled !== undefined
+    ? rawRiskScheduleEnabled === "true" || rawRiskScheduleEnabled === "1"
+    : undefined;
+  const rawRiskScheduleHour = read(source, "RISK_SCHEDULE_HOUR");
+  const riskScheduleHour = rawRiskScheduleHour
+    ? parseWithSchema(issues, "RISK_SCHEDULE_HOUR", riskScheduleHourSchema, rawRiskScheduleHour)
+    : undefined;
+  const rawRiskMaxProjects = read(source, "RISK_MAX_PROJECTS_PER_RUN");
+  const riskMaxProjectsPerRun = rawRiskMaxProjects
+    ? parseWithSchema(issues, "RISK_MAX_PROJECTS_PER_RUN", riskMaxProjectsSchema, rawRiskMaxProjects)
+    : undefined;
+
   if (issues.length > 0) {
     throw new EnvValidationError(issues);
   }
@@ -487,6 +512,9 @@ export function parseEnv(
     ...(smtpPass ? { SMTP_PASS: smtpPass } : {}),
     ...(smtpFrom ? { SMTP_FROM: smtpFrom } : {}),
     ...(rawSmtpSecure !== undefined ? { SMTP_SECURE: smtpSecure } : {}),
+    ...(riskScheduleEnabled !== undefined ? { RISK_SCHEDULE_ENABLED: riskScheduleEnabled } : {}),
+    ...(riskScheduleHour !== undefined ? { RISK_SCHEDULE_HOUR: riskScheduleHour } : {}),
+    ...(riskMaxProjectsPerRun !== undefined ? { RISK_MAX_PROJECTS_PER_RUN: riskMaxProjectsPerRun } : {}),
   };
 }
 

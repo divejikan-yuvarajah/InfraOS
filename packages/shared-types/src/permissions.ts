@@ -52,6 +52,7 @@ export const PERMISSION_CATALOG = [
   "map.layer.restricted",
   "risk.request",
   "risk.read",
+  "risk.resolve",
   "document.upload",
   "document.read",
   "document.download",
