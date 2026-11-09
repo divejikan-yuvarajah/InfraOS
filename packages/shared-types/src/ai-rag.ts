@@ -45,7 +45,7 @@ export const AI_RAG_AUDIT_ACTIONS = [
 ] as const;
 
 /** Prompt versions (mirrored in apps/ai-service/app/llm/prompts.py). Bump when prompt text changes. */
-export const AI_PROMPT_VERSIONS = { qa: "qa.v1", summaryMap: "sum-map.v1", summaryReduce: "sum-reduce.v1", extract: "extract.v1" } as const;
+export const AI_PROMPT_VERSIONS = { qa: "qa.v2", summaryMap: "sum-map.v2", summaryReduce: "sum-reduce.v2", extract: "extract.v2" } as const;
 
 // ---------------------------------------------------------------- summary templates
 
