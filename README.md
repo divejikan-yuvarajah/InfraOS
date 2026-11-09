@@ -552,7 +552,6 @@ After running `npm run db:seed:demo`, the following accounts are pre-configured:
 | Account Type | Email Address | Password | Permissions & Scope |
 |---|---|---|---|
 | **Super Administrator** | `superadmin@infraos.test` | `Admin@12345678` | Platform-wide oversight, User & Agency Management, Registration Approvals (`/admin/registrations`) |
-| **Primary Administrator** | `divejuthe23@gmail.com` | `Admin@12345678` | Bound to Demo Ministry of Infrastructure, full Super Admin clearance |
 | **Government Admin** | `govadmin@infraos.test` | `GovPass#2025` | Ministry-level coordination, project approvals |
 | **Agency Officer** | `officer@transport.gov.lk` | `GovPass#2025` | Road Development Authority work requests |
 | **Agency Director** | `director@rda.gov.lk` | `GovPass#2025` | RDA departmental oversight |
@@ -651,8 +650,8 @@ Base URL: `http://localhost:4000/api/v1`. Every endpoint responds with a standar
 
 | Component | Target Platform | Deployment Notes |
 |---|---|---|
-| **Web** | Vercel | Set `NEXT_PUBLIC_API_BASE_URL` to your production API origin |
-| **API** | Render | Configure all environment variables in Render Dashboard; set `FRONTEND_ORIGIN` to production Web URL |
+| **Web** | Render | Next.js Web Service via `render.yaml` Blueprint; set `NEXT_PUBLIC_API_BASE_URL` to the production API origin (see [docs/setup/deploy-render.md](docs/setup/deploy-render.md)) |
+| **API** | Render | Express Web Service via `render.yaml` Blueprint; configure environment variables in Render Dashboard and set `FRONTEND_ORIGIN` to the production Web URL |
 | **Database** | MongoDB Atlas | Dedicated M-tier cluster; seeding scripts refuse production database names |
 | **AI Service** | Render (Optional) | Internal FastAPI web service; authenticated via `AI_INTERNAL_SECRET` |
 
