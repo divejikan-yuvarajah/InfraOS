@@ -7,7 +7,8 @@ import { useState } from "react";
 
 import { failureOf, fetchDocuments, fetchProjectDocs } from "@/lib/documents/api";
 import { getDocCopy } from "@/lib/documents/messages";
-import { useDocKeys } from "@/lib/documents/session";
+import { hintAsk, useDocKeys } from "@/lib/documents/session";
+import { getRagCopy } from "@/lib/documents/ai/rag-messages";
 import type { DocItem } from "@/lib/documents/types";
 import { fill, fmtDate, formatSize } from "@/lib/documents/view";
 import { useWorkspaceLocale } from "@/lib/i18n/workspace-locale";
@@ -25,7 +26,7 @@ export type LinkedEntity = { type: "project" | "contractor" | "inspection" | "as
 export function LinkedDocumentsPanel({ entity }: { entity: LinkedEntity }) {
   const [locale] = useWorkspaceLocale();
   const copy = getDocCopy(locale);
-  const { key } = useDocKeys();
+  const { key, roleKey } = useDocKeys();
   const [open, setOpen] = useState<string | null>(null);
   const [upload, setUpload] = useState(false);
   const [category, setCategory] = useState("");
@@ -48,6 +49,7 @@ export function LinkedDocumentsPanel({ entity }: { entity: LinkedEntity }) {
         <h3 style={{ margin: 0 }}>{copy.panel.title}{q.data ? <span className="ins-muted"> · {fill(copy.panel.total, { n: q.data.total })}</span> : null}</h3>
         <div className="ctr-row">
           {q.data?.canUpload ? <button type="button" className="ctr-btn" onClick={() => setUpload(true)}><UploadCloudIcon aria-hidden="true" />{copy.panel.upload}</button> : null}
+          {entity.type === "project" && hintAsk(roleKey) ? <Link className="ctr-btn is-ghost" href={`/documents/ai?project=${entity.id}`}>{getRagCopy(locale).nav.askAboutProject}</Link> : null}
           <Link className="ctr-btn is-ghost" href={href}>{copy.panel.openInDocTrace}</Link>
         </div>
       </div>
