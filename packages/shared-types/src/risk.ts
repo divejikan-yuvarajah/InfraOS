@@ -365,6 +365,54 @@ export interface RiskMethodologyDto {
     comparableSetsAvailable: number;
     readinessStatement: string;
   };
+  limitationsKeys?: string[];
   honestyStatement: string;
 }
+
+export interface RiskProjectsListDto {
+  items: RiskProjectRowDto[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+}
+
+export interface RiskCategoryDeltaDto {
+  category: RiskFactorCategory;
+  fromLevel: RiskLevel;
+  toLevel: RiskLevel;
+  deltaPoints: number;
+}
+
+export interface RiskComparisonDto {
+  fromAssessment: RiskAssessmentDto;
+  toAssessment: RiskAssessmentDto;
+  levelChange: {
+    from: RiskLevel;
+    to: RiskLevel;
+  };
+  indexDelta: number;
+  addedIndicators: RiskIndicatorDto[];
+  removedIndicators: RiskIndicatorDto[];
+  escalatedIndicators: RiskIndicatorDto[];
+  deescalatedIndicators: RiskIndicatorDto[];
+  categoryDeltas: RiskCategoryDeltaDto[];
+}
+
+export interface RiskHistoryItemDto {
+  id: string;
+  assessmentNo: string;
+  overallLevel: RiskLevel;
+  overallIndex?: number;
+  trigger: RiskTriggerType;
+  createdAt: string;
+  changesCount: number;
+  levelChange?: {
+    from: RiskLevel;
+    to: RiskLevel;
+  } | null;
+}
+
 

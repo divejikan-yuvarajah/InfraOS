@@ -42,7 +42,7 @@ const riskResolutionSchema = new Schema(
       enum: RISK_SEVERITIES,
       required: true,
     },
-    assessmentId: reference("RiskAssessment", true),
+    assessmentId: reference("RiskAssessment", false),
     assignedTo: reference("User", false),
     reviewAt: { type: Date, default: null },
     decidedBy: reference("User", true),
@@ -65,9 +65,15 @@ riskResolutionSchema.index({ projectId: 1, fingerprint: 1 }, { unique: true });
 riskResolutionSchema.index({ agencyId: 1, status: 1 });
 riskResolutionSchema.index({ assignedTo: 1, status: 1 });
 
-export type RiskResolutionDocument = mongoose.InferSchemaType<
-  typeof riskResolutionSchema
-> & { _id: mongoose.Types.ObjectId };
+export type RiskResolutionDocument = Omit<
+  mongoose.InferSchemaType<typeof riskResolutionSchema>,
+  "assessmentId" | "assignedTo" | "reviewAt"
+> & {
+  _id: mongoose.Types.ObjectId;
+  assessmentId?: mongoose.Types.ObjectId | null;
+  assignedTo?: mongoose.Types.ObjectId | null;
+  reviewAt?: Date | null;
+};
 
 export const RiskResolution =
   (mongoose.models.RiskResolution as
