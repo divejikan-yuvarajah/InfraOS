@@ -123,6 +123,11 @@ Core design tenets:
 | <a href="docs/Screen/18-assets-register.png"><img src="docs/Screen/18-assets-register.png" alt="Assets Register" width="460" /></a> | <a href="docs/Screen/25-admin-users.png"><img src="docs/Screen/25-admin-users.png" alt="Admin Users" width="460" /></a> |
 | *Asset lifecycle records, condition assessments, and maintenance requests* | *Role-based access control, pending approvals, and immutable audit logs* |
 
+| AI Risk & Predictive Intelligence | Citizen Infrastructure Portal |
+|:---:|:---:|
+| <a href="docs/Screen/04-ai-risk-project-intelligence.png"><img src="docs/Screen/04-ai-risk-project-intelligence.png" alt="AI Risk Intelligence" width="460" /></a> | <a href="docs/Screen/07-citizen-infrastructure-portal.png"><img src="docs/Screen/07-citizen-infrastructure-portal.png" alt="Citizen Infrastructure Portal" width="460" /></a> |
+| *Predictive project risk assessment, delay factors, and AI mitigation insights* | *Public citizen grievance redressal, geospatial issue logging, and status tracking* |
+
 </div>
 
 ---
