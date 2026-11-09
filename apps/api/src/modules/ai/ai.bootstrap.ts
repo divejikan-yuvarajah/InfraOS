@@ -5,6 +5,7 @@ import { logger } from "../../shared/logger.js";
 import { aiConfig } from "./ai.config.js";
 import { registerAiProcessingSubscribers, unregisterAiProcessingSubscribers } from "./ai-processing.subscriber.js";
 import { startArtifactRunner } from "./rag/artifact-runner.js";
+import { runExtraction } from "./rag/extraction.runner.js";
 import { runSummary } from "./rag/summary.runner.js";
 import { startJobRunner, type JobRunner } from "./processing/job-runner.js";
 
@@ -23,7 +24,7 @@ export function startAiBackground(): void {
     return;
   }
   runner = startJobRunner();
-  if (aiConfig.chat.model) artifacts = startArtifactRunner({ SUMMARY: runSummary });
+  if (aiConfig.chat.model) artifacts = startArtifactRunner({ SUMMARY: runSummary, EXTRACTION: runExtraction });
 }
 
 export async function stopAiBackground(): Promise<void> {
