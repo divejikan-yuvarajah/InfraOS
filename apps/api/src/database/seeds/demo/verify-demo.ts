@@ -1,6 +1,8 @@
 import { SYSTEM_ROLE_KEYS } from "@infraos/shared-types";
 
 import { Agency } from "../../../modules/agencies/models/agency.model.js";
+import { AiInteraction } from "../../../modules/ai/rag/interaction.model.js";
+import { AiArtifact } from "../../../modules/ai/rag/artifact.model.js";
 import { ProcessingJob } from "../../../modules/ai/processing/job.model.js";
 import { AiUsageRecord } from "../../../modules/ai/usage.model.js";
 import { DocumentChunk } from "../../../modules/documents/models/document-chunk.model.js";
@@ -293,11 +295,11 @@ export async function verifyDemoSeed(): Promise<VerifyDemoResult> {
   const aiReady = await Document.find({ extractedTextStatus: "COMPLETED" }).select("_id aiIndex.indexedVersionNo").lean();
   let aiReadyWithoutChunks = 0;
   for (const doc of aiReady) if (!(await DocumentChunk.exists({ documentId: doc._id, versionNo: doc.aiIndex?.indexedVersionNo ?? -1, status: "ACTIVE" }))) aiReadyWithoutChunks += 1;
-  const [aiChunks, aiJobs, aiUsage] = await Promise.all([DocumentChunk.countDocuments({}), ProcessingJob.countDocuments({}), AiUsageRecord.countDocuments({})]);
+  const [aiChunks, aiJobs, aiUsage, aiInteractions, aiArtifacts] = await Promise.all([DocumentChunk.countDocuments({}), ProcessingJob.countDocuments({}), AiUsageRecord.countDocuments({}), AiInteraction.countDocuments({}), AiArtifact.countDocuments({})]);
   lines.push({
     name: "AI processing state is truthful (no AI-ready document without active chunks)",
     pass: aiReadyWithoutChunks === 0,
-    detail: `aiReady=${aiReady.length} withoutChunks=${aiReadyWithoutChunks} chunks=${aiChunks} jobs=${aiJobs} usageRows=${aiUsage}`,
+    detail: `aiReady=${aiReady.length} withoutChunks=${aiReadyWithoutChunks} chunks=${aiChunks} jobs=${aiJobs} usageRows=${aiUsage} interactions=${aiInteractions} artifacts=${aiArtifacts}`,
   });
   const pass = lines.every((line) => line.pass);
   return { lines, pass };

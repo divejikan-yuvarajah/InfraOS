@@ -81,6 +81,7 @@ export const capabilitiesResponse = z.object({
   limits: z.object({ maxBodyBytes: z.number(), maxPages: z.number(), maxChars: z.number(), maxChunks: z.number() }),
   embedding: z.object({ model: z.string().nullable(), dimension: z.number().int().positive().nullable() }),
   collectionBase: z.string(),
+  chat: z.object({ model: z.string().nullable(), strongModel: z.string().nullable(), structuredMode: z.enum(["json_schema", "json_object"]), promptVersions: z.record(z.string(), z.string()), concurrency: z.number() }).optional(),
 });
 export type CapabilitiesResponse = z.infer<typeof capabilitiesResponse>;
 
@@ -122,7 +123,7 @@ export type SummarySection = z.infer<typeof summarySection>;
 export const reduceRequest = z.object({
   language, template: z.string().max(40), mode: z.enum(["notes", "final"]), sectionKeys: z.array(z.string().max(40)).max(20), notes: z.array(note).min(1).max(400), maxOutputTokens: z.number().int().min(100).max(4000), strong: z.boolean().optional(),
 });
-export const reduceResponse = z.object({ output: z.object({ notes: z.array(note).max(80).optional(), sections: z.array(summarySection).max(20).optional() }), ...llmMeta });
+export const reduceResponse = z.object({ output: z.object({ notes: z.array(note).max(80).nullable().optional(), sections: z.array(summarySection).max(20).nullable().optional() }), ...llmMeta });
 export type ReduceResponse = z.infer<typeof reduceResponse>;
 
 export const extractRequest = z.object({

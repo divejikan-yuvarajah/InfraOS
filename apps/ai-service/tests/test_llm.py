@@ -58,7 +58,7 @@ def test_answer_ok_with_usage_and_versions(settings: Settings) -> None:
     r = post(make_app(settings, h), "/v1/llm/answer", ANSWER_REQ)
     assert r.status_code == 200, r.text
     b = r.json()
-    assert b["output"]["status"] == "ANSWERED" and b["usage"] == {"inputTokens": 11, "outputTokens": 7} and b["promptVersion"] == "qa.v1" and b["structuredMode"] == "json_schema"
+    assert b["output"]["status"] == "ANSWERED" and b["usage"] == {"inputTokens": 11, "outputTokens": 7} and b["promptVersion"] == "qa.v2" and b["structuredMode"] == "json_schema"
     sent = seen[0]
     assert sent["model"] == "test/chat" and sent["temperature"] <= 0.2 and sent["response_format"]["type"] == "json_schema"
     assert "tools" not in sent and "stream" not in sent
@@ -187,7 +187,7 @@ def test_map_reduce_extract_shapes(settings: Settings) -> None:
 
     c = make_app(settings, h)
     m = post(c, "/v1/llm/summarize-map", {"language": "en", "template": "CONTRACT", "windowIndex": 0, "windowCount": 2, "sources": [SRC], "maxOutputTokens": 400})
-    assert m.status_code == 200 and m.json()["output"]["notes"][0]["citations"][0]["n"] == 1 and m.json()["promptVersion"] == "sum-map.v1"
+    assert m.status_code == 200 and m.json()["output"]["notes"][0]["citations"][0]["n"] == 1 and m.json()["promptVersion"] == "sum-map.v2"
     n = {"text": "Fact", "citations": [{"n": 1, "quote": "q"}]}
     r = post(c, "/v1/llm/summarize-reduce", {"language": "ta", "template": "KEY_DATES", "mode": "final", "sectionKeys": ["dates"], "notes": [n], "maxOutputTokens": 400})
     assert r.status_code == 200 and r.json()["output"]["sections"][0]["items"][0]["date"] == "2026-12-31"
@@ -208,7 +208,7 @@ def test_capabilities_report_chat_layer(settings: Settings) -> None:
     ts = str(int(time.time() * 1000))
     h = {"X-Infraos-Timestamp": ts, "X-Infraos-Request-Id": "r", "X-Infraos-Signature": sign(SECRET, "GET", "/v1/capabilities", ts, sha256_hex(b""))}
     body = c.get("/v1/capabilities", headers=h).json()
-    assert body["chat"]["model"] == "test/chat" and body["chat"]["promptVersions"]["qa"] == "qa.v1" and body["chat"]["structuredMode"] == "json_schema"
+    assert body["chat"]["model"] == "test/chat" and body["chat"]["promptVersions"]["qa"] == "qa.v2" and body["chat"]["structuredMode"] == "json_schema"
 
 
 @pytest.mark.parametrize("builder", ["answer", "map", "reduce", "extract"])

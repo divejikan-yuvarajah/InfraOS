@@ -341,4 +341,21 @@ describe("Document Q&A (Steps 115-116)", { timeout: 240_000 }, () => {
     await DocumentChunk.updateOne({ chunkId: id(docA, 1, 1) }, { $set: { status: "STALE" } });
     expect((await as(w.officer.token).get(`/documents/${docA}/ai/chunks/${id(docA, 1, 1)}/context`)).status).toBe(404);
   });
+  it("quality aggregates (ai.manage): real counts only, no content, scoped; others are refused", async () => {
+    await ask(w.officer.token, { question: uniq("What are the liquidated damages?"), scope: scopeA() });
+    searchHits = () => [hit(docA, 1, 0.2)];
+    await ask(w.officer.token, { question: uniq("What is the insurance cover?"), scope: scopeA() });
+    const first = await AiInteraction.findOne({ status: "ANSWERED" });
+    await as(w.officer.token).post(`/ai/interactions/${first!._id}/feedback`, { rating: "HELPFUL" });
+    const r = await as(w.gov.token).get("/ai/quality");
+    expect(r.status).toBe(200);
+    expect(r.body.data).toMatchObject({ questions: 2, counts: { answered: 1, insufficientEvidence: 1, passagesOnly: 0 }, feedback: { helpful: 1, notHelpful: 0, helpfulRatio: 100 }, citationVerificationRate: 100 });
+    expect(r.body.data.tokensByPurpose).toEqual([{ purpose: "QA", inputTokens: 300, outputTokens: 60, requests: 1 }]);
+    const text = JSON.stringify(r.body);
+    expect(text).not.toMatch(/liquidated|insurance|userId|documentId/i);
+    expect((await as(w.officer.token).get("/ai/quality")).status).toBe(403);
+    expect((await as(w.gov.token).get("/ai/quality?from=2026-13-01")).status).toBe(400);
+    expect((await as(w.gov.token).get("/ai/quality?from=2026-01-01&to=2026-12-31")).status).toBe(200);
+    expect((await as(w.gov.token).get("/ai/quality?bogus=1")).status).toBe(400);
+  });
 });

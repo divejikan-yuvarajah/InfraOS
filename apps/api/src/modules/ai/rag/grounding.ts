@@ -23,11 +23,18 @@ export type GroundedAnswer = {
   text: string; claims: GroundedClaim[]; citations: VerifiedCitation[]; evidence: Evidence; missingInfo: string[];
 };
 
-/** A quote is verified only if it is a contiguous substring of the (already redacted) text the model actually saw. */
+/**
+ * A quote is verified only if it is a contiguous substring of the (already redacted) text the model actually saw. A quote that joins excerpts with an
+ * ellipsis is accepted only when EVERY segment is itself a verbatim excerpt of the same chunk (each at least MIN_SEGMENT characters): one invented segment fails the whole quote.
+ */
+const MIN_SEGMENT = 10;
 export function verifyQuote(quote: string, chunkText: string): boolean {
   const q = normaliseForMatch(quote);
   if (q.length < MIN_QUOTE || q.length > MAX_QUOTE) return false;
-  return normaliseForMatch(chunkText).includes(q);
+  const hay = normaliseForMatch(chunkText);
+  if (hay.includes(q)) return true;
+  const segments = q.split(/\s*(?:\.{3}|\u2026)\s*/).map((s) => s.trim()).filter(Boolean);
+  return segments.length > 1 && segments.every((s) => s.length >= MIN_SEGMENT && hay.includes(s));
 }
 
 // ---------------------------------------------------------------- numeric / date grounding

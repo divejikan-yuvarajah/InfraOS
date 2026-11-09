@@ -13,6 +13,7 @@ import { ragHandle } from "./rag/http.js";
 import { chunkContext, deleteThread, getInteraction, getThread, listThreads, scopePreview, submitFeedback } from "./rag/qa.service.js";
 import { createSummary, listSummaries, readSummary, summaryBody } from "./rag/summary.service.js";
 import { applyBody, applyMetadata, createExtraction, extractionBody, listExtractions, readExtraction, reviewBody, saveReview } from "./rag/extraction.service.js";
+import { qualityAggregates, qualityQuery } from "./rag/quality.service.js";
 import { askBody, chunkContextParams, feedbackBody, scopePreviewQuery, threadParam, threadsQuery } from "./rag/rag.schema.js";
 import { RagFlow } from "./rag/http.js";
 import { aiConfig } from "./ai.config.js";
@@ -121,4 +122,7 @@ aiDocumentRouter.post("/:id/ai/extractions/:artifactId/apply-metadata", ...auth,
   const b = applyBody.safeParse(req.body);
   return b.success ? applyMetadata(actor, param(req.params.id), param(req.params.artifactId), b.data, req.requestId) : bad();
 }));
+
+// ---- Batch 10: quality aggregates (ai.manage; counts only, never content)
+aiRouter.get("/quality", ...auth, requirePermission("ai.manage"), read, ragHandle({}, async (req, _res, actor) => { const q = parseStrict(qualityQuery, req.query); return q ? qualityAggregates(actor, q) : bad(); }));
 

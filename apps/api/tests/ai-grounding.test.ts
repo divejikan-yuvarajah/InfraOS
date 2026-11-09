@@ -76,6 +76,14 @@ describe("grounding verification (Step 115)", () => {
     // invisible characters other than ZWJ/ZWNJ are ignored; quote marks and dashes are unified; whitespace collapses
     expect(verifyQuote("liquidated​ damages – “LKR 25,000”", "liquidated damages - \"LKR  25,000\" per day")).toBe(true);
   });
+  it("ellipsis-joined quotes verify only when every segment is verbatim from the same chunk", () => {
+    const text = "Contract Price. The Contract Price is LKR 48,500,000. Defects Liability. The period is 365 days. Liquidated Damages. The Contractor shall pay LKR 25,000 per day of delay.";
+    expect(verifyQuote("The Contract Price is LKR 48,500,000. ... The Contractor shall pay LKR 25,000 per day of delay.", text)).toBe(true);
+    expect(verifyQuote("The Contract Price is LKR 48,500,000 … The Contractor shall pay LKR 25,000 per day of delay.", text)).toBe(true);
+    expect(verifyQuote("The Contract Price is LKR 48,500,000. ... The Contractor shall pay LKR 99,000 per day of delay.", text)).toBe(false); // one invented segment fails all
+    expect(verifyQuote("The Contract Price is LKR 48,500,000. ... abc", text)).toBe(false); // trivial fragments do not count
+    expect(verifyQuote("... ... ...", text)).toBe(false);
+  });
   it("too-short and over-long quotes never verify", () => {
     expect(verifyQuote("LKR", C1.text)).toBe(false);
     expect(verifyQuote(C1.text.repeat(3), C1.text.repeat(3))).toBe(false);

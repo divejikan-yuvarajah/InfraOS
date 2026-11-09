@@ -28,6 +28,8 @@
     "db:backfill:documents": "tsx src/scripts/backfill-documents-batch08.ts",
     "db:migrate:document-chunks": "tsx src/scripts/migrate-document-chunks-batch09.ts",
     "ai:smoke": "tsx src/scripts/ai-smoke.ts",
+    "ai:calibrate-retrieval": "tsx src/scripts/ai-calibrate.ts",
+    "ai:demo-ask": "tsx src/scripts/ai-demo-ask.ts",
     "ai:demo-process": "tsx src/scripts/ai-demo-process.ts",
     "db:cleanup:documents": "tsx src/scripts/cleanup-orphan-uploads.ts",
     "db:recompute:asset-health": "tsx src/scripts/recompute-asset-health.ts",
