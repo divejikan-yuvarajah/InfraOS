@@ -21,6 +21,8 @@ import { useWorkspaceLocale } from "@/lib/i18n/workspace-locale";
 
 import { EmptyState, ErrorState, errorText, Field, Shell, Skeletons } from "../doc-ui";
 import { durationLabel, ServiceBanner } from "./ai-ui";
+import { QualityPanel } from "./quality-panel";
+import { getRagCopy } from "@/lib/documents/ai/rag-messages";
 
 const canManageHint = (role: string) => role === "GOV_ADMIN" || role === "SUPER_ADMIN";
 
@@ -233,6 +235,7 @@ export function ProcessingCenter() {
               </div>
               <div className="ctr-row" style={{ gap: "0.5rem", flexWrap: "wrap" }}>
                 <button type="button" className="ctr-btn" onClick={() => { void summary.refetch(); void jobs.refetch(); void status.refetch(); }}><RefreshCwIcon aria-hidden="true" />{a.center.refresh}</button>
+                {s && s.ready > 0 ? <Link className="ctr-btn" href="/documents/ai">{getRagCopy(locale).nav.workspace}</Link> : null}
                 <button type="button" className="ctr-btn" onClick={() => setDlg("bulk")}>{a.center.bulk.reprocessFailed}</button>
                 {manage ? <button type="button" className="ctr-btn" onClick={() => setDlg("reindex")}>{a.center.reindex.open}</button> : null}
               </div>
@@ -285,6 +288,7 @@ export function ProcessingCenter() {
               )}
             </section>
 
+            {manage ? <QualityPanel locale={locale} /> : null}
             <RetrievalCheck a={a} locale={locale} />
             <BulkFailedDialog a={a} open={dlg === "bulk"} onClose={() => setDlg(null)} />
             {manage ? <ReindexDialog a={a} open={dlg === "reindex"} onClose={() => setDlg(null)} status={status.data} /> : null}

@@ -80,6 +80,7 @@ Empty values in `.env.example` are valid until the feature is implemented. When 
 | AI service | `AI_BASE_URL`, `AI_INTERNAL_SECRET`, `OPENROUTER_API_KEY` |
 | RAG | `QDRANT_URL`, `QDRANT_API_KEY` |
 | AI processing (Batch 09) | API: `AI_PROCESSING_ENABLED`, `AI_JOB_CONCURRENCY`, `AI_EMBED_DAILY_TOKEN_BUDGET`, `AI_EMBED_MAX_TOKENS_PER_DOC`, `AI_EMBED_PRICE_PER_M_TOKENS_MINOR` (US cents per million tokens; only when verified against the provider catalog. `baai/bge-m3` = 1). FastAPI: `APP_ENV`, `PORT`, `AI_EMBED_MODEL` (canonical; `EMBEDDING_MODEL` is retired), `EMBED_BASE_URL`, `QDRANT_COLLECTION` |
+| Document Q&A, summaries, extraction (Batch 10) | API: `AI_CHAT_MODEL` (display), `AI_CHAT_MODEL_STRONG`, `AI_CHAT_DAILY_TOKEN_BUDGET`, `AI_QA_MAX_OUTPUT_TOKENS`, `AI_SUMMARY_MAX_INPUT_TOKENS`, `AI_REDACT_CONTEXT`, `AI_INTERACTION_TTL_DAYS`, `AI_REQUESTS_PER_10_MIN`, `RAG_TOP_K`, `RAG_CONTEXT_CHUNKS`, `RAG_CONTEXT_MAX_CHARS`, `RAG_MIN_SCORE` (calibrate with `npm run ai:calibrate-retrieval`), `RAG_PER_DOC_CAP`, `AI_CHAT_PRICE_INPUT_PER_M_MINOR` / `AI_CHAT_PRICE_OUTPUT_PER_M_MINOR` (US cents per million tokens, only when verified; `google/gemini-2.5-flash-lite` = 10 / 40). FastAPI: `AI_CHAT_MODEL` (default `google/gemini-2.5-flash-lite`), `AI_CHAT_MODEL_STRONG` (`google/gemini-3.1-flash-lite`), `CHAT_BASE_URL`, `LLM_CONCURRENCY` |
 | Storage | `STORAGE_PROVIDER`, `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET`, `R2_ENDPOINT` |
 | Maps (public) | `NEXT_PUBLIC_MAP_STYLE_URL` |
 

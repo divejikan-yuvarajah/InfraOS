@@ -1,0 +1,21 @@
+{
+  "language": "ta",
+  "template": "KEY_DATES",
+  "mode": "final",
+  "sectionKeys": [
+    "dates"
+  ],
+  "notes": [
+    {
+      "text": "Damages are LKR 25,000 per day.",
+      "citations": [
+        {
+          "n": 1,
+          "quote": "LKR 25,000 per day"
+        }
+      ]
+    }
+  ],
+  "maxOutputTokens": 600,
+  "strong": false
+}

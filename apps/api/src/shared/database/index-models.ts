@@ -8,6 +8,8 @@ import { AuditLog } from "../../modules/audit/models/audit-log.model.js";
 import { ContractorAssignment } from "../../modules/contractors/models/contractor-assignment.model.js";
 import { Contractor } from "../../modules/contractors/models/contractor.model.js";
 import { ProcessingJob } from "../../modules/ai/processing/job.model.js";
+import { AiInteraction } from "../../modules/ai/rag/interaction.model.js";
+import { AiArtifact } from "../../modules/ai/rag/artifact.model.js";
 import { AiUsageRecord } from "../../modules/ai/usage.model.js";
 import { DocumentChunk } from "../../modules/documents/models/document-chunk.model.js";
 import { Document } from "../../modules/documents/models/document.model.js";
@@ -82,6 +84,8 @@ export const INDEX_MODELS = [
   DocumentUpload,
   ProcessingJob,
   AiUsageRecord,
+  AiInteraction,
+  AiArtifact,
   Inspection,
   InspectionEvidence,
   ProgressVerification,

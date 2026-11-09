@@ -1,5 +1,5 @@
 import mongoose, { type ClientSession } from "mongoose";
-import type { AiAuditAction } from "@infraos/shared-types";
+import type { AI_RAG_AUDIT_ACTIONS, AiAuditAction } from "@infraos/shared-types";
 
 import { AuditLog } from "../audit/models/audit-log.model.js";
 
@@ -10,7 +10,7 @@ const oid = (v: string | mongoose.Types.ObjectId) => new mongoose.Types.ObjectId
  * `reason` carries a machine code, never free text, file names or content. `userId` is omitted for system-originated rows.
  */
 export async function writeAiAudit(session: ClientSession | undefined, i: {
-  action: AiAuditAction; resourceType?: "DOCUMENT" | "SYSTEM"; resourceId: string | mongoose.Types.ObjectId; agencyId?: string | mongoose.Types.ObjectId | null;
+  action: AiAuditAction | (typeof AI_RAG_AUDIT_ACTIONS)[number]; resourceType?: "DOCUMENT" | "SYSTEM"; resourceId: string | mongoose.Types.ObjectId; agencyId?: string | mongoose.Types.ObjectId | null;
   actorUserId?: string | null; status?: string; reason?: string; requestId?: string;
 }): Promise<void> {
   const snap = { ...(i.status ? { status: i.status } : {}), ...(i.reason ? { reason: i.reason.slice(0, 100) } : {}), ...(i.agencyId ? { agencyId: oid(i.agencyId) } : {}) };

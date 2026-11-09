@@ -1,4 +1,5 @@
 import { purgeAiForDocuments } from "../../../modules/ai/processing/demo.js";
+import { AiInteraction } from "../../../modules/ai/rag/interaction.model.js";
 import { Asset } from "../../../modules/assets/models/asset.model.js";
 import { HazardZone } from "../../../modules/risk/models/hazard-zone.model.js";
 import { MaintenanceRecord } from "../../../modules/assets/models/maintenance-record.model.js";
@@ -77,6 +78,7 @@ export async function resetDemoData(seedEnv: SeedEnvSlice): Promise<void> {
   const demoProjectIds = demoProjects.map((p) => p._id);
 
   if (demoUserIds.length > 0) {
+    await AiInteraction.deleteMany({ userId: { $in: demoUserIds } });
     await CitizenIssue.deleteMany({ citizenId: { $in: demoUserIds } });
   }
 

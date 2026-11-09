@@ -5,6 +5,7 @@ from pathlib import Path
 import pytest
 
 from app import schemas
+from app.llm import schemas as ls
 
 FIX = Path(__file__).parent / "fixtures"
 MODELS = {
@@ -17,6 +18,8 @@ MODELS = {
     "search.response": schemas.SearchResponse,
     "reindex-plan.response": schemas.ReindexPlanResponse,
     "drop-collection.response": schemas.DropCollectionResponse,
+    "llm-answer.request": ls.AnswerRequest, "llm-answer.response": ls.AnswerResponse, "llm-map.request": ls.MapRequest, "llm-map.response": ls.MapResponse,
+    "llm-reduce.request": ls.ReduceRequest, "llm-reduce.response": ls.ReduceResponse, "llm-extract.request": ls.ExtractRequest, "llm-extract.response": ls.ExtractResponse,
 }
 
 

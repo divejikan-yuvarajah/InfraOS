@@ -102,7 +102,7 @@ class SearchRequest(Strict):
     query: str = Field(min_length=1, max_length=1000)
     # Mandatory, supplied by Express after its own ACL check. An empty or missing list is rejected (422).
     allowedDocumentIds: list[str] = Field(min_length=1, max_length=500)
-    topK: int = Field(default=8, ge=1, le=20)
+    topK: int = Field(default=8, ge=1, le=50)
     filters: SearchFilters | None = None
     scoreThreshold: float | None = Field(default=None, ge=-1, le=1)
 

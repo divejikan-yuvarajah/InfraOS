@@ -1,0 +1,15 @@
+{
+  "language": "en",
+  "template": "CONTRACT",
+  "windowIndex": 0,
+  "windowCount": 3,
+  "sources": [
+    {
+      "n": 1,
+      "title": "Contract (Synthetic)",
+      "category": "CONTRACT",
+      "text": "Liquidated damages are LKR 25,000 per day."
+    }
+  ],
+  "maxOutputTokens": 500
+}

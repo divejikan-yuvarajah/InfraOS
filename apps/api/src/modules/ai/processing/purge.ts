@@ -5,6 +5,7 @@ import { DocumentChunk } from "../../documents/models/document-chunk.model.js";
 import { Document } from "../../documents/models/document.model.js";
 import { writeAiAudit } from "../ai.audit.js";
 import { aiClient, type AiClient } from "../ai-client.js";
+import { deleteArtifacts } from "../rag/artifact.common.js";
 import { cancelActiveJobs } from "./job.service.js";
 
 const oid = (v: string) => new mongoose.Types.ObjectId(v);
@@ -17,6 +18,7 @@ const oid = (v: string) => new mongoose.Types.ObjectId(v);
 export async function purgeDocument(documentId: string, opts: { agencyId?: string | null; actorUserId?: string | null; client?: AiClient; audit?: boolean } = {}): Promise<{ purged: boolean; pending: boolean }> {
   const id = oid(documentId);
   await cancelActiveJobs(documentId);
+  await deleteArtifacts(documentId).catch(() => undefined); // summaries/extractions contain document text: removed on archive, delete, restrict and AI exclusion
   const hadChunks = (await DocumentChunk.exists({ documentId: id })) !== null;
   const doc = await Document.findById(id).select("aiIndex extractedTextStatus agencyId").lean();
   const hadState = Boolean(doc?.aiIndex) || (doc ? doc.extractedTextStatus !== "NOT_STARTED" : false);
