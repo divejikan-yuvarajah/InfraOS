@@ -234,6 +234,32 @@ describe("requireMongoConfig", () => {
     expect(config.dbName).toBe("infraos_dev");
     expect(config.uri).toBe("mongodb://127.0.0.1:27017");
   });
+
+  it("parses risk scheduler configuration", () => {
+    const custom = parseEnv({
+      ...base,
+      RISK_SCHEDULE_ENABLED: "false",
+      RISK_SCHEDULE_HOUR: "3",
+      RISK_MAX_PROJECTS_PER_RUN: "500",
+    });
+    expect(custom.RISK_SCHEDULE_ENABLED).toBe(false);
+    expect(custom.RISK_SCHEDULE_HOUR).toBe(3);
+    expect(custom.RISK_MAX_PROJECTS_PER_RUN).toBe(500);
+
+    expect(() =>
+      parseEnv({
+        ...base,
+        RISK_SCHEDULE_HOUR: "25",
+      }),
+    ).toThrow(/RISK_SCHEDULE_HOUR/);
+
+    expect(() =>
+      parseEnv({
+        ...base,
+        RISK_MAX_PROJECTS_PER_RUN: "0",
+      }),
+    ).toThrow(/RISK_MAX_PROJECTS_PER_RUN/);
+  });
 });
 
 describe("assertNonProductionDatabaseName", () => {

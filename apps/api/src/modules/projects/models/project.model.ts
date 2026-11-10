@@ -2,6 +2,7 @@ import mongoose, { Schema } from "mongoose";
 import { dateOrder, locationSchema, moneySchema, percentage, reference, textField } from "../../../shared/database/fields.js";
 import { geometryField } from "../../../shared/database/geometry.js";
 import { PROJECT_STATUSES, PROJECT_TYPES } from "../project.constants.js";
+import { RISK_LEVELS } from "@infraos/shared-types";
 
 const projectSchema = new Schema({
   projectCode: { ...textField(48, true), immutable: true, unique: true, match: /^INF-[A-Z_]+-[0-9]+$/ },
@@ -27,6 +28,10 @@ const projectSchema = new Schema({
   verifiedProgress: { type: new Schema({ percent: { ...percentage(), required: true }, asOf: { type: Date, required: true }, verificationId: { type: Schema.Types.ObjectId, required: true } }, { _id: false, strict: "throw" }) },
   // Latest assessment summary only; absence means not assessed.
   riskScore: percentage(),
+  // Server-owned risk intelligence cache (Step 119-123). Never client-writable.
+  riskLevel: { type: String, enum: RISK_LEVELS, required: false },
+  riskAssessedAt: { type: Date, required: false },
+  latestRiskAssessmentId: reference("RiskAssessment", false),
   createdBy: reference("User"),
 }, { timestamps: true, strict: "throw", collection: "projects" });
 
@@ -41,6 +46,8 @@ projectSchema.index({ projectType: 1, status: 1 });
 projectSchema.index({ geometry: "2dsphere" });
 // InfraMap district filter and district facet.
 projectSchema.index({ "location.district": 1 });
+projectSchema.index({ agencyId: 1, riskLevel: 1 });
+projectSchema.index({ riskLevel: 1, riskAssessedAt: 1 });
 
 export type ProjectDocument = mongoose.InferSchemaType<typeof projectSchema> & { _id: mongoose.Types.ObjectId };
 export const Project = (mongoose.models.Project as mongoose.Model<ProjectDocument> | undefined) ?? mongoose.model<ProjectDocument>("Project", projectSchema);

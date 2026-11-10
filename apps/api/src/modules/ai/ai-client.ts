@@ -6,7 +6,9 @@ import { logger } from "../../shared/logger.js";
 import { aiConfig, type AiConfig } from "./ai.config.js";
 import {
   answerRequest, answerResponse, extractRequest, extractResponse, mapRequest, mapResponse, reduceRequest, reduceResponse,
+  riskNarrativeRequest, riskNarrativeResponse,
   type AnswerRequest, type AnswerResponse, type ExtractResponse, type MapResponse, type ReduceResponse,
+  type RiskNarrativeRequest, type RiskNarrativeResponse,
   capabilitiesResponse, deleteResponse, dropCollectionResponse, extractChunkResponse, indexRequest, indexResponse, readyResponse, reindexPlanResponse, searchRequest, searchResponse, serviceError,
   type CapabilitiesResponse, type ExtractChunkResponse, type IndexRequest, type IndexResponse, type ReadyResponse, type ReindexPlanResponse, type SearchRequest, type SearchResponse,
 } from "./ai.contracts.js";
@@ -156,6 +158,7 @@ export function createAiClient(deps: AiClientDeps = {}) {
     summarizeMap: (req: z.infer<typeof mapRequest>): Promise<MapResponse> => jsonPost("/v1/llm/summarize-map", mapRequest.parse(req), cfg.timeoutsMs.map, mapResponse),
     summarizeReduce: (req: z.infer<typeof reduceRequest>): Promise<ReduceResponse> => jsonPost("/v1/llm/summarize-reduce", reduceRequest.parse(req), cfg.timeoutsMs.reduce, reduceResponse),
     llmExtract: (req: z.infer<typeof extractRequest>): Promise<ExtractResponse> => jsonPost("/v1/llm/extract", extractRequest.parse(req), cfg.timeoutsMs.extractLlm, extractResponse),
+    riskNarrative: (req: RiskNarrativeRequest): Promise<RiskNarrativeResponse> => jsonPost("/v1/llm/risk-narrative", riskNarrativeRequest.parse(req), cfg.timeoutsMs.answer, riskNarrativeResponse),
     dropCollection: (name: string) => jsonPost("/v1/admin/drop-collection", { name }, cfg.timeoutsMs.delete, dropCollectionResponse),
     index: (req: IndexRequest): Promise<IndexResponse> => jsonPost("/v1/index", indexRequest.parse(req), cfg.timeoutsMs.index, indexResponse),
     deleteDocument: (documentId: string, keepVersionNo?: number) => jsonPost("/v1/delete", { documentId, ...(keepVersionNo ? { keepVersionNo } : {}) }, cfg.timeoutsMs.delete, deleteResponse),

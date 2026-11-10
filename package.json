@@ -35,6 +35,8 @@
     "db:seed:verify": "npm run db:seed:verify -w @infraos/api",
     "db:seed:reset-demo": "npm run db:seed:reset-demo -w @infraos/api",
     "db:set-password": "npm run db:set-password -w @infraos/api",
+    "risk:smoke": "npm run risk:smoke -w @infraos/api",
+    "risk:demo-sequence": "npm run risk:demo-sequence -w @infraos/api",
     "ai:smoke": "npm run ai:smoke -w @infraos/api",
     "ai:calibrate-retrieval": "npm run ai:calibrate-retrieval -w @infraos/api",
     "ai:demo-ask": "npm run ai:demo-ask -w @infraos/api",

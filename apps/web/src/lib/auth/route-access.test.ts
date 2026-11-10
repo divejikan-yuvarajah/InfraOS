@@ -58,6 +58,8 @@ describe("route classification", () => {
     expect(classifyAppPath("/si/projects/new")).toBe("public");
     expect(classifyAppPath("/ta/projects/new")).toBe("public");
     expect(classifyAppPath("/projects/42/overview")).toBe("private");
+    expect(classifyAppPath("/risk")).toBe("private");
+    expect(classifyAppPath("/risk/methodology")).toBe("private");
     expect(classifyAppPath("/si/projects")).toBe("public");
     expect(classifyAppPath("/ta/projects")).toBe("public");
     expect(classifyAppPath("/si/admin/roles")).toBe("public");

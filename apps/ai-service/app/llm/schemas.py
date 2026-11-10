@@ -154,3 +154,29 @@ class ExtractOutput(Lenient):
 
 class ExtractResponse(LlmMeta):
     output: ExtractOutput
+
+
+# ---- risk narrative
+class RiskNarrativeCategory(Lenient):
+    category: str
+    text: str
+
+
+class RiskNarrativeOutput(Lenient):
+    summary: str
+    categories: list[RiskNarrativeCategory] = Field(default_factory=list)
+    questionsToAsk: list[str] = Field(default_factory=list)
+
+
+class RiskNarrativeRequest(Strict):
+    language: Language = "en"
+    projectCode: str = Field(min_length=1, max_length=50)
+    overallLevel: str = Field(min_length=1, max_length=30)
+    overallIndex: int | None = Field(default=None, ge=0, le=100)
+    categories: list[dict] = Field(default_factory=list)
+    indicators: list[dict] = Field(default_factory=list)
+    maxOutputTokens: int = Field(default=1500, ge=100, le=4000)
+
+
+class RiskNarrativeResponse(LlmMeta):
+    output: RiskNarrativeOutput

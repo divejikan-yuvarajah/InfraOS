@@ -8,7 +8,13 @@ from typing import Any
 
 from .schemas import Source
 
-PROMPT_VERSIONS = {"qa": "qa.v2", "summaryMap": "sum-map.v2", "summaryReduce": "sum-reduce.v2", "extract": "extract.v2"}
+PROMPT_VERSIONS = {
+    "qa": "qa.v2",
+    "summaryMap": "sum-map.v2",
+    "summaryReduce": "sum-reduce.v2",
+    "extract": "extract.v2",
+    "riskNarrative": "risk-narr.v1",
+}
 LANGUAGE_NAMES = {"en": "English", "si": "Sinhala", "ta": "Tamil"}
 
 RULES = (
@@ -87,6 +93,31 @@ EXTRACT_SCHEMA = schema("fields", {
     }}}},
 })
 
+RISK_NARRATIVE_SCHEMA = schema("risk_narrative", {
+    "type": "object",
+    "additionalProperties": False,
+    "required": ["summary", "categories", "questionsToAsk"],
+    "properties": {
+        "summary": {"type": "string"},
+        "categories": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "additionalProperties": False,
+                "required": ["category", "text"],
+                "properties": {
+                    "category": {"type": "string"},
+                    "text": {"type": "string"},
+                },
+            },
+        },
+        "questionsToAsk": {
+            "type": "array",
+            "items": {"type": "string"},
+        },
+    },
+})
+
 
 # ---------------------------------------------------------------- builders -> (messages, schema)
 def build_answer(language: str, question: str, sources: list[Source]) -> tuple[list[dict[str, str]], dict[str, Any]]:
@@ -132,3 +163,34 @@ def build_extract(language: str, template: str, fields: list[Any], sources: list
         "Each value needs a citation with the source number and a verbatim quote (at most 240 characters) that contains the value. Fields that repeat may have several values; others at most one. NOT_FOUND has no values."
     )
     return [{"role": "system", "content": sys_msg}, {"role": "user", "content": f"{_lang(language)}\n\n{wrap_sources(sources, token)}"}], EXTRACT_SCHEMA
+
+
+def build_risk_narrative(
+    language: str,
+    project_code: str,
+    overall_level: str,
+    overall_index: int | None,
+    categories: list[dict[str, Any]],
+    indicators: list[dict[str, Any]],
+) -> tuple[list[dict[str, str]], dict[str, Any]]:
+    import json
+    sys_msg = (
+        "You are an explainable infrastructure project risk analyst.\n"
+        "Rules:\n"
+        "1. Strictly factual: Explain only the provided calculated indicators, levels, and evidence numbers. Never invent, extrapolate, or estimate numbers, dates, or milestones.\n"
+        "2. Neutral tone: Never allocate blame, accuse persons/agencies, or mention fraud/corruption/misconduct. Focus on schedule variance, milestone delay, and financial tracking.\n"
+        "3. Explain, never compute: Do not recalculate points or risk levels. Explain what the calculated indicators represent.\n"
+        "4. Recommendations: Do not create new actions; suggest clarifying questions officers should ask under questionsToAsk.\n"
+        f"5. Write in {LANGUAGE_NAMES.get(language, 'English')}.\n"
+        "6. Return JSON matching the schema."
+    )
+    user_payload = {
+        "projectCode": project_code,
+        "overallLevel": overall_level,
+        "overallIndex": overall_index,
+        "categories": categories,
+        "indicators": indicators,
+    }
+    user_content = f"{_lang(language)}\n\nProject Risk Assessment Data:\n{json.dumps(user_payload, indent=2)}"
+    return [{"role": "system", "content": sys_msg}, {"role": "user", "content": user_content}], RISK_NARRATIVE_SCHEMA
+
