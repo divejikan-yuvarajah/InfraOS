@@ -45,3 +45,4 @@ describe("Copilot permission matrix (Phase 10 Batch 12)", () => {
     expect(grantCeiling("CITIZEN").has("copilot.use")).toBe(false);
   });
 });
+

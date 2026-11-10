@@ -29,6 +29,7 @@ import { Role } from "../../modules/identity/models/role.model.js";
 import { User } from "../../modules/identity/models/user.model.js";
 import { InspectionEvidence } from "../../modules/inspections/models/inspection-evidence.model.js";
 import { Inspection } from "../../modules/inspections/models/inspection.model.js";
+import { InspectionAiAnalysis } from "../../modules/inspections/ai/models/inspection-ai-analysis.model.js";
 import { ProgressVerification } from "../../modules/inspections/models/progress-verification.model.js";
 import { CitizenIssue } from "../../modules/issues/models/citizen-issue.model.js";
 import { Notification } from "../../modules/notifications/models/notification.model.js";
@@ -96,6 +97,7 @@ export const INDEX_MODELS = [
   AiArtifact,
   Inspection,
   InspectionEvidence,
+  InspectionAiAnalysis,
   ProgressVerification,
   Asset,
   AssetConversion,

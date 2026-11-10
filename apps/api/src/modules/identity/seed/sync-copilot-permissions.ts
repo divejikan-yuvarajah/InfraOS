@@ -49,3 +49,4 @@ export async function syncCopilotPermissions(apply: boolean): Promise<(CopilotSy
   }
   return out;
 }
+

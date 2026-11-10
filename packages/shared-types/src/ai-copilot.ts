@@ -320,3 +320,4 @@ export type AiSettingsDto = {
   updatedBy?: string;
   version: number;
 };
+

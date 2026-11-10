@@ -97,3 +97,4 @@ export type AiSettingsDocument = mongoose.InferSchemaType<typeof aiSettingsSchem
 export const AiSettings =
   (mongoose.models.AiSettings as mongoose.Model<AiSettingsDocument> | undefined) ??
   mongoose.model<AiSettingsDocument>("AiSettings", aiSettingsSchema);
+

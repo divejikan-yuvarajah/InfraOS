@@ -5,8 +5,10 @@ from fastapi import APIRouter, Depends, Request
 from ..errors import ApiError
 from ..llm import prompts
 from ..llm.openai_compatible import LlmClient
-from ..llm.schemas import (AnswerRequest, AnswerResponse, ExtractOutput, ExtractRequest, ExtractResponse, MapOutput, MapRequest, MapResponse, ModelAnswer,
-                           ReduceOutput, ReduceRequest, ReduceResponse, RiskNarrativeOutput, RiskNarrativeRequest, RiskNarrativeResponse, Usage)
+from ..llm.schemas import (AnswerRequest, AnswerResponse, CopilotStepOutput, CopilotStepRequest, CopilotStepResponse,
+                           ExtractOutput, ExtractRequest, ExtractResponse, MapOutput, MapRequest, MapResponse, ModelAnswer,
+                           ReduceOutput, ReduceRequest, ReduceResponse, RiskNarrativeOutput, RiskNarrativeRequest, RiskNarrativeResponse,
+                           Usage, VisionAnalysisOutput, VisionAnalyzeRequest, VisionAnalyzeResponse)
 from ..logging import log_event
 from ..security import require_signed_body
 
@@ -83,3 +85,45 @@ async def risk_narrative(req: RiskNarrativeRequest, request: Request) -> RiskNar
     )
     log_event("llm_risk_narrative", project=req.projectCode, level=req.overallLevel, tokens_in=c.input_tokens, tokens_out=c.output_tokens)
     return RiskNarrativeResponse(output=c.parsed, **_meta(c, prompts.PROMPT_VERSIONS["riskNarrative"]))
+
+
+@router.post("/vision-analyze", response_model=VisionAnalyzeResponse)
+async def vision_analyze(req: VisionAnalyzeRequest, request: Request) -> VisionAnalyzeResponse:
+    s = request.app.state.settings
+    messages, schema = prompts.build_vision_analyze(
+        req.context.model_dump(),
+        [img.model_dump() for img in req.images],
+    )
+    c = await get_llm(request).complete(
+        messages,
+        schema,
+        VisionAnalysisOutput,
+        max_tokens=req.maxOutputTokens,
+        timeout=s.llm_answer_timeout_s,
+        vision=True,
+    )
+    log_event("llm_vision_analyze", images=len(req.images), tokens_in=c.input_tokens, tokens_out=c.output_tokens)
+    return VisionAnalyzeResponse(output=c.parsed, **_meta(c, prompts.PROMPT_VERSIONS["vision"]))
+
+
+@router.post("/copilot-step", response_model=CopilotStepResponse)
+async def copilot_step(req: CopilotStepRequest, request: Request) -> CopilotStepResponse:
+    s = request.app.state.settings
+    messages, schema = prompts.build_copilot_step(
+        req.language,
+        [turn.model_dump() for turn in req.conversation],
+        req.pageContext,
+        [spec.model_dump() for spec in req.toolCatalog],
+        [res.model_dump() for res in req.toolResults],
+        req.round,
+    )
+    c = await get_llm(request).complete(
+        messages,
+        schema,
+        CopilotStepOutput,
+        max_tokens=req.maxOutputTokens,
+        timeout=s.llm_answer_timeout_s,
+        strong=req.round >= 4,
+    )
+    log_event("llm_copilot_step", round=req.round, tokens_in=c.input_tokens, tokens_out=c.output_tokens)
+    return CopilotStepResponse(output=c.parsed, **_meta(c, prompts.PROMPT_VERSIONS["copilot"]))

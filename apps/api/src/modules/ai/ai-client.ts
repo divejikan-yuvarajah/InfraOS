@@ -7,8 +7,12 @@ import { aiConfig, type AiConfig } from "./ai.config.js";
 import {
   answerRequest, answerResponse, extractRequest, extractResponse, mapRequest, mapResponse, reduceRequest, reduceResponse,
   riskNarrativeRequest, riskNarrativeResponse,
+  visionAnalyzeRequest, visionAnalyzeResponse,
+  copilotStepRequest, copilotStepResponse,
   type AnswerRequest, type AnswerResponse, type ExtractResponse, type MapResponse, type ReduceResponse,
   type RiskNarrativeRequest, type RiskNarrativeResponse,
+  type VisionAnalyzeRequest, type VisionAnalyzeResponse,
+  type CopilotStepRequest, type CopilotStepResponse,
   capabilitiesResponse, deleteResponse, dropCollectionResponse, extractChunkResponse, indexRequest, indexResponse, readyResponse, reindexPlanResponse, searchRequest, searchResponse, serviceError,
   type CapabilitiesResponse, type ExtractChunkResponse, type IndexRequest, type IndexResponse, type ReadyResponse, type ReindexPlanResponse, type SearchRequest, type SearchResponse,
 } from "./ai.contracts.js";
@@ -159,6 +163,8 @@ export function createAiClient(deps: AiClientDeps = {}) {
     summarizeReduce: (req: z.infer<typeof reduceRequest>): Promise<ReduceResponse> => jsonPost("/v1/llm/summarize-reduce", reduceRequest.parse(req), cfg.timeoutsMs.reduce, reduceResponse),
     llmExtract: (req: z.infer<typeof extractRequest>): Promise<ExtractResponse> => jsonPost("/v1/llm/extract", extractRequest.parse(req), cfg.timeoutsMs.extractLlm, extractResponse),
     riskNarrative: (req: RiskNarrativeRequest): Promise<RiskNarrativeResponse> => jsonPost("/v1/llm/risk-narrative", riskNarrativeRequest.parse(req), cfg.timeoutsMs.answer, riskNarrativeResponse),
+    visionAnalyze: (req: VisionAnalyzeRequest, signal?: AbortSignal): Promise<VisionAnalyzeResponse> => jsonPost("/v1/llm/vision-analyze", visionAnalyzeRequest.parse(req), 60_000, visionAnalyzeResponse, signal),
+    copilotStep: (req: CopilotStepRequest, signal?: AbortSignal): Promise<CopilotStepResponse> => jsonPost("/v1/llm/copilot-step", copilotStepRequest.parse(req), cfg.timeoutsMs.answer, copilotStepResponse, signal),
     dropCollection: (name: string) => jsonPost("/v1/admin/drop-collection", { name }, cfg.timeoutsMs.delete, dropCollectionResponse),
     index: (req: IndexRequest): Promise<IndexResponse> => jsonPost("/v1/index", indexRequest.parse(req), cfg.timeoutsMs.index, indexResponse),
     deleteDocument: (documentId: string, keepVersionNo?: number) => jsonPost("/v1/delete", { documentId, ...(keepVersionNo ? { keepVersionNo } : {}) }, cfg.timeoutsMs.delete, deleteResponse),

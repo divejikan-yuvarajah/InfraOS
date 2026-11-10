@@ -189,3 +189,4 @@ export function mapAiFailure(
     scope: opts?.scope ?? "PLATFORM",
   };
 }
+

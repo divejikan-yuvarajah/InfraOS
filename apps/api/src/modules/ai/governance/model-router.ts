@@ -50,3 +50,4 @@ export function shouldDowngradeTier(
   const percent = (tierUsedTokens / budget) * 100;
   return percent >= settings.autoDowngradeAtBudgetPercent;
 }
+

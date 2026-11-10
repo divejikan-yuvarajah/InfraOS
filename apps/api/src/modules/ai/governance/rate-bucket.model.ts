@@ -21,3 +21,4 @@ export type AiRateBucketDocument = mongoose.InferSchemaType<typeof rateBucketSch
 export const AiRateBucket =
   (mongoose.models.AiRateBucket as mongoose.Model<AiRateBucketDocument> | undefined) ??
   mongoose.model<AiRateBucketDocument>("AiRateBucket", rateBucketSchema);
+
