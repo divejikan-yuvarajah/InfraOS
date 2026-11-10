@@ -4,7 +4,7 @@ import tseslint from "typescript-eslint";
 
 export default defineConfig(
   {
-    ignores: ["dist/**", "node_modules/**", "vitest.config.ts"],
+    ignores: ["dist/**", "node_modules/**", "vitest.config.ts", ".demo-tmp/**"],
   },
   js.configs.recommended,
   ...tseslint.configs.recommended,

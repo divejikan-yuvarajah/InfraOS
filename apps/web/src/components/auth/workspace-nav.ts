@@ -1,5 +1,6 @@
 import type { LucideIcon } from "lucide-react";
 import {
+  AlertTriangleIcon,
   ArchiveIcon,
   BellIcon,
   BoxesIcon,
@@ -241,6 +242,16 @@ export const WORKSPACE_NAV: readonly WorkspaceNavGroup[] = [
         materialIcon: "map",
         nodeGlyph: "○",
         i18n: { si: "InfraMap සිතියම", ta: "InfraMap வரைபடம்" },
+      },
+      {
+        href: "/risk",
+        label: "Risk Intelligence",
+        icon: AlertTriangleIcon,
+        materialIcon: "warning_amber",
+        nodeGlyph: "◆",
+        nodeTone: "critical",
+        i18n: { si: "අවදානම් බුද්ධිය", ta: "இடர் நுண்ணறிவு" },
+        roles: ["SUPER_ADMIN", "GOV_ADMIN", "AGENCY_OFFICER", "PROJECT_MANAGER"],
       },
     ],
   },

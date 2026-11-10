@@ -301,6 +301,16 @@ export async function verifyDemoSeed(): Promise<VerifyDemoResult> {
     pass: aiReadyWithoutChunks === 0,
     detail: `aiReady=${aiReady.length} withoutChunks=${aiReadyWithoutChunks} chunks=${aiChunks} jobs=${aiJobs} usageRows=${aiUsage} interactions=${aiInteractions} artifacts=${aiArtifacts}`,
   });
+
+  const { DEMO_RISK_PROJECT_CODES } = await import("./catalog.js");
+  const riskProjects = await Project.find({
+    projectCode: { $in: [...DEMO_RISK_PROJECT_CODES] },
+  }).select("projectCode status").lean();
+  lines.push({
+    name: "Batch 11 Risk Intelligence demo projects",
+    pass: riskProjects.length === DEMO_RISK_PROJECT_CODES.length,
+    detail: `seeded=${riskProjects.length}/${DEMO_RISK_PROJECT_CODES.length}`,
+  });
   const pass = lines.every((line) => line.pass);
   return { lines, pass };
 }

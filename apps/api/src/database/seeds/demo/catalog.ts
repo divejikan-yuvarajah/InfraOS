@@ -27,6 +27,18 @@ export const DEMO_PROJECT_CODES = [
 /** Batch 07 asset-lifecycle demo projects. Kept apart from DEMO_PROJECT_CODES so earlier demo counts do not change; reset and verify include them. */
 export const DEMO_LIFECYCLE_PROJECT_CODES = ["INF-ROAD-002", "INF-ROAD-003", "INF-DRAINAGE-002"] as const;
 
+/** Batch 11 Explainable Risk Intelligence demo projects (Step 122). */
+export const DEMO_RISK_PROJECT_CODES = [
+  "INF-RISK_HEALTHY-001",
+  "INF-RISK_DELAYED-001",
+  "INF-RISK_FINAHEAD-001",
+  "INF-RISK_CONFLICT-001",
+  "INF-RISK_SCHED-001",
+  "INF-RISK_APPROVED-001",
+  "INF-RISK_NODATA-001",
+  "INF-RISK_COMPLETE-001",
+] as const;
+
 export type DemoProjectCode = (typeof DEMO_PROJECT_CODES)[number];
 
 export const DEMO_CONTRACTOR_REGS = [

@@ -22,6 +22,7 @@ import { assetMaintenanceRouter, maintenanceRouter } from "../modules/assets/mai
 import { adminAuditLogRouter } from "../modules/audit/audit-log.routes.js";
 import { aiDocumentRouter, aiRouter } from "../modules/ai/ai.routes.js";
 import { inframapRouter } from "../modules/inframap/inframap.routes.js";
+import { projectRiskRouter, riskRouter } from "../modules/risk/risk.routes.js";
 
 export function createV1Router(): Router {
   const router = Router();
@@ -39,7 +40,9 @@ export function createV1Router(): Router {
   router.use("/projects/:projectId/inspections", projectInspectionsRouter);
   router.use("/projects/:projectId/verified-progress", projectVerifiedProgressRouter);
   router.use("/projects/:projectId/documents", projectDocumentsRouter);
+  router.use("/projects/:projectId/risk", projectRiskRouter);
   router.use("/projects", projectRouter);
+  router.use("/risk", riskRouter);
   router.use("/notifications", notificationRouter);
   router.use("/roadsync", roadsyncRouter);
   router.use("/inframap", inframapRouter);

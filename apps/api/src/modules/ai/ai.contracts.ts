@@ -135,3 +135,29 @@ export const extractResponse = z.object({
   ...llmMeta,
 });
 export type ExtractResponse = z.infer<typeof extractResponse>;
+
+export const riskNarrativeRequest = z.object({
+  language,
+  projectCode: z.string().min(1).max(50),
+  overallLevel: z.string().min(1).max(30),
+  overallIndex: z.number().int().min(0).max(100).optional(),
+  categories: z.array(z.record(z.string(), z.unknown())).default([]),
+  indicators: z.array(z.record(z.string(), z.unknown())).default([]),
+  maxOutputTokens: z.number().int().min(100).max(4000).default(1500),
+});
+export type RiskNarrativeRequest = z.infer<typeof riskNarrativeRequest>;
+
+export const riskNarrativeResponse = z.object({
+  output: z.object({
+    summary: z.string(),
+    categories: z.array(
+      z.object({
+        category: z.string(),
+        text: z.string(),
+      }),
+    ).default([]),
+    questionsToAsk: z.array(z.string()).default([]),
+  }),
+  ...llmMeta,
+});
+export type RiskNarrativeResponse = z.infer<typeof riskNarrativeResponse>;

@@ -5,6 +5,8 @@ import { usePathname } from "next/navigation";
 
 import { getFinanceCopy } from "@/lib/finance/messages";
 import { canHintFinance } from "@/lib/finance/session";
+import { getRiskCopy } from "@/lib/risk/messages";
+import { canHintRisk } from "@/lib/risk/session";
 import { useWorkspaceLocale } from "@/lib/i18n/workspace-locale";
 import { getInspectionCopy } from "@/lib/inspections/messages";
 import { hintInspections } from "@/components/inspections/inspection-integrations";
@@ -39,6 +41,10 @@ export function ProjectRecordTabs({ id, roleKey, copy }: { id: string; roleKey: 
     // Shown to roles that can read project finance; the finance page itself is permission-checked on the server.
     ...(canHintFinance(roleKey)
       ? [{ slug: "finance", label: getFinanceCopy(locale).nav, icon: "account_balance_wallet" }]
+      : []),
+    // Shown to roles that can read project risk; the risk page itself is permission-checked on the server.
+    ...(canHintRisk(roleKey)
+      ? [{ slug: "risk", label: getRiskCopy(locale).tab, icon: "warning_amber" }]
       : []),
   ];
   return (

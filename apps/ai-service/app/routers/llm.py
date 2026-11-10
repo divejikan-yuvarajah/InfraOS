@@ -6,7 +6,7 @@ from ..errors import ApiError
 from ..llm import prompts
 from ..llm.openai_compatible import LlmClient
 from ..llm.schemas import (AnswerRequest, AnswerResponse, ExtractOutput, ExtractRequest, ExtractResponse, MapOutput, MapRequest, MapResponse, ModelAnswer,
-                           ReduceOutput, ReduceRequest, ReduceResponse, Usage)
+                           ReduceOutput, ReduceRequest, ReduceResponse, RiskNarrativeOutput, RiskNarrativeRequest, RiskNarrativeResponse, Usage)
 from ..logging import log_event
 from ..security import require_signed_body
 
@@ -61,3 +61,25 @@ async def extract(req: ExtractRequest, request: Request) -> ExtractResponse:
     c = await get_llm(request).complete(messages, schema, ExtractOutput, max_tokens=req.maxOutputTokens, timeout=s.llm_extract_timeout_s, strong=req.strong)
     log_event("llm_extract", fields=len(req.fields), tokens_in=c.input_tokens, tokens_out=c.output_tokens)
     return ExtractResponse(output=c.parsed, **_meta(c, prompts.PROMPT_VERSIONS["extract"]))
+
+
+@router.post("/risk-narrative", response_model=RiskNarrativeResponse)
+async def risk_narrative(req: RiskNarrativeRequest, request: Request) -> RiskNarrativeResponse:
+    s = request.app.state.settings
+    messages, schema = prompts.build_risk_narrative(
+        req.language,
+        req.projectCode,
+        req.overallLevel,
+        req.overallIndex,
+        req.categories,
+        req.indicators,
+    )
+    c = await get_llm(request).complete(
+        messages,
+        schema,
+        RiskNarrativeOutput,
+        max_tokens=req.maxOutputTokens,
+        timeout=s.llm_answer_timeout_s,
+    )
+    log_event("llm_risk_narrative", project=req.projectCode, level=req.overallLevel, tokens_in=c.input_tokens, tokens_out=c.output_tokens)
+    return RiskNarrativeResponse(output=c.parsed, **_meta(c, prompts.PROMPT_VERSIONS["riskNarrative"]))

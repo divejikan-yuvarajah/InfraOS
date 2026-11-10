@@ -316,7 +316,7 @@ export async function featureDetail(actor: AuthenticatedActor, layer: "assets" |
     if (!latest) return NOT_FOUND;
     // Category and score only; the free-text factor descriptions and recommendations never leave.
     const top = [...(latest.factors ?? [])].sort((a, b) => b.score - a.score).slice(0, 3).map((f) => ({ category: f.category, score: f.score }));
-    return { ok: true as const, data: { kind: "project", properties: { id, layer: "risks", kind: "project", projectId: id, projectCode: project.projectCode, title: project.title, overallRisk: latest.overallRisk, riskBand: riskBand(latest.overallRisk), latestAssessedAt: iso(latest.createdAt), modelVersion: latest.modelVersion, topFactors: top } } };
+    return { ok: true as const, data: { kind: "project", properties: { id, layer: "risks", kind: "project", projectId: id, projectCode: project.projectCode, title: project.title, overallRisk: latest.overallRisk, riskBand: riskBand(latest.overallRisk ?? 0), latestAssessedAt: iso(latest.createdAt), modelVersion: latest.modelVersion, topFactors: top } } };
   }
   if (!ctx.has("asset.read")) return NOT_FOUND;
   const doc = (await Asset.findOne({ $and: [visibleAssetFilter(ctx.viewer), { _id: oid }, { assetType: { $in: [...layerTypes(layer)] } }] }).select(`${ASSET_SELECT}${ctx.viewer.canHealth ? " healthScore" : ""}`).lean()) as unknown as AssetLean | null;

@@ -18,6 +18,7 @@ const BLOCKED: Record<SystemRoleKey, readonly Permission[]> = {
     "finance.expense.create",
     "finance.expense.verify",
     "roadsync.conflict.resolve",
+    "risk.resolve",
   ],
   GOV_ADMIN: ["role.manage", "permission.manage", "system.manage", "agency.manage"],
   AGENCY_OFFICER: [
@@ -50,6 +51,7 @@ const BLOCKED: Record<SystemRoleKey, readonly Permission[]> = {
     "finance.payment.approve",
     "project.approve",
     "inspection.verify",
+    "risk.resolve",
   ],
   INSPECTOR: [
     "role.manage",
@@ -59,6 +61,7 @@ const BLOCKED: Record<SystemRoleKey, readonly Permission[]> = {
     "agency.manage",
     "finance.payment.approve",
     "project.approve",
+    "risk.resolve",
   ],
   CITIZEN: [
     "role.manage",
@@ -70,6 +73,7 @@ const BLOCKED: Record<SystemRoleKey, readonly Permission[]> = {
     "finance.payment.approve",
     "project.approve",
     "inspection.verify",
+    "risk.resolve",
   ],
 };
 

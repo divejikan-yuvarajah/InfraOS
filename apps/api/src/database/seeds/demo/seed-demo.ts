@@ -15,6 +15,7 @@ import { seedDemoShowcase } from "./seed-showcase.js";
 import { seedDemoInspections } from "./seed-inspections.js";
 import { seedDemoProjects } from "./seed-projects.js";
 import { seedDemoSupportingRecords } from "./seed-supporting-records.js";
+import { seedDemoRiskProjects } from "./seed-risk-demo.js";
 import { seedDemoFixtureUsers } from "./seed-users.js";
 import { seedDemoWorkRequests } from "./seed-work-requests.js";
 
@@ -78,6 +79,7 @@ export async function seedDemoData(
   const showcase = await seedDemoShowcase(context);
   const docTrace = await seedDemoDocuments(context);
   const inframap = await seedDemoInframapContext(context);
+  await seedDemoRiskProjects();
 
   return {
     roles: core.roles,

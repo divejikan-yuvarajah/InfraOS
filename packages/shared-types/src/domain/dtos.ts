@@ -308,11 +308,20 @@ export interface NotificationDto {
 
 export interface RiskAssessmentSummaryDto {
   id: EntityId;
-  projectId: EntityId;
-  overallRisk: PercentageScore;
-  modelVersion: string;
+  projectId?: EntityId;
+  assessmentNo?: string;
+  overallLevel?: string;
+  overallIndex?: number;
+  trigger?: string;
+  overallRisk?: PercentageScore | null;
+  modelVersion?: string;
   createdAt: IsoDateTimeString;
-  synthetic: boolean;
+  synthetic?: boolean;
+  changesCount?: number;
+  levelChange?: {
+    from: string;
+    to: string;
+  } | null;
 }
 
 export interface AuditLogSummaryDto {
