@@ -45,12 +45,20 @@ export function hasPermission(
 export function requirePermission(
   permission: Permission,
 ): (req: Request, res: Response, next: NextFunction) => Promise<void> {
-  return async function requirePermissionMiddleware(req, res, next) {
+  return requireAnyPermission(permission);
+}
+
+export function requireAnyPermission(
+  ...permissions: Permission[]
+): (req: Request, res: Response, next: NextFunction) => Promise<void> {
+  return async function requireAnyPermissionMiddleware(req, res, next) {
     try {
       noStore(res);
-      if (!isPermission(permission) || permission.includes("*")) {
-        reject(res, req, 500, "SERVICE_UNAVAILABLE");
-        return;
+      for (const permission of permissions) {
+        if (!isPermission(permission) || permission.includes("*")) {
+          reject(res, req, 500, "SERVICE_UNAVAILABLE");
+          return;
+        }
       }
       const actor = req.actor;
       if (!actor?.userId || !actor.roleId || !actor.roleKey) {
@@ -72,9 +80,10 @@ export function requirePermission(
         return;
       }
       const granted = Array.isArray(role.permissions) ? role.permissions : [];
-      if (!hasPermission(granted, permission)) {
+      const hasAny = permissions.some((permission) => hasPermission(granted, permission));
+      if (!hasAny) {
         logger.info(
-          { requestId: req.requestId, decision: "deny", permission },
+          { requestId: req.requestId, decision: "deny", permissions },
           "permission denied",
         );
         reject(res, req, 403, "FORBIDDEN");
