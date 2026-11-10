@@ -27,6 +27,7 @@ function dec(name: string, fallback: number): number {
 export type AiConfig = Readonly<{
   baseUrl: string | undefined;
   secret: string | undefined;
+  secretPrevious: string | undefined;
   configured: boolean;
   processingEnabled: boolean;
   jobConcurrency: number;
@@ -34,13 +35,28 @@ export type AiConfig = Readonly<{
   maxTokensPerDoc: number;
   embedModel: string | undefined;
   pricePerMTokensMinor: number | undefined;
-  timeoutsMs: Readonly<{ health: number; extract: number; index: number; search: number; delete: number; answer: number; map: number; reduce: number; extractLlm: number }>;
+  timeoutsMs: Readonly<{ health: number; extract: number; index: number; search: number; delete: number; answer: number; map: number; reduce: number; extractLlm: number; vision: number; copilotStep: number }>;
   chat: Readonly<{
     model: string | undefined; strongModel: string | undefined; dailyTokenBudget: number; qaMaxOutputTokens: number; summaryMaxInputTokens: number; redactContext: boolean; interactionTtlDays: number;
     /** US cents per million tokens, set only when verified against the provider catalog. */
     priceInputPerMMinor: number | undefined; priceOutputPerMMinor: number | undefined;
   }>;
   rag: Readonly<{ topK: number; contextChunks: number; contextMaxChars: number; minScore: number; perDocCap: number; requestsPer10Min: number }>;
+  vision: Readonly<{
+    model: string | undefined;
+    maxBytes: number;
+    dailyImageBudget: number;
+    requestsPer10Min: number;
+    pricePerImageMinor: number | undefined;
+  }>;
+  copilot: Readonly<{
+    ttlDays: number;
+    maxRounds: number;
+    maxToolCalls: number;
+    maxWallTimeS: number;
+    toolTimeoutS: number;
+    requestsPer10Min: number;
+  }>;
 }>;
 
 export function loadAiConfig(): AiConfig {
@@ -49,6 +65,7 @@ export function loadAiConfig(): AiConfig {
   return {
     baseUrl: env.AI_BASE_URL?.replace(/\/+$/, ""),
     secret: env.AI_INTERNAL_SECRET,
+    secretPrevious: env.AI_INTERNAL_SECRET_PREVIOUS,
     configured,
     processingEnabled: bool("AI_PROCESSING_ENABLED", configured),
     jobConcurrency: int("AI_JOB_CONCURRENCY", 1, 1, 4),
@@ -56,7 +73,7 @@ export function loadAiConfig(): AiConfig {
     maxTokensPerDoc: int("AI_EMBED_MAX_TOKENS_PER_DOC", 600_000, 1, 10_000_000),
     embedModel: process.env.AI_EMBED_MODEL?.trim() || undefined,
     pricePerMTokensMinor: price && Number.isFinite(Number(price)) ? Number(price) : undefined,
-    timeoutsMs: { health: 10_000, extract: 120_000, index: 120_000, search: 20_000, delete: 30_000, answer: 60_000, map: 45_000, reduce: 60_000, extractLlm: 60_000 },
+    timeoutsMs: { health: 10_000, extract: 120_000, index: 120_000, search: 20_000, delete: 30_000, answer: 60_000, map: 45_000, reduce: 60_000, extractLlm: 60_000, vision: 60_000, copilotStep: 45_000 },
     chat: {
       model: process.env.AI_CHAT_MODEL?.trim() || undefined, strongModel: process.env.AI_CHAT_MODEL_STRONG?.trim() || undefined,
       dailyTokenBudget: int("AI_CHAT_DAILY_TOKEN_BUDGET", 1_000_000, 1, 1_000_000_000), qaMaxOutputTokens: int("AI_QA_MAX_OUTPUT_TOKENS", 900, 100, 4000),
@@ -64,6 +81,21 @@ export function loadAiConfig(): AiConfig {
       priceInputPerMMinor: num("AI_CHAT_PRICE_INPUT_PER_M_MINOR"), priceOutputPerMMinor: num("AI_CHAT_PRICE_OUTPUT_PER_M_MINOR"),
     },
     rag: { topK: int("RAG_TOP_K", 24, 4, 50), contextChunks: int("RAG_CONTEXT_CHUNKS", 8, 1, 20), contextMaxChars: int("RAG_CONTEXT_MAX_CHARS", 12_000, 1000, 60_000), minScore: dec("RAG_MIN_SCORE", 0.4), perDocCap: int("RAG_PER_DOC_CAP", 4, 1, 10), requestsPer10Min: int("AI_REQUESTS_PER_10_MIN", 20, 1, 500) },
+    vision: {
+      model: process.env.AI_VISION_MODEL?.trim() || undefined,
+      maxBytes: int("AI_VISION_MAX_BYTES", 6 * 1024 * 1024, 1024 * 1024, 30 * 1024 * 1024),
+      dailyImageBudget: int("AI_VISION_DAILY_IMAGE_BUDGET", 100, 1, 100_000),
+      requestsPer10Min: int("AI_VISION_REQUESTS_PER_10_MIN", 4, 1, 100),
+      pricePerImageMinor: num("AI_VISION_PRICE_PER_IMAGE_MINOR"),
+    },
+    copilot: {
+      ttlDays: int("AI_COPILOT_TTL_DAYS", 30, 1, 3650),
+      maxRounds: int("AI_COPILOT_MAX_ROUNDS", 4, 1, 10),
+      maxToolCalls: int("AI_COPILOT_MAX_TOOL_CALLS", 8, 1, 20),
+      maxWallTimeS: int("AI_COPILOT_MAX_WALL_TIME_S", 45, 10, 120),
+      toolTimeoutS: int("AI_COPILOT_TOOL_TIMEOUT_S", 8, 2, 30),
+      requestsPer10Min: int("AI_COPILOT_REQUESTS_PER_10_MIN", 15, 1, 200),
+    },
   };
 }
 

@@ -52,6 +52,7 @@ const BLOCKED: Record<SystemRoleKey, readonly Permission[]> = {
     "project.approve",
     "inspection.verify",
     "risk.resolve",
+    "copilot.use",
   ],
   INSPECTOR: [
     "role.manage",
@@ -74,6 +75,7 @@ const BLOCKED: Record<SystemRoleKey, readonly Permission[]> = {
     "project.approve",
     "inspection.verify",
     "risk.resolve",
+    "copilot.use",
   ],
 };
 
