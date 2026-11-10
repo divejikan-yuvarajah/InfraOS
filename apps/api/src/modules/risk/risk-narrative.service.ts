@@ -3,6 +3,7 @@ import type { RiskNarrativeDto } from "@infraos/shared-types";
 import { logger } from "../../shared/logger.js";
 import { aiClient } from "../ai/ai-client.js";
 import { aiConfig } from "../ai/ai.config.js";
+import { checkGate, recordGate } from "../ai/governance/ai-gate.js";
 import { extractFigures, figureAppearsIn } from "../ai/rag/grounding.js";
 import type { AuthenticatedActor } from "../identity/auth/require-authenticated.js";
 import { Project } from "../projects/models/project.model.js";
@@ -160,13 +161,29 @@ export async function generateRiskNarrative(
     };
   }
 
-  // 4. Verify AI service is configured
+  // 4. Verify AI service is configured and check central governance gate
   if (!aiConfig.configured) {
     throw new RiskAccessError(
       503,
       "AI_SERVICE_UNAVAILABLE",
       "AI narrative service is not configured (missing OpenRouter / LLM credentials)",
     );
+  }
+
+  const gate = await checkGate({
+    actor,
+    agencyId: project.agencyId ? String(project.agencyId) : undefined,
+    feature: "riskNarrative",
+    estimate: { inputTokens: 1000, outputTokens: 1500, costUnits: 2 },
+  });
+  if (!gate.allow) {
+    if (gate.deny.code === "AI_RATE_LIMITED") {
+      throw new RiskAccessError(429, "AI_RATE_LIMITED", gate.deny.message ?? "Rate limit reached");
+    }
+    if (gate.deny.code === "AI_BUDGET_EXCEEDED") {
+      throw new RiskAccessError(429, "AI_BUDGET_EXCEEDED", gate.deny.message ?? "Budget exceeded");
+    }
+    throw new RiskAccessError(503, "AI_SERVICE_UNAVAILABLE", gate.deny.message ?? "AI service unavailable");
   }
 
   const language = options?.language ?? "en";
@@ -219,6 +236,20 @@ export async function generateRiskNarrative(
     // 6. The single permitted post-creation write to RiskAssessment
     assessment.narrative = narrative as any;
     await assessment.save();
+
+    await recordGate({
+      actor,
+      agencyId: project.agencyId ? String(project.agencyId) : undefined,
+      feature: "riskNarrative",
+      tier: "LOW",
+      model: response.model,
+      actual: {
+        inputTokens: response.usage?.inputTokens ?? 800,
+        outputTokens: response.usage?.outputTokens ?? 600,
+        status: "OK",
+        purpose: "RISK_NARRATIVE",
+      },
+    }).catch(() => undefined);
 
     await writeRiskAudit(undefined, {
       action: "risk.narrative_generated",

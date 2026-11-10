@@ -6,6 +6,7 @@ import { DocumentChunk } from "../../documents/models/document-chunk.model.js";
 import { writeAiAudit } from "../ai.audit.js";
 import { aiConfig } from "../ai.config.js";
 import { chatBudgetState } from "../processing/budget.js";
+import { checkGate } from "../governance/ai-gate.js";
 import { AiArtifact, type AiArtifactDocument } from "./artifact.model.js";
 import { estimateTokens } from "./artifact.common.js";
 import { RagFlow } from "./http.js";
@@ -81,8 +82,18 @@ export async function requestArtifact(actor: Actor, rawId: string, input: { kind
   const sum = await DocumentChunk.aggregate<{ t: number }>([{ $match: { documentId: doc._id, versionNo, status: "ACTIVE" } }, { $group: { _id: null, t: { $sum: "$tokenEstimate" } } }]);
   const tokens = sum[0]?.t ?? estimateTokens(0);
   if (tokens > aiConfig.chat.summaryMaxInputTokens) throw new RagFlow(422, "AI_TOO_LARGE", { estimatedTokens: tokens, limit: aiConfig.chat.summaryMaxInputTokens });
-  const budget = await chatBudgetState(new Date(), tokens);
-  if (budget.exceeded) throw new RagFlow(429, "AI_BUDGET_EXCEEDED", { resetsAt: budget.resetsAt.toISOString() });
+  
+  const gate = await checkGate({
+    actor,
+    agencyId: String(doc.agencyId),
+    feature: input.kind === "SUMMARY" ? "summary" : "extraction",
+    estimate: { inputTokens: tokens, outputTokens: 1500 },
+  });
+  if (!gate.allow) {
+    if (gate.deny.code === "AI_BUDGET_EXCEEDED") throw new RagFlow(429, "AI_BUDGET_EXCEEDED", { resetsAt: gate.deny.resetsAt?.toISOString() });
+    if (gate.deny.code === "AI_RATE_LIMITED") throw new RagFlow(429, "AI_RATE_LIMITED", { retryAfterSeconds: gate.deny.retryAfterSeconds });
+    throw new RagFlow(503, "AI_UNAVAILABLE", { reason: gate.deny.code });
+  }
 
   if (active) await AiArtifact.updateOne({ _id: active._id, status: "READY" }, { $set: { status: "STALE" }, $inc: { version: 1 } });
   try {

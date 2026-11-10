@@ -16,6 +16,11 @@ const usageSchema = new Schema({
   outputTokens: { ...nonNegativeInteger(), default: 0 },
   estimatedCostMinor: { ...nonNegativeInteger() },
   requestCount: { ...nonNegativeInteger(), default: 1 },
+  feature: { type: String, trim: true },
+  providerPolicy: { type: String, trim: true },
+  flags: [{ type: String, trim: true }],
+  costUnits: { ...nonNegativeInteger() },
+  latencyMs: { ...nonNegativeInteger() },
   status: { type: String, enum: AI_USAGE_STATUSES, required: true, default: "OK" },
 }, { timestamps: { createdAt: true, updatedAt: false }, strict: "throw", collection: "aiUsageRecords" });
 

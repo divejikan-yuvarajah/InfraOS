@@ -34,7 +34,7 @@ export const AI_ARTIFACT_STATUSES = ["QUEUED", "RUNNING", "READY", "FAILED", "ST
 export type AiArtifactStatus = (typeof AI_ARTIFACT_STATUSES)[number];
 export const AI_ARTIFACT_ACTIVE_STATUSES = ["QUEUED", "RUNNING", "READY"] as const;
 export const AI_ARTIFACT_PHASES = ["MAP", "REDUCE", "EXTRACT"] as const;
-export const AI_USAGE_PURPOSES = ["QA", "SUMMARY_MAP", "SUMMARY_REDUCE", "EXTRACTION"] as const;
+export const AI_USAGE_PURPOSES = ["QA", "SUMMARY_MAP", "SUMMARY_REDUCE", "EXTRACTION", "COPILOT", "VISION", "RISK_NARRATIVE", "EMBEDDING"] as const;
 export type AiUsagePurpose = (typeof AI_USAGE_PURPOSES)[number];
 
 export const AI_ARTIFACT_WARNINGS = ["TRUNCATED", "REDACTED", "FLAGGED_CONTENT_EXCLUDED", "UNVERIFIED_FIGURES", "UNSUPPORTED_REMOVED"] as const;

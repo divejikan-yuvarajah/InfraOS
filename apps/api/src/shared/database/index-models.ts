@@ -11,6 +11,9 @@ import { ProcessingJob } from "../../modules/ai/processing/job.model.js";
 import { AiInteraction } from "../../modules/ai/rag/interaction.model.js";
 import { AiArtifact } from "../../modules/ai/rag/artifact.model.js";
 import { AiUsageRecord } from "../../modules/ai/usage.model.js";
+import { AiSettings } from "../../modules/ai/governance/settings.model.js";
+import { AiUsageDaily } from "../../modules/ai/governance/usage-daily.model.js";
+import { AiRateBucket } from "../../modules/ai/governance/rate-bucket.model.js";
 import { DocumentChunk } from "../../modules/documents/models/document-chunk.model.js";
 import { Document } from "../../modules/documents/models/document.model.js";
 import { DocumentUpload } from "../../modules/documents/models/document-upload.model.js";
@@ -86,6 +89,9 @@ export const INDEX_MODELS = [
   DocumentUpload,
   ProcessingJob,
   AiUsageRecord,
+  AiSettings,
+  AiUsageDaily,
+  AiRateBucket,
   AiInteraction,
   AiArtifact,
   Inspection,

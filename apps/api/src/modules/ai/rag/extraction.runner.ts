@@ -5,6 +5,7 @@ import { writeAiAudit } from "../ai.audit.js";
 import { aiClient } from "../ai-client.js";
 import { chatBudgetState } from "../processing/budget.js";
 import { AiUsageRecord } from "../usage.model.js";
+import { recordGate } from "../governance/ai-gate.js";
 import { ArtifactError, Stop, beat, type RunnerDeps } from "./artifact-runner.js";
 import { AiArtifact, type AiArtifactDocument } from "./artifact.model.js";
 import { WARNING_FROM, checkCitations, citationOf, costOf, estimateTokens, evidenceOf, loadSources, pruneArtifacts, type CheckedCitation, type SourceChunk } from "./artifact.common.js";
@@ -57,7 +58,22 @@ export async function runExtraction(a: AiArtifactDocument, workerId: string, dep
     sources: sources.map((c) => ({ n: c.n, title: c.title, category: c.category, text: c.text })), maxOutputTokens: 1800, strong: Boolean(tpl.useStrongModel),
   });
   const usage = { inputTokens: res.usage.inputTokens, outputTokens: res.usage.outputTokens };
-  await AiUsageRecord.create({ kind: "CHAT", purpose: "EXTRACTION", agencyId: a.agencyId, userId: a.requestedBy, documentId: a.documentId, provider: "openrouter", model: res.model, inputTokens: usage.inputTokens, outputTokens: usage.outputTokens, status: "OK", ...(costOf(usage.inputTokens, usage.outputTokens) !== undefined ? { estimatedCostMinor: costOf(usage.inputTokens, usage.outputTokens)! } : {}) }).catch(() => undefined);
+  await recordGate({
+    actor: { userId: String(a.requestedBy), agencyId: String(a.agencyId) },
+    agencyId: String(a.agencyId),
+    feature: "extraction",
+    tier: Boolean(tpl.useStrongModel) ? "STRONG" : "LOW",
+    model: res.model,
+    actual: {
+      inputTokens: usage.inputTokens,
+      outputTokens: usage.outputTokens,
+      costMinor: costOf(usage.inputTokens, usage.outputTokens),
+      status: "OK",
+      purpose: "EXTRACTION",
+      documentId: String(a.documentId),
+      jobId: String(a._id),
+    },
+  }).catch(() => undefined);
 
   // ---- verification + deterministic normalisation. The model's text is never trusted as a value unless it sits inside a verified quote.
   const reported = new Map(res.output.fields.map((f) => [f.key, f]));
