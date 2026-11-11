@@ -161,3 +161,98 @@ export const riskNarrativeResponse = z.object({
   ...llmMeta,
 });
 export type RiskNarrativeResponse = z.infer<typeof riskNarrativeResponse>;
+
+export const visionAnalyzeRequest = z.object({
+  images: z.array(z.object({
+    n: z.number().int().min(1).max(6),
+    dataUrl: z.string().min(10),
+  })).min(1).max(6),
+  context: z.object({
+    projectType: z.string().max(80),
+    inspectionType: z.string().max(80),
+    milestones: z.array(z.object({
+      title: z.string().max(200),
+      plannedStart: z.string().nullable().optional(),
+      plannedEnd: z.string().nullable().optional(),
+      reportedProgress: z.number().nullable().optional(),
+    })).default([]),
+    claimedProgress: z.number().nullable().optional(),
+    previousVerifiedProgress: z.record(z.string(), z.unknown()).nullable().optional(),
+    inspectionDate: z.string().max(40),
+  }),
+  maxOutputTokens: z.number().int().min(100).max(4000).default(2000),
+});
+export type VisionAnalyzeRequest = z.infer<typeof visionAnalyzeRequest>;
+
+export const visionAnalyzeResponse = z.object({
+  output: z.object({
+    images: z.array(z.object({
+      n: z.number().int().min(1).max(6),
+      activityDescription: z.string().max(400),
+      visibleWorkIndicators: z.array(z.object({
+        label: z.string().max(80),
+        certainty: z.enum(["CLEAR", "POSSIBLE"]),
+      })).default([]),
+      qualityIssues: z.array(z.enum([
+        "BLURRY", "DARK", "OVEREXPOSED", "PARTIAL_VIEW",
+        "NO_SCALE_REFERENCE", "OBSTRUCTED", "LOW_RESOLUTION", "OTHER",
+      ])).default([]),
+      notes: z.string().max(300).nullable().optional(),
+    })),
+    overall: z.object({
+      consistencyWithReportedStage: z.enum(["CONSISTENT", "PARTIALLY_CONSISTENT", "INCONSISTENT", "INDETERMINATE"]),
+      rationale: z.string().max(600),
+    }),
+    potentialDiscrepancies: z.array(z.object({
+      statement: z.string().max(300),
+      imageNs: z.array(z.number().int()),
+      severity: z.enum(["LOW", "MODERATE", "HIGH"]),
+    })).default([]),
+    cannotBeDetermined: z.array(z.string().max(200)).default([]),
+    questionsForInspector: z.array(z.string().max(200)).default([]),
+  }),
+  ...llmMeta,
+});
+export type VisionAnalyzeResponse = z.infer<typeof visionAnalyzeResponse>;
+
+export const copilotStepRequest = z.object({
+  language,
+  conversation: z.array(z.object({
+    role: z.enum(["user", "assistant"]),
+    content: z.string().max(2000),
+  })).default([]),
+  pageContext: z.record(z.string(), z.unknown()).nullable().optional(),
+  toolCatalog: z.array(z.object({
+    name: z.string().max(80),
+    description: z.string().max(500),
+    argsSchema: z.record(z.string(), z.unknown()).default({}),
+  })).default([]),
+  toolResults: z.array(z.object({
+    callId: z.string().max(80),
+    tool: z.string().max(80),
+    facts: z.array(z.record(z.string(), z.unknown())).default([]),
+    status: z.enum(["OK", "DENIED", "NOT_FOUND", "UNAVAILABLE", "ERROR"]),
+  })).default([]),
+  round: z.number().int().min(1).max(5),
+  maxOutputTokens: z.number().int().min(100).max(4000).default(2500),
+});
+export type CopilotStepRequest = z.infer<typeof copilotStepRequest>;
+
+export const copilotStepResponse = z.object({
+  output: z.object({
+    type: z.enum(["tool_calls", "final"]),
+    calls: z.array(z.object({
+      id: z.string().max(80),
+      tool: z.string().max(80),
+      args: z.record(z.string(), z.unknown()).default({}),
+    })).default([]),
+    answer: z.string().max(6000).nullable().optional(),
+    claims: z.array(z.object({
+      text: z.string().max(1500),
+      sourceRefs: z.array(z.number().int()),
+    })).default([]),
+    missingInfo: z.array(z.string()).default([]),
+  }),
+  ...llmMeta,
+});
+export type CopilotStepResponse = z.infer<typeof copilotStepResponse>;

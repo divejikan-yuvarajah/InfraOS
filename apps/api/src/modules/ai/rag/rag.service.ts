@@ -9,8 +9,8 @@ import { DocumentChunk } from "../../documents/models/document-chunk.model.js";
 import { writeAiAudit } from "../ai.audit.js";
 import { aiConfig } from "../ai.config.js";
 import { AiClientError, aiClient } from "../ai-client.js";
-import { chatBudgetState } from "../processing/budget.js";
 import { AiUsageRecord } from "../usage.model.js";
+import { checkGate, recordGate } from "../governance/ai-gate.js";
 import { assembleContext, neighbourKeys, type ChunkLite, type ContextChunk } from "./context.js";
 import { verifyAnswer, type GroundedAnswer } from "./grounding.js";
 import { RagFlow } from "./http.js";
@@ -77,8 +77,24 @@ export async function askQuestion(actor: NonNullable<Express.Request["actor"]>, 
   const question = cleanInput(input.question);
   if (question.length < 3 || question.length > 600) throw new RagFlow(400, "VALIDATION_ERROR");
 
-  const budget = await chatBudgetState();
-  if (budget.exceeded) throw new RagFlow(429, "AI_BUDGET_EXCEEDED", { resetsAt: budget.resetsAt.toISOString() });
+  const gate = await checkGate({
+    actor,
+    agencyId: actor.agencyId ? String(actor.agencyId) : undefined,
+    feature: "qa",
+    estimate: { inputTokens: 4000, outputTokens: 900, costUnits: 1 },
+  });
+  if (!gate.allow) {
+    if (gate.deny.code === "AI_RATE_LIMITED") {
+      throw new RagFlow(429, "AI_RATE_LIMITED", { retryAfterSeconds: gate.deny.retryAfterSeconds });
+    }
+    if (gate.deny.code === "AI_BUDGET_EXCEEDED") {
+      throw new RagFlow(429, "AI_BUDGET_EXCEEDED", { resetsAt: gate.deny.resetsAt?.toISOString() });
+    }
+    if (gate.deny.code === "AI_CONCURRENCY_EXCEEDED") {
+      throw new RagFlow(429, "AI_RATE_LIMITED", { reason: "REQUEST_IN_PROGRESS" });
+    }
+    throw new RagFlow(503, "AI_UNAVAILABLE", { reason: gate.deny.code });
+  }
 
   const hash = hashOf(actor.userId, input, question);
   if (!input.regenerate) {
@@ -212,7 +228,20 @@ async function execute(d: DCtx, actor: NonNullable<Express.Request["actor"]>, in
 
   const g: GroundedAnswer = verifyAnswer(completion.output, context);
   const usage = { inputTokens: completion.usage.inputTokens, outputTokens: completion.usage.outputTokens, ...(costMinor(completion.usage.inputTokens, completion.usage.outputTokens) !== undefined ? { estimatedCostMinor: costMinor(completion.usage.inputTokens, completion.usage.outputTokens)! } : {}) };
-  await AiUsageRecord.create({ kind: "CHAT", purpose: "QA", agencyId: oid(actor.agencyId), userId: oid(actor.userId), provider: "openrouter", model: completion.model, inputTokens: usage.inputTokens, outputTokens: usage.outputTokens, status: "OK", ...(usage.estimatedCostMinor !== undefined ? { estimatedCostMinor: usage.estimatedCostMinor } : {}) }).catch(() => undefined);
+  await recordGate({
+    actor,
+    agencyId: actor.agencyId ? String(actor.agencyId) : undefined,
+    feature: "qa",
+    tier: "LOW",
+    model: completion.model,
+    actual: {
+      inputTokens: usage.inputTokens,
+      outputTokens: usage.outputTokens,
+      costMinor: usage.estimatedCostMinor,
+      status: "OK",
+      purpose: "QA",
+    },
+  });
 
   return finish(g.status, {
     answer: { text: g.text, claims: g.claims.map((c) => ({ text: c.text, citationNs: c.citationNs, supported: c.supported })), missingInfo: g.missingInfo },

@@ -15,6 +15,9 @@ describe("workspace nav", () => {
     expect(navCurrent("/admin/registrations", "/admin/registrations")).toBe(true);
     expect(navCurrent("/admin/users", "/admin/roles")).toBe(false);
     expect(navCurrent("/dashboard", "/dashboard")).toBe(true);
+    expect(navCurrent("/settings", "/settings")).toBe(true);
+    expect(navCurrent("/settings/ai", "/settings")).toBe(false);
+    expect(navCurrent("/settings/ai", "/settings/ai")).toBe(true);
   });
   it("derives initials safely", () => {
     expect(initialsOf("Nimal Perera")).toBe("NP");

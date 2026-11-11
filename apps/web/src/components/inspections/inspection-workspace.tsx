@@ -1,30 +1,38 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { AlertTriangleIcon } from "lucide-react";
+import { AlertTriangleIcon, SparklesIcon } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
+import { useAiStatus } from "@/components/ai-admin/ai-status-provider";
 import { StaffWorkspaceShell } from "@/components/auth/staff-workspace-shell";
 import { ContextBar } from "@/components/site-plan/site-plan";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { fetchMyAiLimits } from "@/lib/ai-admin/api";
 import { useUrlParams } from "@/lib/finance/url-state";
 import { decideInspection, fetchInspection, fetchVerifiedSeries, startInspection } from "@/lib/inspections/api";
+import { fetchVisionAnalyses, fetchVisionEligibility } from "@/lib/inspections/ai/api";
+import { getInspectionAiCopy } from "@/lib/inspections/ai/messages";
 import { getInspectionCopy, type Copy } from "@/lib/inspections/messages";
 import { useInspectionKeys } from "@/lib/inspections/session";
 import type { AuthLocale } from "@/lib/auth/types";
-import { DISCREPANCY_THRESHOLD_PP, type InspectionDetail, type InspectionRow, type Report } from "@/lib/inspections/types";
+import { DISCREPANCY_THRESHOLD_PP, type EvidenceItem, type InspectionDetail, type InspectionRow, type Report } from "@/lib/inspections/types";
 import { discrepancy, fill, fmtDate, fmtDateTime, fmtTime, isProgressType, overThreshold } from "@/lib/inspections/view";
 import { fetchMilestones } from "@/lib/projects/milestones-api";
 import { useWorkspaceLocale } from "@/lib/i18n/workspace-locale";
 
+import { AiEvidenceCheck } from "./ai/ai-evidence-check";
+import { AiHistoryList } from "./ai/ai-history-list";
+import { AiLimitations } from "./ai/ai-limitations";
+import { ReviewerAiPanel } from "./ai/reviewer-ai-panel";
 import { EvidencePanel } from "./evidence-panel";
 import { CancelDialog, ReassignDialog, RescheduleDialog, ScheduleDialog, useRefreshInspections } from "./inspection-dialogs";
 import { DualGauge, ErrorState, Field, InspectionStepper, PriorityChip, Skeletons, Sparkline, StatusBadge, errorText, ppText } from "./inspection-ui";
 
-type Tab = "overview" | "report" | "evidence" | "verification" | "history" | "review";
+type Tab = "overview" | "report" | "evidence" | "verification" | "history" | "ai" | "review";
 type Common = { copy: Copy; locale: AuthLocale };
 
 const toRow = (d: InspectionDetail): InspectionRow => ({
@@ -33,12 +41,18 @@ const toRow = (d: InspectionDetail): InspectionRow => ({
   submissionCount: d.submissions.length, claimedProgress: d.claimedProgressAtSchedule, measuredProgress: d.measuredProgress, discrepancyPp: discrepancy(d.measuredProgress, d.claimedProgressAtSchedule), version: d.version,
 });
 
-function ReportView({ report, d, copy }: { report: Report; d: InspectionDetail; copy: Copy }) {
+function ReportView({ report, d, copy, aiAssistBadge }: { report: Report; d: InspectionDetail; copy: Copy; aiAssistBadge?: string }) {
   const labels = copy.checklist as Record<string, string>;
   const ordered = [...report.checklist].sort((a, b) => Number(b.result === "FAIL") - Number(a.result === "FAIL"));
   const sev = (s: string) => report.defects.filter((x) => x.severity === s);
   return (
     <div className="ins">
+      {aiAssistBadge ? (
+        <div className="ctr-badge" data-tone="active" style={{ width: "fit-content" }}>
+          <SparklesIcon aria-hidden="true" style={{ width: "0.9rem", height: "0.9rem" }} />
+          <span>{aiAssistBadge}</span>
+        </div>
+      ) : null}
       <section className="ins-panel"><h3 className="ins-h">{copy.review.failedFirst}</h3>
         <ul className="ins-gaps">{ordered.map((c) => <li key={c.key} style={c.result === "FAIL" ? { background: "var(--sp-tint-critical)" } : { background: "#f8fafc" }}><span><strong>{labels[c.key] ?? c.key}</strong>{c.note ? <><br /><span className="ins-muted">{c.note}</span></> : null}</span><span className="ins-badge">{c.result === "PASS" ? copy.report.pass : c.result === "FAIL" ? copy.report.fail : c.result === "NA" ? copy.report.na : copy.workspace.notChecked}</span></li>)}</ul>
       </section>
@@ -109,9 +123,106 @@ function DecisionDialog({ mode, d, onClose, copy, locale }: Common & { mode: "AP
   );
 }
 
+function WorkspaceAiTab({
+  inspectionId,
+  evidence,
+  inspectionCopy,
+  locale,
+}: {
+  inspectionId: string;
+  evidence: EvidenceItem[];
+  inspectionCopy: Copy;
+  locale: AuthLocale;
+}) {
+  const aiCopy = getInspectionAiCopy(locale);
+  const analysesQuery = useQuery({
+    queryKey: ["inspections", inspectionId, "ai-analyses"],
+    queryFn: ({ signal }) => fetchVisionAnalyses(inspectionId, signal),
+    retry: false,
+  });
+
+  if (analysesQuery.isPending) return <Skeletons n={2} />;
+  if (analysesQuery.isError) {
+    return (
+      <ErrorState
+        error={analysesQuery.error}
+        copy={inspectionCopy}
+        onRetry={() => void analysesQuery.refetch()}
+      />
+    );
+  }
+
+  return (
+    <div style={{ display: "grid", gap: "1rem" }}>
+      <AiHistoryList
+        analyses={analysesQuery.data ?? []}
+        evidence={evidence}
+        aiCopy={aiCopy}
+        inspectionCopy={inspectionCopy}
+        locale={locale}
+      />
+      <AiLimitations copy={aiCopy} />
+    </div>
+  );
+}
+
+function WorkspaceReviewAiSection({
+  inspectionId,
+  evidence,
+  inspectionCopy,
+  locale,
+}: {
+  inspectionId: string;
+  evidence: EvidenceItem[];
+  inspectionCopy: Copy;
+  locale: AuthLocale;
+}) {
+  const aiCopy = getInspectionAiCopy(locale);
+  const qc = useQueryClient();
+
+  const analysesQuery = useQuery({
+    queryKey: ["inspections", inspectionId, "ai-analyses"],
+    queryFn: ({ signal }) => fetchVisionAnalyses(inspectionId, signal),
+    retry: false,
+  });
+  const eligibilityQuery = useQuery({
+    queryKey: ["inspections", inspectionId, "ai-eligibility", evidence.length],
+    queryFn: ({ signal }) => fetchVisionEligibility(inspectionId, signal),
+    retry: false,
+  });
+  const limitsQuery = useQuery({
+    queryKey: ["ai", "limits", "me"],
+    queryFn: ({ signal }) => fetchMyAiLimits(signal),
+    staleTime: 20_000,
+    retry: false,
+  });
+
+  if (analysesQuery.isPending && eligibilityQuery.isPending) return <Skeletons n={2} />;
+
+  return (
+    <ReviewerAiPanel
+      inspectionId={inspectionId}
+      evidence={evidence}
+      eligibility={eligibilityQuery.data ?? null}
+      analyses={analysesQuery.data ?? []}
+      limits={limitsQuery.data ?? null}
+      aiCopy={aiCopy}
+      inspectionCopy={inspectionCopy}
+      locale={locale}
+      onRefresh={() => {
+        void qc.invalidateQueries({ queryKey: ["inspections", inspectionId, "ai-analyses"] });
+        void qc.invalidateQueries({ queryKey: ["inspections", inspectionId, "ai-eligibility"] });
+        void qc.invalidateQueries({ queryKey: ["ai", "limits", "me"] });
+      }}
+    />
+  );
+}
+
 export function InspectionWorkspace({ id }: { id: string }) {
   const [locale] = useWorkspaceLocale();
   const copy = getInspectionCopy(locale);
+  const aiCopy = getInspectionAiCopy(locale);
+  const aiStatus = useAiStatus();
   const router = useRouter();
   const qc = useQueryClient();
   const url = useUrlParams();
@@ -128,7 +239,7 @@ export function InspectionWorkspace({ id }: { id: string }) {
   const row = useMemo(() => (d ? toRow(d) : null), [d]);
 
   const reviewer = Boolean(d && (d.can.approve || d.can.reject) && d.status === "SUBMITTED");
-  const tabs: Tab[] = ["overview", "report", "evidence", ...(d && (isProgressType(d.inspectionType) || d.verification) ? ["verification" as const] : []), "history", ...(reviewer ? ["review" as const] : [])];
+  const tabs: Tab[] = ["overview", "report", "evidence", ...(d && (isProgressType(d.inspectionType) || d.verification) ? ["verification" as const] : []), "history", ...(aiStatus.canAccessAi ? ["ai" as const] : []), ...(reviewer ? ["review" as const] : [])];
   const requested = url.get("tab") as Tab;
   const tab: Tab = tabs.includes(requested) ? requested : reviewer ? "review" : "overview";
   const setTab = (t: Tab) => url.set({ tab: t });
@@ -197,12 +308,17 @@ export function InspectionWorkspace({ id }: { id: string }) {
         {tab === "report" ? (
           <div className="ins">
             {d.submissions.length ? <Field label={copy.workspace.submissionPicker}>{(fid) => <select id={fid} className="ctr-input" value={sub} onChange={(e) => setSub(e.target.value)}>{d.report && d.can.editReport ? <option value="current">{copy.workspace.currentDraft}</option> : null}{d.submissions.map((s) => <option key={s.no} value={String(s.no)}>#{s.no} · {fmtDateTime(s.submittedAt, locale)}</option>)}</select>}</Field> : null}
-            {(sub === "current" && !d.can.editReport && d.submissions.length ? d.submissions[d.submissions.length - 1]!.report : picked) ? <ReportView report={(sub === "current" && !d.can.editReport && d.submissions.length ? d.submissions[d.submissions.length - 1]!.report : picked)!} d={d} copy={copy} /> : <p className="ins-muted">{copy.workspace.noReport}</p>}
+            {(sub === "current" && !d.can.editReport && d.submissions.length ? d.submissions[d.submissions.length - 1]!.report : picked) ? <ReportView report={(sub === "current" && !d.can.editReport && d.submissions.length ? d.submissions[d.submissions.length - 1]!.report : picked)!} d={d} copy={copy} aiAssistBadge={d.aiAssistRefs?.length ? aiCopy.assistMarkerBadge : undefined} /> : <p className="ins-muted">{copy.workspace.noReport}</p>}
             {d.submissions.map((s) => s.decision ? <div key={s.no} className="ins-note"><strong>#{s.no} · {s.decision.decision === "APPROVED" ? copy.workspace.event.approved.replace("{who}", s.decision.byName ?? "") : s.decision.decision === "REJECTED" ? copy.workspace.event.rejected.replace("{who}", s.decision.byName ?? "") : copy.workspace.event.revision.replace("{who}", s.decision.byName ?? "")}</strong>{s.decision.note ? <p>{s.decision.note}</p> : null}{s.decision.itemComments.map((c) => <p key={c.itemKey}><em>{labels[c.itemKey] ?? c.itemKey}:</em> {c.comment}</p>)}</div> : null)}
           </div>
         ) : null}
 
-        {tab === "evidence" ? <EvidencePanel inspectionId={d.id} evidence={d.evidence} editable={false} copy={copy} locale={locale} items={evidenceItems} defects={(d.report?.defects ?? lastSub?.report.defects ?? []).map((x) => ({ key: x.key, title: x.title }))} onChanged={() => void qc.invalidateQueries({ queryKey: key("detail", id) })} /> : null}
+        {tab === "evidence" ? (
+          <div style={{ display: "grid", gap: "1rem" }}>
+            <EvidencePanel inspectionId={d.id} evidence={d.evidence} editable={false} copy={copy} locale={locale} items={evidenceItems} defects={(d.report?.defects ?? lastSub?.report.defects ?? []).map((x) => ({ key: x.key, title: x.title }))} onChanged={() => void qc.invalidateQueries({ queryKey: key("detail", id) })} />
+            <AiEvidenceCheck mode="workspace" inspectionId={d.id} evidence={d.evidence} inspectionCopy={copy} locale={locale} locked={!d.can.editReport} />
+          </div>
+        ) : null}
 
         {(tab === "verification" || tab === "review") ? (
           <section className="ins-panel ins-compare" aria-label={copy.review.compare}>
@@ -226,8 +342,11 @@ export function InspectionWorkspace({ id }: { id: string }) {
 
         {tab === "review" ? (
           <>
-            {lastSub ? <ReportView report={lastSub.report} d={d} copy={copy} /> : null}
+            {lastSub ? <ReportView report={lastSub.report} d={d} copy={copy} aiAssistBadge={d.aiAssistRefs?.length ? aiCopy.assistMarkerBadge : undefined} /> : null}
             <section className="ins-panel"><h3 className="ins-h">{copy.review.photos}</h3><EvidencePanel inspectionId={d.id} evidence={d.evidence} editable={false} copy={copy} locale={locale} items={evidenceItems} defects={(lastSub?.report.defects ?? []).map((x) => ({ key: x.key, title: x.title }))} onChanged={() => undefined} /></section>
+            {aiStatus.canAccessAi ? (
+              <WorkspaceReviewAiSection inspectionId={d.id} evidence={d.evidence} inspectionCopy={copy} locale={locale} />
+            ) : null}
             {d.submissions.length > 1 ? <section className="ins-panel"><h3 className="ins-h">{copy.review.previous}</h3>{d.submissions.slice(0, -1).map((s) => <p key={s.no} className="ins-muted">#{s.no} · {fmtDateTime(s.submittedAt, locale)} · {s.decision?.decision ?? "—"}{s.decision?.note ? ` · ${s.decision.note}` : ""}</p>)}</section> : null}
             <div className="ins-sticky-actions">
               {d.can.decide ? (
@@ -243,6 +362,10 @@ export function InspectionWorkspace({ id }: { id: string }) {
 
         {tab === "history" ? (
           <section className="ins-panel"><h3 className="ins-h">{copy.workspace.history}</h3><ol className="ins-timeline">{events.map((e, i) => <li key={i}><span className="ins-muted">{fmtDateTime(e.at, locale)}</span><br />{e.text}</li>)}</ol></section>
+        ) : null}
+
+        {tab === "ai" && aiStatus.canAccessAi ? (
+          <WorkspaceAiTab inspectionId={d.id} evidence={d.evidence} inspectionCopy={copy} locale={locale} />
         ) : null}
       </div>
 

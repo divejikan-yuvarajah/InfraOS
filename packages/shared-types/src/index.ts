@@ -186,3 +186,4 @@ export {
 export * from "./ai.js";
 export * from "./ai-rag.js";
 export * from "./risk.js";
+export * from "./ai-copilot.js";

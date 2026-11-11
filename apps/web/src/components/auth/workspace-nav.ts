@@ -359,6 +359,15 @@ export const WORKSPACE_NAV: readonly WorkspaceNavGroup[] = [
         materialIcon: "settings",
         nodeGlyph: "○",
       },
+      {
+        href: "/settings/ai",
+        label: "AI Governance",
+        icon: SparklesIcon,
+        materialIcon: "psychology",
+        nodeGlyph: "○",
+        i18n: { si: "AI පාලනය", ta: "AI ஆளுகை" },
+        roles: ["SUPER_ADMIN", "GOV_ADMIN", "AGENCY_OFFICER", "PROJECT_MANAGER", "INSPECTOR"],
+      },
     ],
   },
 ];
@@ -379,6 +388,7 @@ export function navCurrent(pathname: string, href: string): boolean {
   if (href === "/projects/reviews") return reviews;
   if (href === "/roadsync") return pathname === href || pathname.startsWith("/roadsync/dashboard");
   if (href === "/projects") return !reviews && (pathname === href || pathname.startsWith(`${href}/`));
+  if (href === "/settings") return pathname === "/settings" || pathname === "/settings/profile";
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 

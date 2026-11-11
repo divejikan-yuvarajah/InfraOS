@@ -1,7 +1,7 @@
 """Pydantic contracts for /v1/llm/*. Mirrored as zod in apps/api/src/modules/ai/ai.contracts.ts (shared fixtures in tests/fixtures)."""
 from __future__ import annotations
 
-from typing import Literal
+from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -180,3 +180,132 @@ class RiskNarrativeRequest(Strict):
 
 class RiskNarrativeResponse(LlmMeta):
     output: RiskNarrativeOutput
+
+
+# ---- vision
+class VisibleWorkIndicator(Lenient):
+    label: str = Field(max_length=80)
+    certainty: Literal["CLEAR", "POSSIBLE"]
+
+
+class VisionImageAnalysis(Lenient):
+    n: int = Field(ge=1, le=6)
+    activityDescription: str = Field(max_length=400)
+    visibleWorkIndicators: list[VisibleWorkIndicator] = Field(default_factory=list)
+    qualityIssues: list[
+        Literal[
+            "BLURRY",
+            "DARK",
+            "OVEREXPOSED",
+            "PARTIAL_VIEW",
+            "NO_SCALE_REFERENCE",
+            "OBSTRUCTED",
+            "LOW_RESOLUTION",
+            "OTHER",
+        ]
+    ] = Field(default_factory=list)
+    notes: str | None = Field(default=None, max_length=300)
+
+
+class PotentialDiscrepancy(Lenient):
+    statement: str = Field(max_length=300)
+    imageNs: list[int] = Field(default_factory=list)
+    severity: Literal["LOW", "MODERATE", "HIGH"]
+
+
+class VisionOverall(Lenient):
+    consistencyWithReportedStage: Literal[
+        "CONSISTENT", "PARTIALLY_CONSISTENT", "INCONSISTENT", "INDETERMINATE"
+    ]
+    rationale: str = Field(max_length=600)
+
+
+class VisionAnalysisOutput(Lenient):
+    images: list[VisionImageAnalysis] = Field(default_factory=list)
+    overall: VisionOverall
+    potentialDiscrepancies: list[PotentialDiscrepancy] = Field(default_factory=list)
+    cannotBeDetermined: list[str] = Field(default_factory=list)
+    questionsForInspector: list[str] = Field(default_factory=list)
+
+
+class VisionContextMilestone(Lenient):
+    title: str = Field(max_length=200)
+    plannedStart: str | None = None
+    plannedEnd: str | None = None
+    reportedProgress: int | float | None = None
+
+
+class VisionContext(Strict):
+    projectType: str = Field(max_length=80)
+    inspectionType: str = Field(max_length=80)
+    milestones: list[VisionContextMilestone] = Field(default_factory=list)
+    claimedProgress: int | float | None = None
+    previousVerifiedProgress: dict[str, Any] | None = None
+    inspectionDate: str = Field(max_length=40)
+
+
+class VisionImageInput(Strict):
+    n: int = Field(ge=1, le=6)
+    dataUrl: str = Field(min_length=10)
+
+
+class VisionAnalyzeRequest(Strict):
+    images: list[VisionImageInput] = Field(min_length=1, max_length=6)
+    context: VisionContext
+    maxOutputTokens: int = Field(default=2000, ge=100, le=4000)
+
+
+class VisionAnalyzeResponse(LlmMeta):
+    output: VisionAnalysisOutput
+
+
+# ---- copilot step
+class ToolCall(Lenient):
+    id: str = Field(max_length=80)
+    tool: str = Field(max_length=80)
+    args: dict[str, Any] = Field(default_factory=dict)
+
+
+class CopilotClaim(Lenient):
+    text: str = Field(max_length=1500)
+    sourceRefs: list[int] = Field(default_factory=list)
+
+
+class CopilotStepOutput(Lenient):
+    type: Literal["tool_calls", "final"]
+    calls: list[ToolCall] = Field(default_factory=list)
+    answer: str | None = Field(default=None, max_length=6000)
+    claims: list[CopilotClaim] = Field(default_factory=list)
+    missingInfo: list[str] = Field(default_factory=list)
+
+
+class CopilotConversationTurn(Strict):
+    role: Literal["user", "assistant"]
+    content: str = Field(max_length=2000)
+
+
+class CopilotToolSpec(Strict):
+    name: str = Field(max_length=80)
+    description: str = Field(max_length=500)
+    argsSchema: dict[str, Any] = Field(default_factory=dict)
+
+
+class CopilotToolResult(Strict):
+    callId: str = Field(max_length=80)
+    tool: str = Field(max_length=80)
+    facts: list[dict[str, Any]] = Field(default_factory=list)
+    status: Literal["OK", "DENIED", "NOT_FOUND", "UNAVAILABLE", "ERROR"]
+
+
+class CopilotStepRequest(Strict):
+    language: Language
+    conversation: list[CopilotConversationTurn] = Field(default_factory=list, max_length=12)
+    pageContext: dict[str, Any] | None = None
+    toolCatalog: list[CopilotToolSpec] = Field(default_factory=list)
+    toolResults: list[CopilotToolResult] = Field(default_factory=list)
+    round: int = Field(ge=1, le=5)
+    maxOutputTokens: int = Field(default=2500, ge=100, le=4000)
+
+
+class CopilotStepResponse(LlmMeta):
+    output: CopilotStepOutput

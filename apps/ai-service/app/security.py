@@ -26,7 +26,7 @@ def sign(secret: str, method: str, path: str, timestamp: str, body_hash: str) ->
 
 
 def verify(request: Request, body_hash: str, settings: Settings | None = None) -> None:
-    s = settings or get_settings()
+    s = settings or getattr(request.app.state, "settings", None) or get_settings()
     if "origin" in request.headers:  # browsers must never reach this service
         raise ApiError("FORBIDDEN")
     ts = request.headers.get("x-infraos-timestamp")
@@ -40,9 +40,18 @@ def verify(request: Request, body_hash: str, settings: Settings | None = None) -
         raise ApiError("UNAUTHORIZED") from None
     if abs(time.time() * 1000 - ts_ms) > s.clock_skew_s * 1000:
         raise ApiError("UNAUTHORIZED")
-    expected = sign(s.ai_internal_secret.get_secret_value(), request.method, request.url.path, ts, body_hash)
-    if not hmac.compare_digest(expected.encode(), sig.lower().encode()):
-        raise ApiError("UNAUTHORIZED")
+    primary_secret = s.ai_internal_secret.get_secret_value()
+    expected = sign(primary_secret, request.method, request.url.path, ts, body_hash)
+    if hmac.compare_digest(expected.encode(), sig.lower().encode()):
+        return
+
+    previous_secret = s.ai_internal_secret_previous.get_secret_value() if s.ai_internal_secret_previous else ""
+    if previous_secret:
+        expected_prev = sign(previous_secret, request.method, request.url.path, ts, body_hash)
+        if hmac.compare_digest(expected_prev.encode(), sig.lower().encode()):
+            return
+
+    raise ApiError("UNAUTHORIZED")
 
 
 async def require_signed_body(request: Request) -> None:

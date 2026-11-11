@@ -52,6 +52,13 @@ const rescheduleEntry = new Schema({ from: { type: Date, required: true }, to: {
 
 const pointSchema = new Schema({ type: { type: String, enum: ["Point"], required: true }, coordinates: { type: [Number], required: true, validate: (v: number[]) => v.length === 2 && Math.abs(v[0]!) <= 180 && Math.abs(v[1]!) <= 90 } }, { _id: false, strict: "throw" });
 
+const aiAssistRefSchema = new Schema({
+  analysisId: reference("InspectionAiAnalysis", true),
+  observationKey: { type: String, required: true, trim: true, maxlength: 60 },
+  insertedBy: reference("User", true),
+  insertedAt: { type: Date, required: true, default: Date.now },
+}, { _id: false, strict: "throw" });
+
 const inspectionSchema = new Schema({
   inspectionNo: { type: String, trim: true, maxlength: 24, match: /^INS-\d{4}-\d{6}$/ },
   projectId: reference("Project"),
@@ -78,6 +85,7 @@ const inspectionSchema = new Schema({
   evidence: { type: [reference("Document")], default: [], validate: arrayLimit(50) },
   report: { type: reportSchema },
   submissions: { type: [submission], default: [], validate: arrayLimit(6) },
+  aiAssistRefs: { type: [aiAssistRefSchema], default: [], validate: arrayLimit(20) },
   startedAt: Date, submittedAt: Date, reviewedBy: reference("User", false), reviewedAt: Date, completedAt: Date,
   cancelReason: textField(500), cancelledBy: reference("User", false),
   contractorIdsAtInspection: { type: [reference("Contractor")], default: [], validate: arrayLimit(20) },

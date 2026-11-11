@@ -17,6 +17,7 @@ import { noticeHref } from "@/lib/projects/notice-view";
 import { fetchRecordSummary } from "@/lib/roadsync/conflict-records-api";
 import { fetchHubSummary } from "@/lib/roadsync/coordination-api";
 
+import { AiStatusChip } from "@/components/ai-admin/ai-status-chip";
 import { GlobalCommandPalette } from "./global-command-palette";
 import {
   ROLE_LABELS,
@@ -800,6 +801,8 @@ export function StaffWorkspaceShell({
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-600" />
               <span>{copy.telemetrySynced}</span>
             </div>
+
+            <AiStatusChip />
 
             {/* User Profile Trigger Dropdown */}
             <DropdownMenu.Root>

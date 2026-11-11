@@ -2,11 +2,14 @@ import { Router } from "express";
 import { ipKeyGenerator, rateLimit } from "express-rate-limit";
 
 import { env } from "../../config/env.js";
-import { failure } from "../../shared/http/envelope.js";
+import { failure, success } from "../../shared/http/envelope.js";
 import { handle, invalid, limiter, noStore, param, reply } from "../contractors/contractor.http.js";
 import { parseStrict } from "../contractors/contractor.schema.js";
 import { requireAuthenticated } from "../identity/auth/require-authenticated.js";
-import { requirePermission } from "../identity/authorization/require-permission.js";
+import { requireAnyPermission, requirePermission } from "../identity/authorization/require-permission.js";
+import { getAiStatusLite } from "./governance/ai-status.service.js";
+import { aiGovernanceRouter } from "./governance/ai-governance.routes.js";
+import { copilotRouter } from "./copilot/copilot.routes.js";
 import { aiStatus, bulkReprocess, cancelDocumentJob, diagnosticSearch, getDocumentAi, listChunks, listJobs, processingSummary, reindex, reprocessDocument } from "./ai.service.js";
 import { askQuestion } from "./rag/rag.service.js";
 import { ragHandle } from "./rag/http.js";
@@ -55,6 +58,8 @@ aiDocumentRouter.get("/:id/ai/chunks", ...auth, requirePermission("document.read
 
 /** Mounted at /api/v1/ai. */
 export const aiRouter = Router();
+aiRouter.use(aiGovernanceRouter);
+aiRouter.use("/copilot", copilotRouter);
 aiRouter.get("/processing/summary", ...auth, requirePermission("document.process"), read, handle({}, async (req, res, actor) => { reply(res, req, await processingSummary(actor)); }));
 aiRouter.get("/processing/jobs", ...auth, requirePermission("document.process"), read, handle({}, async (req, res, actor) => {
   const q = parseStrict(jobsQuery, req.query);
@@ -67,6 +72,9 @@ aiRouter.post("/processing/reprocess", ...auth, requirePermission("document.proc
   reply(res, req, await bulkReprocess(actor, b.data, req.requestId));
 }));
 aiRouter.get("/status", ...auth, requirePermission("ai.manage"), read, handle({}, async (req, res, actor) => { reply(res, req, await aiStatus(actor)); }));
+aiRouter.get("/status/lite", ...auth, requireAnyPermission("copilot.use", "document.ask", "risk.read", "inspection.verify", "inspection.submit", "ai.manage"), read, handle({}, async (req, res, actor) => {
+  res.status(200).json(success(await getAiStatusLite(actor.agencyId), req.requestId));
+}));
 aiRouter.post("/processing/reindex", ...auth, requirePermission("ai.manage"), heavy, handle({ body: true }, async (req, res, actor) => {
   const b = reindexBody.safeParse(req.body);
   if (!b.success) return invalid(res, req);

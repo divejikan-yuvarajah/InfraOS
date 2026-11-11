@@ -62,6 +62,7 @@ export const PERMISSION_CATALOG = [
   "document.update",
   "document.restrict",
   "ai.manage",
+  "copilot.use",
   "contractor.read",
   "contractor.manage",
   "contractor.performance.read",

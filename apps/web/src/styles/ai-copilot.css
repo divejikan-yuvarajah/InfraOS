@@ -1,0 +1,559 @@
+/* Batch 12: Infrastructure Copilot, Inspection AI Advisory Check, AI Governance & Transparency */
+/* Uses project tokens from tokens.css & contractors.css; status is never colour-only; <= 200ms motion; 44px mobile targets. */
+
+/* ---- Global Header Status Chip & Launcher ---- */
+.ai-status-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-height: 2rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  border: 1px solid var(--infra-border-strong);
+  background: #fff;
+  color: var(--infra-text);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.ai-status-chip:hover {
+  background: #f1f5f9;
+}
+.ai-status-chip:focus-visible {
+  outline: 2px solid var(--infra-orange-text);
+  outline-offset: 2px;
+}
+.ai-status-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 999px;
+  flex: none;
+  background: var(--infra-green);
+}
+.ai-status-chip[data-state="degraded"] {
+  border-color: var(--infra-yellow);
+  background: var(--sp-tint-pending);
+  color: var(--infra-yellow-text);
+}
+.ai-status-chip[data-state="degraded"] .ai-status-dot {
+  background: var(--infra-yellow);
+}
+.ai-status-chip[data-state="unavailable"],
+.ai-status-chip[data-state="disabled"] {
+  border-color: var(--infra-maroon);
+  background: var(--sp-tint-critical);
+  color: var(--infra-critical-text);
+}
+.ai-status-chip[data-state="unavailable"] .ai-status-dot,
+.ai-status-chip[data-state="disabled"] .ai-status-dot {
+  background: var(--infra-maroon);
+}
+
+.ai-limit-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 0.75rem;
+  padding: 0.6rem 0.8rem;
+  border: 1px solid var(--infra-yellow);
+  border-radius: var(--mc-radius-control);
+  background: var(--sp-tint-pending);
+  color: var(--infra-yellow-text);
+  font-size: 0.8125rem;
+}
+.ai-limit-banner[data-tone="critical"] {
+  border-color: var(--infra-maroon);
+  background: var(--sp-tint-critical);
+  color: var(--infra-critical-text);
+}
+
+/* ---- Copilot Global Launcher ---- */
+.cop-launcher {
+  position: fixed;
+  right: 1.25rem;
+  bottom: 1.25rem;
+  z-index: 40;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 2.9rem;
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  border: 1px solid var(--infra-text);
+  background: var(--infra-text);
+  color: #fff;
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 700;
+  box-shadow: 0 8px 24px rgb(17 24 39 / 0.22);
+  cursor: pointer;
+  transition: transform 160ms var(--mc-ease), background-color 160ms var(--mc-ease);
+}
+.cop-launcher:hover {
+  background: #1e293b;
+  transform: translateY(-1px);
+}
+.cop-launcher:focus-visible {
+  outline: 2px solid var(--infra-orange);
+  outline-offset: 3px;
+}
+.cop-launcher-dot {
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 999px;
+  background: var(--infra-green);
+}
+.cop-launcher[data-state="degraded"] .cop-launcher-dot {
+  background: var(--infra-yellow);
+}
+.cop-launcher[data-state="unavailable"] .cop-launcher-dot,
+.cop-launcher[data-state="disabled"] .cop-launcher-dot {
+  background: var(--infra-maroon);
+}
+.cop-launcher-unread {
+  min-width: 1.15rem;
+  height: 1.15rem;
+  padding: 0 0.3rem;
+  border-radius: 999px;
+  background: var(--infra-orange);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 800;
+  display: inline-grid;
+  place-items: center;
+  font-variant-numeric: tabular-nums;
+}
+body:has(.ins-sticky, .ins-sticky-actions, .ctr-fab) .cop-launcher {
+  bottom: 5.25rem;
+}
+@media (max-width: 40rem) {
+  .cop-launcher {
+    right: 0.75rem;
+    bottom: 0.85rem;
+    min-height: 2.75rem;
+    padding: 0.45rem 0.85rem;
+  }
+  body:has(.ins-sticky, .ins-sticky-actions, .ctr-fab) .cop-launcher {
+    bottom: 5.1rem;
+  }
+}
+
+/* ---- Copilot Drawer / Sheet ---- */
+.cop-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 45;
+  background: rgb(15 23 42 / 0.28);
+}
+.cop-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 50;
+  width: min(100vw, 420px);
+  display: grid;
+  grid-template-rows: auto auto 1fr auto;
+  background: #fff;
+  border-left: 1px solid var(--infra-border-strong);
+  box-shadow: -8px 0 32px rgb(15 23 42 / 0.16);
+  overscroll-behavior: contain;
+}
+.cop-panel[data-wide="true"] {
+  width: min(100vw, 580px);
+}
+@media (max-width: 40rem) {
+  .cop-panel,
+  .cop-panel[data-wide="true"] {
+    width: 100vw;
+    left: 0;
+    border-left: 0;
+  }
+}
+.cop-head {
+  display: grid;
+  gap: 0.5rem;
+  padding: 0.75rem 0.9rem;
+  background: #f8fafc;
+  border-bottom: 1px solid var(--infra-border);
+}
+.cop-head-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+.cop-head-title {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 800;
+}
+.cop-head-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+.cop-icon-btn {
+  display: inline-grid;
+  place-items: center;
+  min-width: 2.25rem;
+  min-height: 2.25rem;
+  padding: 0 0.35rem;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--infra-text);
+  font: inherit;
+  cursor: pointer;
+}
+.cop-icon-btn:hover {
+  background: #e2e8f0;
+}
+.cop-icon-btn:focus-visible {
+  outline: 2px solid var(--infra-orange-text);
+  outline-offset: 2px;
+}
+@media (max-width: 40rem) {
+  .cop-icon-btn {
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+  }
+}
+
+.cop-ctx-chip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.35rem 0.6rem;
+  border: 1px solid var(--infra-border-strong);
+  border-radius: var(--mc-radius-control);
+  background: #fff;
+  font-size: 0.78rem;
+}
+.cop-ctx-chip[data-included="false"] {
+  opacity: 0.75;
+  border-style: dashed;
+}
+
+.cop-tabs {
+  display: flex;
+  gap: 0.25rem;
+  padding: 0.35rem 0.9rem 0;
+  border-bottom: 1px solid var(--infra-border);
+  background: #fff;
+}
+.cop-tab {
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  padding: 0.5rem 0.8rem;
+  min-height: 2.5rem;
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--infra-text-secondary);
+  cursor: pointer;
+}
+.cop-tab[aria-selected="true"] {
+  color: var(--infra-text);
+  border-bottom-color: var(--infra-orange);
+}
+.cop-tab:focus-visible {
+  outline: 2px solid var(--infra-orange-text);
+  outline-offset: -2px;
+}
+
+.cop-scroll {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 0.85rem 0.9rem;
+  display: grid;
+  gap: 0.85rem;
+  align-content: start;
+}
+.cop-user-msg {
+  justify-self: end;
+  max-width: 90%;
+  padding: 0.55rem 0.8rem;
+  border-radius: var(--mc-radius-control);
+  background: var(--infra-text);
+  color: #fff;
+  font-size: 0.875rem;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.cop-steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.3rem;
+}
+.cop-step {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.35rem 0.55rem;
+  border: 1px solid var(--infra-border);
+  border-radius: 6px;
+  background: #f8fafc;
+  font-size: 0.78rem;
+}
+.cop-step-main {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-width: 0;
+}
+.cop-step[data-status="DENIED"] {
+  border-color: var(--infra-yellow);
+  background: var(--sp-tint-pending);
+}
+.cop-step[data-status="ERROR"] {
+  border-color: var(--infra-maroon);
+  background: var(--sp-tint-critical);
+}
+
+.cop-nav-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+.cop-nav-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  min-height: 2rem;
+  padding: 0.2rem 0.65rem;
+  border-radius: 999px;
+  border: 1px solid var(--infra-border-strong);
+  background: #f8fafc;
+  color: var(--infra-text);
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+.cop-nav-link:hover {
+  border-color: var(--infra-orange);
+  background: #fff8f3;
+}
+.cop-nav-link:focus-visible {
+  outline: 2px solid var(--infra-orange-text);
+  outline-offset: 2px;
+}
+
+.cop-qf-grid {
+  display: grid;
+  gap: 0.65rem;
+}
+.cop-qf-card {
+  display: grid;
+  gap: 0.3rem;
+  padding: 0.7rem 0.8rem;
+  border: 1px solid var(--infra-border);
+  border-radius: var(--mc-radius-control);
+  background: #fff;
+}
+.cop-qf-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  color: var(--infra-text-secondary);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.cop-foot {
+  border-top: 1px solid var(--infra-border);
+  padding: 0.65rem 0.9rem calc(0.65rem + env(safe-area-inset-bottom));
+  background: #f8fafc;
+  display: grid;
+  gap: 0.45rem;
+}
+.cop-foot-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  color: var(--infra-text-secondary);
+}
+
+/* ---- Inspection AI Advisory Styles ---- */
+.ins-ai-advisory {
+  display: grid;
+  gap: 0.85rem;
+  padding: 0.95rem 1rem;
+  border: 2px dashed var(--infra-orange);
+  border-radius: var(--mc-radius-control);
+  background: #fffcf8;
+}
+.ins-ai-advisory-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.45rem 0.7rem;
+  border-radius: 6px;
+  background: #fff4ed;
+  border: 1px solid #fed7aa;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--infra-orange-text);
+}
+.ins-ai-picker {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(8.75rem, 1fr));
+  gap: 0.55rem;
+}
+.ins-ai-pick-item {
+  display: grid;
+  gap: 0.3rem;
+  padding: 0.35rem;
+  border: 1px solid var(--infra-border);
+  border-radius: var(--mc-radius-control);
+  background: #fff;
+  cursor: pointer;
+}
+.ins-ai-pick-item[data-selected="true"] {
+  border-color: var(--infra-orange);
+  box-shadow: inset 0 0 0 1px var(--infra-orange);
+  background: #fff8f3;
+}
+.ins-ai-pick-thumb {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  border-radius: 6px;
+  overflow: hidden;
+  background: #e2e8f0;
+}
+.ins-ai-obs {
+  display: grid;
+  gap: 0.5rem;
+  padding: 0.75rem 0.85rem;
+  border: 1px solid var(--infra-border);
+  border-radius: var(--mc-radius-control);
+  background: #fff;
+}
+.ins-ai-obs[data-decision="CONFIRMED"] {
+  border-color: var(--infra-green);
+  background: #f7fef9;
+}
+.ins-ai-obs[data-decision="DISPUTED"] {
+  border-color: var(--infra-maroon);
+  background: #fffafa;
+}
+.ins-ai-obs[data-decision="NOT_RELEVANT"] {
+  opacity: 0.72;
+}
+
+/* ---- AI Governance & Analytics ---- */
+.gov-grid {
+  display: grid;
+  gap: 0.9rem;
+}
+.gov-cards {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+}
+.gov-stat {
+  display: grid;
+  gap: 0.25rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--infra-border);
+  border-radius: var(--mc-radius-control);
+  background: #fff;
+}
+.gov-stat-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--infra-text-secondary);
+}
+.gov-stat-value {
+  font-size: 1.5rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+.gov-gauge {
+  display: grid;
+  gap: 0.35rem;
+}
+.gov-gauge-track {
+  position: relative;
+  height: 0.7rem;
+  border-radius: 999px;
+  background: #e2e8f0;
+  overflow: hidden;
+}
+.gov-gauge-fill {
+  display: block;
+  height: 100%;
+  background: var(--infra-green);
+}
+.gov-gauge-fill[data-tier="soft"] {
+  background: var(--infra-yellow);
+}
+.gov-gauge-fill[data-tier="hard"] {
+  background: var(--infra-maroon);
+}
+.gov-chart-svg {
+  width: 100%;
+  height: 14rem;
+  display: block;
+}
+.gov-toggle-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid var(--infra-border);
+  border-radius: var(--mc-radius-control);
+  background: #fff;
+}
+.gov-toggle-row[data-vision="true"] {
+  border-style: dashed;
+  border-color: var(--infra-orange);
+}
+
+@media (max-width: 40rem) {
+  .gov-grid,
+  .gov-stat,
+  .ins-ai-advisory,
+  .ins-ai-obs {
+    min-width: 0;
+    max-width: 100%;
+  }
+  .gov-cards {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .gov-grid .ctr-btn,
+  .ins-ai-advisory .ctr-btn,
+  .cop-tab {
+    min-height: 44px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cop-launcher,
+  .cop-panel,
+  .ai-status-chip,
+  .ins-ai-obs {
+    transition: none !important;
+    animation: none !important;
+  }
+}
