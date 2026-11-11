@@ -78,6 +78,70 @@ describe("AI Failure Mapping & Lite Status (Phase 10 Steps 126-127)", () => {
       const vision = mapAiFailure("AI_SERVICE_UNAVAILABLE", { feature: "vision" });
       expect(vision.fallbackType).toBe("MANUAL_INSPECTION");
     });
+
+    it("covers full section 4.8 failure matrix deterministically", () => {
+      const featureDisabledQa = mapAiFailure("FEATURE_DISABLED", { feature: "qa" });
+      expect(featureDisabledQa.code).toBe("FEATURE_DISABLED");
+      expect(featureDisabledQa.retryable).toBe(false);
+      expect(featureDisabledQa.fallbackType).toBe("NONE");
+
+      const modelUnsetVision = mapAiFailure("MODEL_NOT_CONFIGURED", { feature: "vision" });
+      expect(modelUnsetVision.code).toBe("MODEL_NOT_CONFIGURED");
+      expect(modelUnsetVision.retryable).toBe(false);
+      expect(modelUnsetVision.fallbackType).toBe("MANUAL_INSPECTION");
+
+      const rateLimited = mapAiFailure("AI_RATE_LIMITED", { feature: "copilot", retryAfterSeconds: 45 });
+      expect(rateLimited.code).toBe("AI_RATE_LIMITED");
+      expect(rateLimited.retryable).toBe(true);
+      expect(rateLimited.retryAfterSeconds).toBe(45);
+      expect(rateLimited.fallbackType).toBe("QUICK_FACTS");
+
+      const concurrency = mapAiFailure("AI_CONCURRENCY_EXCEEDED", { feature: "copilot" });
+      expect(concurrency.code).toBe("AI_CONCURRENCY_EXCEEDED");
+      expect(concurrency.retryable).toBe(true);
+      expect(concurrency.retryAfterSeconds).toBe(5);
+      expect(concurrency.fallbackType).toBe("NONE");
+
+      const budgetExceeded = mapAiFailure("AI_BUDGET_EXCEEDED", {
+        feature: "qa",
+        resetsAt: "2026-11-12T00:00:00.000Z"
+      });
+      expect(budgetExceeded.code).toBe("AI_BUDGET_EXCEEDED");
+      expect(budgetExceeded.retryable).toBe(false);
+      expect(budgetExceeded.resetsAt).toBe("2026-11-12T00:00:00.000Z");
+      expect(budgetExceeded.fallbackType).toBe("PASSAGES_ONLY");
+
+      const timeout = mapAiFailure("AI_SERVICE_TIMEOUT", { feature: "vision" });
+      expect(timeout.code).toBe("AI_SERVICE_TIMEOUT");
+      expect(timeout.retryable).toBe(true);
+      expect(timeout.fallbackType).toBe("RETRY_LATER");
+
+      const tooLarge = mapAiFailure("LLM_CONTEXT_TOO_LONG", { feature: "qa" });
+      expect(tooLarge.code).toBe("AI_TOO_LARGE");
+      expect(tooLarge.retryable).toBe(false);
+      expect(tooLarge.fallbackType).toBe("NONE");
+
+      const notReady = mapAiFailure("NOT_AI_READY", { feature: "qa" });
+      expect(notReady.code).toBe("NOT_AI_READY");
+      expect(notReady.retryable).toBe(true);
+      expect(notReady.fallbackType).toBe("DOC_SEARCH");
+
+      const insufficient = mapAiFailure("INSUFFICIENT_EVIDENCE", { feature: "qa" });
+      expect(insufficient.code).toBe("AI_INSUFFICIENT_EVIDENCE");
+      expect(insufficient.retryable).toBe(false);
+      expect(insufficient.fallbackType).toBe("PASSAGES_ONLY");
+
+      const circuitOpen = mapAiFailure("CIRCUIT_OPEN", { feature: "copilot" });
+      expect(circuitOpen.code).toBe("AI_UNAVAILABLE");
+      expect(circuitOpen.retryable).toBe(true);
+      expect(circuitOpen.retryAfterSeconds).toBe(30);
+      expect(circuitOpen.fallbackType).toBe("QUICK_FACTS");
+
+      const invalidOutput = mapAiFailure("LLM_INVALID_OUTPUT", { feature: "vision" });
+      expect(invalidOutput.code).toBe("AI_INVALID_OUTPUT");
+      expect(invalidOutput.retryable).toBe(true);
+      expect(invalidOutput.fallbackType).toBe("RETRY_LATER");
+    });
   });
 
   describe("Lite status evaluation", () => {
