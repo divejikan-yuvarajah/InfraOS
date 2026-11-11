@@ -12,6 +12,7 @@
 @import "../styles/public-batch-2b-part2.css";
 @import "../styles/public-batch-2b-part3.css";
 @import "../styles/civic-atlas-command.css";
+@import "../styles/ai-copilot.css";
 
 @custom-variant dark (&:is(.dark *));
 

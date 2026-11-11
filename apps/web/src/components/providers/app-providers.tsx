@@ -2,6 +2,7 @@
 
 import { useEffect, type ReactNode } from "react";
 
+import { AiStatusProvider } from "@/components/ai-admin/ai-status-provider";
 import { RouteAccessGuard } from "@/components/auth/route-access-guard";
 import { bootstrapAuthFromRefresh } from "@/lib/auth/refresh-flight";
 import { QueryProvider } from "@/components/providers/query-provider";
@@ -16,7 +17,9 @@ export function AppProviders({ children }: { children: ReactNode }) {
   return (
     <QueryProvider>
       <TooltipProvider delayDuration={300}>
-        <RouteAccessGuard>{children}</RouteAccessGuard>
+        <AiStatusProvider>
+          <RouteAccessGuard>{children}</RouteAccessGuard>
+        </AiStatusProvider>
         <Toaster richColors closeButton position="top-right" />
       </TooltipProvider>
     </QueryProvider>

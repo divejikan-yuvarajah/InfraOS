@@ -63,6 +63,7 @@ export type InspectionDetail = {
   assignmentHistory: { inspectorName: string | null; assignedByName: string | null; assignedAt: string; reason: string | null }[];
   rescheduleHistory: { from: string; to: string; byName: string | null; at: string; reason: string }[];
   evidence: EvidenceItem[];
+  aiAssistRefs?: { analysisId: string; observationKey: string; insertedBy: string; insertedAt: string }[];
   verification: { verifiedPercent: number; claimedPercent: number | null; discrepancyPp: number | null; status: string; asOf: string | null; milestones: { milestoneId: string; claimedProgress?: number; verifiedProgress: number }[] } | null;
   can: { edit: boolean; reschedule: boolean; reassign: boolean; cancel: boolean; start: boolean; editReport: boolean; decide: boolean; decideBlockedReason: string | null; approve: boolean; reject: boolean; followUp: boolean };
 };
