@@ -311,10 +311,10 @@ export function UsageCharts({
                 <div key={tier} className="gov-stat">
                   <div className="gov-stat-label">{copy.tiers[tier]}</div>
                   <div style={{ fontSize: "0.95rem", fontWeight: 600 }}>
-                    {formatNumber(data.budgets.dailyTokenBudget[tier] ?? 0, locale)} / day
+                    {formatNumber(data.budgets.dailyTokenBudget[tier] ?? 0, locale)} / 24h
                   </div>
                   <div className="ctr-small" style={{ marginTop: "0.2rem" }}>
-                    {formatNumber(data.budgets.monthlyTokenBudget[tier] ?? 0, locale)} / mo
+                    {formatNumber(data.budgets.monthlyTokenBudget[tier] ?? 0, locale)} / 30d
                   </div>
                 </div>
               ))}

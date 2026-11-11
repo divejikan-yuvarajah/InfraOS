@@ -530,6 +530,24 @@ body:has(.ins-sticky, .ins-sticky-actions, .ctr-fab) .cop-launcher {
   border-color: var(--infra-orange);
 }
 
+@media (max-width: 40rem) {
+  .gov-grid,
+  .gov-stat,
+  .ins-ai-advisory,
+  .ins-ai-obs {
+    min-width: 0;
+    max-width: 100%;
+  }
+  .gov-cards {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .gov-grid .ctr-btn,
+  .ins-ai-advisory .ctr-btn,
+  .cop-tab {
+    min-height: 44px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .cop-launcher,
   .cop-panel,

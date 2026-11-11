@@ -42,7 +42,11 @@ export function splitCitationSegments(text: string): TextSegment[] {
 export function isSafeInternalLink(link: string | undefined | null): link is string {
   if (!link || typeof link !== "string") return false;
   const trimmed = link.trim();
-  return trimmed.startsWith("/") && !trimmed.startsWith("//") && !trimmed.includes("://");
+  if (!trimmed.startsWith("/") || trimmed.startsWith("//") || trimmed.startsWith("/\\")) {
+    return false;
+  }
+  if (trimmed.includes("://") || /[\r\n\t\\]/.test(trimmed)) return false;
+  return true;
 }
 
 export function suggestionTitle(item: CopilotSuggestionDto, copy: CopilotMessages): string {
