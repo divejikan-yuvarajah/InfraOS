@@ -83,3 +83,27 @@ def test_oversized_body_rejected(client: TestClient) -> None:
 def test_weak_secret_fails_fast() -> None:
     with pytest.raises(ValidationError):
         Settings(ai_internal_secret="short")  # type: ignore[call-arg]
+
+
+def test_secret_rotation_accepts_previous_secret() -> None:
+    primary = "p" * 48
+    previous = "o" * 48
+    s = Settings(
+        app_env="test",
+        ai_internal_secret=primary,  # type: ignore[call-arg]
+        ai_internal_secret_previous=previous,  # type: ignore[call-arg]
+    )
+    c = TestClient(create_app(s))
+
+    # Request signed with primary secret succeeds
+    h_primary = signed_headers("GET", "/v1/capabilities", secret=primary)
+    assert c.get("/v1/capabilities", headers=h_primary).status_code == 200
+
+    # Request signed with previous secret also succeeds (zero-downtime rotation)
+    h_prev = signed_headers("GET", "/v1/capabilities", secret=previous)
+    assert c.get("/v1/capabilities", headers=h_prev).status_code == 200
+
+    # Request signed with unrelated secret fails
+    h_bad = signed_headers("GET", "/v1/capabilities", secret="x" * 48)
+    assert c.get("/v1/capabilities", headers=h_bad).status_code == 401
+

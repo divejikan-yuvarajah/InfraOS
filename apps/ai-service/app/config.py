@@ -17,14 +17,19 @@ class Settings(BaseSettings):
     port: int = 8000
 
     ai_internal_secret: SecretStr = Field(default=SecretStr(""))
+    ai_internal_secret_previous: SecretStr = Field(default=SecretStr(""))
     openrouter_api_key: SecretStr = Field(default=SecretStr(""))
     embed_api_key: SecretStr = Field(default=SecretStr(""))
     embed_base_url: str = "https://openrouter.ai/api/v1"
     ai_embed_model: str = ""
 
-    # Chat/LLM layer (Batch 10). Model ids come only from env; the default is the live-probed low-cost model.
+    # Chat/LLM layer (Batch 10) & Vision / Copilot layer (Batch 12).
+    # Model ids come only from env; unset by default (fail-closed "NOT_CONFIGURED").
     ai_chat_model: str = ""
     ai_chat_model_strong: str = ""
+    ai_vision_model: str = ""
+    ai_vision_max_bytes: int = 6 * 1024 * 1024
+    ai_copilot_max_rounds: int = 4
     chat_base_url: str = ""
     llm_structured_mode: str = "json_schema"  # json_schema | json_object (set by the capability check)
     llm_concurrency: int = 3

@@ -8,6 +8,7 @@ import { requirePermission } from "../identity/authorization/require-permission.
 import { INSPECTION_TYPES, type InspectionType } from "./inspection.constants.js";
 import { decideInspection } from "./inspection-decision.service.js";
 import { evidenceRouter } from "./inspection-evidence.routes.js";
+import { inspectionAiRouter } from "./ai/inspection-ai.routes.js";
 import { saveReport, startInspection, submitInspection } from "./inspection-report.service.js";
 import {
   calendarQuery, cancelBody, decisionBody, editBody, inspectorsQuery, listQuery, reassignBody, reportBody, rescheduleBody, scheduleBody, submitBody, summaryQuery,
@@ -69,6 +70,7 @@ inspectionRouter.post("/", ...perm("inspection.assign", write), handle({ body: t
 
 /* evidence routes (own permission checks) */
 inspectionRouter.use(evidenceRouter);
+inspectionRouter.use(inspectionAiRouter);
 
 inspectionRouter.get("/:id", ...perm("inspection.read"), handle({}, async (req, res, actor) => {
   if (Object.keys(req.query).length) return invalid(res, req);

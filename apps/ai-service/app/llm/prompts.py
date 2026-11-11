@@ -14,6 +14,8 @@ PROMPT_VERSIONS = {
     "summaryReduce": "sum-reduce.v2",
     "extract": "extract.v2",
     "riskNarrative": "risk-narr.v1",
+    "vision": "vision.v1",
+    "copilot": "copilot.v1",
 }
 LANGUAGE_NAMES = {"en": "English", "si": "Sinhala", "ta": "Tamil"}
 
@@ -118,6 +120,109 @@ RISK_NARRATIVE_SCHEMA = schema("risk_narrative", {
     },
 })
 
+VISION_SCHEMA = schema("vision_analysis", {
+    "type": "object",
+    "additionalProperties": False,
+    "required": ["images", "overall", "potentialDiscrepancies", "cannotBeDetermined", "questionsForInspector"],
+    "properties": {
+        "images": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "additionalProperties": False,
+                "required": ["n", "activityDescription", "visibleWorkIndicators", "qualityIssues", "notes"],
+                "properties": {
+                    "n": {"type": "integer"},
+                    "activityDescription": {"type": "string"},
+                    "visibleWorkIndicators": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "additionalProperties": False,
+                            "required": ["label", "certainty"],
+                            "properties": {
+                                "label": {"type": "string"},
+                                "certainty": {"type": "string", "enum": ["CLEAR", "POSSIBLE"]},
+                            },
+                        },
+                    },
+                    "qualityIssues": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "enum": ["BLURRY", "DARK", "OVEREXPOSED", "PARTIAL_VIEW", "NO_SCALE_REFERENCE", "OBSTRUCTED", "LOW_RESOLUTION", "OTHER"],
+                        },
+                    },
+                    "notes": {"type": ["string", "null"]},
+                },
+            },
+        },
+        "overall": {
+            "type": "object",
+            "additionalProperties": False,
+            "required": ["consistencyWithReportedStage", "rationale"],
+            "properties": {
+                "consistencyWithReportedStage": {
+                    "type": "string",
+                    "enum": ["CONSISTENT", "PARTIALLY_CONSISTENT", "INCONSISTENT", "INDETERMINATE"],
+                },
+                "rationale": {"type": "string"},
+            },
+        },
+        "potentialDiscrepancies": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "additionalProperties": False,
+                "required": ["statement", "imageNs", "severity"],
+                "properties": {
+                    "statement": {"type": "string"},
+                    "imageNs": {"type": "array", "items": {"type": "integer"}},
+                    "severity": {"type": "string", "enum": ["LOW", "MODERATE", "HIGH"]},
+                },
+            },
+        },
+        "cannotBeDetermined": {"type": "array", "items": {"type": "string"}},
+        "questionsForInspector": {"type": "array", "items": {"type": "string"}},
+    },
+})
+
+COPILOT_SCHEMA = schema("copilot_step", {
+    "type": "object",
+    "additionalProperties": False,
+    "required": ["type", "calls", "answer", "claims", "missingInfo"],
+    "properties": {
+        "type": {"type": "string", "enum": ["tool_calls", "final"]},
+        "calls": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "additionalProperties": False,
+                "required": ["id", "tool", "args"],
+                "properties": {
+                    "id": {"type": "string"},
+                    "tool": {"type": "string"},
+                    "args": {"type": "object"},
+                },
+            },
+        },
+        "answer": {"type": ["string", "null"]},
+        "claims": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "additionalProperties": False,
+                "required": ["text", "sourceRefs"],
+                "properties": {
+                    "text": {"type": "string"},
+                    "sourceRefs": {"type": "array", "items": {"type": "integer"}},
+                },
+            },
+        },
+        "missingInfo": {"type": "array", "items": {"type": "string"}},
+    },
+})
+
 
 # ---------------------------------------------------------------- builders -> (messages, schema)
 def build_answer(language: str, question: str, sources: list[Source]) -> tuple[list[dict[str, str]], dict[str, Any]]:
@@ -193,4 +298,65 @@ def build_risk_narrative(
     }
     user_content = f"{_lang(language)}\n\nProject Risk Assessment Data:\n{json.dumps(user_payload, indent=2)}"
     return [{"role": "system", "content": sys_msg}, {"role": "user", "content": user_content}], RISK_NARRATIVE_SCHEMA
+
+
+def build_vision_analyze(
+    context: dict[str, Any],
+    images: list[dict[str, Any]],
+) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    import json
+    sys_msg = (
+        "You are an advisory physical progress inspection vision analysis assistant.\n"
+        "Rules:\n"
+        "1. Describe ONLY what is directly visible in the provided photographs. Never assume, extrapolate, or guess.\n"
+        "2. NEVER estimate, calculate, or state completion percentages, financial amounts, or compliance verdicts.\n"
+        "3. NEVER identify individuals, names, faces, or vehicle license plates (refer only to 'workers present' if visible).\n"
+        "4. NEVER use accusatory, fraudulent, or blame vocabulary (e.g., fraud, fake, falsified, corrupt, lying, negligent, illegal).\n"
+        "5. State explicit visual limitations (angles, lighting, partial views, concealed elements).\n"
+        "6. Consistency with reported stage must be one of CONSISTENT, PARTIALLY_CONSISTENT, INCONSISTENT, or INDETERMINATE, with a rationale citing image numbers (e.g. 'image 1').\n"
+        "7. Return JSON matching the schema."
+    )
+    user_text = (
+        "Context and Reported Stage:\n"
+        f"{json.dumps(context, indent=2)}\n\n"
+        "Analyze the following inspection photographs and report visible work activities, quality issues, consistency with reported stage, and potential discrepancies."
+    )
+    user_content: list[dict[str, Any]] = [{"type": "text", "text": user_text}]
+    for img in images:
+        user_content.append({
+            "type": "image_url",
+            "image_url": {"url": img["dataUrl"]},
+        })
+    return [{"role": "system", "content": sys_msg}, {"role": "user", "content": user_content}], VISION_SCHEMA
+
+
+def build_copilot_step(
+    language: str,
+    conversation: list[dict[str, Any]],
+    page_context: dict[str, Any] | None,
+    tool_catalog: list[dict[str, Any]],
+    tool_results: list[dict[str, Any]],
+    round_no: int,
+) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    import json
+    sys_msg = (
+        "You are the InfraOS Infrastructure Copilot, an explainable, read-only assistant for infrastructure project governance.\n"
+        "Rules:\n"
+        "1. Use ONLY facts returned by the provided tools. Never use outside training data or hallucinate records.\n"
+        "2. Tools are strictly read-only. Never attempt to mutate, approve, update, or delete records.\n"
+        "3. If you need data to answer the user, output type='tool_calls' with calls matching the toolCatalog schema.\n"
+        "4. If you have sufficient facts or the round limit is reached, output type='final' with a verified answer, claims, and sourceRefs citing fact IDs.\n"
+        "5. Never use accusatory language (fraud, fake, corrupt). Focus objectively on documented variances, schedule milestones, and verified progress.\n"
+        f"6. Write in {LANGUAGE_NAMES.get(language, 'English')}.\n"
+        "7. Return JSON matching the schema."
+    )
+    payload = {
+        "round": round_no,
+        "pageContext": page_context,
+        "toolCatalog": tool_catalog,
+        "toolResults": tool_results,
+        "conversation": conversation,
+    }
+    user_text = f"{_lang(language)}\n\nCopilot State:\n{json.dumps(payload, indent=2)}"
+    return [{"role": "system", "content": sys_msg}, {"role": "user", "content": user_text}], COPILOT_SCHEMA
 

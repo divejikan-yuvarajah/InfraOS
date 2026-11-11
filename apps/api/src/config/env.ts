@@ -37,6 +37,10 @@ export type AppEnv = {
   REFRESH_TOKEN_TTL?: string;
   AI_BASE_URL?: string;
   AI_INTERNAL_SECRET?: string;
+  AI_INTERNAL_SECRET_PREVIOUS?: string;
+  AI_VISION_MODEL?: string;
+  AI_COPILOT_TTL_DAYS?: number;
+  AI_VISION_MAX_BYTES?: number;
   OPENROUTER_API_KEY?: string;
   QDRANT_URL?: string;
   QDRANT_API_KEY?: string;
@@ -69,6 +73,7 @@ export const SECRET_ENV_NAMES = [
   "ACCESS_TOKEN_SECRET",
   "REFRESH_TOKEN_SECRET",
   "AI_INTERNAL_SECRET",
+  "AI_INTERNAL_SECRET_PREVIOUS",
   "OPENROUTER_API_KEY",
   "QDRANT_API_KEY",
   "R2_ACCESS_KEY_ID",
@@ -431,6 +436,20 @@ export function parseEnv(
     "AI_INTERNAL_SECRET",
     read(source, "AI_INTERNAL_SECRET"),
   );
+  const aiInternalSecretPrevious = parseOptionalSecret(
+    issues,
+    "AI_INTERNAL_SECRET_PREVIOUS",
+    read(source, "AI_INTERNAL_SECRET_PREVIOUS"),
+  );
+  const aiVisionModel = read(source, "AI_VISION_MODEL");
+  const rawCopilotTtl = read(source, "AI_COPILOT_TTL_DAYS");
+  const copilotTtlDays = rawCopilotTtl && Number.isInteger(Number(rawCopilotTtl)) && Number(rawCopilotTtl) >= 1 && Number(rawCopilotTtl) <= 3650
+    ? Number(rawCopilotTtl)
+    : undefined;
+  const rawVisionMaxBytes = read(source, "AI_VISION_MAX_BYTES");
+  const visionMaxBytes = rawVisionMaxBytes && Number.isInteger(Number(rawVisionMaxBytes)) && Number(rawVisionMaxBytes) >= 1024
+    ? Number(rawVisionMaxBytes)
+    : undefined;
   const openrouterApiKey = read(source, "OPENROUTER_API_KEY");
   const qdrantUrl = parseOptionalUrl(
     issues,
@@ -496,6 +515,10 @@ export function parseEnv(
     ...(refreshTokenTtl ? { REFRESH_TOKEN_TTL: refreshTokenTtl } : {}),
     ...(aiBaseUrl ? { AI_BASE_URL: aiBaseUrl } : {}),
     ...(aiInternalSecret ? { AI_INTERNAL_SECRET: aiInternalSecret } : {}),
+    ...(aiInternalSecretPrevious ? { AI_INTERNAL_SECRET_PREVIOUS: aiInternalSecretPrevious } : {}),
+    ...(aiVisionModel ? { AI_VISION_MODEL: aiVisionModel } : {}),
+    ...(copilotTtlDays !== undefined ? { AI_COPILOT_TTL_DAYS: copilotTtlDays } : {}),
+    ...(visionMaxBytes !== undefined ? { AI_VISION_MAX_BYTES: visionMaxBytes } : {}),
     ...(openrouterApiKey ? { OPENROUTER_API_KEY: openrouterApiKey } : {}),
     ...(qdrantUrl ? { QDRANT_URL: qdrantUrl } : {}),
     ...(qdrantApiKey ? { QDRANT_API_KEY: qdrantApiKey } : {}),

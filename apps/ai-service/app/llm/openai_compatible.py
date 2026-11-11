@@ -34,8 +34,11 @@ class LlmClient:
         self._sleep = sleep
         self._sem = asyncio.Semaphore(s.llm_concurrency)
 
-    def model_for(self, strong: bool) -> str:
-        m = (self.s.ai_chat_model_strong if strong and self.s.ai_chat_model_strong else self.s.ai_chat_model)
+    def model_for(self, strong: bool = False, vision: bool = False) -> str:
+        if vision:
+            m = self.s.ai_vision_model or self.s.ai_chat_model
+        else:
+            m = (self.s.ai_chat_model_strong if strong and self.s.ai_chat_model_strong else self.s.ai_chat_model)
         if not m or not self.s.chat_key:
             raise ApiError("NOT_CONFIGURED")
         return m
@@ -71,8 +74,8 @@ class LlmClient:
         log_event("llm_failed", code=last)
         raise ApiError(last)
 
-    async def complete(self, messages: list[dict[str, str]], schema: dict[str, Any], out_model: type[T], *, max_tokens: int, timeout: float, strong: bool = False) -> Completion:
-        model = self.model_for(strong)
+    async def complete(self, messages: list[dict[str, Any]], schema: dict[str, Any], out_model: type[T], *, max_tokens: int, timeout: float, strong: bool = False, vision: bool = False) -> Completion:
+        model = self.model_for(strong, vision=vision)
         mode = self.s.llm_structured_mode if self.s.llm_structured_mode in ("json_schema", "json_object") else "json_schema"
         response_format = {"type": "json_schema", "json_schema": schema} if mode == "json_schema" else {"type": "json_object"}
         msgs = list(messages)

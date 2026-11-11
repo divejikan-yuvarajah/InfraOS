@@ -7,7 +7,7 @@ import { aiConfig } from "../ai.config.js";
 import { aiClient } from "../ai-client.js";
 import type { LlmNote, SummarySection } from "../ai.contracts.js";
 import { chatBudgetState } from "../processing/budget.js";
-import { AiUsageRecord } from "../usage.model.js";
+import { recordGate } from "../governance/ai-gate.js";
 import { ArtifactError, Stop, beat, type RunnerDeps } from "./artifact-runner.js";
 import { AiArtifact, type AiArtifactDocument } from "./artifact.model.js";
 import {
@@ -72,7 +72,22 @@ export async function runSummary(a: AiArtifactDocument, workerId: string, deps: 
   let model = a.model ?? cfg.chat.model ?? "";
   const record = async (purpose: "SUMMARY_MAP" | "SUMMARY_REDUCE", u: Usage, m: string): Promise<void> => {
     usage.inputTokens += u.inputTokens; usage.outputTokens += u.outputTokens; model = m;
-    await AiUsageRecord.create({ kind: "CHAT", purpose, agencyId: a.agencyId, userId: a.requestedBy, documentId: a.documentId, provider: "openrouter", model: m, inputTokens: u.inputTokens, outputTokens: u.outputTokens, status: "OK", ...(costOf(u.inputTokens, u.outputTokens) !== undefined ? { estimatedCostMinor: costOf(u.inputTokens, u.outputTokens)! } : {}) }).catch(() => undefined);
+    await recordGate({
+      actor: { userId: String(a.requestedBy), agencyId: String(a.agencyId) },
+      agencyId: String(a.agencyId),
+      feature: "summary",
+      tier: "LOW",
+      model: m,
+      actual: {
+        inputTokens: u.inputTokens,
+        outputTokens: u.outputTokens,
+        costMinor: costOf(u.inputTokens, u.outputTokens),
+        status: "OK",
+        purpose,
+        documentId: String(a.documentId),
+        jobId: String(a._id),
+      },
+    }).catch(() => undefined);
   };
 
   // ---- MAP (resumable: finished windows are never repeated)

@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CheckIcon, CloudOffIcon, LoaderIcon, PlusIcon, Trash2Icon, XIcon } from "lucide-react";
+import { CheckIcon, CloudOffIcon, LoaderIcon, PlusIcon, SparklesIcon, Trash2Icon, XIcon } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -11,6 +11,7 @@ import { StaffWorkspaceShell } from "@/components/auth/staff-workspace-shell";
 import { ContextBar } from "@/components/site-plan/site-plan";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { failureOf, fetchInspection, saveReport, startInspection, submitInspection } from "@/lib/inspections/api";
+import { getInspectionAiCopy } from "@/lib/inspections/ai/messages";
 import { AUTOSAVE_DEBOUNCE_MS, afterFailure, clearMirror, readMirror, shouldOfferRecovery, writeMirror, type SaveState } from "@/lib/inspections/autosave";
 import { getInspectionCopy, type Copy } from "@/lib/inspections/messages";
 import { useInspectionKeys } from "@/lib/inspections/session";
@@ -19,6 +20,7 @@ import { clientGaps, discrepancy, emptyReport, fill, GAP_STEP, isProgressType, n
 import { fetchMilestones } from "@/lib/projects/milestones-api";
 import { useWorkspaceLocale } from "@/lib/i18n/workspace-locale";
 
+import { AiEvidenceCheck } from "./ai/ai-evidence-check";
 import { EvidencePanel } from "./evidence-panel";
 import { EmptyState, ErrorState, Field, Skeletons, errorText } from "./inspection-ui";
 
@@ -237,6 +239,12 @@ export function ReportEditor({ id }: { id: string }) {
 
             {step === "observations" ? (
               <>
+                {(d.aiAssistRefs?.length ?? 0) > 0 ? (
+                  <div className="ctr-badge" data-tone="active" style={{ width: "fit-content", marginBottom: "0.6rem" }}>
+                    <SparklesIcon aria-hidden="true" style={{ width: "0.9rem", height: "0.9rem" }} />
+                    <span>{getInspectionAiCopy(locale).assistMarkerBadge}</span>
+                  </div>
+                ) : null}
                 <Field label={copy.report.siteObservations}>{(fid) => <textarea id={fid} className="ctr-input" style={{ minHeight: "7rem" }} maxLength={4000} value={report.siteObservations ?? ""} onChange={(e) => change((r) => ({ ...r, siteObservations: e.target.value }))} />}</Field><Counter value={report.siteObservations} max={4000} copy={copy} />
                 <Field label={copy.report.workObservations}>{(fid) => <textarea id={fid} className="ctr-input" style={{ minHeight: "7rem" }} maxLength={4000} value={report.workCompletionObservations ?? ""} onChange={(e) => change((r) => ({ ...r, workCompletionObservations: e.target.value }))} />}</Field><Counter value={report.workCompletionObservations} max={4000} copy={copy} />
                 <Field label={copy.report.safetyObservations}>{(fid) => <textarea id={fid} className="ctr-input" style={{ minHeight: "6rem" }} maxLength={3000} value={report.safetyObservations ?? ""} onChange={(e) => change((r) => ({ ...r, safetyObservations: e.target.value }))} />}</Field><Counter value={report.safetyObservations} max={3000} copy={copy} />
@@ -263,7 +271,27 @@ export function ReportEditor({ id }: { id: string }) {
             ) : null}
 
             {step === "evidence" ? (
-              <EvidencePanel inspectionId={id} evidence={d.evidence} editable copy={copy} locale={locale} items={evidenceItems} defects={report.defects.map((x) => ({ key: x.key, title: x.title }))} onChanged={refetchDetail} onBusyChange={setUploading} />
+              <div style={{ display: "grid", gap: "1rem" }}>
+                <EvidencePanel inspectionId={id} evidence={d.evidence} editable copy={copy} locale={locale} items={evidenceItems} defects={report.defects.map((x) => ({ key: x.key, title: x.title }))} onChanged={refetchDetail} onBusyChange={setUploading} />
+                <AiEvidenceCheck
+                  mode="editor"
+                  inspectionId={id}
+                  evidence={d.evidence}
+                  inspectionCopy={copy}
+                  locale={locale}
+                  onInsertedTexts={(texts) => {
+                    if (texts.length === 0) return;
+                    change((r) => ({
+                      ...r,
+                      workCompletionObservations: [r.workCompletionObservations?.trim(), ...texts]
+                        .filter(Boolean)
+                        .join("\n\n"),
+                    }));
+                    refetchDetail();
+                    setStep("observations");
+                  }}
+                />
+              </div>
             ) : null}
 
             {step === "progress" ? (
