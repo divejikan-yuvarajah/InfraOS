@@ -8,6 +8,7 @@ import { parseStrict } from "../contractors/contractor.schema.js";
 import { requireAuthenticated } from "../identity/auth/require-authenticated.js";
 import { requireAnyPermission, requirePermission } from "../identity/authorization/require-permission.js";
 import { getAiStatusLite } from "./governance/ai-status.service.js";
+import { aiGovernanceRouter } from "./governance/ai-governance.routes.js";
 import { copilotRouter } from "./copilot/copilot.routes.js";
 import { aiStatus, bulkReprocess, cancelDocumentJob, diagnosticSearch, getDocumentAi, listChunks, listJobs, processingSummary, reindex, reprocessDocument } from "./ai.service.js";
 import { askQuestion } from "./rag/rag.service.js";
@@ -57,6 +58,7 @@ aiDocumentRouter.get("/:id/ai/chunks", ...auth, requirePermission("document.read
 
 /** Mounted at /api/v1/ai. */
 export const aiRouter = Router();
+aiRouter.use(aiGovernanceRouter);
 aiRouter.use("/copilot", copilotRouter);
 aiRouter.get("/processing/summary", ...auth, requirePermission("document.process"), read, handle({}, async (req, res, actor) => { reply(res, req, await processingSummary(actor)); }));
 aiRouter.get("/processing/jobs", ...auth, requirePermission("document.process"), read, handle({}, async (req, res, actor) => {

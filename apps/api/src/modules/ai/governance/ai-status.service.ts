@@ -39,10 +39,12 @@ export async function getAiStatusLite(agencyId?: string): Promise<AiStatusLite> 
       continue;
     }
 
-    // 3. Daily usage checks
-    const featureRollup = rollups.find((r) => r.feature === feature);
+    // 3. Daily usage checks (check scoped rollups separately so PLATFORM + agency aren't double-counted)
+    const primaryScope = agencyId ?? "PLATFORM";
+    const scopedRollups = rollups.filter((r) => r.scope === primaryScope);
+    const featureRollups = scopedRollups.filter((r) => r.feature === feature);
     const agencyLimit = settings.agencyRequestsPerDay[feature] ?? 2000;
-    const requestsUsed = featureRollup?.requests ?? 0;
+    const requestsUsed = featureRollups.reduce((acc, r) => acc + (r.requests ?? 0), 0);
 
     if (requestsUsed >= agencyLimit) {
       statuses[feature] = "unavailable";
@@ -54,10 +56,15 @@ export async function getAiStatusLite(agencyId?: string): Promise<AiStatusLite> 
       continue;
     }
 
-    // 4. Token budget checks
+    // 4. Token budget checks (take max of agency scope vs platform scope)
     const tierBudget = settings.dailyTokenBudget[tier] ?? 1_000_000;
-    const tierRollups = rollups.filter((r) => r.tier === tier);
-    const tokensUsed = tierRollups.reduce((acc, r) => acc + (r.inputTokens ?? 0) + (r.outputTokens ?? 0), 0);
+    const agencyTokens = scopedRollups
+      .filter((r) => r.tier === tier)
+      .reduce((acc, r) => acc + (r.inputTokens ?? 0) + (r.outputTokens ?? 0), 0);
+    const platformTokens = rollups
+      .filter((r) => r.scope === "PLATFORM" && r.tier === tier)
+      .reduce((acc, r) => acc + (r.inputTokens ?? 0) + (r.outputTokens ?? 0), 0);
+    const tokensUsed = Math.max(agencyTokens, platformTokens);
 
     if (tokensUsed >= tierBudget) {
       statuses[feature] = "unavailable";

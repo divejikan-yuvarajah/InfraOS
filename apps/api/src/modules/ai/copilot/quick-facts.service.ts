@@ -103,7 +103,7 @@ export async function getQuickFacts(
   }
 
   // Portfolio view
-  const query: Record<string, any> = {};
+  const query: mongoose.FilterQuery<Record<string, unknown>> = {};
   if (agencyId) query.agencyId = new mongoose.Types.ObjectId(agencyId);
 
   const [projectCount, riskyCount] = await Promise.all([

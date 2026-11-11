@@ -5,7 +5,7 @@ import type {
   CopilotStepDto,
   CopilotToolResult,
 } from "@infraos/shared-types";
-import type { AuthenticatedActor, CopilotPlannerStep } from "./copilot.types.js";
+import type { AuthenticatedActor } from "./copilot.types.js";
 import { COPILOT_TOOLS } from "./tool-registry.js";
 import { addToProvenancePool, validateArgsProvenance } from "./id-provenance.js";
 import {
@@ -97,7 +97,7 @@ export async function runCopilotPlanner(params: RunPlannerParams): Promise<Plann
   const toolResultsForLlm: Array<{
     callId: string;
     tool: string;
-    facts: any[];
+    facts: CopilotFact[];
     status: "OK" | "DENIED" | "NOT_FOUND" | "UNAVAILABLE" | "ERROR";
   }> = [];
 
@@ -137,7 +137,7 @@ export async function runCopilotPlanner(params: RunPlannerParams): Promise<Plann
       totalInputTokens += stepResponse.usage.inputTokens;
       totalOutputTokens += stepResponse.usage.outputTokens;
       usedModel = stepResponse.model;
-    } catch (err: any) {
+    } catch {
       // In local/stub mode without running FastAPI, fallback gracefully to quick facts
       const fallbackResult = await COPILOT_TOOLS.get_project_summary!.run(
         params.actor,
@@ -214,7 +214,7 @@ export async function runCopilotPlanner(params: RunPlannerParams): Promise<Plann
           callId: call.id,
           tool: call.tool,
           status: "ERROR",
-          facts: [{ label: "error", value: `Tool ${call.tool} does not exist.` }],
+          facts: [{ id: "T.unknown", label: "error", value: `Tool ${call.tool} does not exist.` }],
         });
         continue;
       }
@@ -237,13 +237,37 @@ export async function runCopilotPlanner(params: RunPlannerParams): Promise<Plann
           callId: call.id,
           tool: call.tool,
           status: "DENIED",
-          facts: [{ label: "denied", value: "You do not have permission to access this data." }],
+          facts: [{ id: "T.denied", label: "denied", value: "You do not have permission to access this data." }],
+        });
+        continue;
+      }
+
+      // Check strict Zod args validation
+      const parsedArgs = toolDef.argsSchema.safeParse(call.args ?? {});
+      if (!parsedArgs.success) {
+        const toolStep: CopilotStepDto = {
+          at: new Date().toISOString(),
+          kind: "TOOL",
+          tool: call.tool,
+          status: "ERROR",
+          labelKey: "copilot.step.invalid_tool_args",
+          durationMs: Date.now() - toolStart,
+        };
+        steps.push(toolStep);
+        await params.onStep?.(toolStep);
+
+        toolResultsForLlm.push({
+          callId: call.id,
+          tool: call.tool,
+          status: "ERROR",
+          facts: [{ id: "T.err", label: "error", value: "Invalid tool arguments" }],
         });
         continue;
       }
 
       // Check ID provenance
-      const provenanceCheck = validateArgsProvenance(call.args || {}, provenancePool);
+      const validatedArgs = parsedArgs.data as Record<string, unknown>;
+      const provenanceCheck = validateArgsProvenance(validatedArgs, provenancePool);
       if (!provenanceCheck.valid) {
         const toolStep: CopilotStepDto = {
           at: new Date().toISOString(),
@@ -260,7 +284,7 @@ export async function runCopilotPlanner(params: RunPlannerParams): Promise<Plann
           callId: call.id,
           tool: call.tool,
           status: "DENIED",
-          facts: [{ label: "denied", value: `Querying unprovenanced identifier '${provenanceCheck.unprovenancedId}' is denied.` }],
+          facts: [{ id: "T.denied", label: "denied", value: `Querying unprovenanced identifier '${provenanceCheck.unprovenancedId}' is denied.` }],
         });
         continue;
       }
@@ -274,17 +298,18 @@ export async function runCopilotPlanner(params: RunPlannerParams): Promise<Plann
         );
 
         toolRes = await Promise.race([
-          toolDef.run(params.actor, call.args || {}, {
+          toolDef.run(params.actor, validatedArgs, {
             requestId: params.requestId,
             provenancePool,
             permissions: params.actor.permissions || [],
           }),
           timeoutPromise,
         ]);
-      } catch (err: any) {
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : "Tool execution failed";
         toolRes = {
           status: "ERROR",
-          facts: [{ id: "T.err", label: "error", value: err.message || "Tool execution failed" }],
+          facts: [{ id: "T.err", label: "error", value: message }],
         };
       }
 
@@ -306,8 +331,10 @@ export async function runCopilotPlanner(params: RunPlannerParams): Promise<Plann
       const cappedFacts = (toolRes.facts || []).slice(0, MAX_FACTS_PER_TOOL);
       addToProvenancePool(provenancePool, { facts: cappedFacts });
 
+      const argProjectId = typeof validatedArgs.projectId === "string" ? validatedArgs.projectId : undefined;
+      const argAssetId = typeof validatedArgs.assetId === "string" ? validatedArgs.assetId : undefined;
       for (const fact of cappedFacts) {
-        const link = toolDef.link(fact.ref?.id || (call.args as any)?.projectId || (call.args as any)?.assetId);
+        const link = toolDef.link(fact.ref?.id || argProjectId || argAssetId);
         executedFacts.push({
           n: factCounter++,
           fact,

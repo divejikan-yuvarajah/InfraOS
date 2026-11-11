@@ -26,7 +26,7 @@ export function mapAiFailure(
     scope?: "USER" | "AGENCY" | "PLATFORM" | "FEATURE";
     retryAfterSeconds?: number;
     resetsAt?: Date;
-    details?: any;
+    details?: Record<string, unknown>;
   },
 ): UserSafeAiFailure {
   const code = (rawCode || "").toUpperCase();

@@ -1,6 +1,5 @@
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from "vitest";
 import request from "supertest";
-import mongoose from "mongoose";
 import { createApp } from "../src/app.js";
 import { env } from "../src/config/env.js";
 import { signAccessToken } from "../src/modules/identity/auth/jwt.js";

@@ -1,6 +1,5 @@
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from "vitest";
 import request from "supertest";
-import mongoose from "mongoose";
 import { createApp } from "../../src/app.js";
 import { env } from "../../src/config/env.js";
 import { signAccessToken } from "../../src/modules/identity/auth/jwt.js";
@@ -144,7 +143,7 @@ describe("AI Security & Red-Team Fixtures (Step 127)", () => {
     );
 
     expect(toolRes.status).toBe("OK");
-    const budgetFact = toolRes.facts.find((f: any) => f.label === "budget");
+    const budgetFact = toolRes.facts.find((f) => f.label === "budget");
     expect(budgetFact?.redacted).toBe(true);
     expect(budgetFact?.value).toContain("[REDACTED");
   });

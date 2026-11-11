@@ -144,13 +144,51 @@ export function getPlatformDefaults(): EffectiveAiSettings {
   };
 }
 
+export type AiSettingsOverridesInput = {
+  featureToggles?: {
+    qaEnabled?: boolean | null;
+    summaryEnabled?: boolean | null;
+    extractionEnabled?: boolean | null;
+    riskNarrativeEnabled?: boolean | null;
+    visionEnabled?: boolean | null;
+    copilotEnabled?: boolean | null;
+    embeddingEnabled?: boolean | null;
+  } | null;
+  limits?: {
+    userRequestsPer10Min?: Partial<Record<AiFeatureKey, number | null>> | null;
+    agencyRequestsPerDay?: Partial<Record<AiFeatureKey, number | null>> | null;
+    concurrencyPerUser?: number | null;
+    copilotMaxMessageLength?: number | null;
+    visionMaxImages?: number | null;
+  } | null;
+  budgets?: {
+    dailyTokenBudget?: Partial<Record<AiModelTier, number | null>> | null;
+    monthlyTokenBudget?: Partial<Record<AiModelTier, number | null>> | null;
+    dailyVisionImages?: number | null;
+  } | null;
+  modelCatalog?: Partial<Record<AiModelTier, {
+    modelId?: string | null;
+    verifiedAt?: Date | string | null;
+    source?: "admin-entered" | "provider-listing" | null;
+    pricePerMInputMinor?: number | null;
+    pricePerMOutputMinor?: number | null;
+    pricePerImageMinor?: number | null;
+  } | null>> | null;
+  routing?: {
+    strongSummaryInputThreshold?: number | null;
+    autoDowngradeAtBudgetPercent?: number | null;
+  } | null;
+  updatedBy?: unknown;
+  version?: number | null;
+};
+
 /**
  * Resolves effective settings: most restrictive of platform and agency.
  * An agency can lower limits or disable features, but can never enable what platform disabled or raise limits.
  */
 export function resolveEffectiveSettings(
-  platformDoc?: any,
-  agencyDoc?: any,
+  platformDoc?: AiSettingsOverridesInput | null,
+  agencyDoc?: AiSettingsOverridesInput | null,
 ): EffectiveAiSettings {
   const base = getPlatformDefaults();
 
@@ -160,7 +198,7 @@ export function resolveEffectiveSettings(
       for (const k of Object.keys(DEFAULT_FEATURE_TOGGLES) as AiFeatureKey[]) {
         const toggleKey = `${k}Enabled` as const;
         if (typeof platformDoc.featureToggles[toggleKey] === "boolean") {
-          base.featureToggles[k] = platformDoc.featureToggles[toggleKey];
+          base.featureToggles[k] = platformDoc.featureToggles[toggleKey]!;
         }
       }
     }
@@ -200,9 +238,9 @@ export function resolveEffectiveSettings(
             modelId: entry.modelId,
             verifiedAt: entry.verifiedAt ? new Date(entry.verifiedAt) : undefined,
             source: entry.source || "admin-entered",
-            pricePerMInputMinor: entry.pricePerMInputMinor,
-            pricePerMOutputMinor: entry.pricePerMOutputMinor,
-            pricePerImageMinor: entry.pricePerImageMinor,
+            pricePerMInputMinor: entry.pricePerMInputMinor ?? undefined,
+            pricePerMOutputMinor: entry.pricePerMOutputMinor ?? undefined,
+            pricePerImageMinor: entry.pricePerImageMinor ?? undefined,
           };
         }
       }

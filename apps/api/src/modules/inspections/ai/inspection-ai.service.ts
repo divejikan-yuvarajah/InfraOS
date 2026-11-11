@@ -1,18 +1,17 @@
 import { createHash } from "node:crypto";
 import mongoose from "mongoose";
 
-import { env } from "../../../config/env.js";
-import { AuditLog } from "../../audit/models/audit-log.model.js";
+import { writeAiAudit } from "../../ai/ai.audit.js";
 import { Project } from "../../projects/models/project.model.js";
 import { Milestone } from "../../projects/models/milestone.model.js";
 import { ProgressVerification } from "../models/progress-verification.model.js";
-import { Inspection, type InspectionDocument } from "../models/inspection.model.js";
-import { InspectionEvidence, type InspectionEvidenceDocument } from "../models/inspection-evidence.model.js";
-import { InspectionAiAnalysis, nextAnalysisNo, type InspectionAiAnalysisDocument } from "./models/inspection-ai-analysis.model.js";
+import { Inspection } from "../models/inspection.model.js";
+import { InspectionEvidence } from "../models/inspection-evidence.model.js";
+import { InspectionAiAnalysis, nextAnalysisNo } from "./models/inspection-ai-analysis.model.js";
 import { getEvidenceStorage, storageKeyFor } from "../evidence-storage.js";
 import { checkGate, recordGate, loadEffectiveSettings } from "../../ai/governance/ai-gate.js";
 import { runDeterministicQualityChecks } from "./quality-checks.js";
-import { verifyVisionOutput } from "./vision-verify.js";
+import { verifyVisionOutput, type RawVisionOutput } from "./vision-verify.js";
 import { aiClient } from "../../ai/ai-client.js";
 import type { AuthenticatedActor } from "../../identity/auth/require-authenticated.js";
 
@@ -54,8 +53,12 @@ export type InspectionRoleCheck = {
 };
 
 export function checkInspectionRole(
-  inspection: InspectionDocument,
-  actor: AuthenticatedActor,
+  inspection: {
+    inspectorId?: mongoose.Types.ObjectId | null;
+    status: string;
+    submissions?: ReadonlyArray<{ submittedBy?: mongoose.Types.ObjectId | null }>;
+  },
+  actor: Pick<AuthenticatedActor, "userId">,
   permissions: readonly string[],
 ): InspectionRoleCheck {
   const isAssignedInspector =
@@ -294,14 +297,15 @@ export async function requestVisionAnalysis(
     inspectorReview: { status: "PENDING", decisions: {} },
   });
 
-  await AuditLog.create({
+  await writeAiAudit(undefined, {
     action: "ai.vision_analysis_requested",
-    actorUserId: new mongoose.Types.ObjectId(actor.userId),
-    resourceType: "Inspection",
+    actorUserId: actor.userId,
+    resourceType: "INSPECTION",
     resourceId: inspection._id,
     agencyId: inspection.agencyId,
-    afterSnapshot: { analysisNo, evidenceCount: evidenceDocs.length, status: "RUNNING" },
-    metadata: { requestId },
+    status: "RUNNING",
+    reason: analysisNo,
+    requestId,
   }).catch(() => undefined);
 
   // Read images and convert to base64 data URLs
@@ -329,7 +333,7 @@ export async function requestVisionAnalysis(
         });
       }
     }
-  } catch (err) {
+  } catch {
     analysisRow.status = "FAILED";
     analysisRow.errorCode = "EVIDENCE_READ_ERROR";
     await analysisRow.save();
@@ -346,7 +350,7 @@ export async function requestVisionAnalysis(
   }
 
   const contextData = {
-    projectType: (project as any)?.projectType ?? "ROAD",
+    projectType: project?.projectType ?? "ROAD",
     inspectionType: inspection.inspectionType ?? "PROGRESS_VERIFICATION",
     milestones: milestones.map((m) => ({
       title: m.title.slice(0, 200),
@@ -367,13 +371,13 @@ export async function requestVisionAnalysis(
     });
 
     const verifiedResult = verifyVisionOutput({
-      raw: response.output as any,
+      raw: response.output as RawVisionOutput,
       imageCount: imageInputs.length,
       allowedPercentages,
     });
 
     analysisRow.status = "READY";
-    analysisRow.result = verifiedResult as any;
+    analysisRow.set("result", verifiedResult);
     analysisRow.set("model", response.model);
     analysisRow.usage = {
       inputTokens: response.usage.inputTokens,
@@ -398,31 +402,34 @@ export async function requestVisionAnalysis(
       },
     }).catch(() => undefined);
 
-    await AuditLog.create({
+    await writeAiAudit(undefined, {
       action: "ai.vision_analysis_completed",
-      actorUserId: new mongoose.Types.ObjectId(actor.userId),
-      resourceType: "Inspection",
+      actorUserId: actor.userId,
+      resourceType: "INSPECTION",
       resourceId: inspection._id,
       agencyId: inspection.agencyId,
-      afterSnapshot: { analysisNo, status: "READY", droppedStatements: verifiedResult.droppedStatements },
-      metadata: { requestId },
+      status: "READY",
+      reason: analysisNo,
+      requestId,
     }).catch(() => undefined);
 
     return { status: 202, analysis: analysisRow };
-  } catch (err: any) {
+  } catch (err: unknown) {
     // If AI service fails, analysisRow is marked FAILED; inspection workflow remains unaffected
+    const errCode = (err as { code?: string } | null)?.code;
     analysisRow.status = "FAILED";
-    analysisRow.errorCode = err?.code ?? "AI_UNAVAILABLE";
+    analysisRow.errorCode = typeof errCode === "string" ? errCode : "AI_UNAVAILABLE";
     await analysisRow.save();
 
-    await AuditLog.create({
+    await writeAiAudit(undefined, {
       action: "ai.vision_analysis_failed",
-      actorUserId: new mongoose.Types.ObjectId(actor.userId),
-      resourceType: "Inspection",
+      actorUserId: actor.userId,
+      resourceType: "INSPECTION",
       resourceId: inspection._id,
       agencyId: inspection.agencyId,
-      afterSnapshot: { analysisNo, status: "FAILED", errorCode: analysisRow.errorCode },
-      metadata: { requestId },
+      status: "FAILED",
+      reason: String(analysisRow.errorCode || "AI_UNAVAILABLE"),
+      requestId,
     }).catch(() => undefined);
 
     return { status: 202, analysis: analysisRow };
@@ -521,14 +528,15 @@ export async function reviewVisionAnalysis(
 
   await analysis.save();
 
-  await AuditLog.create({
+  await writeAiAudit(undefined, {
     action: "ai.vision_analysis_reviewed",
-    actorUserId: new mongoose.Types.ObjectId(actor.userId),
-    resourceType: "Inspection",
+    actorUserId: actor.userId,
+    resourceType: "INSPECTION",
     resourceId: inspection._id,
     agencyId: inspection.agencyId,
-    afterSnapshot: { analysisNo: analysis.analysisNo, status: "REVIEWED", decisionCount: Object.keys(input.decisions).length },
-    metadata: { requestId },
+    status: "REVIEWED",
+    reason: analysis.analysisNo,
+    requestId,
   }).catch(() => undefined);
 
   return { analysis };
@@ -568,14 +576,25 @@ export async function insertVisionObservations(
     throw new InspectionAiFlowError(404, "NOT_FOUND");
   }
 
-  const reviewDecisions = analysis.inspectorReview?.decisions;
+  const reviewDecisions: unknown = analysis.inspectorReview?.decisions;
+  const getDecision = (key: string): { decision?: string; comment?: string | null } | undefined => {
+    if (!reviewDecisions || typeof reviewDecisions !== "object") return undefined;
+    if (reviewDecisions instanceof Map) {
+      return reviewDecisions.get(key) as { decision?: string; comment?: string | null } | undefined;
+    }
+    const maybeRecord = reviewDecisions as Record<string, { decision?: string; comment?: string | null } | undefined>;
+    return maybeRecord[key];
+  };
   const insertedObservations: Array<{ key: string; text: string }> = [];
-  const assistRefsToAdd: any[] = [];
+  const assistRefsToAdd: Array<{
+    analysisId: mongoose.Types.ObjectId;
+    observationKey: string;
+    insertedBy: mongoose.Types.ObjectId;
+    insertedAt: Date;
+  }> = [];
 
   for (const key of input.keys) {
-    const dec = (reviewDecisions instanceof Map || (reviewDecisions && typeof (reviewDecisions as any).get === "function"))
-      ? (reviewDecisions as any).get(key)
-      : (reviewDecisions as any)?.[key];
+    const dec = getDecision(key);
     // HARD RULE: Only items the inspector explicitly CONFIRMED can be inserted
     if (!dec || dec.decision !== "CONFIRMED") {
       continue;
@@ -613,18 +632,19 @@ export async function insertVisionObservations(
   if (assistRefsToAdd.length > 0) {
     const currentRefs = inspection.aiAssistRefs ?? [];
     const combined = [...currentRefs, ...assistRefsToAdd].slice(-20);
-    inspection.aiAssistRefs = combined as any;
+    inspection.set("aiAssistRefs", combined);
     await inspection.save();
   }
 
-  await AuditLog.create({
+  await writeAiAudit(undefined, {
     action: "ai.vision_observations_inserted",
-    actorUserId: new mongoose.Types.ObjectId(actor.userId),
-    resourceType: "Inspection",
+    actorUserId: actor.userId,
+    resourceType: "INSPECTION",
     resourceId: inspection._id,
     agencyId: inspection.agencyId,
-    afterSnapshot: { analysisNo: analysis.analysisNo, insertedCount: insertedObservations.length },
-    metadata: { requestId },
+    status: "INSERTED",
+    reason: analysis.analysisNo,
+    requestId,
   }).catch(() => undefined);
 
   return {

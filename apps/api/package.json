@@ -23,6 +23,8 @@
     "db:sync:asset-permissions": "tsx src/scripts/sync-asset-permissions.ts",
     "db:sync:document-permissions": "tsx src/scripts/sync-document-permissions.ts",
     "db:sync:risk-permissions": "tsx src/scripts/sync-risk-permissions.ts",
+    "db:sync:copilot-permissions": "tsx src/scripts/sync-copilot-permissions.ts",
+    "ai:models:check": "tsx src/scripts/ai-models-check.ts",
     "risk:migrate": "tsx src/scripts/migrate-risk-batch11.ts",
     "risk:smoke": "tsx src/scripts/risk-smoke.ts",
     "risk:demo-sequence": "tsx src/scripts/risk-demo-sequence.ts",

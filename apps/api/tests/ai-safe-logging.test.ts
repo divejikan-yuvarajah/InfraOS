@@ -1,6 +1,10 @@
 import { describe, it, expect } from "vitest";
 import fs from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const apiRoot = path.resolve(__dirname, "..");
 
 function walkTsFiles(dir: string): string[] {
   const results: string[] = [];
@@ -19,8 +23,8 @@ function walkTsFiles(dir: string): string[] {
 
 describe("AI Safe Logging Static Guarantee (Step 127)", () => {
   it("ensures no console.log or logger call in AI modules logs sensitive prompt, message, answer, image, or secret payloads", () => {
-    const aiDir = path.resolve(process.cwd(), "apps/api/src/modules/ai");
-    const inspAiDir = path.resolve(process.cwd(), "apps/api/src/modules/inspections/ai");
+    const aiDir = path.join(apiRoot, "src/modules/ai");
+    const inspAiDir = path.join(apiRoot, "src/modules/inspections/ai");
     const files = [...walkTsFiles(aiDir), ...walkTsFiles(inspAiDir)];
 
     expect(files.length).toBeGreaterThan(5);

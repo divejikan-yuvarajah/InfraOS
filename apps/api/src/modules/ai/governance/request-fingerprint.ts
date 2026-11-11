@@ -11,8 +11,8 @@ type CachedEntry<T> = {
 };
 
 class RequestDedupeCache {
-  private inFlight = new Map<string, Promise<any>>();
-  private recent = new Map<string, CachedEntry<any>>();
+  private inFlight = new Map<string, Promise<unknown>>();
+  private recent = new Map<string, CachedEntry<unknown>>();
   private readonly ttlMs: number;
 
   constructor(ttlMs = 10 * 60 * 1000) {
@@ -40,7 +40,7 @@ class RequestDedupeCache {
     const cached = this.getRecent<T>(fingerprint);
     if (cached !== undefined) return cached;
 
-    const existing = this.inFlight.get(fingerprint);
+    const existing = this.inFlight.get(fingerprint) as Promise<T> | undefined;
     if (existing) return existing;
 
     const promise = (async () => {

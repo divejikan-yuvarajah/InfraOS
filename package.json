@@ -38,6 +38,7 @@
     "risk:smoke": "npm run risk:smoke -w @infraos/api",
     "risk:demo-sequence": "npm run risk:demo-sequence -w @infraos/api",
     "ai:smoke": "npm run ai:smoke -w @infraos/api",
+    "ai:models:check": "npm run ai:models:check -w @infraos/api",
     "ai:calibrate-retrieval": "npm run ai:calibrate-retrieval -w @infraos/api",
     "ai:demo-ask": "npm run ai:demo-ask -w @infraos/api",
     "ai:demo-process": "npm run ai:demo-process -w @infraos/api"

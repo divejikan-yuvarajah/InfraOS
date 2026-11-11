@@ -1,5 +1,4 @@
 import type {
-  CopilotAnswerDto,
   CopilotClaimDto,
   CopilotEvidenceSummaryDto,
   CopilotFact,
@@ -38,7 +37,7 @@ export type GroundedCopilotAnswer = {
 function sanitizeClaimText(text: string): string {
   return text
     .replace(/<[^>]*>/g, "")
-    .replace(/!?\[[^\]]*\]\(https?:\/\/[^\)]+\)/gi, "") // strip markdown links and image exfiltration
+    .replace(/!?\[[^\]]*\]\(https?:\/\/[^)]+\)/gi, "") // strip markdown links and image exfiltration
     .replace(/https?:\/\/\S+/gi, "") // strip raw external URLs
     .replace(/\s+/g, " ")
     .trim();

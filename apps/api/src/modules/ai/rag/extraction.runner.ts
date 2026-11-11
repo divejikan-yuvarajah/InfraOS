@@ -4,7 +4,6 @@ import { Document } from "../../documents/models/document.model.js";
 import { writeAiAudit } from "../ai.audit.js";
 import { aiClient } from "../ai-client.js";
 import { chatBudgetState } from "../processing/budget.js";
-import { AiUsageRecord } from "../usage.model.js";
 import { recordGate } from "../governance/ai-gate.js";
 import { ArtifactError, Stop, beat, type RunnerDeps } from "./artifact-runner.js";
 import { AiArtifact, type AiArtifactDocument } from "./artifact.model.js";
@@ -62,7 +61,7 @@ export async function runExtraction(a: AiArtifactDocument, workerId: string, dep
     actor: { userId: String(a.requestedBy), agencyId: String(a.agencyId) },
     agencyId: String(a.agencyId),
     feature: "extraction",
-    tier: Boolean(tpl.useStrongModel) ? "STRONG" : "LOW",
+    tier: tpl.useStrongModel ? "STRONG" : "LOW",
     model: res.model,
     actual: {
       inputTokens: usage.inputTokens,

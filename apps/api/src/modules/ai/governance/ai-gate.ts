@@ -6,6 +6,7 @@ import { AiUsageDaily } from "./usage-daily.model.js";
 import { AiRateBucket } from "./rate-bucket.model.js";
 import {
   colomboDayString,
+  colomboMonthString,
   DEFAULT_COST_UNITS,
   nextColomboMidnight,
   resolveEffectiveSettings,
@@ -97,7 +98,7 @@ export function releaseUserConcurrency(userId: string, feature: AiFeatureKey): v
 }
 
 export async function loadEffectiveSettings(agencyId?: string): Promise<EffectiveAiSettings & { hasCustomDbOverrides?: boolean }> {
-  const query: any[] = [{ scope: "PLATFORM" }];
+  const query: mongoose.FilterQuery<Record<string, unknown>>[] = [{ scope: "PLATFORM" }];
   if (agencyId && mongoose.Types.ObjectId.isValid(agencyId)) {
     query.push({ scope: "AGENCY", agencyId: new mongoose.Types.ObjectId(agencyId) });
   }
@@ -136,12 +137,11 @@ export async function checkGate(params: GateCheckParams): Promise<GateDecision> 
   // Check budget usage for soft downgrade STRONG -> LOW
   if (tier === "STRONG") {
     const today = colomboDayString();
-    const strongUsage = await AiUsageDaily.findOne({
-      day: today,
-      scope: agencyId ?? "PLATFORM",
-      tier: "STRONG",
-    }).lean().catch(() => null);
-    const used = (strongUsage?.inputTokens ?? 0) + (strongUsage?.outputTokens ?? 0);
+    const strongAgg = await AiUsageDaily.aggregate<{ tokens: number }>([
+      { $match: { day: today, scope: agencyId ?? "PLATFORM", tier: "STRONG" } },
+      { $group: { _id: null, tokens: { $sum: { $add: ["$inputTokens", "$outputTokens"] } } } },
+    ]).catch(() => []);
+    const used = strongAgg[0]?.tokens ?? 0;
     if (shouldDowngradeTier("STRONG", used, settings)) {
       tier = "LOW";
     }
@@ -207,23 +207,24 @@ export async function checkGate(params: GateCheckParams): Promise<GateDecision> 
         },
       };
     }
-  } catch (err) {
+  } catch {
     // If rate bucket write fails (e.g. temporary DB blip), do not fail closed completely on rate bucket unless critical
   }
 
   // 5. Daily Agency limits & Budgets
   const today = colomboDayString();
+  const monthPrefix = colomboMonthString();
   const resetsAt = nextColomboMidnight();
 
   if (agencyId) {
-    const dailyRollup = await AiUsageDaily.findOne({
-      day: today,
-      scope: agencyId,
-      feature: params.feature,
-    }).lean().catch(() => null);
+    const featureReqAgg = await AiUsageDaily.aggregate<{ totalRequests: number }>([
+      { $match: { day: today, scope: agencyId, feature: params.feature } },
+      { $group: { _id: null, totalRequests: { $sum: "$requests" } } },
+    ]).catch(() => []);
 
     const agencyLimit = settings.agencyRequestsPerDay[params.feature] ?? 2000;
-    if (dailyRollup && dailyRollup.requests >= agencyLimit) {
+    const requestsUsed = featureReqAgg[0]?.totalRequests ?? 0;
+    if (requestsUsed >= agencyLimit) {
       releaseUserConcurrency(params.actor.userId, params.feature);
       return {
         allow: false,
@@ -239,20 +240,27 @@ export async function checkGate(params: GateCheckParams): Promise<GateDecision> 
     }
   }
 
-  // Budget checks for tier
+  // Daily & Monthly Token Budget checks for tier
   const tierBudget = settings.dailyTokenBudget[tier] ?? 1_000_000;
+  const monthlyBudget = settings.monthlyTokenBudget[tier] ?? 25_000_000;
   const scopesToCheck = agencyId ? [agencyId, "PLATFORM"] : ["PLATFORM"];
   let totalUsed = 0;
+  let totalMonthlyUsed = 0;
   for (const sc of scopesToCheck) {
-    const tierRollup = await AiUsageDaily.findOne({
-      day: today,
-      scope: sc,
-      tier,
-    }).lean().catch(() => null);
-    if (tierRollup) {
-      const u = (tierRollup.inputTokens ?? 0) + (tierRollup.outputTokens ?? 0);
-      if (u > totalUsed) totalUsed = u;
-    }
+    const [dailyAgg, monthlyAgg] = await Promise.all([
+      AiUsageDaily.aggregate<{ tokens: number }>([
+        { $match: { day: today, scope: sc, tier } },
+        { $group: { _id: null, tokens: { $sum: { $add: ["$inputTokens", "$outputTokens"] } } } },
+      ]).catch(() => []),
+      AiUsageDaily.aggregate<{ tokens: number }>([
+        { $match: { scope: sc, day: { $regex: `^${monthPrefix}-` }, tier } },
+        { $group: { _id: null, tokens: { $sum: { $add: ["$inputTokens", "$outputTokens"] } } } },
+      ]).catch(() => []),
+    ]);
+    const u = dailyAgg[0]?.tokens ?? 0;
+    if (u > totalUsed) totalUsed = u;
+    const mu = monthlyAgg[0]?.tokens ?? 0;
+    if (mu > totalMonthlyUsed) totalMonthlyUsed = mu;
   }
 
   const pending = (params.estimate?.inputTokens ?? 0) + (params.estimate?.outputTokens ?? 0);
@@ -267,6 +275,20 @@ export async function checkGate(params: GateCheckParams): Promise<GateDecision> 
         remaining: Math.max(0, tierBudget - totalUsed),
         resetsAt,
         message: `Daily token budget for tier ${tier} exceeded. Resets at midnight.`,
+      },
+    };
+  }
+  if (totalMonthlyUsed + pending > monthlyBudget) {
+    releaseUserConcurrency(params.actor.userId, params.feature);
+    return {
+      allow: false,
+      deny: {
+        code: "AI_BUDGET_EXCEEDED",
+        scope: agencyId ? "AGENCY" : "PLATFORM",
+        limit: monthlyBudget,
+        remaining: Math.max(0, monthlyBudget - totalMonthlyUsed),
+        resetsAt,
+        message: `Monthly token budget for tier ${tier} exceeded.`,
       },
     };
   }
@@ -309,7 +331,7 @@ export async function recordGate(params: GateRecordParams): Promise<void> {
 
   // 1. Insert detailed AiUsageRecord (90-day retention)
   const kind = params.feature === "embedding" ? "EMBEDDING" : params.feature === "vision" ? "VISION" : "CHAT";
-  const purposeMap: Record<AiFeatureKey, any> = {
+  const purposeMap: Record<AiFeatureKey, NonNullable<GateRecordParams["actual"]["purpose"]>> = {
     qa: "QA",
     summary: "SUMMARY_MAP",
     extraction: "EXTRACTION",

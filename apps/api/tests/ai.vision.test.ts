@@ -13,7 +13,7 @@ import { InspectionEvidence } from "../src/modules/inspections/models/inspection
 import { InspectionAiAnalysis } from "../src/modules/inspections/ai/models/inspection-ai-analysis.model.js";
 import { AiSettings } from "../src/modules/ai/governance/settings.model.js";
 import { runDeterministicQualityChecks } from "../src/modules/inspections/ai/quality-checks.js";
-import { verifyVisionOutput } from "../src/modules/inspections/ai/vision-verify.js";
+import { verifyVisionOutput, type RawVisionOutput } from "../src/modules/inspections/ai/vision-verify.js";
 import { checkInspectionRole } from "../src/modules/inspections/ai/inspection-ai.service.js";
 import { signAccessToken } from "../src/modules/identity/auth/jwt.js";
 import { Role } from "../src/modules/identity/models/role.model.js";
@@ -111,14 +111,14 @@ describe("AI Physical Progress Evidence Analysis (Step 124)", () => {
 
   describe("Express output verification and safety screening", () => {
     it("drops statements with unverified percentages not in the context", () => {
-      const raw = {
+      const raw: RawVisionOutput = {
         images: [{ n: 1, activityDescription: "The earthworks appear 85% complete.", visibleWorkIndicators: [] }],
         overall: { consistencyWithReportedStage: "CONSISTENT", rationale: "Progress verified from photo 1." },
       };
 
       // Context only knows about 50% claimed progress
       const verified = verifyVisionOutput({
-        raw: raw as any,
+        raw,
         imageCount: 1,
         allowedPercentages: [50],
       });
@@ -128,7 +128,7 @@ describe("AI Physical Progress Evidence Analysis (Step 124)", () => {
     });
 
     it("drops accusatory/blame words and identifying details", () => {
-      const raw = {
+      const raw: RawVisionOutput = {
         images: [
           {
             n: 1,
@@ -140,7 +140,7 @@ describe("AI Physical Progress Evidence Analysis (Step 124)", () => {
       };
 
       const verified = verifyVisionOutput({
-        raw: raw as any,
+        raw,
         imageCount: 1,
         allowedPercentages: [],
       });
@@ -151,7 +151,7 @@ describe("AI Physical Progress Evidence Analysis (Step 124)", () => {
     });
 
     it("downgrades CONSISTENT to INDETERMINATE under quality issues or single image", () => {
-      const raw = {
+      const raw: RawVisionOutput = {
         images: [
           {
             n: 1,
@@ -165,7 +165,7 @@ describe("AI Physical Progress Evidence Analysis (Step 124)", () => {
 
       // Only 1 image -> must downgrade
       const verified = verifyVisionOutput({
-        raw: raw as any,
+        raw,
         imageCount: 1,
         allowedPercentages: [],
       });
@@ -183,11 +183,11 @@ describe("AI Physical Progress Evidence Analysis (Step 124)", () => {
         inspectorId,
         status: "IN_PROGRESS",
         submissions: [],
-      } as any;
+      };
 
       const inspectorCheck = checkInspectionRole(
         inProgressInsp,
-        { userId: inspectorId.toHexString() } as any,
+        { userId: inspectorId.toHexString() },
         ["inspection.submit"],
       );
       expect(inspectorCheck.eligible).toBe(true);
@@ -197,11 +197,11 @@ describe("AI Physical Progress Evidence Analysis (Step 124)", () => {
         inspectorId,
         status: "SUBMITTED",
         submissions: [{ submittedBy: inspectorId }],
-      } as any;
+      };
 
       const reviewerCheck = checkInspectionRole(
         submittedInsp,
-        { userId: reviewerId.toHexString() } as any,
+        { userId: reviewerId.toHexString() },
         ["inspection.verify"],
       );
       expect(reviewerCheck.eligible).toBe(true);
@@ -210,7 +210,7 @@ describe("AI Physical Progress Evidence Analysis (Step 124)", () => {
       // Submitter cannot review their own submission
       const submitterAsReviewer = checkInspectionRole(
         submittedInsp,
-        { userId: inspectorId.toHexString() } as any,
+        { userId: inspectorId.toHexString() },
         ["inspection.verify"],
       );
       expect(submitterAsReviewer.eligible).toBe(false);

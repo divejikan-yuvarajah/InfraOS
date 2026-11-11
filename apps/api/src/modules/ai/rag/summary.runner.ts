@@ -7,7 +7,6 @@ import { aiConfig } from "../ai.config.js";
 import { aiClient } from "../ai-client.js";
 import type { LlmNote, SummarySection } from "../ai.contracts.js";
 import { chatBudgetState } from "../processing/budget.js";
-import { AiUsageRecord } from "../usage.model.js";
 import { recordGate } from "../governance/ai-gate.js";
 import { ArtifactError, Stop, beat, type RunnerDeps } from "./artifact-runner.js";
 import { AiArtifact, type AiArtifactDocument } from "./artifact.model.js";

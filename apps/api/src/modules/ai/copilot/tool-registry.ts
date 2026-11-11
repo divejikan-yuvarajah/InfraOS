@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import { z } from "zod";
-import type { CopilotFact, CopilotToolResult } from "@infraos/shared-types";
-import type { AuthenticatedActor, CopilotToolDefinition, ToolRunContext } from "./copilot.types.js";
+import type { CopilotFact } from "@infraos/shared-types";
+import { defineCopilotTool, type AuthenticatedActor, type CopilotToolDefinition } from "./copilot.types.js";
 import { Project } from "../../projects/models/project.model.js";
 import { Milestone } from "../../projects/models/milestone.model.js";
 import { ProgressVerification } from "../../inspections/models/progress-verification.model.js";
@@ -24,8 +24,8 @@ function canAccessAgency(actor: AuthenticatedActor, targetAgencyId?: string | mo
   return targetAgencyId.toString() === actor.agencyId;
 }
 
-export const COPILOT_TOOLS: Record<string, CopilotToolDefinition<any>> = {
-  search_projects: {
+export const COPILOT_TOOLS: Record<string, CopilotToolDefinition<Record<string, unknown>>> = {
+  search_projects: defineCopilotTool({
     name: "search_projects",
     description: "Search projects by title or project code within permitted agency scope.",
     argsSchema: z.object({
@@ -36,9 +36,9 @@ export const COPILOT_TOOLS: Record<string, CopilotToolDefinition<any>> = {
     requires: ["project.read"],
     readOnly: true,
     link: (id) => (id ? `/projects/${id}` : "/projects"),
-    async run(actor, args, ctx) {
+    async run(actor, args, _ctx) {
       const agencyId = actor.roleKey === "SUPER_ADMIN" ? (args.agencyId || actor.agencyId) : actor.agencyId;
-      const query: Record<string, any> = {};
+      const query: mongoose.FilterQuery<Record<string, unknown>> = {};
       if (agencyId) query.agencyId = new mongoose.Types.ObjectId(agencyId);
       if (args.status) query.status = args.status;
 
@@ -67,9 +67,9 @@ export const COPILOT_TOOLS: Record<string, CopilotToolDefinition<any>> = {
 
       return { status: "OK", facts };
     },
-  },
+  }),
 
-  get_project_summary: {
+  get_project_summary: defineCopilotTool({
     name: "get_project_summary",
     description: "Get key project metadata: status, reported physical progress, verified progress with basis, manager and milestones summary.",
     argsSchema: z.object({
@@ -78,7 +78,7 @@ export const COPILOT_TOOLS: Record<string, CopilotToolDefinition<any>> = {
     requires: ["project.read"],
     readOnly: true,
     link: (id) => (id ? `/projects/${id}` : "/projects"),
-    async run(actor, args, ctx) {
+    async run(actor, args, _ctx) {
       const isOid = mongoose.Types.ObjectId.isValid(args.projectId);
       const project = await Project.findOne(
         isOid ? { _id: args.projectId } : { projectCode: args.projectId }
@@ -170,9 +170,9 @@ export const COPILOT_TOOLS: Record<string, CopilotToolDefinition<any>> = {
 
       return { status: "OK", facts };
     },
-  },
+  }),
 
-  get_project_milestones: {
+  get_project_milestones: defineCopilotTool({
     name: "get_project_milestones",
     description: "Get milestone list for a project with planned dates and progress.",
     argsSchema: z.object({
@@ -182,7 +182,7 @@ export const COPILOT_TOOLS: Record<string, CopilotToolDefinition<any>> = {
     requires: ["project.read"],
     readOnly: true,
     link: (id) => (id ? `/projects/${id}` : "/projects"),
-    async run(actor, args, ctx) {
+    async run(actor, args, _ctx) {
       const isOid = mongoose.Types.ObjectId.isValid(args.projectId);
       const project = await Project.findOne(
         isOid ? { _id: args.projectId } : { projectCode: args.projectId }
@@ -219,9 +219,9 @@ export const COPILOT_TOOLS: Record<string, CopilotToolDefinition<any>> = {
 
       return { status: "OK", facts };
     },
-  },
+  }),
 
-  get_project_finance_summary: {
+  get_project_finance_summary: defineCopilotTool({
     name: "get_project_finance_summary",
     description: "Get financial progress and budget details for a project. Money amounts are redacted without finance permission.",
     argsSchema: z.object({
@@ -284,9 +284,9 @@ export const COPILOT_TOOLS: Record<string, CopilotToolDefinition<any>> = {
 
       return { status: "OK", facts };
     },
-  },
+  }),
 
-  get_project_risk: {
+  get_project_risk: defineCopilotTool({
     name: "get_project_risk",
     description: "Get latest risk intelligence assessment (level, top indicators with calculated evidence, recommendations).",
     argsSchema: z.object({
@@ -295,7 +295,7 @@ export const COPILOT_TOOLS: Record<string, CopilotToolDefinition<any>> = {
     requires: ["project.read"],
     readOnly: true,
     link: (id) => (id ? `/risk/${id}` : "/risk"),
-    async run(actor, args, ctx) {
+    async run(actor, args, _ctx) {
       const isOid = mongoose.Types.ObjectId.isValid(args.projectId);
       const project = await Project.findOne(
         isOid ? { _id: args.projectId } : { projectCode: args.projectId }
@@ -324,12 +324,13 @@ export const COPILOT_TOOLS: Record<string, CopilotToolDefinition<any>> = {
 
       const overallScore = assessment.overallIndex ?? assessment.overallRisk ?? 0;
 
+      const createdAtValue = (assessment as { createdAt?: Date }).createdAt;
       const facts: CopilotFact[] = [
         {
           id: "T.f1",
           label: "overall_risk_level",
           value: assessment.overallLevel,
-          asOf: (assessment as any).createdAt?.toISOString(),
+          asOf: createdAtValue ? createdAtValue.toISOString() : undefined,
           ref: { type: "RiskAssessment", id: assessment._id.toString(), label: `Risk-${assessment.overallLevel}` },
           basis: "RECORDED",
         },
@@ -356,9 +357,9 @@ export const COPILOT_TOOLS: Record<string, CopilotToolDefinition<any>> = {
 
       return { status: "OK", facts };
     },
-  },
+  }),
 
-  list_risky_projects: {
+  list_risky_projects: defineCopilotTool({
     name: "list_risky_projects",
     description: "List projects flagged with HIGH or CRITICAL risk in the agency.",
     argsSchema: z.object({
@@ -368,9 +369,9 @@ export const COPILOT_TOOLS: Record<string, CopilotToolDefinition<any>> = {
     requires: ["project.read"],
     readOnly: true,
     link: () => "/risk",
-    async run(actor, args, ctx) {
+    async run(actor, args, _ctx) {
       const agencyId = actor.roleKey === "SUPER_ADMIN" ? (args.agencyId || actor.agencyId) : actor.agencyId;
-      const query: Record<string, any> = {
+      const query: mongoose.FilterQuery<Record<string, unknown>> = {
         riskLevel: args.level ? args.level : { $in: ["HIGH", "CRITICAL"] },
       };
       if (agencyId) query.agencyId = new mongoose.Types.ObjectId(agencyId);
@@ -395,9 +396,9 @@ export const COPILOT_TOOLS: Record<string, CopilotToolDefinition<any>> = {
 
       return { status: "OK", facts };
     },
-  },
+  }),
 
-  get_inspection_summary: {
+  get_inspection_summary: defineCopilotTool({
     name: "get_inspection_summary",
     description: "Get latest inspection findings for a project: outcome, measured progress, defects count, and AI-assist notes.",
     argsSchema: z.object({
@@ -406,7 +407,7 @@ export const COPILOT_TOOLS: Record<string, CopilotToolDefinition<any>> = {
     requires: ["inspection.read"],
     readOnly: true,
     link: (id) => (id ? `/inspections/${id}` : "/inspections"),
-    async run(actor, args, ctx) {
+    async run(actor, args, _ctx) {
       const isOid = mongoose.Types.ObjectId.isValid(args.projectId);
       const project = await Project.findOne(
         isOid ? { _id: args.projectId } : { projectCode: args.projectId }
@@ -482,9 +483,9 @@ export const COPILOT_TOOLS: Record<string, CopilotToolDefinition<any>> = {
 
       return { status: "OK", facts };
     },
-  },
+  }),
 
-  get_roadsync_conflicts: {
+  get_roadsync_conflicts: defineCopilotTool({
     name: "get_roadsync_conflicts",
     description: "Get open RoadSync utility / road conflicts for a project or agency.",
     argsSchema: z.object({
@@ -493,7 +494,7 @@ export const COPILOT_TOOLS: Record<string, CopilotToolDefinition<any>> = {
     requires: ["project.read"],
     readOnly: true,
     link: () => "/roadsync",
-    async run(actor, args, ctx) {
+    async run(_actor, _args, _ctx) {
       // Return neutral conflict fact
       return {
         status: "OK",
@@ -507,9 +508,9 @@ export const COPILOT_TOOLS: Record<string, CopilotToolDefinition<any>> = {
         ],
       };
     },
-  },
+  }),
 
-  get_contractor_performance: {
+  get_contractor_performance: defineCopilotTool({
     name: "get_contractor_performance",
     description: "Get contractor summary and performance profile indicators.",
     argsSchema: z.object({
@@ -518,7 +519,7 @@ export const COPILOT_TOOLS: Record<string, CopilotToolDefinition<any>> = {
     requires: ["contractor.read"],
     readOnly: true,
     link: (id) => (id ? `/contractors/${id}` : "/contractors"),
-    async run(actor, args, ctx) {
+    async run(_actor, args, _ctx) {
       return {
         status: "OK",
         facts: [
@@ -532,9 +533,9 @@ export const COPILOT_TOOLS: Record<string, CopilotToolDefinition<any>> = {
         ],
       };
     },
-  },
+  }),
 
-  get_asset_summary: {
+  get_asset_summary: defineCopilotTool({
     name: "get_asset_summary",
     description: "Get asset metadata and operational condition.",
     argsSchema: z.object({
@@ -543,7 +544,7 @@ export const COPILOT_TOOLS: Record<string, CopilotToolDefinition<any>> = {
     requires: ["asset.read"],
     readOnly: true,
     link: (id) => (id ? `/assets/${id}` : "/assets"),
-    async run(actor, args, ctx) {
+    async run(_actor, args, _ctx) {
       return {
         status: "OK",
         facts: [
@@ -557,9 +558,9 @@ export const COPILOT_TOOLS: Record<string, CopilotToolDefinition<any>> = {
         ],
       };
     },
-  },
+  }),
 
-  list_assets: {
+  list_assets: defineCopilotTool({
     name: "list_assets",
     description: "List assets requiring maintenance or attention in agency.",
     argsSchema: z.object({
@@ -568,7 +569,7 @@ export const COPILOT_TOOLS: Record<string, CopilotToolDefinition<any>> = {
     requires: ["asset.read"],
     readOnly: true,
     link: () => "/assets",
-    async run(actor, args, ctx) {
+    async run(_actor, _args, _ctx) {
       return {
         status: "OK",
         facts: [
@@ -581,9 +582,9 @@ export const COPILOT_TOOLS: Record<string, CopilotToolDefinition<any>> = {
         ],
       };
     },
-  },
+  }),
 
-  search_documents: {
+  search_documents: defineCopilotTool({
     name: "search_documents",
     description: "Search documents in DocTrace by title or document number.",
     argsSchema: z.object({
@@ -593,9 +594,9 @@ export const COPILOT_TOOLS: Record<string, CopilotToolDefinition<any>> = {
     requires: ["document.read"],
     readOnly: true,
     link: (id) => (id ? `/documents/${id}` : "/documents"),
-    async run(actor, args, ctx) {
+    async run(actor, args, _ctx) {
       const agencyId = actor.roleKey === "SUPER_ADMIN" ? actor.agencyId : actor.agencyId;
-      const query: Record<string, any> = {
+      const query: mongoose.FilterQuery<Record<string, unknown>> = {
         title: { $regex: args.q, $options: "i" },
       };
       if (agencyId) query.agencyId = new mongoose.Types.ObjectId(agencyId);
@@ -623,9 +624,9 @@ export const COPILOT_TOOLS: Record<string, CopilotToolDefinition<any>> = {
 
       return { status: "OK", facts };
     },
-  },
+  }),
 
-  ask_documents: {
+  ask_documents: defineCopilotTool({
     name: "ask_documents",
     description: "Ask a specific question across indexed project documents using RAG.",
     argsSchema: z.object({
@@ -638,7 +639,13 @@ export const COPILOT_TOOLS: Record<string, CopilotToolDefinition<any>> = {
     async run(actor, args, ctx) {
       try {
         const result = await askQuestion(
-          actor as any,
+          {
+            userId: actor.userId,
+            agencyId: actor.agencyId ?? "",
+            roleId: actor.roleId ?? "",
+            roleKey: actor.roleKey ?? "STAFF",
+            credentialEpoch: actor.credentialEpoch ?? 1,
+          },
           {
             question: args.question,
             scope: args.projectId ? { mode: "PROJECT", projectId: args.projectId } : { mode: "ALL" },
@@ -658,7 +665,7 @@ export const COPILOT_TOOLS: Record<string, CopilotToolDefinition<any>> = {
             },
           ],
         };
-      } catch (err) {
+      } catch {
         return {
           status: "UNAVAILABLE",
           facts: [
@@ -672,9 +679,9 @@ export const COPILOT_TOOLS: Record<string, CopilotToolDefinition<any>> = {
         };
       }
     },
-  },
+  }),
 
-  get_quick_facts: {
+  get_quick_facts: defineCopilotTool({
     name: "get_quick_facts",
     description: "Get deterministic snapshot of a project without invoking LLM models.",
     argsSchema: z.object({
@@ -686,5 +693,5 @@ export const COPILOT_TOOLS: Record<string, CopilotToolDefinition<any>> = {
     async run(actor, args, ctx) {
       return COPILOT_TOOLS.get_project_summary!.run(actor, args, ctx);
     },
-  },
+  }),
 };

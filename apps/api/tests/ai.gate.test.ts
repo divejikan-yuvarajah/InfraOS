@@ -33,6 +33,7 @@ describe("Central AI Governance Gate (Phase 10 Step 126)", () => {
       const defaults = getPlatformDefaults();
       const effective = resolveEffectiveSettings(undefined, undefined);
 
+      expect(effective.featureToggles.vision).toBe(defaults.featureToggles.vision);
       expect(effective.featureToggles.vision).toBe(false); // Vision is OFF by default
       expect(effective.featureToggles.copilot).toBe(true);
       expect(effective.userRequestsPer10Min.copilot).toBe(15);

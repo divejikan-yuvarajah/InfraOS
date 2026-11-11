@@ -7,7 +7,7 @@ import type {
 } from "@infraos/shared-types";
 import { AiInteraction } from "../rag/interaction.model.js";
 import { checkGate, recordGate } from "../governance/ai-gate.js";
-import { AuditLog } from "../../audit/models/audit-log.model.js";
+import { writeAiAudit } from "../ai.audit.js";
 import { detectLanguage } from "../rag/rag.service.js";
 import type { AuthenticatedActor } from "./copilot.types.js";
 import { runCopilotPlanner } from "./copilot-planner.js";
@@ -106,13 +106,15 @@ export async function createCopilotTurn(
   const turnId = interaction._id.toString();
 
   // Audit turn started
-  await AuditLog.create({
+  await writeAiAudit(undefined, {
     action: "ai.copilot_turn_started",
-    actorUserId: new mongoose.Types.ObjectId(actor.userId),
-    resourceType: "AiInteraction",
+    actorUserId: actor.userId,
+    resourceType: "SYSTEM",
     resourceId: interaction._id,
     agencyId: interaction.agencyId,
-    metadata: { requestId, threadId },
+    status: "RUNNING",
+    reason: threadId,
+    requestId,
   }).catch(() => undefined);
 
   // 3. Spawn background execution
@@ -132,7 +134,7 @@ export async function createCopilotTurn(
         onStep: async (step) => {
           await AiInteraction.updateOne(
             { _id: interaction._id },
-            { $push: { steps: step as any } },
+            { $push: { steps: step } },
           ).catch(() => undefined);
         },
       });
@@ -144,8 +146,8 @@ export async function createCopilotTurn(
           $set: {
             status: plannerResult.status,
             answer: plannerResult.answer,
-            sources: plannerResult.sources as any,
-            evidence: plannerResult.evidence as any,
+            sources: plannerResult.sources,
+            evidence: plannerResult.evidence,
             toolsUsed: plannerResult.toolsUsed,
             usage: plannerResult.usage,
             model: plannerResult.model,
@@ -169,21 +171,24 @@ export async function createCopilotTurn(
         },
       }).catch(() => undefined);
 
-      await AuditLog.create({
+      await writeAiAudit(undefined, {
         action: "ai.copilot_turn_completed",
-        actorUserId: new mongoose.Types.ObjectId(actor.userId),
-        resourceType: "AiInteraction",
+        actorUserId: actor.userId,
+        resourceType: "SYSTEM",
         resourceId: interaction._id,
         agencyId: interaction.agencyId,
-        metadata: { requestId, threadId, status: plannerResult.status },
+        status: plannerResult.status,
+        reason: threadId,
+        requestId,
       }).catch(() => undefined);
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const errorCode = err instanceof Error ? err.message : "PLANNER_ERROR";
       await AiInteraction.updateOne(
         { _id: interaction._id },
         {
           $set: {
             status: "FAILED",
-            errorCode: err.message || "PLANNER_ERROR",
+            errorCode,
           },
         },
       ).catch(() => undefined);
@@ -224,16 +229,31 @@ export async function getCopilotTurn(actor: AuthenticatedActor, turnId: string):
     throw new CopilotError(404, "NOT_FOUND");
   }
 
+  const pageContext = interaction.pageContext
+    ? {
+        type: interaction.pageContext.type as CopilotPageType,
+        recordId: interaction.pageContext.recordId ?? undefined,
+        route: interaction.pageContext.route,
+      }
+    : undefined;
+
+  const evidenceLevel: "VERIFIED" | "PARTIAL" | "NONE" =
+    interaction.evidence?.level === "VERIFIED"
+      ? "VERIFIED"
+      : interaction.evidence?.level === "PARTIAL"
+        ? "PARTIAL"
+        : "NONE";
+
   return {
     id: interaction._id.toString(),
     threadId: interaction.threadId,
     message: interaction.message || interaction.question || "",
-    pageContext: interaction.pageContext as any,
+    pageContext,
     status: interaction.status as CopilotTurnStatus,
-    steps: (interaction.steps || []).map((s: any) => ({
+    steps: (interaction.steps || []).map((s) => ({
       at: s.at instanceof Date ? s.at.toISOString() : String(s.at),
       kind: s.kind,
-      tool: s.tool,
+      tool: s.tool ?? undefined,
       status: s.status,
       labelKey: s.labelKey,
       durationMs: s.durationMs ?? 0,
@@ -241,23 +261,29 @@ export async function getCopilotTurn(actor: AuthenticatedActor, turnId: string):
     answer: interaction.answer
       ? {
           text: interaction.answer.text || "",
-          claims: (interaction.answer.claims || []).map((c: any) => ({
+          claims: (interaction.answer.claims || []).map((c) => ({
             text: c.text,
-            sourceRefs: c.sourceRefs || c.citationNs || [],
+            sourceRefs: c.sourceRefs && c.sourceRefs.length > 0 ? c.sourceRefs : c.citationNs || [],
             supported: Boolean(c.supported),
           })),
         }
       : undefined,
-    sources: (interaction.sources || []).map((src: any) => ({
+    sources: (interaction.sources || []).map((src) => ({
       n: src.n,
       type: src.type,
-      recordId: src.recordId,
+      recordId: src.recordId ?? undefined,
       label: src.label,
       link: src.link,
       asOf: src.asOf instanceof Date ? src.asOf.toISOString() : undefined,
       tool: src.tool,
     })),
-    evidence: interaction.evidence as any,
+    evidence: interaction.evidence
+      ? {
+          level: evidenceLevel,
+          unverifiedFigures: interaction.evidence.unverifiedFigures || [],
+          droppedClaims: interaction.evidence.droppedClaims ?? 0,
+        }
+      : undefined,
     toolsUsed: interaction.toolsUsed || [],
     usage: interaction.usage ? { inputTokens: interaction.usage.inputTokens, outputTokens: interaction.usage.outputTokens } : undefined,
     model: interaction.model ?? undefined,

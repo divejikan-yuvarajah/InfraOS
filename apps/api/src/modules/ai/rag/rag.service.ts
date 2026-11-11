@@ -9,7 +9,6 @@ import { DocumentChunk } from "../../documents/models/document-chunk.model.js";
 import { writeAiAudit } from "../ai.audit.js";
 import { aiConfig } from "../ai.config.js";
 import { AiClientError, aiClient } from "../ai-client.js";
-import { chatBudgetState } from "../processing/budget.js";
 import { AiUsageRecord } from "../usage.model.js";
 import { checkGate, recordGate } from "../governance/ai-gate.js";
 import { assembleContext, neighbourKeys, type ChunkLite, type ContextChunk } from "./context.js";

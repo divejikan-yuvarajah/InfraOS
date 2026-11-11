@@ -5,7 +5,6 @@ import { docContext, loadDocument, needPerm, type DCtx, type DocRow } from "../.
 import { DocumentChunk } from "../../documents/models/document-chunk.model.js";
 import { writeAiAudit } from "../ai.audit.js";
 import { aiConfig } from "../ai.config.js";
-import { chatBudgetState } from "../processing/budget.js";
 import { checkGate } from "../governance/ai-gate.js";
 import { AiArtifact, type AiArtifactDocument } from "./artifact.model.js";
 import { estimateTokens } from "./artifact.common.js";
