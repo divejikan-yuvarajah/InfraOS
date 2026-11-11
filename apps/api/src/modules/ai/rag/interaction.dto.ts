@@ -52,8 +52,8 @@ export async function buildInteractionDto(d: DCtx, row: AiInteractionDocument, o
 
   const cost = row.usage?.estimatedCostMinor;
   return {
-    id: String(row._id), threadId: row.threadId, createdAt: row.createdAt.toISOString(), question: row.question, language: row.language, status: row.status,
-    scope: { mode: row.scope.mode, documentIds: (row.scope.documentIds ?? []).map(String), projectId: row.scope.projectId ? String(row.scope.projectId) : null },
+    id: String(row._id), threadId: row.threadId, createdAt: row.createdAt.toISOString(), question: row.question ?? row.message ?? "", language: row.language, status: row.status,
+    scope: row.scope ? { mode: row.scope.mode, documentIds: (row.scope.documentIds ?? []).map(String), projectId: row.scope.projectId ? String(row.scope.projectId) : null } : { mode: "ALL" as const, documentIds: [], projectId: null },
     answer: row.answer ? { text: row.answer.text ?? "", claims: (row.answer.claims ?? []).map((c) => ({ text: c.text, citationNs: c.citationNs ?? [], supported: Boolean(c.supported) })), missingInfo: [...(row.answer.missingInfo ?? [])] } : null,
     citations,
     evidence: row.evidence ? { level: row.evidence.level, unverifiedFigures: [...(row.evidence.unverifiedFigures ?? [])], droppedClaims: row.evidence.droppedClaims ?? 0, quotesVerified: row.evidence.quotesVerified ?? 0, quotesTotal: row.evidence.quotesTotal ?? 0 } : null,
