@@ -171,11 +171,10 @@ export async function checkGate(params: GateCheckParams): Promise<GateDecision> 
     };
   }
 
-  // 4. Rate Limiting (10-minute window)
+  // 4. Rate Limiting (10-minute window — userRequestsPer10Min counts requests, not costUnits weights)
   const windowMs = 10 * 60 * 1000;
   const currentWindow = Math.floor(Date.now() / windowMs);
   const bucketKey = `rate:u:${params.actor.userId}:${params.feature}:${currentWindow}`;
-  const costUnits = params.estimate?.costUnits ?? DEFAULT_COST_UNITS[params.feature] ?? 1;
   const configuredLimit = settings.userRequestsPer10Min[params.feature] ?? 20;
   // In test environment, if no custom DB settings were seeded, use relaxed limit (5000) so multi-turn integration test suites aren't throttled
   const userLimit = (process.env.NODE_ENV === "test" && !settings.hasCustomDbOverrides)
@@ -186,7 +185,7 @@ export async function checkGate(params: GateCheckParams): Promise<GateDecision> 
     const bucket = await AiRateBucket.findOneAndUpdate(
       { key: bucketKey },
       {
-        $inc: { count: costUnits },
+        $inc: { count: 1 },
         $setOnInsert: { expiresAt: new Date((currentWindow + 1) * windowMs) },
       },
       { upsert: true, new: true },
@@ -342,6 +341,22 @@ export async function recordGate(params: GateRecordParams): Promise<void> {
   };
   const purpose = params.actual.purpose ?? purposeMap[params.feature] ?? "QA";
 
+  // Resolve minor cost (USD cents) from caller or verified modelCatalog pricing
+  let resolvedCostMinor = params.actual.costMinor;
+  if (resolvedCostMinor === undefined) {
+    const settings = await loadEffectiveSettings(agencyId).catch(() => null);
+    const cat = settings?.modelCatalog[params.tier];
+    if (cat?.verifiedAt && (cat.pricePerMInputMinor != null || cat.pricePerMOutputMinor != null || cat.pricePerImageMinor != null)) {
+      const tokenCost = Math.round(
+        (params.actual.inputTokens * (cat.pricePerMInputMinor ?? 0) +
+          params.actual.outputTokens * (cat.pricePerMOutputMinor ?? 0)) /
+          1_000_000,
+      );
+      const imageCost = (params.actual.images ?? 0) * (cat.pricePerImageMinor ?? 0);
+      resolvedCostMinor = tokenCost + imageCost;
+    }
+  }
+
   await AiUsageRecord.create({
     kind,
     purpose,
@@ -354,7 +369,7 @@ export async function recordGate(params: GateRecordParams): Promise<void> {
     model: params.model,
     inputTokens: params.actual.inputTokens,
     outputTokens: params.actual.outputTokens,
-    estimatedCostMinor: params.actual.costMinor,
+    estimatedCostMinor: resolvedCostMinor,
     costUnits: params.actual.costUnits ?? DEFAULT_COST_UNITS[params.feature] ?? 1,
     status: params.actual.status,
     flags: params.actual.flags ?? [],
@@ -377,7 +392,7 @@ export async function recordGate(params: GateRecordParams): Promise<void> {
           inputTokens: params.actual.inputTokens,
           outputTokens: params.actual.outputTokens,
           images: params.actual.images ?? 0,
-          costMinor: params.actual.costMinor ?? 0,
+          costMinor: resolvedCostMinor ?? 0,
           errors: isError ? 1 : 0,
           fallbacks: isFallback ? 1 : 0,
         },

@@ -73,3 +73,5 @@ services:
         sync: false # Qdrant Cloud cluster URL (https)
       - key: QDRANT_API_KEY
         sync: false
+    # Optional Batch 10-12 env vars configured in Render Dashboard when verified (fail closed when unset):
+    # AI_CHAT_MODEL, AI_CHAT_MODEL_STRONG, AI_VISION_MODEL, AI_INTERNAL_SECRET_PREVIOUS

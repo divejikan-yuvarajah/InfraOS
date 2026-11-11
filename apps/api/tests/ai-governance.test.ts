@@ -93,13 +93,19 @@ describe("AI Governance APIs (Phase 10 Batch 12 Steps 126-127)", () => {
       },
     });
 
-    const gate = await checkGate({
+    const gate1 = await checkGate({
       actor: { userId: gov.user._id.toString(), agencyId: gov.agency._id.toString() },
       agencyId: gov.agency._id.toString(),
       feature: "qa",
-      estimate: { costUnits: 2 },
     });
-    expect(gate.allow).toBe(true);
+    expect(gate1.allow).toBe(true);
+
+    const gate2 = await checkGate({
+      actor: { userId: gov.user._id.toString(), agencyId: gov.agency._id.toString() },
+      agencyId: gov.agency._id.toString(),
+      feature: "qa",
+    });
+    expect(gate2.allow).toBe(true);
 
     await recordGate({
       actor: { userId: gov.user._id.toString(), agencyId: gov.agency._id.toString() },
@@ -194,6 +200,22 @@ describe("AI Governance APIs (Phase 10 Batch 12 Steps 126-127)", () => {
     expect(verifiedRes.status).toBe(200);
     expect(verifiedRes.body.data.totals.pricesVerified).toBe(true);
     expect(verifiedRes.body.data.totals.estimatedCostMinor).toBe(5);
+
+    // Subsequent recordGate without explicit costMinor derives minor cost from verified modelCatalog pricing
+    await recordGate({
+      actor: { userId: gov1.user._id.toString(), agencyId: gov1.agency._id.toString() },
+      agencyId: gov1.agency._id.toString(),
+      feature: "copilot",
+      tier: "LOW",
+      model: "test-stub/chat-low",
+      actual: { inputTokens: 500_000, outputTokens: 250_000, status: "OK" },
+    });
+    const derivedRes = await request(app)
+      .get("/api/v1/ai/usage/agency")
+      .set("Authorization", `Bearer ${gov1.token}`);
+    expect(derivedRes.status).toBe(200);
+    // 500k * 100 / 1M + 250k * 200 / 1M = 50 + 50 = 100; total = 5 + 100 = 105
+    expect(derivedRes.body.data.totals.estimatedCostMinor).toBe(105);
   });
 
   it("enforces settings hierarchy, OCC 409 conflicts, admin boundaries, audit writes, and reset", async () => {

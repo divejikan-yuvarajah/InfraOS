@@ -8,6 +8,7 @@ import {
   canManageAi,
   canUseCopilot,
   formatCountdownSeconds,
+  formatCurrencyMinor,
   hasAnyAiAccess,
   mapAiFailure,
 } from "./view";
@@ -43,6 +44,13 @@ describe("ai-admin view & role gating helpers", () => {
 
     const disabledErr = new ApiError("disabled", 403, { code: "FEATURE_DISABLED" });
     expect(mapAiFailure(disabledErr, copy, "en").code).toBe("FEATURE_DISABLED");
+  });
+
+  it("formats verified AI costs in USD minor units rather than LKR", () => {
+    const formatted = formatCurrencyMinor(1250, "en");
+    expect(formatted).toContain("12.50");
+    expect(formatted).not.toContain("LKR");
+    expect(formatCurrencyMinor(null, "en")).toBe("—");
   });
 });
 

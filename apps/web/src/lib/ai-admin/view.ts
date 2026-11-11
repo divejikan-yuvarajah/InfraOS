@@ -60,7 +60,7 @@ export function formatDateTime(iso: string | null | undefined, locale: AuthLocal
 export function formatCurrencyMinor(minor: number | null | undefined, locale: AuthLocale): string {
   if (minor === null || minor === undefined) return "—";
   const tag = locale === "si" ? "si-LK" : locale === "ta" ? "ta-LK" : "en-LK";
-  return new Intl.NumberFormat(tag, { style: "currency", currency: "LKR", minimumFractionDigits: 2 }).format(minor / 100);
+  return new Intl.NumberFormat(tag, { style: "currency", currency: "USD", minimumFractionDigits: 2 }).format(minor / 100);
 }
 
 export type MappedAiFailure = {
