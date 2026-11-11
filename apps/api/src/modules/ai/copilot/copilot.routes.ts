@@ -7,6 +7,8 @@ import { Role } from "../../identity/models/role.model.js";
 import {
   createCopilotTurn,
   getCopilotTurn,
+  getCopilotThread,
+  submitCopilotFeedback,
   cancelCopilotTurn,
   listCopilotThreads,
   deleteCopilotThread,
@@ -14,7 +16,11 @@ import {
 } from "./copilot-turn.service.js";
 import { getQuickFacts } from "./quick-facts.service.js";
 import { getSuggestions } from "./copilot-suggestions.service.js";
-import { COPILOT_PAGE_TYPES } from "@infraos/shared-types";
+import {
+  AI_FEEDBACK_RATINGS,
+  AI_FEEDBACK_REASONS,
+  COPILOT_PAGE_TYPES,
+} from "@infraos/shared-types";
 import type { AuthenticatedActor } from "./copilot.types.js";
 
 export const copilotRouter = Router();
@@ -48,6 +54,12 @@ const createTurnSchema = z.object({
     recordId: z.string().optional(),
     route: z.string().max(300),
   }).optional(),
+}).strict();
+
+const feedbackSchema = z.object({
+  rating: z.enum(AI_FEEDBACK_RATINGS),
+  reason: z.enum(AI_FEEDBACK_REASONS).optional(),
+  comment: z.string().trim().max(300).optional(),
 }).strict();
 
 // POST /api/v1/ai/copilot/turns
@@ -103,6 +115,27 @@ copilotRouter.post("/turns/:id/cancel", ...auth, async (req, res) => {
   }
 });
 
+// POST /api/v1/ai/copilot/turns/:id/feedback
+copilotRouter.post("/turns/:id/feedback", ...auth, async (req, res) => {
+  const parsed = feedbackSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json(failure("VALIDATION_ERROR", parsed.error.issues[0]?.message || "Invalid feedback", req.requestId));
+    return;
+  }
+
+  try {
+    const actor = await resolveActor(req);
+    const result = await submitCopilotFeedback(actor, String(req.params.id), parsed.data, req.requestId);
+    res.status(200).json(success(result, req.requestId));
+  } catch (err: unknown) {
+    if (err instanceof CopilotError) {
+      res.status(err.statusCode).json(failure(err.code, err.message, req.requestId));
+      return;
+    }
+    res.status(500).json(failure("INTERNAL_ERROR", "Failed to save feedback", req.requestId));
+  }
+});
+
 // GET /api/v1/ai/copilot/quick-facts
 copilotRouter.get("/quick-facts", ...auth, async (req, res) => {
   try {
@@ -136,6 +169,21 @@ copilotRouter.get("/threads", ...auth, async (req, res) => {
     res.status(200).json(success(result, req.requestId));
   } catch {
     res.status(500).json(failure("INTERNAL_ERROR", "Failed to list threads", req.requestId));
+  }
+});
+
+// GET /api/v1/ai/copilot/threads/:threadId
+copilotRouter.get("/threads/:threadId", ...auth, async (req, res) => {
+  try {
+    const actor = await resolveActor(req);
+    const result = await getCopilotThread(actor, String(req.params.threadId));
+    res.status(200).json(success(result, req.requestId));
+  } catch (err: unknown) {
+    if (err instanceof CopilotError) {
+      res.status(err.statusCode).json(failure(err.code, err.message, req.requestId));
+      return;
+    }
+    res.status(500).json(failure("INTERNAL_ERROR", "Failed to load thread", req.requestId));
   }
 });
 

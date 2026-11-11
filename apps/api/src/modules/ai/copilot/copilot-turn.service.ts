@@ -5,7 +5,7 @@ import type {
   CopilotTurnDto,
   CopilotTurnStatus,
 } from "@infraos/shared-types";
-import { AiInteraction } from "../rag/interaction.model.js";
+import { AiInteraction, type AiInteractionDocument } from "../rag/interaction.model.js";
 import { checkGate, recordGate } from "../governance/ai-gate.js";
 import { writeAiAudit } from "../ai.audit.js";
 import { detectLanguage } from "../rag/rag.service.js";
@@ -151,6 +151,7 @@ export async function createCopilotTurn(
             toolsUsed: plannerResult.toolsUsed,
             usage: plannerResult.usage,
             model: plannerResult.model,
+            ...(plannerResult.errorCode ? { errorCode: plannerResult.errorCode } : {}),
           },
         },
       );
@@ -213,22 +214,12 @@ export async function createCopilotTurn(
   return { turnId, threadId, status: "RUNNING" };
 }
 
-export async function getCopilotTurn(actor: AuthenticatedActor, turnId: string): Promise<CopilotTurnDto> {
-  if (!mongoose.Types.ObjectId.isValid(turnId)) {
-    throw new CopilotError(404, "NOT_FOUND");
-  }
+type LeanCopilotInteraction = Pick<
+  AiInteractionDocument,
+  "_id" | "threadId" | "message" | "question" | "pageContext" | "status" | "steps" | "answer" | "sources" | "evidence" | "toolsUsed" | "usage" | "model" | "latencyMs" | "errorCode" | "feedback" | "createdAt"
+>;
 
-  // Hard privacy rule: Only the author can read their interaction
-  const interaction = await AiInteraction.findOne({
-    _id: new mongoose.Types.ObjectId(turnId),
-    userId: new mongoose.Types.ObjectId(actor.userId),
-    kind: "COPILOT",
-  }).lean();
-
-  if (!interaction) {
-    throw new CopilotError(404, "NOT_FOUND");
-  }
-
+function mapInteractionToTurnDto(interaction: LeanCopilotInteraction): CopilotTurnDto {
   const pageContext = interaction.pageContext
     ? {
         type: interaction.pageContext.type as CopilotPageType,
@@ -287,8 +278,113 @@ export async function getCopilotTurn(actor: AuthenticatedActor, turnId: string):
     toolsUsed: interaction.toolsUsed || [],
     usage: interaction.usage ? { inputTokens: interaction.usage.inputTokens, outputTokens: interaction.usage.outputTokens } : undefined,
     model: interaction.model ?? undefined,
+    latencyMs: interaction.latencyMs ?? undefined,
+    errorCode: interaction.errorCode ?? undefined,
+    feedback: interaction.feedback?.rating
+      ? {
+          rating: interaction.feedback.rating,
+          reason: interaction.feedback.reason ?? undefined,
+          comment: interaction.feedback.comment ?? undefined,
+        }
+      : undefined,
     createdAt: interaction.createdAt ? interaction.createdAt.toISOString() : new Date().toISOString(),
   };
+}
+
+export async function getCopilotTurn(actor: AuthenticatedActor, turnId: string): Promise<CopilotTurnDto> {
+  if (!mongoose.Types.ObjectId.isValid(turnId)) {
+    throw new CopilotError(404, "NOT_FOUND");
+  }
+
+  // Hard privacy rule: Only the author can read their interaction
+  const interaction = await AiInteraction.findOne({
+    _id: new mongoose.Types.ObjectId(turnId),
+    userId: new mongoose.Types.ObjectId(actor.userId),
+    kind: "COPILOT",
+  }).lean();
+
+  if (!interaction) {
+    throw new CopilotError(404, "NOT_FOUND");
+  }
+
+  return mapInteractionToTurnDto(interaction);
+}
+
+export async function getCopilotThread(
+  actor: AuthenticatedActor,
+  threadId: string,
+): Promise<{ threadId: string; turns: CopilotTurnDto[] }> {
+  if (!/^[a-f0-9-]{36}$/.test(threadId)) {
+    throw new CopilotError(404, "NOT_FOUND");
+  }
+
+  // Hard privacy rule: Only the author can read their own thread
+  const rows = await AiInteraction.find({
+    userId: new mongoose.Types.ObjectId(actor.userId),
+    threadId,
+    kind: "COPILOT",
+  })
+    .sort({ createdAt: 1 })
+    .limit(100)
+    .lean();
+
+  if (!rows.length) {
+    throw new CopilotError(404, "NOT_FOUND");
+  }
+
+  return {
+    threadId,
+    turns: rows.map((row) => mapInteractionToTurnDto(row)),
+  };
+}
+
+export async function submitCopilotFeedback(
+  actor: AuthenticatedActor,
+  turnId: string,
+  input: {
+    rating: "HELPFUL" | "NOT_HELPFUL";
+    reason?: "WRONG" | "MISSING_SOURCE" | "OUTDATED" | "UNCLEAR" | "OTHER";
+    comment?: string;
+  },
+  requestId: string,
+): Promise<{ saved: boolean }> {
+  if (!mongoose.Types.ObjectId.isValid(turnId)) {
+    throw new CopilotError(404, "NOT_FOUND");
+  }
+
+  const updateRes = await AiInteraction.updateOne(
+    {
+      _id: new mongoose.Types.ObjectId(turnId),
+      userId: new mongoose.Types.ObjectId(actor.userId),
+      kind: "COPILOT",
+    },
+    {
+      $set: {
+        feedback: {
+          rating: input.rating,
+          ...(input.reason ? { reason: input.reason } : {}),
+          ...(input.comment ? { comment: input.comment } : {}),
+        },
+      },
+    },
+  );
+
+  if (updateRes.matchedCount !== 1) {
+    throw new CopilotError(404, "NOT_FOUND");
+  }
+
+  await writeAiAudit(undefined, {
+    action: "ai.feedback_submitted",
+    actorUserId: actor.userId,
+    resourceType: "SYSTEM",
+    resourceId: turnId,
+    agencyId: actor.agencyId,
+    status: input.rating,
+    reason: input.reason,
+    requestId,
+  }).catch(() => undefined);
+
+  return { saved: true };
 }
 
 export async function cancelCopilotTurn(actor: AuthenticatedActor, turnId: string): Promise<{ cancelled: boolean }> {
@@ -323,6 +419,7 @@ export async function listCopilotThreads(actor: AuthenticatedActor): Promise<{
         kind: "COPILOT",
       },
     },
+    { $sort: { createdAt: 1 } },
     {
       $group: {
         _id: "$threadId",

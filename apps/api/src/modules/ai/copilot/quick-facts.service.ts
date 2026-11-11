@@ -67,7 +67,10 @@ export async function getQuickFacts(
       level: ind.severity,
     }));
 
-    const hasFinancePerm = actor.permissions?.some((p) => ["finance.read", "payment.read", "budget.read"].includes(p)) || actor.roleKey === "SUPER_ADMIN";
+    const hasFinancePerm =
+      actor.permissions?.some((p) =>
+        ["finance.budget.read", "finance.payment.read", "finance.expense.read", "finance.read", "payment.read", "budget.read"].includes(p),
+      ) || actor.roleKey === "SUPER_ADMIN";
 
     const dto: QuickFactsDto = {
       projectId: pId.toString(),
@@ -92,9 +95,9 @@ export async function getQuickFacts(
         : undefined,
       overdueMaintenanceCount: 0,
       links: [
-        { label: "View Project", route: `/projects/${pId}` },
+        { label: "View Project", route: `/projects/${pId}/overview` },
         { label: "Inspections", route: `/inspections?projectId=${pId}` },
-        { label: "Risk Profile", route: `/risk/${pId}` },
+        { label: "Risk Profile", route: `/projects/${pId}/risk` },
       ],
     };
 

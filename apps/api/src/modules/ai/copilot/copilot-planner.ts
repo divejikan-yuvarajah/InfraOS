@@ -62,6 +62,7 @@ export type PlannerResult = {
     outputTokens: number;
   };
   model?: string;
+  errorCode?: string;
 };
 
 export async function runCopilotPlanner(params: RunPlannerParams): Promise<PlannerResult> {
@@ -137,20 +138,27 @@ export async function runCopilotPlanner(params: RunPlannerParams): Promise<Plann
       totalInputTokens += stepResponse.usage.inputTokens;
       totalOutputTokens += stepResponse.usage.outputTokens;
       usedModel = stepResponse.model;
-    } catch {
-      // In local/stub mode without running FastAPI, fallback gracefully to quick facts
-      const fallbackResult = await COPILOT_TOOLS.get_project_summary!.run(
-        params.actor,
-        { projectId: params.pageContext?.recordId || "default" },
-        { requestId: params.requestId, provenancePool, permissions: params.actor.permissions || [] },
-      );
+    } catch (err: unknown) {
+      const errCode = (err as { code?: string } | null)?.code;
+      const failStep: CopilotStepDto = {
+        at: new Date().toISOString(),
+        kind: "PLAN",
+        status: "ERROR",
+        labelKey: "copilot.step.service_unavailable",
+        durationMs: Date.now() - planStepStart,
+      };
+      steps.push(failStep);
+      await params.onStep?.(failStep);
 
-      for (const f of fallbackResult.facts) {
-        executedFacts.push({ n: factCounter++, fact: f, tool: "get_project_summary", link: "/projects" });
-      }
-
-      finalRawAnswer = fallbackResult.facts.map((f) => `${f.label}: ${f.value}`).join(". ");
-      break;
+      return {
+        status: "FAILED",
+        errorCode: typeof errCode === "string" ? errCode : "AI_UNAVAILABLE",
+        steps,
+        sources: [],
+        toolsUsed: Array.from(toolsUsedSet),
+        usage: { inputTokens: totalInputTokens, outputTokens: totalOutputTokens },
+        model: usedModel,
+      };
     }
 
     const output = stepResponse.output;
@@ -334,7 +342,8 @@ export async function runCopilotPlanner(params: RunPlannerParams): Promise<Plann
       const argProjectId = typeof validatedArgs.projectId === "string" ? validatedArgs.projectId : undefined;
       const argAssetId = typeof validatedArgs.assetId === "string" ? validatedArgs.assetId : undefined;
       for (const fact of cappedFacts) {
-        const link = toolDef.link(fact.ref?.id || argProjectId || argAssetId);
+        const linkTargetId = toolRes.primaryRecordId || fact.ref?.id || argProjectId || argAssetId;
+        const link = toolDef.link(linkTargetId);
         executedFacts.push({
           n: factCounter++,
           fact,

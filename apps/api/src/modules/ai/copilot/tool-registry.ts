@@ -35,7 +35,7 @@ export const COPILOT_TOOLS: Record<string, CopilotToolDefinition<Record<string, 
     }).strict(),
     requires: ["project.read"],
     readOnly: true,
-    link: (id) => (id ? `/projects/${id}` : "/projects"),
+    link: (id) => (id ? `/projects/${id}/overview` : "/projects"),
     async run(actor, args, _ctx) {
       const agencyId = actor.roleKey === "SUPER_ADMIN" ? (args.agencyId || actor.agencyId) : actor.agencyId;
       const query: mongoose.FilterQuery<Record<string, unknown>> = {};
@@ -77,7 +77,7 @@ export const COPILOT_TOOLS: Record<string, CopilotToolDefinition<Record<string, 
     }).strict(),
     requires: ["project.read"],
     readOnly: true,
-    link: (id) => (id ? `/projects/${id}` : "/projects"),
+    link: (id) => (id ? `/projects/${id}/overview` : "/projects"),
     async run(actor, args, _ctx) {
       const isOid = mongoose.Types.ObjectId.isValid(args.projectId);
       const project = await Project.findOne(
@@ -168,7 +168,7 @@ export const COPILOT_TOOLS: Record<string, CopilotToolDefinition<Record<string, 
         });
       }
 
-      return { status: "OK", facts };
+      return { status: "OK", primaryRecordId: pId.toString(), facts };
     },
   }),
 
@@ -181,7 +181,7 @@ export const COPILOT_TOOLS: Record<string, CopilotToolDefinition<Record<string, 
     }).strict(),
     requires: ["project.read"],
     readOnly: true,
-    link: (id) => (id ? `/projects/${id}` : "/projects"),
+    link: (id) => (id ? `/projects/${id}/milestones` : "/projects"),
     async run(actor, args, _ctx) {
       const isOid = mongoose.Types.ObjectId.isValid(args.projectId);
       const project = await Project.findOne(
@@ -217,7 +217,7 @@ export const COPILOT_TOOLS: Record<string, CopilotToolDefinition<Record<string, 
         facts.push({ id: "T.f1", label: "milestones", value: `No ${args.filter} milestones found for project` });
       }
 
-      return { status: "OK", facts };
+      return { status: "OK", primaryRecordId: project._id.toString(), facts };
     },
   }),
 
@@ -229,7 +229,7 @@ export const COPILOT_TOOLS: Record<string, CopilotToolDefinition<Record<string, 
     }).strict(),
     requires: ["project.read"],
     readOnly: true,
-    link: (id) => (id ? `/projects/${id}` : "/projects"),
+    link: (id) => (id ? `/projects/${id}/finance` : "/projects"),
     async run(actor, args, ctx) {
       const isOid = mongoose.Types.ObjectId.isValid(args.projectId);
       const project = await Project.findOne(
@@ -240,7 +240,10 @@ export const COPILOT_TOOLS: Record<string, CopilotToolDefinition<Record<string, 
         return { status: "NOT_FOUND", facts: [{ id: "T.f1", label: "error", value: "Project not found or outside agency scope" }] };
       }
 
-      const hasFinancePerm = ctx.permissions.some((p) => ["finance.read", "payment.read", "budget.read"].includes(p)) || actor.roleKey === "SUPER_ADMIN";
+      const hasFinancePerm =
+        ctx.permissions.some((p) =>
+          ["finance.budget.read", "finance.payment.read", "finance.expense.read", "finance.read", "payment.read", "budget.read"].includes(p),
+        ) || actor.roleKey === "SUPER_ADMIN";
 
       const facts: CopilotFact[] = [
         {
@@ -282,7 +285,7 @@ export const COPILOT_TOOLS: Record<string, CopilotToolDefinition<Record<string, 
         });
       }
 
-      return { status: "OK", facts };
+      return { status: "OK", primaryRecordId: project._id.toString(), facts };
     },
   }),
 
@@ -294,7 +297,7 @@ export const COPILOT_TOOLS: Record<string, CopilotToolDefinition<Record<string, 
     }).strict(),
     requires: ["project.read"],
     readOnly: true,
-    link: (id) => (id ? `/risk/${id}` : "/risk"),
+    link: (id) => (id ? `/projects/${id}/risk` : "/risk"),
     async run(actor, args, _ctx) {
       const isOid = mongoose.Types.ObjectId.isValid(args.projectId);
       const project = await Project.findOne(
@@ -355,7 +358,7 @@ export const COPILOT_TOOLS: Record<string, CopilotToolDefinition<Record<string, 
         });
       }
 
-      return { status: "OK", facts };
+      return { status: "OK", primaryRecordId: project._id.toString(), facts };
     },
   }),
 
@@ -481,7 +484,7 @@ export const COPILOT_TOOLS: Record<string, CopilotToolDefinition<Record<string, 
         });
       }
 
-      return { status: "OK", facts };
+      return { status: "OK", primaryRecordId: inspection._id.toString(), facts };
     },
   }),
 
@@ -635,7 +638,7 @@ export const COPILOT_TOOLS: Record<string, CopilotToolDefinition<Record<string, 
     }).strict(),
     requires: ["document.ask"],
     readOnly: true,
-    link: () => "/ai/qa",
+    link: () => "/documents/ai",
     async run(actor, args, ctx) {
       try {
         const result = await askQuestion(
@@ -689,7 +692,7 @@ export const COPILOT_TOOLS: Record<string, CopilotToolDefinition<Record<string, 
     }).strict(),
     requires: ["project.read"],
     readOnly: true,
-    link: (id) => (id ? `/projects/${id}` : "/projects"),
+    link: (id) => (id ? `/projects/${id}/overview` : "/projects"),
     async run(actor, args, ctx) {
       return COPILOT_TOOLS.get_project_summary!.run(actor, args, ctx);
     },

@@ -59,6 +59,7 @@ export type CopilotFact = {
 export type CopilotToolResult = {
   status: ToolResultStatus;
   facts: CopilotFact[];
+  primaryRecordId?: string;
   truncated?: boolean;
   message?: string;
 };
