@@ -11,7 +11,7 @@ import { User } from "../identity/models/user.model.js";
 import { Milestone } from "../projects/models/milestone.model.js";
 import { Project } from "../projects/models/project.model.js";
 import { Notification } from "./models/notification.model.js";
-import { encodeNoticeCursor, decodeNoticeCursor, isNoticeAction, noticeAudience, noticeType, type NoticeAction } from "./notice.policy.js";
+import { encodeNoticeCursor, decodeNoticeCursor, isNoticeAction, noticeAudience, noticeType } from "./notice.policy.js";
 import type { NoticeListQuery } from "./notice.schema.js";
 
 const PRIVATE_DENY = new Set(["CONTRACTOR", "CITIZEN"]);

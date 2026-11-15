@@ -16,9 +16,9 @@ import {
 
 export function IssueDetailClient({ id }: { id: string }) {
   const qc = useQueryClient();
-  const [agencyId, setAgencyId] = useState("");
-  const [publicMapVisible, setPublicMapVisible] = useState(false);
-  const [toStatus, setToStatus] = useState("");
+  const [agencyIdOverride, setAgencyId] = useState<string | null>(null);
+  const [publicMapOverride, setPublicMapVisible] = useState<boolean | null>(null);
+  const [toStatusOverride, setToStatus] = useState<string | null>(null);
   const [publicMessage, setPublicMessage] = useState("");
   const [internalNote, setInternalNote] = useState("");
   const [noteKind, setNoteKind] = useState<"PUBLIC" | "INTERNAL">("PUBLIC");
@@ -32,17 +32,13 @@ export function IssueDetailClient({ id }: { id: string }) {
 
   const agenciesQuery = useQuery({
     queryKey: ["admin", "agencies", "lookup"],
-    queryFn: () => apiClient<{ items: Array<{ id: string; code: string; name: string }> }>("/admin/agencies?limit=50", { authenticated: true }),
+    queryFn: () => apiClient<{ items: Array<{ id: string; code: string; name: string }> }>("/api/v1/admin/agencies?limit=50", { authenticated: true }),
   });
 
   const detail = detailQuery.data;
-
-  useEffect(() => {
-    if (!detail) return;
-    setPublicMapVisible(detail.publicMapVisible);
-    if (detail.assignedAgency) setAgencyId(detail.assignedAgency.id);
-    if (detail.allowedTransitions.length > 0 && !toStatus) setToStatus(detail.allowedTransitions[0] ?? "");
-  }, [detail, toStatus]);
+  const agencyId = agencyIdOverride ?? detail?.assignedAgency?.id ?? "";
+  const publicMapVisible = publicMapOverride ?? detail?.publicMapVisible ?? false;
+  const toStatus = toStatusOverride ?? detail?.allowedTransitions[0] ?? "";
 
   useEffect(() => {
     if (!detail || detail.photoCount === 0) return;
@@ -78,7 +74,7 @@ export function IssueDetailClient({ id }: { id: string }) {
     onSuccess: () => {
       setPublicMessage("");
       setInternalNote("");
-      setToStatus("");
+      setToStatus(null);
       void qc.invalidateQueries({ queryKey: ["issues", "detail", id] });
     },
   });

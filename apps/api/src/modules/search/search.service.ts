@@ -1,5 +1,3 @@
-import mongoose from "mongoose";
-
 import { escapeSearchRegex } from "../../shared/http/list-query.js";
 import { Asset } from "../assets/models/asset.model.js";
 import { Contractor } from "../contractors/models/contractor.model.js";
