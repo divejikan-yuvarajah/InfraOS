@@ -29,6 +29,7 @@ export const PERMISSION_CATALOG = [
   "project.hold",
   "project.cancel",
   "project.complete",
+  "project.publish_public",
   "project.dashboard.read",
   "project.timeline.read",
   "milestone.create",

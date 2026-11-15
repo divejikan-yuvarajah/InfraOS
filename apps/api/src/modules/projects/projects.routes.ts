@@ -19,6 +19,7 @@ import { TIMELINE_QUERY_KEYS, timelineQuerySchema } from "./timeline.schema.js";
 import { TimelineDependencyError, getProjectTimeline } from "./timeline.service.js";
 import { projectCreateSchema, projectListQuerySchema, projectPatchSchema, projectReviewQueueQuerySchema, projectReviewSchema, projectTransitionSchema } from "./projects.schema.js";
 import { ProjectDependencyError, createProject, getProject, getReview, listProjectCatalog, listReviewQueue, reviewProject, transitionProject, updateProjectDraft } from "./projects.service.js";
+import { publicReleaseSchema, updateProjectPublicRelease } from "./public-release.service.js";
 import type { ProjectFailure } from "./projects.types.js";
 
 function routeId(value: string | string[] | undefined): string {
@@ -348,6 +349,23 @@ projectRouter.get("/:id/milestones/:milestoneId", requireAuthenticated, requireP
   }
 });
 
+projectRouter.patch("/:id/public-release", requireAuthenticated, requirePermission("project.publish_public"), async (req, res) => {
+  noStore(res);
+  const actor = req.actor;
+  if (!actor) return;
+  const parsed = publicReleaseSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json(failure("VALIDATION_ERROR", "Invalid public release settings", req.requestId));
+    return;
+  }
+  const updated = await updateProjectPublicRelease(actor, routeId(req.params.id), parsed.data, req.requestId);
+  if (!updated) {
+    res.status(404).json(failure("NOT_FOUND", "Project not found", req.requestId));
+    return;
+  }
+  res.status(200).json(success({ publicRelease: updated }, req.requestId));
+});
+
 projectRouter.post("/:id/milestones", requireAuthenticated, requirePermission("milestone.create"), async (req, res) => {
   try {
     noStore(res);
@@ -404,6 +422,23 @@ projectRouter.patch("/:id/milestones/:milestoneId", requireAuthenticated, requir
     }
     throw error;
   }
+});
+
+projectRouter.patch("/:id/public-release", requireAuthenticated, requirePermission("project.publish_public"), async (req, res) => {
+  noStore(res);
+  const actor = req.actor;
+  if (!actor) return;
+  const parsed = publicReleaseSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json(failure("VALIDATION_ERROR", "Invalid public release settings", req.requestId));
+    return;
+  }
+  const updated = await updateProjectPublicRelease(actor, routeId(req.params.id), parsed.data, req.requestId);
+  if (!updated) {
+    res.status(404).json(failure("NOT_FOUND", "Project not found", req.requestId));
+    return;
+  }
+  res.status(200).json(success({ publicRelease: updated }, req.requestId));
 });
 
 projectRouter.get("/:id/progress", requireAuthenticated, requirePermission("progress.read"), async (req, res) => {
@@ -757,4 +792,21 @@ projectRouter.post("/:id/milestones/:milestoneId/transition", requireAuthenticat
     }
     throw error;
   }
+});
+
+projectRouter.patch("/:id/public-release", requireAuthenticated, requirePermission("project.publish_public"), async (req, res) => {
+  noStore(res);
+  const actor = req.actor;
+  if (!actor) return;
+  const parsed = publicReleaseSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json(failure("VALIDATION_ERROR", "Invalid public release settings", req.requestId));
+    return;
+  }
+  const updated = await updateProjectPublicRelease(actor, routeId(req.params.id), parsed.data, req.requestId);
+  if (!updated) {
+    res.status(404).json(failure("NOT_FOUND", "Project not found", req.requestId));
+    return;
+  }
+  res.status(200).json(success({ publicRelease: updated }, req.requestId));
 });
