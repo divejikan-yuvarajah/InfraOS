@@ -4,7 +4,14 @@ import { failure, success } from "../../shared/http/envelope.js";
 import { requireAuthenticated } from "../identity/auth/require-authenticated.js";
 import { requirePermission } from "../identity/authorization/require-permission.js";
 import { NOTICE_LIST_KEYS, noticeListQuerySchema } from "./notice.schema.js";
-import { NoticeDependencyError, listNotices, setNoticeRead, unreadNoticeCount } from "./notice.service.js";
+import {
+  NoticeDependencyError,
+  archiveNotice,
+  listNotices,
+  markAllNoticesRead,
+  setNoticeRead,
+  unreadNoticeCount,
+} from "./notice.service.js";
 import type { NoticeFailure } from "./notice.service.js";
 
 function noStore(res: { setHeader: (name: string, value: string) => void }): void {
@@ -109,3 +116,43 @@ function mark(isRead: boolean) {
 
 notificationRouter.patch("/:id/read", requireAuthenticated, requirePermission("notification.update"), mark(true));
 notificationRouter.patch("/:id/unread", requireAuthenticated, requirePermission("notification.update"), mark(false));
+
+notificationRouter.post("/mark-all-read", requireAuthenticated, requirePermission("notification.update"), async (req, res) => {
+  try {
+    noStore(res);
+    const actor = req.actor;
+    if (!actor) return;
+    const result = await markAllNoticesRead(actor);
+    if (!result.ok) {
+      sendFailure(res, req, result);
+      return;
+    }
+    res.status(200).json(success({ modifiedCount: result.modifiedCount }, req.requestId));
+  } catch (error) {
+    if (error instanceof NoticeDependencyError) {
+      res.status(503).json(failure("SERVICE_UNAVAILABLE", "sign-in is temporarily unavailable", req.requestId));
+      return;
+    }
+    throw error;
+  }
+});
+
+notificationRouter.patch("/:id/archive", requireAuthenticated, requirePermission("notification.update"), async (req, res) => {
+  try {
+    noStore(res);
+    const actor = req.actor;
+    if (!actor) return;
+    const result = await archiveNotice(actor, routeId(req.params.id));
+    if (!result.ok) {
+      sendFailure(res, req, result);
+      return;
+    }
+    res.status(200).json(success(result.notice, req.requestId));
+  } catch (error) {
+    if (error instanceof NoticeDependencyError) {
+      res.status(503).json(failure("SERVICE_UNAVAILABLE", "sign-in is temporarily unavailable", req.requestId));
+      return;
+    }
+    throw error;
+  }
+});

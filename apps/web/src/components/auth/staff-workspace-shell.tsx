@@ -19,6 +19,7 @@ import { fetchHubSummary } from "@/lib/roadsync/coordination-api";
 
 import { AiStatusChip } from "@/components/ai-admin/ai-status-chip";
 import { GlobalCommandPalette } from "./global-command-palette";
+import { RealtimeProvider } from "@/components/notifications/realtime-provider";
 import {
   ROLE_LABELS,
   WORKSPACE_NAV,
@@ -959,6 +960,7 @@ export function StaffWorkspaceShell({
         </main>
       </div>
 
+      <RealtimeProvider />
       {/* Global Command Palette & Search Modal (CORE-01.16 – CORE-01.18) */}
       <GlobalCommandPalette
         open={commandOpen}

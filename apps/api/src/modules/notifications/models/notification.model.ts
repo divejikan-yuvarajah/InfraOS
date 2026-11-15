@@ -13,6 +13,10 @@ const notificationSchema = new Schema({
   readAt: { type: Date },
   sourceAuditId: { type: Schema.Types.ObjectId },
   eventKey: { ...textField(80), immutable: true },
+  severity: { type: String, enum: ["INFO", "WARNING", "CRITICAL"], default: "INFO" },
+  actionUrl: textField(300),
+  archivedAt: { type: Date },
+  dedupeKey: { ...textField(140), immutable: true },
 }, { timestamps: { createdAt: true, updatedAt: false }, strict: "throw", collection: "notifications" });
 
 notificationSchema.pre("validate", function () {
@@ -22,8 +26,10 @@ notificationSchema.pre("validate", function () {
 });
 
 notificationSchema.index({ userId: 1, isRead: 1, createdAt: -1 });
+notificationSchema.index({ userId: 1, archivedAt: 1, isRead: 1, createdAt: -1 });
 // Sparse so older rows without an event key remain valid. Live Atlas must not receive this index without owner approval.
 notificationSchema.index({ eventKey: 1 }, { unique: true, sparse: true });
+notificationSchema.index({ dedupeKey: 1 }, { unique: true, sparse: true });
 
 export type NotificationDocument = mongoose.InferSchemaType<typeof notificationSchema> & { _id: mongoose.Types.ObjectId };
 export const Notification = (mongoose.models.Notification as mongoose.Model<NotificationDocument> | undefined) ?? mongoose.model<NotificationDocument>("Notification", notificationSchema);

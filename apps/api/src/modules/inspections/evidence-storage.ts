@@ -74,4 +74,13 @@ export function getDocumentStorage(): EvidenceStorage | null {
   return documentsGridfs;
 }
 
+const ISSUE_BUCKET = "issueEvidence";
+let issueGridfs: EvidenceStorage | null = null;
+/** Citizen issue photo storage via existing GridFS/object-storage abstraction. */
+export function getIssueStorage(): EvidenceStorage | null {
+  if (env.STORAGE_PROVIDER === "r2") return null;
+  issueGridfs ??= new GridFsStorage(ISSUE_BUCKET);
+  return issueGridfs;
+}
+
 export const storageKeyFor = (inspectionId: string, evidenceId: string, variant: "full" | "thumb") => `ins/${inspectionId}/${evidenceId}/${variant}`;

@@ -186,10 +186,10 @@ export function AdminAuditLogsPageClient() {
         .replace("Z", ""),
       blockHash: `0x${item.id.slice(0, 8)}...${item.id.slice(-4)}`,
       prevHash: `0x${(live[idx + 1]?.id ?? "94f1c2088a12").slice(0, 8)}...9e20`,
-      actorName: item.actorUserId ? `Principal ${item.actorUserId.slice(-6)}` : "System Enclave",
-      actorEmail: "verified-principal@infraos.gov.lk",
+      actorName: item.actorName ?? (item.actorUserId ? `Principal ${item.actorUserId.slice(-6)}` : "System Enclave"),
+      actorEmail: item.actorEmail ?? "verified-principal@infraos.gov.lk",
       actorRole: sessionUser?.roleKey ?? "SUPER_ADMIN",
-      actorAgency: item.actorAgencyId ? `Agency ${item.actorAgencyId.slice(-6)}` : "National Root",
+      actorAgency: item.agencyCode ?? (item.actorAgencyId ? `Agency ${item.actorAgencyId.slice(-6)}` : "National Root"),
       category: item.action.includes("role")
         ? "ROLE_MUTATION"
         : item.action.includes("agency")
@@ -198,17 +198,17 @@ export function AdminAuditLogsPageClient() {
             ? "SOD_VIOLATION"
             : "USER_LIFECYCLE",
       eventTitle: item.action.toUpperCase().replace(/\./g, "_"),
-      targetEntity: `${item.entityType} · ${item.entityId}`,
+      targetEntity: `${item.entityType} · ${item.entityId || "N/A"}`,
       outcome: item.outcome,
       outcomeBadge:
-        item.outcome === "DENIED" ? "BLOCKED (SoD)" : "COMMITTED · HSM SEALED",
-      gazetteDirective: `REQ-ID: ${item.requestId ?? "GOVPKI-ENCLAVE-SIGNED"}`,
-      beforeJson: {
+        item.outcome === "DENIED" ? "BLOCKED (SoD)" : "COMMITTED · AUDIT RECORDED",
+      gazetteDirective: `REQ-ID: ${item.requestId ?? "SYSTEM"}`,
+      beforeJson: item.oldValue ?? {
         entityType: item.entityType,
         entityId: item.entityId,
         requestId: item.requestId,
       },
-      afterJson: {
+      afterJson: item.newValue ?? {
         action: item.action,
         outcome: item.outcome,
         metadata: item.metadata,

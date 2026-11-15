@@ -9,6 +9,7 @@ import { useWorkspaceLocale } from "@/lib/i18n/workspace-locale";
 import { EMPTY_UF } from "@/lib/inframap/filters-state";
 import { fetchSearch } from "@/lib/inframap/inframap-api";
 import { fetchProjects } from "@/lib/projects/api";
+import { fetchGlobalSearch } from "@/lib/search/api";
 import { fetchWorkRequests } from "@/lib/roadsync/api";
 import { fetchRecords } from "@/lib/roadsync/conflict-records-api";
 
@@ -217,6 +218,14 @@ export function GlobalCommandPalette({
         bbox: null,
         uf: EMPTY_UF,
       }),
+    enabled: open && hasToken && trimmedQuery.length >= 2,
+    staleTime: 15_000,
+    retry: false,
+  });
+
+  const globalSearchQuery = useQuery({
+    queryKey: ["command-palette", "global-search", epoch, trimmedQuery],
+    queryFn: () => fetchGlobalSearch(trimmedQuery, 5),
     enabled: open && hasToken && trimmedQuery.length >= 2,
     staleTime: 15_000,
     retry: false,
@@ -519,6 +528,50 @@ export function GlobalCommandPalette({
     if ((category === "ALL" || category === "ASSETS") && assetEntries.length > 0) {
       sections.push({ key: "ASSETS", label: copy.sectionAssets, items: assetEntries });
     }
+    const gs = globalSearchQuery.data;
+    if (category === "ALL" && gs) {
+      const extraItems: PaletteEntry[] = [
+        ...gs.issues.map((i): PaletteEntry => ({
+          id: `gs-issue-${i.id}`,
+          section: "COMMANDS",
+          code: i.code ?? undefined,
+          title: i.title,
+          subtitle: i.subtitle,
+          badgeText: i.status ?? undefined,
+          badgeTone: "neutral",
+          nodeGlyph: "○",
+          materialIcon: "report_problem",
+          href: i.href,
+        })),
+        ...gs.contractors.map((c): PaletteEntry => ({
+          id: `gs-contractor-${c.id}`,
+          section: "COMMANDS",
+          code: c.code ?? undefined,
+          title: c.title,
+          subtitle: c.subtitle,
+          badgeText: c.status ?? undefined,
+          badgeTone: "neutral",
+          nodeGlyph: "○",
+          materialIcon: "engineering",
+          href: c.href,
+        })),
+        ...gs.documents.map((d): PaletteEntry => ({
+          id: `gs-doc-${d.id}`,
+          section: "COMMANDS",
+          code: d.code ?? undefined,
+          title: d.title,
+          subtitle: d.subtitle,
+          badgeText: d.status ?? undefined,
+          badgeTone: "neutral",
+          nodeGlyph: "○",
+          materialIcon: "description",
+          href: d.href,
+        })),
+      ];
+      if (extraItems.length > 0) {
+        sections.push({ key: "COMMANDS", label: "Issues, Contractors & Documents", items: extraItems });
+      }
+    }
     return sections;
   }, [
     category,
@@ -527,6 +580,7 @@ export function GlobalCommandPalette({
     projectEntries,
     workRequestEntries,
     assetEntries,
+    globalSearchQuery.data,
     copy,
   ]);
 
@@ -877,7 +931,19 @@ export function GlobalCommandPalette({
             </div>
           </div>
 
-          <div className="flex items-center gap-2 text-[11px]">
+          <div className="flex items-center gap-3 text-[11px]">
+            {trimmedQuery.length >= 2 ? (
+              <button
+                type="button"
+                onClick={() => {
+                  onOpenChange(false);
+                  router.push(`/search?q=${encodeURIComponent(trimmedQuery)}`);
+                }}
+                className="font-semibold text-primary hover:underline"
+              >
+                View all search results →
+              </button>
+            ) : null}
             <span className="text-outline font-medium">
               {copy.scopePrefix}:{" "}
               <strong className="text-on-surface font-semibold">{scopeLabel}</strong> ({roleLabel})

@@ -46,3 +46,21 @@ export async function setNoticeRead(id: string, isRead: boolean): Promise<void> 
   });
   moved(atEpoch, tokenAtStart);
 }
+
+export async function markAllNoticesRead(): Promise<void> {
+  const { atEpoch, tokenAtStart } = guard();
+  await apiClient("/api/v1/notifications/mark-all-read", {
+    method: "POST",
+    authenticated: true,
+  });
+  moved(atEpoch, tokenAtStart);
+}
+
+export async function archiveNotice(id: string): Promise<void> {
+  const { atEpoch, tokenAtStart } = guard();
+  await apiClient(`/api/v1/notifications/${id}/archive`, {
+    method: "PATCH",
+    authenticated: true,
+  });
+  moved(atEpoch, tokenAtStart);
+}
