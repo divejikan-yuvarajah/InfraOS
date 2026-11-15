@@ -1,10 +1,15 @@
 export type NoticeItem = {
   id: string;
-  type: "APPROVAL" | "MILESTONE" | "SYSTEM" | "CONFLICT" | "COORDINATION";
+  type: "APPROVAL" | "MILESTONE" | "SYSTEM" | "CONFLICT" | "COORDINATION" | "CITIZEN_ISSUE" | "RISK" | "INSPECTION";
+  severity?: "INFO" | "WARNING" | "CRITICAL";
+  title?: string;
+  message?: string;
   titleKey: string;
+  actionUrl?: string | null;
   isRead: boolean;
   createdAt: string;
   readAt: string | null;
+  archivedAt?: string | null;
   project: null | { id: string; projectCode: string; title: string; status: string };
   /** Step 73: RoadSync conflict notices carry key + params only; the sentence is composed client-side. */
   conflict?: { id: string | null; params: Record<string, unknown> };

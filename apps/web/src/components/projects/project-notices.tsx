@@ -11,8 +11,10 @@ import type { AuthLocale } from "@/lib/auth/types";
 import { useWorkspaceLocale } from "@/lib/i18n/workspace-locale";
 import { classifyEditError } from "@/lib/projects/edit-outcome";
 import {
+  archiveNotice,
   fetchNotices,
   fetchUnreadCount,
+  markAllNoticesRead,
   setNoticeRead,
 } from "@/lib/projects/notice-api";
 import { getNoticeCopy, noticeTitle } from "@/lib/projects/notice-messages";
@@ -154,16 +156,23 @@ export function ProjectNotices() {
     unreadCountQuery.data ?? query.data?.unreadCount ?? allItems.filter((i) => !i.isRead).length;
 
   const handleMarkAllRead = async () => {
-    const unreadItems = allItems.filter((i) => !i.isRead);
-    if (unreadItems.length === 0) return;
     setMarkingAll(true);
     try {
-      await Promise.all(unreadItems.map((i) => setNoticeRead(i.id, true)));
+      await markAllNoticesRead();
       await qc.invalidateQueries({ queryKey: ["notifications"] });
+      await qc.invalidateQueries({ queryKey: ["projects", "notices-popover"] });
     } finally {
       setMarkingAll(false);
     }
   };
+
+  const archiveMut = useMutation({
+    mutationFn: (id: string) => archiveNotice(id),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ["notifications"] });
+      void qc.invalidateQueries({ queryKey: ["projects", "notices-popover"] });
+    },
+  });
 
   return (
     <StaffWorkspaceShell
@@ -494,6 +503,15 @@ export function ProjectNotices() {
                                 <span>
                                   {n.isRead ? copy.markUnread : copy.markRead}
                                 </span>
+                              </button>
+                              <button
+                                type="button"
+                                disabled={archiveMut.isPending}
+                                onClick={() => archiveMut.mutate(n.id)}
+                                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded bg-surface-container-low border border-outline-variant/50 text-on-surface-variant text-xs font-medium hover:bg-surface-container transition-colors disabled:opacity-50"
+                              >
+                                <span className="material-symbols-outlined text-[15px]">archive</span>
+                                <span>Archive</span>
                               </button>
                             </div>
                           </div>

@@ -32,6 +32,21 @@ const projectSchema = new Schema({
   riskLevel: { type: String, enum: RISK_LEVELS, required: false },
   riskAssessedAt: { type: Date, required: false },
   latestRiskAssessmentId: reference("RiskAssessment", false),
+  // Step 128: Allowlisted public portal release configuration. Never exposes internal notes, finance, or user IDs.
+  publicRelease: {
+    type: new Schema({
+      isPublic: { type: Boolean, required: true, default: false },
+      slug: { type: String, trim: true, maxlength: 120, match: /^[a-z0-9]+(?:-[a-z0-9]+)*$/ },
+      showProgress: { type: Boolean, required: true, default: true },
+      showBudgetBand: { type: Boolean, required: true, default: false },
+      showCoordinates: { type: Boolean, required: true, default: true },
+      safeTitle: textField(200),
+      safeSummary: textField(2000),
+      publishedAt: { type: Date },
+      publishedBy: { type: Schema.Types.ObjectId, ref: "User", required: false },
+    }, { _id: false, strict: "throw" }),
+    required: false,
+  },
   createdBy: reference("User"),
 }, { timestamps: true, strict: "throw", collection: "projects" });
 
@@ -48,6 +63,8 @@ projectSchema.index({ geometry: "2dsphere" });
 projectSchema.index({ "location.district": 1 });
 projectSchema.index({ agencyId: 1, riskLevel: 1 });
 projectSchema.index({ riskLevel: 1, riskAssessedAt: 1 });
+projectSchema.index({ "publicRelease.isPublic": 1, status: 1 });
+projectSchema.index({ "publicRelease.slug": 1 }, { unique: true, sparse: true });
 
 export type ProjectDocument = mongoose.InferSchemaType<typeof projectSchema> & { _id: mongoose.Types.ObjectId };
 export const Project = (mongoose.models.Project as mongoose.Model<ProjectDocument> | undefined) ?? mongoose.model<ProjectDocument>("Project", projectSchema);

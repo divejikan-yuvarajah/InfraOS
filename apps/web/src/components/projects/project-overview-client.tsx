@@ -1,5 +1,6 @@
 "use client";
 
+import { PublicReleaseCard } from "@/components/projects/public-release-card";
 import { LinkedDocumentsPanel } from "@/components/documents/linked-documents-panel";
 import { ProjectAssetsCard } from "@/components/assets/project-assets-card";
 import { OpenFinanceLink } from "@/components/finance/finance-links";
@@ -931,20 +932,31 @@ export function ProjectOverviewClient({ id }: { id: string }) {
         </div>
       ) : null}
       {project.data ? (
-        <OverviewBody
-          project={project.data}
-          copy={copy}
-          statusText={dashboardStatusLabel(project.data.status, dash)}
-          listQuery={listQuery}
-          pending={transition.isPending}
-          notice={notice}
-          reviewLabel={getReviewCopy(locale).openReview}
-          financial={financial}
-          onTransition={(action, reason) => {
-            setNotice(null);
-            transition.mutate({ action, reason });
-          }}
-        />
+        <>
+          <OverviewBody
+            project={project.data}
+            copy={copy}
+            statusText={dashboardStatusLabel(project.data.status, dash)}
+            listQuery={listQuery}
+            pending={transition.isPending}
+            notice={notice}
+            reviewLabel={getReviewCopy(locale).openReview}
+            financial={financial}
+            onTransition={(action, reason) => {
+              setNotice(null);
+              transition.mutate({ action, reason });
+            }}
+          />
+          {roleKey !== "CONTRACTOR" && roleKey !== "INSPECTOR" && roleKey !== "CITIZEN" ? (
+            <div className="mt-6">
+              <PublicReleaseCard
+                projectId={project.data.id}
+                projectCode={project.data.projectCode}
+                title={project.data.title}
+              />
+            </div>
+          ) : null}
+        </>
       ) : null}
     </StaffWorkspaceShell>
   );
