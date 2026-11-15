@@ -6,6 +6,7 @@ import type { AuthenticatedActor } from "../identity/auth/require-authenticated.
 import { resolveResourceScope } from "../identity/authorization/resource-scope.js";
 import { getIssueStorage } from "../inspections/evidence-storage.js";
 import { escapeSearchRegex, type ParsedListQuery } from "../../shared/http/list-query.js";
+import { notify } from "../notifications/notify.service.js";
 import { ISSUE_TRANSITIONS, type IssueCategory, type IssueStatus } from "./issue.constants.js";
 import { CitizenIssue } from "./models/citizen-issue.model.js";
 import { IssueRoutingRule } from "./models/issue-routing-rule.model.js";
@@ -198,6 +199,19 @@ export async function routeStaffIssue(
     requestId,
   });
 
+  void notify({
+    permission: "citizen_issue.read",
+    agencyId: agency._id,
+    type: "CITIZEN_ISSUE",
+    severity: "INFO",
+    title: `Citizen issue ${issue.referenceNo ?? String(issue._id)} routed to ${agency.code}`,
+    message: `${issue.title} has been assigned to ${agency.name}.`,
+    resourceType: "CITIZEN_ISSUE",
+    resourceId: issue._id,
+    actionUrl: `/issues/${String(issue._id)}`,
+    dedupeKey: `issue_routed:${String(issue._id)}:${String(agency._id)}`,
+  }).catch(() => undefined);
+
   return { ok: true as const, issueId: String(issue._id), status: issue.status, agencyId: String(agency._id) };
 }
 
@@ -264,6 +278,18 @@ export async function transitionStaffIssue(
     newValue: { status: input.toStatus },
     requestId,
   });
+
+  void notify({
+    permission: "citizen_issue.read",
+    agencyId: issue.assignedAgency ?? null,
+    type: "CITIZEN_ISSUE",
+    severity: input.toStatus === "NEEDS_INFO" ? "WARNING" : "INFO",
+    title: `Citizen issue ${issue.referenceNo ?? String(issue._id)} -> ${input.toStatus}`,
+    message: `${issue.title} moved from ${prevStatus} to ${input.toStatus}.`,
+    resourceType: "CITIZEN_ISSUE",
+    resourceId: issue._id,
+    actionUrl: `/issues/${String(issue._id)}`,
+  }).catch(() => undefined);
 
   return {
     ok: true as const,

@@ -5,6 +5,7 @@ import { Agency } from "../agencies/models/agency.model.js";
 import { nextNumber } from "../../shared/database/counter.js";
 import { escapeSearchRegex } from "../../shared/http/list-query.js";
 import { logger } from "../../shared/logger.js";
+import { notify } from "../notifications/notify.service.js";
 import { getIssueStorage } from "../inspections/evidence-storage.js";
 import { Project } from "../projects/models/project.model.js";
 import { isInsideSriLanka, type IssueCategory, type IssuePriority } from "../issues/issue.constants.js";
@@ -341,6 +342,19 @@ export async function createPublicIssue(input: {
   });
 
   logger.info({ referenceNo, issueId: String(doc._id), routed: Boolean(routedAgencyId) }, "public citizen issue submitted");
+
+  void notify({
+    permission: "citizen_issue.read",
+    agencyId: routedAgencyId,
+    type: "CITIZEN_ISSUE",
+    severity: "INFO",
+    title: `New citizen issue ${referenceNo}`,
+    message: `${input.title} (${input.category}) submitted via public portal.`,
+    resourceType: "CITIZEN_ISSUE",
+    resourceId: doc._id as mongoose.Types.ObjectId,
+    actionUrl: `/issues/${String(doc._id)}`,
+    dedupeKey: `issue_submitted:${String(doc._id)}`,
+  }).catch(() => undefined);
 
   return {
     ok: true as const,

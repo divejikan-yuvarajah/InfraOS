@@ -9,6 +9,7 @@ import { adminUserRouter } from "../modules/identity/admin-users/admin-user.rout
 import { profileRouter } from "../modules/identity/profile/profile.routes.js";
 import { projectRouter } from "../modules/projects/projects.routes.js";
 import { notificationRouter } from "../modules/notifications/notice.routes.js";
+import { alertsRouter } from "../modules/notifications/alerts.routes.js";
 import { roadsyncRouter } from "../modules/roadsync/work-requests.routes.js";
 import { financeRouter } from "../modules/finance/finance.routes.js";
 import { projectContractorRouter } from "../modules/contractors/contractor-assignment.routes.js";
@@ -48,6 +49,7 @@ export function createV1Router(): Router {
   router.use("/issues", issueRouter);
   router.use("/risk", riskRouter);
   router.use("/notifications", notificationRouter);
+  router.use("/alerts", alertsRouter);
   router.use("/roadsync", roadsyncRouter);
   router.use("/inframap", inframapRouter);
   router.use("/contractors", contractorRouter);

@@ -8,6 +8,8 @@ import {
 } from "./config/database.js";
 import { env, requireMongoConfig } from "./config/env.js";
 import { startAiBackground, stopAiBackground } from "./modules/ai/ai.bootstrap.js";
+import { startAlertsScheduler } from "./modules/notifications/alerts.service.js";
+import { closeRealtime, initRealtime } from "./modules/notifications/realtime.js";
 import { startRiskScheduler } from "./modules/risk/risk-scheduler.js";
 import { logger } from "./shared/logger.js";
 
@@ -104,9 +106,15 @@ function registerShutdown(
 async function main(): Promise<void> {
   await connectMongoIfConfigured();
   const server = await startHttpServer();
+  initRealtime(server);
   startAiBackground();
   const riskScheduler = startRiskScheduler();
-  registerShutdown(server, [async () => riskScheduler.stop()]);
+  const alertsScheduler = startAlertsScheduler();
+  registerShutdown(server, [
+    async () => riskScheduler.stop(),
+    async () => alertsScheduler.stop(),
+    async () => closeRealtime(),
+  ]);
 }
 
 main().catch((error: unknown) => {

@@ -34,6 +34,7 @@ import { ProgressVerification } from "../../modules/inspections/models/progress-
 import { CitizenIssue } from "../../modules/issues/models/citizen-issue.model.js";
 import { IssueRoutingRule } from "../../modules/issues/models/issue-routing-rule.model.js";
 import { Notification } from "../../modules/notifications/models/notification.model.js";
+import { SystemAlert } from "../../modules/notifications/models/system-alert.model.js";
 import { Milestone } from "../../modules/projects/models/milestone.model.js";
 import { Project } from "../../modules/projects/models/project.model.js";
 import { HazardZone } from "../../modules/risk/models/hazard-zone.model.js";
@@ -108,6 +109,7 @@ export const INDEX_MODELS = [
   CitizenIssue,
   IssueRoutingRule,
   Notification,
+  SystemAlert,
   RiskAssessment,
   RiskResolution,
   RiskRun,
