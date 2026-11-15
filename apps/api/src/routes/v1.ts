@@ -25,6 +25,7 @@ import { aiDocumentRouter, aiRouter } from "../modules/ai/ai.routes.js";
 import { inframapRouter } from "../modules/inframap/inframap.routes.js";
 import { issueRouter } from "../modules/issues/issue.routes.js";
 import { publicRouter } from "../modules/public/public.routes.js";
+import { searchRouter } from "../modules/search/search.routes.js";
 import { projectRiskRouter, riskRouter } from "../modules/risk/risk.routes.js";
 
 export function createV1Router(): Router {
@@ -50,6 +51,7 @@ export function createV1Router(): Router {
   router.use("/risk", riskRouter);
   router.use("/notifications", notificationRouter);
   router.use("/alerts", alertsRouter);
+  router.use("/search", searchRouter);
   router.use("/roadsync", roadsyncRouter);
   router.use("/inframap", inframapRouter);
   router.use("/contractors", contractorRouter);

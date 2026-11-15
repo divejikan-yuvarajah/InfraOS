@@ -32,6 +32,8 @@ const PRIVATE_ROOTS = new Set([
   "maintenance",
   "insights",
   "notifications",
+  "alerts",
+  "search",
   "reports",
   "profile",
   "settings",
