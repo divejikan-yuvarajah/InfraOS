@@ -19,7 +19,11 @@ export type GlobalSearchResponse = {
   assets: GlobalSearchResultItem[];
 };
 
-export function fetchGlobalSearch(q: string, limit = 5): Promise<GlobalSearchResponse> {
+export async function fetchGlobalSearch(q: string, limit = 5): Promise<GlobalSearchResponse> {
   const qs = new URLSearchParams({ q, limit: String(limit) });
-  return apiClient<GlobalSearchResponse>(`/search?${qs.toString()}`);
+  const payload = await apiClient<{ success: true; data: GlobalSearchResponse }>(
+    `/api/v1/search?${qs.toString()}`,
+    { method: "GET", authenticated: true },
+  );
+  return payload.data;
 }
