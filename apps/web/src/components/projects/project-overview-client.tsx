@@ -11,6 +11,7 @@ import { useSearchParams } from "next/navigation";
 import { useState, useSyncExternalStore } from "react";
 
 import { StaffWorkspaceShell } from "@/components/auth/staff-workspace-shell";
+import { DataSourceBadge } from "@/components/common/civic-atlas-primitives";
 import { ContextBar, DualProgress, FactsList, HonestyChip, LifecycleRail, StatusChip } from "@/components/site-plan/site-plan";
 import { ApiError } from "@/lib/api/client";
 import { getAuthEpoch, getMemoryAccessToken, getMemorySession, subscribeAuth } from "@/lib/auth/state";
@@ -56,14 +57,14 @@ function stageIndexForStatus(status: string): { activeIdx: number; hasDeviation:
 }
 
 const STATUTORY_STAGES = [
-  { step: "01", name: "Concept", sub: "Filed" },
-  { step: "02", name: "Survey", sub: "SLD99" },
-  { step: "03", name: "Design", sub: "CAD" },
-  { step: "04", name: "Accord", sub: "Agency" },
-  { step: "05", name: "Tender", sub: "Award" },
-  { step: "06", name: "Trenching", sub: "Civil Works" },
-  { step: "07", name: "Paving", sub: "Surface" },
-  { step: "08", name: "Handover", sub: "As-Built" },
+  { step: "01", name: "Concept", sub: "Filed", tab: "overview" },
+  { step: "02", name: "Survey", sub: "SLD99", tab: "timeline" },
+  { step: "03", name: "Design", sub: "CAD", tab: "milestones" },
+  { step: "04", name: "Accord", sub: "Agency", tab: "review" },
+  { step: "05", name: "Tender", sub: "Award", tab: "finance" },
+  { step: "06", name: "Trenching", sub: "Civil Works", tab: "progress" },
+  { step: "07", name: "Paving", sub: "Surface", tab: "inspections" },
+  { step: "08", name: "Handover", sub: "As-Built", tab: "activity" },
 ] as const;
 
 function OverviewBody({
@@ -330,16 +331,17 @@ function OverviewBody({
             const isDone = stageNum < activeIdx;
             const isCurrent = stageNum === activeIdx;
             return (
-              <div
+              <Link
                 key={st.step}
+                href={`/projects/${project.id}/${st.tab}`}
                 className={
                   isCurrent
                     ? hasDeviation
-                      ? "p-2.5 rounded border-2 border-error bg-error-container/20"
-                      : "p-2.5 rounded border-2 border-secondary bg-secondary-fixed/30"
+                      ? "p-2.5 rounded border-2 border-error bg-error-container/20 hover:shadow-sm transition-shadow"
+                      : "p-2.5 rounded border-2 border-secondary bg-secondary-fixed/30 hover:shadow-sm transition-shadow"
                     : isDone
-                      ? "p-2.5 rounded border border-emerald-500/30 bg-emerald-50/40"
-                      : "p-2.5 rounded border border-outline-variant/30 bg-surface-container-low/40 opacity-75"
+                      ? "p-2.5 rounded border border-emerald-500/30 bg-emerald-50/40 hover:bg-emerald-50/70 transition-colors"
+                      : "p-2.5 rounded border border-outline-variant/30 bg-surface-container-low/40 opacity-85 hover:opacity-100 transition-opacity"
                 }
               >
                 <div className="flex items-center justify-between text-[10px] font-mono font-bold">
@@ -359,8 +361,8 @@ function OverviewBody({
                   </span>
                 </div>
                 <div className="text-xs font-bold text-on-surface mt-1">{st.name}</div>
-                <div className="text-[10px] text-on-surface-variant font-mono mt-0.5">{st.sub}</div>
-              </div>
+                <div className="text-[10px] text-on-surface-variant font-mono mt-0.5">{st.sub} →</div>
+              </Link>
             );
           })}
         </div>
@@ -407,7 +409,10 @@ function OverviewBody({
             <div className="p-5 bg-[#14202d] text-white relative overflow-hidden">
               <div className="relative z-10 flex flex-wrap items-center justify-between gap-2 text-[11px] font-mono text-slate-300 mb-3">
                 <span>ROW WIDTH: 24.0m (4-LANE ARTERIAL + UTILITY TRENCHES)</span>
-                <span className="text-[#ffb59a]">MIN BURIAL DEPTH: 1.50m — 2.40m</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-[#ffb59a]">MIN BURIAL DEPTH: 1.50m — 2.40m</span>
+                  <DataSourceBadge kind="demo" label="Subsurface Cross-Section Demo" />
+                </div>
               </div>
               <svg className="w-full h-36" viewBox="0 0 800 150" fill="none">
                 <rect x="0" y="30" width="800" height="12" fill="#334155" />

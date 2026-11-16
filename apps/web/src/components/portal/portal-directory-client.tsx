@@ -4,8 +4,16 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 
+import {
+  BenchmarkStatusBadge,
+  ChainageBar,
+  CommandHeader,
+  MetricCard,
+} from "@/components/common/civic-atlas-primitives";
 import { FilterBar } from "@/components/common/filter-bar";
 import { Pagination } from "@/components/common/pagination";
+import { ContentSkeleton } from "@/components/feedback/content-skeleton";
+import { EmptyState } from "@/components/feedback/empty-state";
 import type { AuthLocale } from "@/lib/auth/types";
 import { fetchPublicProjects, fetchPublicSummary } from "@/lib/public/api";
 import { PORTAL_COPY } from "@/lib/public/messages";
@@ -72,45 +80,70 @@ export function PortalDirectoryClient({ locale }: { locale: AuthLocale }) {
   return (
     <PortalShell locale={locale} activeNav="portal">
       {copy.draftNotice ? (
-        <p className="mb-4 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+        <p className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-3.5 py-2 text-xs font-medium text-amber-900">
           {copy.draftNotice}
         </p>
       ) : null}
 
-      <section aria-label="Public summary statistics" className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-xs">
-          <div className="text-xs font-medium text-slate-500">{copy.statsReleased}</div>
-          <div className="mt-1 text-2xl font-semibold tabular-nums text-slate-900">{s?.releasedProjects ?? "—"}</div>
-        </div>
-        <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-xs">
-          <div className="text-xs font-medium text-slate-500">{copy.statsActive}</div>
-          <div className="mt-1 text-2xl font-semibold tabular-nums text-blue-700">{s?.activeProjects ?? "—"}</div>
-        </div>
-        <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-xs">
-          <div className="text-xs font-medium text-slate-500">{copy.statsCompleted}</div>
-          <div className="mt-1 text-2xl font-semibold tabular-nums text-emerald-700">{s?.completedProjects ?? "—"}</div>
-        </div>
-        <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-xs">
-          <div className="text-xs font-medium text-slate-500">{copy.statsIssues}</div>
-          <div className="mt-1 text-2xl font-semibold tabular-nums text-slate-900">
-            {s ? `${s.resolvedIssues}/${s.totalIssuesReported}` : "—"}
-          </div>
-        </div>
+      {/* Civic Editorial Command Header with Three Primary Actions (§3 & §5.8) */}
+      <CommandHeader
+        variant="navy"
+        eyebrow="PUBLIC INFRASTRUCTURE TRANSPARENCY"
+        title={copy.directoryTitle}
+        subtitle={copy.brandSubtitle}
+        sourceKind="live"
+        primaryAction={
+          <Link
+            href="/portal/report"
+            className="inline-flex min-h-10 items-center rounded-lg bg-[#c43d00] px-4 py-2 text-xs font-semibold text-white shadow-xs hover:bg-[#802a00]"
+          >
+            {copy.navReport}
+          </Link>
+        }
+        secondaryActions={
+          <>
+            <Link
+              href="/portal/map"
+              className="inline-flex min-h-10 items-center rounded-lg border border-white/20 bg-white/10 px-3.5 py-2 text-xs font-semibold text-white hover:bg-white/15"
+            >
+              {copy.navMap}
+            </Link>
+            <Link
+              href="/portal/track"
+              className="inline-flex min-h-10 items-center rounded-lg border border-white/20 bg-white/10 px-3.5 py-2 text-xs font-semibold text-white hover:bg-white/15"
+            >
+              {copy.navTrack}
+            </Link>
+          </>
+        }
+      />
+
+      <section
+        aria-label="Public summary statistics"
+        className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4"
+      >
+        <MetricCard
+          label={copy.statsReleased}
+          value={s?.releasedProjects ?? "—"}
+          sourceKind="live"
+        />
+        <MetricCard
+          label={copy.statsActive}
+          value={s?.activeProjects ?? "—"}
+          tone="brand"
+        />
+        <MetricCard
+          label={copy.statsCompleted}
+          value={s?.completedProjects ?? "—"}
+          tone="success"
+        />
+        <MetricCard
+          label={copy.statsIssues}
+          value={s ? `${s.resolvedIssues}/${s.totalIssuesReported}` : "—"}
+        />
       </section>
 
       <section className="space-y-4">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <h1 className="text-xl font-semibold text-slate-900">{copy.directoryTitle}</h1>
-          <div className="flex gap-2">
-            <Link href="/portal/report" className="rounded-md bg-blue-700 px-3.5 py-2 text-xs font-medium text-white hover:bg-blue-800">
-              {copy.navReport}
-            </Link>
-            <Link href="/portal/track" className="rounded-md border border-slate-300 bg-white px-3.5 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50">
-              {copy.navTrack}
-            </Link>
-          </div>
-        </div>
-
         <FilterBar
           q={q}
           onQChange={setQ}
@@ -128,7 +161,9 @@ export function PortalDirectoryClient({ locale }: { locale: AuthLocale }) {
               key: "category",
               label: copy.allCategories,
               value: category,
-              options: PROJECT_CATEGORIES.map((o, idx) => (idx === 0 ? { ...o, label: copy.allCategories } : o)),
+              options: PROJECT_CATEGORIES.map((o, idx) =>
+                idx === 0 ? { ...o, label: copy.allCategories } : o,
+              ),
               onChange: (v) => {
                 setCategory(v);
                 setPage(1);
@@ -138,7 +173,9 @@ export function PortalDirectoryClient({ locale }: { locale: AuthLocale }) {
               key: "status",
               label: copy.allStatuses,
               value: status,
-              options: PROJECT_STATUSES.map((o, idx) => (idx === 0 ? { ...o, label: copy.allStatuses } : o)),
+              options: PROJECT_STATUSES.map((o, idx) =>
+                idx === 0 ? { ...o, label: copy.allStatuses } : o,
+              ),
               onChange: (v) => {
                 setStatus(v);
                 setPage(1);
@@ -165,45 +202,54 @@ export function PortalDirectoryClient({ locale }: { locale: AuthLocale }) {
         />
 
         {projectsQuery.isLoading ? (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="h-44 animate-pulse rounded-lg border border-slate-200 bg-white p-4" />
-            ))}
-          </div>
+          <ContentSkeleton variant="kpi" label="Loading public projects" />
         ) : list && list.items.length > 0 ? (
           <>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {list.items.map((item) => (
-                <article key={item.slug} className="flex flex-col justify-between rounded-lg border border-slate-200 bg-white p-4 shadow-xs">
+                <article
+                  key={item.slug}
+                  className="cac-card flex flex-col justify-between p-5 transition-shadow hover:shadow-md"
+                >
                   <div>
-                    <div className="flex items-center justify-between gap-2 text-xs text-slate-500">
-                      <span className="font-mono">{item.projectCode}</span>
-                      <span className="rounded bg-slate-100 px-2 py-0.5 font-medium text-slate-700">{item.status}</span>
+                    <div className="flex items-center justify-between gap-2 text-xs">
+                      <span className="rounded bg-slate-100 px-2 py-0.5 font-mono font-bold text-slate-700">
+                        {item.projectCode}
+                      </span>
+                      <BenchmarkStatusBadge status={item.status} size="sm" />
                     </div>
-                    <h2 className="mt-2 text-base font-semibold text-slate-900">{item.title}</h2>
-                    <p className="mt-1 line-clamp-2 text-xs text-slate-600">{item.summary}</p>
-                    <div className="mt-3 flex flex-wrap gap-2 text-xs text-slate-500">
+                    <h2 className="mt-2.5 text-base font-semibold text-slate-900">
+                      {item.title}
+                    </h2>
+                    <p className="mt-1 line-clamp-2 text-xs text-slate-600">
+                      {item.summary}
+                    </p>
+                    <div className="mt-3 flex flex-wrap gap-2 text-xs font-medium text-slate-500">
                       {item.agency ? <span>{item.agency.code}</span> : null}
                       {item.district ? <span>· {item.district}</span> : null}
                       <span>· {item.category}</span>
                     </div>
                   </div>
 
-                  <div className="mt-4 border-t border-slate-100 pt-3">
+                  <div className="mt-4 border-t border-slate-100 pt-3 space-y-3">
                     {item.physicalProgress !== null ? (
-                      <div className="mb-2">
-                        <div className="flex justify-between text-xs text-slate-600">
-                          <span>{copy.progressLabel}</span>
-                          <span className="tabular-nums font-medium">{item.physicalProgress}%</span>
-                        </div>
-                        <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
-                          <div className="h-full bg-blue-600" style={{ width: `${Math.min(100, Math.max(0, item.physicalProgress))}%` }} />
-                        </div>
-                      </div>
+                      <ChainageBar
+                        verifiedPercent={item.status === "COMPLETED" ? 100 : null}
+                        reportedPercent={item.physicalProgress}
+                        label={copy.progressLabel}
+                        showRulerLabels={false}
+                      />
                     ) : null}
                     <div className="flex items-center justify-between text-xs">
-                      <span className="text-slate-500">{item.budgetBand ? `${copy.budgetBandLabel}: ${item.budgetBand}` : ""}</span>
-                      <Link href={`/portal/projects/${item.slug}`} className="font-medium text-blue-700 hover:underline">
+                      <span className="font-mono text-slate-500">
+                        {item.budgetBand
+                          ? `${copy.budgetBandLabel}: ${item.budgetBand}`
+                          : ""}
+                      </span>
+                      <Link
+                        href={`/portal/projects/${item.slug}`}
+                        className="font-semibold text-[#c43d00] hover:underline"
+                      >
                         {copy.viewDetails} →
                       </Link>
                     </div>
@@ -212,12 +258,15 @@ export function PortalDirectoryClient({ locale }: { locale: AuthLocale }) {
               ))}
             </div>
 
-            <Pagination page={list.page} totalPages={list.totalPages} total={list.total} onPageChange={setPage} />
+            <Pagination
+              page={list.page}
+              totalPages={list.totalPages}
+              total={list.total}
+              onPageChange={setPage}
+            />
           </>
         ) : (
-          <div className="rounded-lg border border-dashed border-slate-300 bg-white p-8 text-center text-sm text-slate-600">
-            {copy.noProjects}
-          </div>
+          <EmptyState variant="no-results" title={copy.noProjects} />
         )}
       </section>
     </PortalShell>

@@ -22,7 +22,8 @@ export function CategoryBreakdown({
   onSelectCategory: (cat?: string) => void;
   className?: string;
 }) {
-  const categories = overview?.categories ?? ({} as any);
+  const categories: Partial<Record<RiskFactorCategory, { highPlusCount?: number }>> =
+    overview?.categories ?? {};
   const totalAssessed = overview?.counts?.assessed || 1;
 
   return (

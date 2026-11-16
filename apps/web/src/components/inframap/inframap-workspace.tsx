@@ -546,7 +546,18 @@ export function InframapWorkspace() {
 
         <p className="rs-help">{copy.demoNote}</p>
         <div className="im-top">
-          {!isPhone ? <button type="button" className="rs-btn im-panel-toggle" aria-expanded={sidebarOpen} aria-controls="im-side" onClick={() => setSidebarOpen((o) => !o)}><LayersIcon aria-hidden="true" />{sidebarOpen ? copy.toolbar.hidePanel : copy.toolbar.showPanel}</button> : null}
+          {!isPhone ? (
+            <button
+              type="button"
+              className="rs-btn im-panel-toggle"
+              aria-expanded={sidebarOpen}
+              aria-controls="im-side"
+              onClick={() => setSidebarOpen((o) => !o)}
+            >
+              <LayersIcon aria-hidden="true" />
+              {sidebarOpen ? "Focus Mode (Hide Panels)" : copy.toolbar.showPanel}
+            </button>
+          ) : null}
           <span className="im-fresh" role="status">{updatedText}</span>
           {focus ? <button type="button" className="im-focus-chip" onClick={() => toggleFocus(null)}><TargetIcon aria-hidden="true" />{copy.deck.exitFocus} · {copy.layers[focus]}</button> : null}
           <button type="button" className="rs-btn" onClick={() => setPaletteOpen(true)} aria-label={c3.pal.open} title={c3.pal.hint}><CommandIcon aria-hidden="true" />{!isPhone ? c3.pal.hint : null}</button>

@@ -4,6 +4,12 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 
 import { StaffWorkspaceShell } from "@/components/auth/staff-workspace-shell";
+import {
+  ChainageBar,
+  ChartFrame,
+  CommandHeader,
+  MetricCard,
+} from "@/components/common/civic-atlas-primitives";
 import { FilterBar } from "@/components/common/filter-bar";
 import { useWorkspaceLocale } from "@/lib/i18n/workspace-locale";
 import {
@@ -69,8 +75,8 @@ function StatusBarChart({ data }: { data: Array<{ status: string; count: number 
             <text x={0} y={y + 15} className="fill-slate-700 text-[11px] font-medium">
               {d.status}
             </text>
-            <rect x={125} y={y + 2} width={Math.max(4, w)} height={16} rx={3} className="fill-blue-700" />
-            <text x={125 + Math.max(4, w) + 8} y={y + 15} className="fill-slate-800 text-[11px] font-semibold">
+            <rect x={125} y={y + 2} width={Math.max(4, w)} height={16} rx={3} className="fill-[#c43d00]" />
+            <text x={125 + Math.max(4, w) + 8} y={y + 15} className="fill-slate-800 text-[11px] font-mono font-semibold">
               {d.count}
             </text>
           </g>
@@ -133,31 +139,34 @@ export function ReportsClient() {
   };
 
   return (
-    <StaffWorkspaceShell title={copy.title}>
-      <div className="space-y-6 p-4 sm:p-6">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <h1 className="text-xl font-semibold text-slate-900">{copy.title}</h1>
-            <p className="text-sm text-slate-600">{copy.subtitle}</p>
-          </div>
-          <div className="flex flex-wrap items-center gap-2 print:hidden">
+    <StaffWorkspaceShell title={copy.title} hidePageHeader>
+      <div className="space-y-6 p-4 sm:p-6 max-w-[1600px] mx-auto">
+        <CommandHeader
+          variant="navy"
+          eyebrow="EXECUTIVE REPORTS & KPIs"
+          title={copy.title}
+          subtitle={copy.subtitle}
+          sourceKind="live"
+          primaryAction={
             <button
               type="button"
               disabled={exporting}
               onClick={() => void handleExportCsv()}
-              className="rounded-md bg-slate-900 px-3.5 py-2 text-xs font-semibold text-white hover:bg-slate-800 disabled:opacity-50"
+              className="rounded-lg bg-[#c43d00] px-4 py-2 text-xs font-semibold text-white hover:bg-[#802a00] disabled:opacity-50 print:hidden"
             >
               {exporting ? "Exporting..." : `${copy.exportCsv} (${exportKind})`}
             </button>
+          }
+          secondaryActions={
             <button
               type="button"
               onClick={() => window.print()}
-              className="rounded-md border border-slate-300 bg-white px-3.5 py-2 text-xs font-semibold text-slate-800 hover:bg-slate-50"
+              className="rounded-lg border border-white/20 bg-white/10 px-3.5 py-2 text-xs font-semibold text-white hover:bg-white/15 print:hidden"
             >
               {copy.printPdf}
             </button>
-          </div>
-        </div>
+          }
+        />
 
         <div className="flex flex-wrap items-center gap-2 print:hidden">
           {(["overview", "projects", "agencies", "budgets", "contractors"] as const).map((t) => (
@@ -165,9 +174,9 @@ export function ReportsClient() {
               key={t}
               type="button"
               onClick={() => setTab(t)}
-              className={`rounded-md px-3 py-1.5 text-xs font-semibold capitalize ${
+              className={`rounded-lg px-3.5 py-1.5 text-xs font-semibold capitalize transition-colors ${
                 tab === t
-                  ? "bg-blue-700 text-white"
+                  ? "bg-[#111827] text-white shadow-2xs"
                   : "border border-slate-300 bg-white text-slate-700 hover:bg-slate-50"
               }`}
             >
@@ -219,39 +228,63 @@ export function ReportsClient() {
         {tab === "overview" && ov ? (
           <div className="space-y-6">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              <div className="rounded-lg border border-slate-200 bg-white p-4">
-                <p className="text-xs font-medium text-slate-500">Total Projects</p>
-                <p className="mt-1 text-2xl font-bold text-slate-900">{ov.totalProjects}</p>
-                <p className="mt-1 text-xs text-slate-500">{ov.activeProjects} active · {ov.delayedProjects} overdue</p>
-              </div>
-              <div className="rounded-lg border border-slate-200 bg-white p-4">
-                <p className="text-xs font-medium text-slate-500">Avg Physical Progress</p>
-                <p className="mt-1 text-2xl font-bold text-slate-900">{ov.avgPhysicalProgress}%</p>
-                <p className="mt-1 text-xs text-slate-500">{ov.completedProjects} completed</p>
-              </div>
-              <div className="rounded-lg border border-slate-200 bg-white p-4">
-                <p className="text-xs font-medium text-slate-500">Total Allocated Budget</p>
-                <p className="mt-1 text-xl font-bold text-slate-900">{formatLkr(ov.totalBudgetMinor)}</p>
-                <p className="mt-1 text-xs text-slate-500">Paid: {formatLkr(ov.totalPaidMinor)}</p>
-              </div>
-              <div className="rounded-lg border border-slate-200 bg-white p-4">
-                <p className="text-xs font-medium text-slate-500">Operational Exceptions</p>
-                <p className="mt-1 text-2xl font-bold text-slate-900">{ov.openIssues + ov.openConflicts}</p>
-                <p className="mt-1 text-xs text-slate-500">{ov.openIssues} issues · {ov.openConflicts} conflicts · {ov.criticalRiskProjects} critical risk</p>
-              </div>
+              <MetricCard
+                label="Total Projects"
+                value={ov.totalProjects}
+                context={`${ov.activeProjects} active · ${ov.delayedProjects} overdue`}
+                sourceKind="live"
+              />
+              <MetricCard
+                label="Avg Physical Progress"
+                value={`${ov.avgPhysicalProgress}%`}
+                context={`${ov.completedProjects} completed`}
+                tone="brand"
+              />
+              <MetricCard
+                label="Total Allocated Budget"
+                value={formatLkr(ov.totalBudgetMinor)}
+                context={`Paid: ${formatLkr(ov.totalPaidMinor)}`}
+                tone="success"
+              />
+              <MetricCard
+                label="Operational Exceptions"
+                value={ov.openIssues + ov.openConflicts}
+                context={`${ov.openIssues} issues · ${ov.openConflicts} conflicts · ${ov.criticalRiskProjects} critical risk`}
+                tone={ov.openConflicts > 0 ? "critical" : "neutral"}
+              />
+            </div>
+
+            <div className="cac-card p-5">
+              <ChainageBar
+                verifiedPercent={ov.totalProjects > 0 ? Math.round((ov.completedProjects / ov.totalProjects) * 100) : 0}
+                reportedPercent={ov.avgPhysicalProgress}
+                label="Portfolio Completed Projects Ratio vs. Average Reported Physical Progress"
+                verifiedLabel="Completed ratio"
+                reportedLabel="Avg physical"
+              />
             </div>
 
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-              <div className="rounded-lg border border-slate-200 bg-white p-5">
-                <h2 className="mb-3 text-sm font-semibold text-slate-900">Projects by Status</h2>
+              <ChartFrame
+                title="Projects by Status"
+                subtitle="Distribution across statutory lifecycle stages"
+                sourceKind="live"
+                tableHeaders={["Status", "Project Count"]}
+                tableRows={ov.byStatus.map((d) => [d.status, d.count])}
+              >
                 {ov.byStatus.length > 0 ? (
                   <StatusBarChart data={ov.byStatus} />
                 ) : (
                   <p className="text-xs text-slate-500">No projects in scope.</p>
                 )}
-              </div>
-              <div className="rounded-lg border border-slate-200 bg-white p-5">
-                <h2 className="mb-3 text-sm font-semibold text-slate-900">Top Districts</h2>
+              </ChartFrame>
+              <ChartFrame
+                title="Top Districts"
+                subtitle="Geographic concentration of active infrastructure works"
+                sourceKind="live"
+                tableHeaders={["District", "Projects"]}
+                tableRows={(projectsQ.data?.byDistrict ?? []).map((d) => [d.district, d.count])}
+              >
                 <div className="space-y-2">
                   {(projectsQ.data?.byDistrict ?? []).map((d) => (
                     <div key={d.district} className="flex items-center justify-between text-xs">
@@ -260,7 +293,7 @@ export function ReportsClient() {
                     </div>
                   ))}
                 </div>
-              </div>
+              </ChartFrame>
             </div>
           </div>
         ) : null}

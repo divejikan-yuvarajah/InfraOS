@@ -147,17 +147,31 @@ export function PortalReportWizard({ locale = "en" }: { locale?: AuthLocale }) {
           <p className="mt-1 text-sm text-slate-600">{copy.reportSubtitle}</p>
         </div>
 
-        <div className="flex flex-wrap gap-2 text-xs">
-          {[copy.stepCategory, copy.stepLocation, copy.stepPhotos, copy.stepContact, copy.stepReview].map((label, idx) => (
-            <button
-              key={label}
-              type="button"
-              onClick={() => setStep(idx + 1)}
-              className={`rounded-md px-3 py-1.5 font-medium ${step === idx + 1 ? "bg-blue-700 text-white" : "bg-white text-slate-600 border border-slate-200"}`}
-            >
-              {label}
-            </button>
-          ))}
+        <div className="grid grid-cols-2 gap-2 text-xs sm:grid-cols-5" role="list" aria-label="Report submission steps">
+          {[copy.stepCategory, copy.stepLocation, copy.stepPhotos, copy.stepContact, copy.stepReview].map((label, idx) => {
+            const isCurrent = step === idx + 1;
+            const isPassed = step > idx + 1;
+            return (
+              <button
+                key={label}
+                type="button"
+                onClick={() => setStep(idx + 1)}
+                aria-current={isCurrent ? "step" : undefined}
+                className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-left font-semibold transition-colors ${
+                  isCurrent
+                    ? "border-[#c43d00] bg-[#c43d00] text-white shadow-2xs"
+                    : isPassed
+                      ? "border-[#bbf7d0] bg-[#f0fdf4] text-[#166b30]"
+                      : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
+                }`}
+              >
+                <span className="font-mono text-[11px] font-bold">
+                  {isPassed ? "✓" : `0${idx + 1}`}
+                </span>
+                <span className="truncate">{label}</span>
+              </button>
+            );
+          })}
         </div>
 
         <div className="space-y-4 rounded-lg border border-slate-200 bg-white p-5 shadow-xs">
@@ -289,7 +303,7 @@ export function PortalReportWizard({ locale = "en" }: { locale?: AuthLocale }) {
               <button
                 type="button"
                 onClick={() => setStep((s) => Math.min(5, s + 1))}
-                className="rounded-md bg-blue-700 px-4 py-2 text-xs font-medium text-white hover:bg-blue-800"
+                className="rounded-lg bg-[#c43d00] px-4 py-2 text-xs font-semibold text-white hover:bg-[#802a00]"
               >
                 Next
               </button>
@@ -298,7 +312,7 @@ export function PortalReportWizard({ locale = "en" }: { locale?: AuthLocale }) {
                 type="button"
                 disabled={submitting || description.trim().length < 10}
                 onClick={handleSubmit}
-                className="rounded-md bg-blue-700 px-4 py-2 text-xs font-medium text-white hover:bg-blue-800 disabled:opacity-50"
+                className="rounded-lg bg-[#c43d00] px-4 py-2 text-xs font-semibold text-white hover:bg-[#802a00] disabled:opacity-50"
               >
                 {submitting ? copy.submitting : copy.submitReport}
               </button>

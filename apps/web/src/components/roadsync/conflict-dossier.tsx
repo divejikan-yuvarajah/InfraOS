@@ -8,6 +8,7 @@ import { CheckIcon, CopyIcon, CrownIcon, DownloadIcon, EyeIcon, LockIcon, Refres
 import { Dialog } from "radix-ui";
 
 import { StaffWorkspaceShell } from "@/components/auth/staff-workspace-shell";
+import { AlignmentTimeline } from "@/components/common/civic-atlas-primitives";
 import { ApiError } from "@/lib/api/client";
 import { fetchAgencies } from "@/lib/admin-agencies/api";
 import { getAuthEpoch, getMemorySession, subscribeAuth } from "@/lib/auth/state";
@@ -198,7 +199,33 @@ function Lifecycle({ d, copy, locale }: { d: Dossier; copy: ConflictCopy; locale
       {d.status === s ? <small>{copy.lifecycle.current}{when ? ` · ${when}` : ""}</small> : null}
     </li>
   );
-  return <nav className="cr-lifecycle" aria-label={copy.lifecycle.title}><ol>{IMPLEMENTED_LIFECYCLE.map((s) => stage(s))}</ol><ol className="cr-exits">{SIDE_EXITS.map((s) => stage(s, true))}</ol></nav>;
+
+  const curIdx = IMPLEMENTED_LIFECYCLE.indexOf(d.status as (typeof IMPLEMENTED_LIFECYCLE)[number]);
+  const alignmentItems = IMPLEMENTED_LIFECYCLE.map((s, idx) => ({
+    id: `journey-${s}`,
+    stationCode: `RJ-0${idx + 1}`,
+    title: copy.status[s] ?? s,
+    subtitle: d.status === s && when ? `${copy.lifecycle.current} · ${when}` : undefined,
+    state: (curIdx > idx ? "completed" : curIdx === idx ? "recorded" : "planned") as
+      | "completed"
+      | "recorded"
+      | "planned",
+    statusLabel: curIdx > idx ? "Done" : curIdx === idx ? copy.lifecycle.current : "Pending",
+  }));
+
+  return (
+    <div className="space-y-3">
+      <nav className="cr-lifecycle" aria-label={copy.lifecycle.title}>
+        <ol>{IMPLEMENTED_LIFECYCLE.map((s) => stage(s))}</ol>
+        <ol className="cr-exits">{SIDE_EXITS.map((s) => stage(s, true))}</ol>
+      </nav>
+      <AlignmentTimeline
+        orientation="horizontal"
+        ariaLabel="Conflict resolution journey"
+        items={alignmentItems}
+      />
+    </div>
+  );
 }
 
 function Overview({ d, copy }: { d: Dossier; copy: ConflictCopy }) {

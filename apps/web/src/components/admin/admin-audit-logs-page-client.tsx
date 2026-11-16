@@ -4,6 +4,7 @@ import { useMemo, useState, useSyncExternalStore } from "react";
 import { useQuery } from "@tanstack/react-query";
 
 import { StaffWorkspaceShell } from "@/components/auth/staff-workspace-shell";
+import { DataSourceBadge } from "@/components/common/civic-atlas-primitives";
 import { fetchAdminAuditLogs } from "@/lib/admin-audit/api";
 import {
   getAuthEpoch,
@@ -277,18 +278,19 @@ export function AdminAuditLogsPageClient() {
             <div className="flex flex-wrap items-center gap-2">
               <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded bg-primary-container text-surface-container-lowest font-mono text-[11px] font-bold uppercase tracking-wider">
                 <span className="w-1.5 h-1.5 rounded-full bg-secondary-container" />
-                CORE-03.48 &amp; CORE-03.49 · IMMUTABLE AUDIT LEDGER
+                CORE-03.48 &amp; CORE-03.49 · APPEND-ONLY AUDIT LEDGER
               </span>
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-200 font-label-sm text-label-sm uppercase">
-                <span className="material-symbols-outlined text-[14px]">verified</span>
-                Merkle Hash Chain Verified
-              </span>
+              <DataSourceBadge
+                kind={(auditQ.data?.items?.length ?? 0) > 0 ? "live" : "recorded"}
+                label="Append-Only Audit Log"
+              />
+              <DataSourceBadge kind="demo" label="Includes Seeded Reference Events" />
             </div>
             <h1 className="font-headline-lg text-headline-lg text-on-surface tracking-tight">
               Administrative Governance Audit Ledger &amp; Event Details
             </h1>
             <p className="font-body-md text-body-md text-on-surface-variant max-w-3xl">
-              Cryptographically chained, append-only ledger recording every administrative mutation across staff accounts, role permission matrices, agency hierarchy trees, and platform security policies.
+              Append-only ledger recording administrative mutations across staff accounts, role permission matrices, agency hierarchy trees, and platform security policies.
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-space-sm">
@@ -296,7 +298,7 @@ export function AdminAuditLogsPageClient() {
               type="button"
               onClick={() =>
                 setVerifyBanner(
-                  `Chain Integrity Verified at ${new Date().toLocaleTimeString()}: ${combinedRecords.length} contiguous blocks validated against GovPKI Root HSM (#0x8f92...3c90). Zero tamper anomalies.`,
+                  `Audit Log Check at ${new Date().toLocaleTimeString()}: ${combinedRecords.length} loaded records inspected (${auditQ.data?.items?.length ?? 0} live database events + ${SEEDED_AUDIT_RECORDS.length} seeded reference events).`,
                 )
               }
               className="h-10 px-3.5 rounded-lg border border-outline-variant bg-surface-container-lowest hover:bg-surface-container-low text-on-surface font-label-md text-label-md flex items-center gap-2 transition-colors"
@@ -304,7 +306,7 @@ export function AdminAuditLogsPageClient() {
               <span className="material-symbols-outlined text-[18px] text-emerald-700">
                 fact_check
               </span>
-              <span>Verify Chain Integrity</span>
+              <span>Check Loaded Records</span>
             </button>
             <button
               type="button"
@@ -312,7 +314,7 @@ export function AdminAuditLogsPageClient() {
               className="h-10 px-4 rounded-lg bg-primary-container hover:bg-primary text-surface-container-lowest font-label-md text-label-md flex items-center gap-2 transition-colors shadow-2xs"
             >
               <span className="material-symbols-outlined text-[18px]">download</span>
-              <span>Export Signed Audit Bundle (.SIG)</span>
+              <span>Export Audit Bundle (.JSON)</span>
             </button>
           </div>
         </section>
@@ -343,22 +345,20 @@ export function AdminAuditLogsPageClient() {
           <div className="bg-surface-container-lowest p-space-md rounded-lg border border-outline-variant/40 shadow-2xs flex flex-col justify-between gap-2">
             <div className="flex items-center justify-between">
               <span className="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">
-                Immutable Ledger Entries
+                Loaded Audit Entries
               </span>
-              <span className="material-symbols-outlined text-on-surface-variant text-[20px]">
-                receipt_long
-              </span>
+              <DataSourceBadge kind={(auditQ.data?.items?.length ?? 0) > 0 ? "live" : "demo"} />
             </div>
             <div className="flex items-baseline gap-2">
-              <span className="font-headline-lg text-headline-lg font-mono text-on-surface">
-                148,920
+              <span className="font-headline-lg text-headline-lg font-mono text-on-surface tabular-nums">
+                {combinedRecords.length}
               </span>
               <span className="font-label-sm text-label-sm text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                +{combinedRecords.length} Loaded
+                {auditQ.data?.items?.length ?? 0} Live · {SEEDED_AUDIT_RECORDS.length} Demo
               </span>
             </div>
             <p className="font-body-sm text-body-sm text-on-surface-variant">
-              WORM (Write-Once-Read-Many) Cold Archive Synced
+              Append-only administrative event stream
             </p>
           </div>
 
@@ -652,25 +652,33 @@ export function AdminAuditLogsPageClient() {
                 </span>
               </div>
 
-              {/* Before vs After JSON Payload Diff */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="flex flex-col gap-1">
-                  <span className="font-mono text-[10px] uppercase font-bold text-on-surface-variant">
-                    Prior State Snapshot (Before)
-                  </span>
-                  <pre className="p-3 rounded bg-[#0d1620] text-slate-300 font-mono text-[11px] overflow-x-auto">
-                    {JSON.stringify(activeRecord.beforeJson, null, 2)}
-                  </pre>
+              {/* Progressive Disclosure for Hash & JSON Payload Diff (§5.6) */}
+              <details className="rounded-lg border border-outline-variant/40 bg-surface-container-low p-3" open>
+                <summary className="cursor-pointer font-mono text-[11px] font-bold uppercase tracking-wider text-on-surface flex items-center justify-between">
+                  <span>Before vs. After State Snapshot &amp; Hash Metadata</span>
+                  <DataSourceBadge
+                    kind={activeRecord.id.startsWith("evt-") ? "demo" : "live"}
+                  />
+                </summary>
+                <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="flex flex-col gap-1">
+                    <span className="font-mono text-[10px] uppercase font-bold text-on-surface-variant">
+                      Prior State Snapshot (Before)
+                    </span>
+                    <pre className="p-3 rounded bg-[#0d1620] text-slate-300 font-mono text-[11px] overflow-x-auto">
+                      {JSON.stringify(activeRecord.beforeJson, null, 2)}
+                    </pre>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <span className="font-mono text-[10px] uppercase font-bold text-secondary">
+                      Committed State Snapshot (After)
+                    </span>
+                    <pre className="p-3 rounded bg-[#0d1620] text-emerald-300 font-mono text-[11px] overflow-x-auto">
+                      {JSON.stringify(activeRecord.afterJson, null, 2)}
+                    </pre>
+                  </div>
                 </div>
-                <div className="flex flex-col gap-1">
-                  <span className="font-mono text-[10px] uppercase font-bold text-secondary">
-                    Committed State Snapshot (After)
-                  </span>
-                  <pre className="p-3 rounded bg-[#0d1620] text-emerald-300 font-mono text-[11px] overflow-x-auto">
-                    {JSON.stringify(activeRecord.afterJson, null, 2)}
-                  </pre>
-                </div>
-              </div>
+              </details>
             </div>
           </div>
         </section>
