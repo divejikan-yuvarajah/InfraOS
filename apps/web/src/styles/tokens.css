@@ -164,4 +164,22 @@
   /* Script-aware line heights */
   --mc-leading-latin: 1.5;
   --mc-leading-indic: 1.75;
+
+  /* Civic Atlas Command 2.0 semantic tokens & 50/100 badge tints */
+  --infra-orange-btn: #c43d00;
+  --infra-orange-btn-hover: #802a00;
+  --infra-navy: #0b1220;
+  --infra-navy-surface: #111827;
+  --infra-inset: #f8fafc;
+
+  --tint-orange-50: #fff7ed;
+  --tint-orange-100: #ffedd5;
+  --tint-green-50: #f0fdf4;
+  --tint-green-100: #dcfce7;
+  --tint-amber-50: #fffbeb;
+  --tint-amber-100: #fef3c7;
+  --tint-maroon-50: #fef2f2;
+  --tint-maroon-100: #fee2e2;
+  --tint-slate-50: #f8fafc;
+  --tint-slate-100: #f1f5f9;
 }

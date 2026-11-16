@@ -552,3 +552,51 @@
     linear-gradient(to bottom, rgba(215, 227, 246, 0.05) 1px, transparent 1px);
   background-size: 20px 20px;
 }
+
+/* ==========================================================================
+   Civic Atlas Command 2.0 — Signature Surfaces & Motion
+   ========================================================================== */
+
+.cac-survey-header {
+  background-color: #0b1220;
+  background-image:
+    linear-gradient(to right, rgba(226, 232, 240, 0.045) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(226, 232, 240, 0.045) 1px, transparent 1px);
+  background-size: 24px 24px;
+  border-bottom: 2px solid #ff5b00;
+  color: #f8fafc;
+}
+
+.cac-card {
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: var(--radius-card, 0.75rem);
+  box-shadow: var(--elevation-1, 0 1px 2px rgba(17, 24, 39, 0.06));
+}
+
+.cac-inset {
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: var(--radius-control, 0.5rem);
+}
+
+@keyframes cac-card-enter {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.cac-stagger-enter {
+  animation: cac-card-enter 220ms cubic-bezier(0, 0, 0.2, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cac-stagger-enter {
+    animation: none !important;
+  }
+}
