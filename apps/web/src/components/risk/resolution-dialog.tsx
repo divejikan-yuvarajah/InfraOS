@@ -82,8 +82,12 @@ export function ResolutionDialog({
 
       onSaved(res.resolution);
       onClose();
-    } catch (err: any) {
-      setErrorMsg(err.message ?? "Failed to update risk triage status. Check permissions or concurrency.");
+    } catch (err: unknown) {
+      setErrorMsg(
+        err instanceof Error
+          ? err.message
+          : "Failed to update risk triage status. Check permissions or concurrency.",
+      );
     } finally {
       setIsSubmitting(false);
     }

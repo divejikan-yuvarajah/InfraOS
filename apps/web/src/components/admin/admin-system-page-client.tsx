@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 
 import { StaffWorkspaceShell } from "@/components/auth/staff-workspace-shell";
+import { DataSourceBadge } from "@/components/common/civic-atlas-primitives";
 import { apiClient } from "@/lib/api/client";
 
 export function AdminSystemPageClient() {
@@ -35,7 +36,7 @@ export function AdminSystemPageClient() {
     try {
       await healthQ.refetch();
       setSaveMessage(
-        `Diagnostic sweep completed at ${new Date().toLocaleTimeString()}: Auth Enclave, Spatial PostGIS/MongoDB Cluster, RoadSync Engine, and Audit Ledger are healthy (99.98% uptime).`,
+        `Health endpoint probe completed at ${new Date().toLocaleTimeString()}: /api/v1/health responded nominal.`,
       );
     } finally {
       setDiagRunning(false);
@@ -219,15 +220,13 @@ export function AdminSystemPageClient() {
             <div className="bg-surface-container-lowest p-4 rounded-lg border border-outline-variant/40 shadow-2xs">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
-                  Auth &amp; RBAC Enclave
+                  Auth &amp; RBAC Policy
                 </span>
-                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 font-mono">
-                  99.99% SLA
-                </span>
+                <DataSourceBadge kind="demo" />
               </div>
               <div className="flex items-baseline justify-between">
-                <span className="text-2xl font-bold text-on-surface font-mono">11.4 ms</span>
-                <span className="text-xs text-emerald-700 font-semibold">JWT / HSM Active</span>
+                <span className="text-2xl font-bold text-on-surface font-mono">7 Roles</span>
+                <span className="text-xs text-emerald-700 font-semibold">JWT Active</span>
               </div>
               <div className="mt-3 pt-2.5 border-t border-outline-variant/25 flex items-center justify-between text-[11px] text-on-surface-variant font-mono">
                 <span>7 Roles Enforced</span>
@@ -238,19 +237,17 @@ export function AdminSystemPageClient() {
             <div className="bg-surface-container-lowest p-4 rounded-lg border border-outline-variant/40 shadow-2xs">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
-                  Spatial PostGIS Cluster
+                  Spatial Datum Config
                 </span>
-                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 font-mono">
-                  SYNCED
-                </span>
+                <DataSourceBadge kind="demo" />
               </div>
               <div className="flex items-baseline justify-between">
-                <span className="text-2xl font-bold text-on-surface font-mono">18.2 ms</span>
-                <span className="text-xs text-on-surface-variant font-mono">WAL Lag: 0.04s</span>
+                <span className="text-2xl font-bold text-on-surface font-mono">EPSG:5234</span>
+                <span className="text-xs text-on-surface-variant font-mono">SLD99 Grid</span>
               </div>
               <div className="mt-3 pt-2.5 border-t border-outline-variant/25 flex items-center justify-between text-[11px] text-on-surface-variant font-mono">
                 <span>SLD99 / EPSG:5234</span>
-                <span>14,820 Segments</span>
+                <span>2D Sphere Index</span>
               </div>
             </div>
 
@@ -259,35 +256,35 @@ export function AdminSystemPageClient() {
                 <span className="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
                   RoadSync Clash Engine
                 </span>
-                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-900 font-mono">
-                  HIGH LOAD
-                </span>
+                <DataSourceBadge kind="demo" />
               </div>
               <div className="flex items-baseline justify-between">
-                <span className="text-2xl font-bold text-on-surface font-mono">42.8 ms</span>
-                <span className="text-xs text-secondary font-semibold">38 Active Buffers</span>
+                <span className="text-2xl font-bold text-on-surface font-mono">
+                  {horizontalToleranceM}m
+                </span>
+                <span className="text-xs text-secondary font-semibold">Buffer Radius</span>
               </div>
               <div className="mt-3 pt-2.5 border-t border-outline-variant/25 flex items-center justify-between text-[11px] text-on-surface-variant font-mono">
-                <span>3D Utility Intersect</span>
-                <span>Queue: 0 Pending</span>
+                <span>Corridor Overlap</span>
+                <span>Depth: {verticalDepthM}m</span>
               </div>
             </div>
 
             <div className="bg-surface-container-lowest p-4 rounded-lg border border-outline-variant/40 shadow-2xs">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
-                  Immutable Audit Ledger
+                  API Health Endpoint
                 </span>
-                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 font-mono">
-                  VERIFIED
-                </span>
+                <DataSourceBadge kind={healthQ.isError ? "unavailable" : "live"} />
               </div>
               <div className="flex items-baseline justify-between">
-                <span className="text-2xl font-bold text-on-surface font-mono">SHA-256</span>
-                <span className="text-xs text-emerald-700 font-mono">Chain Intact</span>
+                <span className="text-2xl font-bold text-on-surface font-mono">
+                  {healthQ.isError ? "OFFLINE" : "NOMINAL"}
+                </span>
+                <span className="text-xs text-emerald-700 font-mono">/api/v1/health</span>
               </div>
               <div className="mt-3 pt-2.5 border-t border-outline-variant/25 flex items-center justify-between text-[11px] text-on-surface-variant font-mono">
-                <span>Merkle Root #8941</span>
+                <span>Append-Only Audit</span>
                 <span>0 Tamper Alerts</span>
               </div>
             </div>

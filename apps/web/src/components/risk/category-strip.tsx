@@ -25,16 +25,16 @@ export function CategoryStrip({
   size = "md",
   className = "",
 }: {
-  categories?: RiskCategorySummaryDto[] | Record<string, any>;
+  categories?: RiskCategorySummaryDto[] | Record<string, string>;
   size?: "sm" | "md";
   className?: string;
 }) {
-  const catMap = new Map<RiskFactorCategory, { level: any; index?: number; sufficiency?: string }>();
+  const catMap = new Map<RiskFactorCategory, { level: keyof typeof LEVEL_CONFIG; index?: number; sufficiency?: string }>();
   if (Array.isArray(categories)) {
     for (const c of categories) catMap.set(c.category, c);
   } else if (categories && typeof categories === "object") {
     for (const [cat, lvl] of Object.entries(categories)) {
-      catMap.set(cat as RiskFactorCategory, { level: lvl });
+      catMap.set(cat as RiskFactorCategory, { level: lvl as keyof typeof LEVEL_CONFIG });
     }
   }
 

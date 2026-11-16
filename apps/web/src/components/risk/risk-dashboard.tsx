@@ -139,7 +139,7 @@ export function RiskDashboard() {
       if (selectedProjectId === projectId) {
         refetchSelectedRisk();
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Assessment failed:", err);
     } finally {
       setAssessingProjectId(null);
@@ -156,8 +156,8 @@ export function RiskDashboard() {
         queryClient.invalidateQueries({ queryKey: ["risk"] });
         setIsBulkAssessing(false);
       }, 3000);
-    } catch (err: any) {
-      setBulkRunMsg(err.message ?? "Bulk assessment request failed.");
+    } catch (err: unknown) {
+      setBulkRunMsg(err instanceof Error ? err.message : "Bulk assessment request failed.");
       setIsBulkAssessing(false);
     }
   }
@@ -232,7 +232,7 @@ export function RiskDashboard() {
         ) : null}
 
         {/* Source Availability Banner */}
-        <SourceAvailabilityBanner sourceFreshness={overview?.sourceNotices as any} />
+        <SourceAvailabilityBanner sourceFreshness={overview?.sourceNotices as Record<string, string> | undefined} />
 
         {/* Severity Metrics Cards */}
         <SeverityCards

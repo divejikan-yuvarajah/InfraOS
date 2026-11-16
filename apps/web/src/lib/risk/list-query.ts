@@ -33,8 +33,8 @@ export function parseRiskQueryParams(searchParams: URLSearchParams): RiskListFil
     resolution: searchParams.get("resolution") ?? undefined,
     stale: searchParams.get("stale") === "1",
     district: searchParams.get("district") ?? undefined,
-    sort: (searchParams.get("sort") as any) ?? "level",
-    order: (searchParams.get("order") as any) ?? "desc",
+    sort: (searchParams.get("sort") as RiskListFilters["sort"]) ?? "level",
+    order: (searchParams.get("order") as RiskListFilters["order"]) ?? "desc",
     page: searchParams.get("page") ? parseInt(searchParams.get("page")!, 10) : 1,
     limit: searchParams.get("limit") ? parseInt(searchParams.get("limit")!, 10) : 20,
   };
