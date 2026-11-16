@@ -369,7 +369,8 @@ export async function buildReportCsv(
     agencyId: actor.agencyId && mongoose.isValidObjectId(actor.agencyId) ? new mongoose.Types.ObjectId(actor.agencyId) : undefined,
     action: "report.export",
     resourceType: "SYSTEM",
-    newValue: { kind, rowCount: rows.length, filters },
+    resourceId: new mongoose.Types.ObjectId(actor.userId),
+    newValue: { reason: `export:${kind}:rows=${rows.length}` },
     requestId,
   });
 

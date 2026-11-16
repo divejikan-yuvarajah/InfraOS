@@ -1,6 +1,8 @@
 import { Router } from "express";
+import rateLimit from "express-rate-limit";
 
-import { success } from "../../shared/http/envelope.js";
+import { env } from "../../config/env.js";
+import { failure, success } from "../../shared/http/envelope.js";
 import { requireAuthenticated } from "../identity/auth/require-authenticated.js";
 import { requirePermission } from "../identity/authorization/require-permission.js";
 import {
@@ -59,7 +61,17 @@ reportsRouter.get("/contractors", requireAuthenticated, requirePermission("repor
   res.status(200).json(success(data, req.requestId));
 });
 
-reportsRouter.get("/export.csv", requireAuthenticated, requirePermission("report.export"), async (req, res) => {
+const exportLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: env.NODE_ENV === "test" ? 10_000 : 30,
+  standardHeaders: "draft-8",
+  legacyHeaders: false,
+  handler: (req, res) => {
+    res.status(429).json(failure("RATE_LIMITED", "Export rate limit exceeded", req.requestId));
+  },
+});
+
+reportsRouter.get("/export.csv", exportLimiter, requireAuthenticated, requirePermission("report.export"), async (req, res) => {
   const actor = req.actor;
   if (!actor) return;
   const rawKind = typeof req.query.kind === "string" ? req.query.kind : "projects";
