@@ -18,6 +18,7 @@ import { fetchRecordSummary } from "@/lib/roadsync/conflict-records-api";
 import { fetchHubSummary } from "@/lib/roadsync/coordination-api";
 
 import { AiStatusChip } from "@/components/ai-admin/ai-status-chip";
+import { DataSourceBadge } from "@/components/common/civic-atlas-primitives";
 import { GlobalCommandPalette } from "./global-command-palette";
 import { RealtimeProvider } from "@/components/notifications/realtime-provider";
 import {
@@ -136,6 +137,11 @@ function SidebarNavContent({
   onNavigate?: () => void;
 }) {
   const copy = SHELL_COPY[locale];
+  const [closedGroups, setClosedGroups] = useState<Record<string, boolean>>({});
+
+  const toggleGroup = (label: string) => {
+    setClosedGroups((prev) => ({ ...prev, [label]: !prev[label] }));
+  };
 
   return (
     <div className="flex flex-col h-full bg-primary-container text-primary-fixed select-none">
@@ -168,7 +174,7 @@ function SidebarNavContent({
       {/* Scrollable Navigation Groups */}
       <nav
         aria-label="Primary Workspace Navigation"
-        className="flex-1 overflow-y-auto rail-scroll py-4 px-3 space-y-6"
+        className="flex-1 overflow-y-auto rail-scroll py-4 px-3 space-y-4"
       >
         {WORKSPACE_NAV.map((group) => {
           const visible = group.items.filter(
@@ -176,23 +182,40 @@ function SidebarNavContent({
           );
           if (visible.length === 0) return null;
 
+          const hasActiveItem = visible.some((it) => navCurrent(pathname, it.href));
+          const isGroupOpen = collapsed || hasActiveItem || !closedGroups[group.label];
+
           return (
             <div key={group.label}>
               {!collapsed && (
-                <div className="px-3 mb-2 flex items-center justify-between">
+                <button
+                  type="button"
+                  onClick={() => toggleGroup(group.label)}
+                  aria-expanded={isGroupOpen}
+                  className="w-full px-3 py-1 mb-1 flex items-center justify-between rounded text-left hover:bg-white/[0.04] transition-colors"
+                >
                   <span className="text-label-sm font-label-sm uppercase text-on-primary-container tracking-wider">
                     {navGroupLabel(group, locale)}
                   </span>
-                </div>
+                  <span
+                    aria-hidden="true"
+                    className={`material-symbols-outlined text-[15px] text-on-primary-container transition-transform duration-150 ${
+                      isGroupOpen ? "rotate-0" : "-rotate-90"
+                    }`}
+                  >
+                    expand_more
+                  </span>
+                </button>
               )}
 
-              <ul
-                className={
-                  !collapsed && group.hasThreadLine
-                    ? "space-y-0.5 relative before:content-[''] before:absolute before:left-[19px] before:top-2 before:bottom-2 before:w-[1.5px] before:bg-white/[0.08]"
-                    : "space-y-0.5"
-                }
-              >
+              {isGroupOpen && (
+                <ul
+                  className={
+                    !collapsed && group.hasThreadLine
+                      ? "space-y-0.5 relative before:content-[''] before:absolute before:left-[19px] before:top-2 before:bottom-2 before:w-[1.5px] before:bg-white/[0.08]"
+                      : "space-y-0.5"
+                  }
+                >
                 {visible.map((item) => {
                   const active = navCurrent(pathname, item.href);
                   const text = navLabel(item, locale);
@@ -277,7 +300,8 @@ function SidebarNavContent({
                     </li>
                   );
                 })}
-              </ul>
+                </ul>
+              )}
             </div>
           );
         })}
@@ -794,13 +818,9 @@ export function StaffWorkspaceShell({
               </DropdownMenu.Portal>
             </DropdownMenu.Root>
 
-            {/* System Health / Sync Indicator */}
-            <div
-              className="hidden 2xl:flex items-center gap-1.5 px-2.5 py-1 rounded bg-emerald-50 border border-emerald-200/60 text-emerald-800 text-xs font-medium"
-              title="National Cadastral & RoadSync Telemetry Active"
-            >
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-600" />
-              <span>{copy.telemetrySynced}</span>
+            {/* Data Source Honesty Indicator */}
+            <div className="hidden 2xl:flex items-center">
+              <DataSourceBadge kind={hasToken ? "live" : "demo"} />
             </div>
 
             <AiStatusChip />
@@ -912,22 +932,20 @@ export function StaffWorkspaceShell({
         {/* SCROLLABLE WORKSPACE CONTENT CANVAS */}
         <main className="flex-1 overflow-y-auto main-scroll bg-surface">
           {!hidePageHeader && (
-            <div className="bg-surface-container-low/60 border-b border-outline-variant/25 px-4 sm:px-gutter-desktop py-5">
+            <div className="bg-surface-container-low/70 cad-grid-bg border-b-2 border-b-[#ff5b00]/80 px-4 sm:px-gutter-desktop py-5">
               <div className="max-w-[1600px] mx-auto flex flex-col lg:flex-row lg:items-end justify-between gap-4">
-                <div>
+                <div className="min-w-0">
                   <div className="flex items-center gap-2 text-label-sm font-label-sm uppercase text-secondary mb-1.5 flex-wrap">
                     <span className="material-symbols-outlined text-[14px]">share_location</span>
                     <span>{section ?? copy.civilCommand}</span>
                     <span>/</span>
-                    <span>{effectiveScope}</span>
-                    {asOf && (
-                      <>
-                        <span>/</span>
-                        <span className="px-1.5 py-0.5 bg-secondary-fixed text-on-secondary-fixed rounded-xs font-mono">
-                          [ {asOf} ]
-                        </span>
-                      </>
-                    )}
+                    <span className="rounded bg-white/80 px-2 py-0.5 text-[11px] font-mono font-semibold text-slate-700 border border-slate-200/80 normal-case">
+                      {effectiveScope}
+                    </span>
+                    <DataSourceBadge
+                      kind={hasToken ? "live" : "demo"}
+                      asOf={asOf}
+                    />
                   </div>
                   <h1 className="font-headline-lg text-headline-lg text-on-surface tracking-tight">
                     {title}
@@ -941,7 +959,7 @@ export function StaffWorkspaceShell({
                 {actions && <div className="flex items-center gap-2.5 flex-wrap shrink-0">{actions}</div>}
               </div>
               {context && (
-                <div className="max-w-[1600px] mx-auto mt-3 pt-3 border-t border-outline-variant/20">
+                <div className="max-w-[1600px] mx-auto mt-3 pt-3 border-t border-outline-variant/25">
                   {context}
                 </div>
               )}

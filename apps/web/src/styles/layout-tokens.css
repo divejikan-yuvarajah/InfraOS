@@ -17,17 +17,24 @@
   --container-dashboard: 90rem;
   --container-full: 100%;
 
-  /* Radius (align with shadcn --radius 0.5rem base) */
+  /* Radius (align with Civic Atlas 2.0: 12px cards, 8px controls, 999px pills) */
   --radius-sm-token: 0.375rem;
   --radius-md-token: 0.5rem;
   --radius-lg-token: 0.75rem;
   --radius-xl-token: 1rem;
+  --radius-card: 0.75rem;
+  --radius-control: 0.5rem;
+  --radius-pill: 9999px;
 
-  /* Elevation */
+  /* Elevation (Civic Atlas 2.0 e0–e3) */
   --shadow-none: none;
-  --shadow-sm: 0 1px 2px rgb(17 24 39 / 0.05);
-  --shadow-md: 0 4px 12px rgb(17 24 39 / 0.08);
-  --shadow-lg: 0 12px 32px rgb(17 24 39 / 0.12);
+  --shadow-sm: 0 1px 2px rgb(17 24 39 / 0.06);
+  --shadow-md: 0 8px 24px rgb(17 24 39 / 0.10);
+  --shadow-lg: 0 20px 48px rgb(17 24 39 / 0.18);
+  --elevation-0: none;
+  --elevation-1: 0 1px 2px rgba(17, 24, 39, 0.06);
+  --elevation-2: 0 8px 24px rgba(17, 24, 39, 0.10);
+  --elevation-3: 0 20px 48px rgba(17, 24, 39, 0.18);
 
   /* Z-index ladder (align with Radix/shadcn ~50 for overlays) */
   --z-base: 0;

@@ -6,9 +6,19 @@ import { useState, useSyncExternalStore } from "react";
 import { useForm } from "react-hook-form";
 
 import { StaffWorkspaceShell } from "@/components/auth/staff-workspace-shell";
+import {
+  BenchmarkStatusBadge,
+  ChainageBar,
+  CommandHeader,
+  DataSourceBadge,
+  MetricCard,
+} from "@/components/common/civic-atlas-primitives";
+import { ContentSkeleton } from "@/components/feedback/content-skeleton";
 import { RequestVerificationButton } from "@/components/inspections/inspection-integrations";
 import { ApiError } from "@/lib/api/client";
 import { getAuthEpoch, getMemoryAccessToken, getMemorySession, subscribeAuth } from "@/lib/auth/state";
+import { formatLkrMinor } from "@/lib/data-table/query-state";
+import { useWorkspaceLocale } from "@/lib/i18n/workspace-locale";
 import { fetchProject } from "@/lib/projects/api";
 import { classifyEditError } from "@/lib/projects/edit-outcome";
 import { fetchFinancialProgress } from "@/lib/projects/finance-api";
@@ -17,8 +27,6 @@ import { projectCoreQueryKey } from "@/lib/projects/overview-format";
 import { fetchProgress, fetchProgressHistory, submitProgress } from "@/lib/projects/progress-api";
 import { progressFormSchema, progressNoteReady } from "@/lib/projects/progress-form";
 import { getProgressCopy } from "@/lib/projects/progress-messages";
-import { formatLkrMinor } from "@/lib/data-table/query-state";
-import { useWorkspaceLocale } from "@/lib/i18n/workspace-locale";
 import { ProjectRecordNav, RecordContext } from "./project-record-nav";
 
 type FormValues = { percentage: number; note: string };
@@ -107,60 +115,257 @@ export function ProjectProgressClient({ id }: { id: string }) {
   const history = historyQuery.data;
 
   return (
-    <StaffWorkspaceShell title={copy.title} description={copy.description} wide context={<RecordContext id={id} locale={locale} current={copy.title} />}>
+    <StaffWorkspaceShell
+      title={copy.title}
+      description={copy.description}
+      wide
+      context={<RecordContext id={id} locale={locale} current={copy.title} />}
+    >
       <ProjectRecordNav id={id} locale={locale} />
-      {roleKey === "CONTRACTOR" ? <p role="status">{copy.contractorBlocked}</p> : null}
-      {loading ? <p role="status">Loading</p> : null}
-      {projectError ? <p role="alert">{projectError}</p> : null}
-      {!projectQuery.isLoading && !projectQuery.isFetching && !projectQuery.data && !projectError && signedIn === "yes" && userId ? <p role="alert">{copy.notFound}</p> : null}
-      {projectQuery.data ? (
-        <section className="auth-access-card" aria-labelledby="reported-progress-heading">
-          <h2 id="reported-progress-heading">{copy.recorded}</h2>
-          <p>{copy.officialStatus}: {projectQuery.data.status}</p>
-          <p>{progressQuery.data ? `${progressQuery.data.physicalProgress}%` : "—"}</p>
-          {progressQuery.data?.latest ? <p>{progressQuery.data.latest.note}</p> : <p>{copy.noneYet}</p>}
-          {progressQuery.data?.latest ? <p>{copy.when}: {progressQuery.data.latest.reportedAt}</p> : null}
-        </section>
-      ) : null}
-      {projectQuery.data ? <p><RequestVerificationButton projectId={id} claimed={progressQuery.data?.latest ? progressQuery.data.physicalProgress : null} /></p> : null}
-      {projectQuery.data ? <Comparison copy={copy} physical={progressQuery.data?.physicalProgress ?? null} finance={financeQuery.data} financeError={financeQuery.error} /> : null}
-      {canSubmit ? (
-        <form className="project-progress-form auth-access-card" onSubmit={form.handleSubmit((values) => submit.mutate(values))} noValidate>
-          <label htmlFor="progress-percentage">{copy.percentage}</label>
-          <input id="progress-percentage" type="number" inputMode="numeric" min={0} max={100} step={1} className="max-w-full min-w-0" {...form.register("percentage", { valueAsNumber: true })} />
-          <label htmlFor="progress-note">{copy.note}</label>
-          <textarea id="progress-note" className="max-w-full min-w-0" rows={4} {...form.register("note")} />
-          <p>{copy.noteHint}</p>
-          {notice ? <p role="alert">{notice}</p> : null}
-          <button className="auth-access-button" type="submit" disabled={submit.isPending}>{submit.isPending ? copy.saving : copy.submit}</button>
-        </form>
-      ) : projectQuery.data ? <p role="note">{copy.activeOnly}</p> : null}
-      {history && history.total > 0 ? (
-        <section>
-          <h2>{copy.history}</h2>
-          <ol className="project-progress-list" aria-label={copy.history}>
-            {history.reports.map((row) => (
-              <li key={row.id}>
-                <p>{row.reportedPercent}% ({copy.previous} {row.previousPercent}%)</p>
-                <p>{row.note}</p>
-                <p>{copy.when}: {row.reportedAt}</p>
-              </li>
-            ))}
-          </ol>
-          {page > 1 ? <button type="button" className="auth-access-button" onClick={() => setPage((value) => value - 1)}>{copy.newer}</button> : null}
-          {history.total > page * history.limit ? <button type="button" className="auth-access-button" onClick={() => setPage((value) => value + 1)}>{copy.older}</button> : null}
-        </section>
-      ) : null}
+
+      <div className="mt-4 space-y-6">
+        {roleKey === "CONTRACTOR" ? (
+          <p
+            role="status"
+            className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-2.5 text-xs font-medium text-amber-900"
+          >
+            {copy.contractorBlocked}
+          </p>
+        ) : null}
+
+        {loading ? <ContentSkeleton variant="kpi" label="Loading progress" /> : null}
+
+        {projectError ? (
+          <div
+            role="alert"
+            className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-900"
+          >
+            {projectError}
+          </div>
+        ) : null}
+
+        {!projectQuery.isLoading &&
+        !projectQuery.isFetching &&
+        !projectQuery.data &&
+        !projectError &&
+        signedIn === "yes" &&
+        userId ? (
+          <div
+            role="alert"
+            className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-900"
+          >
+            {copy.notFound}
+          </div>
+        ) : null}
+
+        {projectQuery.data ? (
+          <CommandHeader
+            variant="light"
+            eyebrow={projectQuery.data.projectCode}
+            title={copy.recorded}
+            scopeLabel={projectQuery.data.agencyCode ?? projectQuery.data.agencyId}
+            sourceKind="recorded"
+            subtitle={
+              <div className="space-y-1 text-xs text-slate-600">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span>{copy.officialStatus}:</span>
+                  <BenchmarkStatusBadge status={projectQuery.data.status} size="sm" />
+                </div>
+                {progressQuery.data?.latest ? (
+                  <p>
+                    {progressQuery.data.latest.note} · {copy.when}: {progressQuery.data.latest.reportedAt}
+                  </p>
+                ) : (
+                  <p>{copy.noneYet}</p>
+                )}
+              </div>
+            }
+            primaryAction={
+              <RequestVerificationButton
+                projectId={id}
+                claimed={progressQuery.data?.latest ? progressQuery.data.physicalProgress : null}
+              />
+            }
+          >
+            <ChainageBar
+              verifiedPercent={projectQuery.data.status === "COMPLETED" ? 100 : null}
+              reportedPercent={progressQuery.data ? progressQuery.data.physicalProgress : null}
+              label={`${copy.recorded}: ${progressQuery.data ? `${progressQuery.data.physicalProgress}%` : "—"}`}
+              verifiedLabel="Verified completion"
+              reportedLabel="Reported physical"
+            />
+          </CommandHeader>
+        ) : null}
+
+        {projectQuery.data ? (
+          <Comparison
+            copy={copy}
+            physical={progressQuery.data?.physicalProgress ?? null}
+            finance={financeQuery.data}
+            financeError={financeQuery.error}
+          />
+        ) : null}
+
+        {canSubmit ? (
+          <form
+            className="cac-card p-6 space-y-4"
+            onSubmit={form.handleSubmit((values) => submit.mutate(values))}
+            noValidate
+          >
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+              <div>
+                <label
+                  htmlFor="progress-percentage"
+                  className="block text-xs font-semibold text-slate-700 mb-1"
+                >
+                  {copy.percentage}
+                </label>
+                <input
+                  id="progress-percentage"
+                  type="number"
+                  inputMode="numeric"
+                  min={0}
+                  max={100}
+                  step={1}
+                  className="h-10 w-full max-w-full min-w-0 rounded-lg border border-slate-300 bg-white px-3 font-mono text-sm text-slate-900 focus:border-[#ff5b00] focus:outline-2 focus:outline-offset-2 focus:outline-[#ff5b00]"
+                  {...form.register("percentage", { valueAsNumber: true })}
+                />
+              </div>
+
+              <div className="sm:col-span-2">
+                <label
+                  htmlFor="progress-note"
+                  className="block text-xs font-semibold text-slate-700 mb-1"
+                >
+                  {copy.note}
+                </label>
+                <textarea
+                  id="progress-note"
+                  className="w-full max-w-full min-w-0 rounded-lg border border-slate-300 bg-white p-3 text-sm text-slate-900 focus:border-[#ff5b00] focus:outline-2 focus:outline-offset-2 focus:outline-[#ff5b00]"
+                  rows={3}
+                  {...form.register("note")}
+                />
+                <p className="mt-1 text-xs text-slate-500">{copy.noteHint}</p>
+              </div>
+            </div>
+
+            {notice ? (
+              <p role="alert" className="text-xs font-semibold text-[#8c1f28]">
+                {notice}
+              </p>
+            ) : null}
+
+            <div className="flex justify-end border-t border-slate-100 pt-3">
+              <button
+                className="inline-flex min-h-10 items-center rounded-lg bg-[#c43d00] px-4 py-2 text-xs font-semibold text-white hover:bg-[#802a00] disabled:opacity-50"
+                type="submit"
+                disabled={submit.isPending}
+              >
+                {submit.isPending ? copy.saving : copy.submit}
+              </button>
+            </div>
+          </form>
+        ) : projectQuery.data ? (
+          <p
+            role="note"
+            className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-2.5 text-xs text-slate-600"
+          >
+            {copy.activeOnly}
+          </p>
+        ) : null}
+
+        {history && history.total > 0 ? (
+          <section className="cac-card p-5 space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <h2 className="text-base font-semibold text-slate-900">{copy.history}</h2>
+              <DataSourceBadge kind="recorded" />
+            </div>
+            <ol
+              className="relative space-y-3 before:absolute before:top-3 before:bottom-3 before:left-3 before:w-0.5 before:bg-slate-200"
+              aria-label={copy.history}
+            >
+              {history.reports.map((row, idx) => (
+                <li key={row.id} className="relative pl-9">
+                  <span
+                    aria-hidden="true"
+                    className="absolute top-2.5 left-0.5 flex h-5 w-5 items-center justify-center rounded-full border-2 border-[#ff5b00] bg-[#fff7ed] font-mono text-[10px] font-bold text-[#c43d00]"
+                  >
+                    ●
+                  </span>
+                  <div className="rounded-lg border border-slate-200 bg-slate-50/60 p-3.5 space-y-1.5">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <span className="font-mono text-sm font-bold text-slate-900 tabular-nums">
+                        PRG-{String(idx + 1).padStart(2, "0")} · {row.reportedPercent}% ({copy.previous}{" "}
+                        {row.previousPercent}%)
+                      </span>
+                      <span className="font-mono text-xs text-slate-500">
+                        {copy.when}: {row.reportedAt}
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-700">{row.note}</p>
+                  </div>
+                </li>
+              ))}
+            </ol>
+            <div className="flex items-center gap-2 pt-2">
+              {page > 1 ? (
+                <button
+                  type="button"
+                  className="rounded-lg border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                  onClick={() => setPage((value) => value - 1)}
+                >
+                  {copy.newer}
+                </button>
+              ) : null}
+              {history.total > page * history.limit ? (
+                <button
+                  type="button"
+                  className="rounded-lg border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                  onClick={() => setPage((value) => value + 1)}
+                >
+                  {copy.older}
+                </button>
+              ) : null}
+            </div>
+          </section>
+        ) : null}
+      </div>
     </StaffWorkspaceShell>
   );
 }
 
-function Meter({ label, value, fill, tone }: { label: string; value: string; fill: number; tone: "physical" | "financial" }) {
+function Meter({
+  label,
+  value,
+  fill,
+  tone,
+}: {
+  label: string;
+  value: string;
+  fill: number;
+  tone: "physical" | "financial";
+}) {
   return (
-    <div>
-      <p>{label}: {value}</p>
-      <div className="progress-compare-track" role="meter" aria-label={label} aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(fill)} aria-valuetext={value}>
-        <div className={tone === "physical" ? "progress-compare-fill-physical" : "progress-compare-fill-financial"} style={{ width: `${fill}%` }} />
+    <div className="space-y-1.5">
+      <div className="flex items-center justify-between text-xs font-semibold text-slate-700">
+        <span>{label}</span>
+        <span className="font-mono tabular-nums">{value}</span>
+      </div>
+      <div
+        className="relative h-4 w-full overflow-hidden rounded-md border border-slate-300 bg-slate-100"
+        role="meter"
+        aria-label={label}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={Math.round(fill)}
+        aria-valuetext={value}
+      >
+        <div
+          className={`h-full transition-[width] duration-200 ${
+            tone === "physical" ? "bg-[#ff5b00]" : "bg-[#279541]"
+          }`}
+          style={{ width: `${fill}%` }}
+        />
       </div>
     </div>
   );
@@ -181,25 +386,75 @@ function Comparison({
   const summary = finance?.summary;
   const money = showsMoney(summary) ? summary : null;
   return (
-    <section className="auth-access-card" aria-labelledby="progress-compare-heading">
-      <h2 id="progress-compare-heading">{copy.compareTitle}</h2>
-      <p role="note">{copy.compareNote}</p>
-      {physical == null ? null : <Meter label={copy.physicalBar} value={`${physical}%`} fill={financialBarFill(physical)} tone="physical" />}
-      {denied ? <p role="status">{copy.financeRestricted}</p> : null}
-      {!denied && summary?.availability === "unavailable" ? <p role="status">{copy.financeUnavailable}</p> : null}
-      {!denied && !summary && financeError ? <p role="status">{copy.unavailable}</p> : null}
+    <section className="cac-card p-5 space-y-4" aria-labelledby="progress-compare-heading">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3">
+        <div>
+          <h2 id="progress-compare-heading" className="text-base font-semibold text-slate-900">
+            {copy.compareTitle}
+          </h2>
+          <p role="note" className="text-xs text-slate-500">
+            {copy.compareNote}
+          </p>
+        </div>
+        <DataSourceBadge kind="recorded" />
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        {physical == null ? null : (
+          <Meter
+            label={copy.physicalBar}
+            value={`${physical}%`}
+            fill={financialBarFill(physical)}
+            tone="physical"
+          />
+        )}
+        {money ? (
+          <Meter
+            label={copy.financialBar}
+            value={`${money.ratioPercent}%`}
+            fill={financialBarFill(money.ratioPercent)}
+            tone="financial"
+          />
+        ) : null}
+      </div>
+
+      {denied ? (
+        <p role="status" className="text-xs text-amber-800">
+          {copy.financeRestricted}
+        </p>
+      ) : null}
+      {!denied && summary?.availability === "unavailable" ? (
+        <p role="status" className="text-xs text-slate-600">
+          {copy.financeUnavailable}
+        </p>
+      ) : null}
+      {!denied && !summary && financeError ? (
+        <p role="status" className="text-xs text-slate-600">
+          {copy.unavailable}
+        </p>
+      ) : null}
+
       {money ? (
-        <>
-          <Meter label={copy.financialBar} value={`${money.ratioPercent}%`} fill={financialBarFill(money.ratioPercent)} tone="financial" />
-          {money.ratioPercent > 100 ? <p>{copy.barCapped}</p> : null}
-          <p>{copy.budget}: {formatLkrMinor(money.budgetMinor)}</p>
-          <p>{copy.paid}: {formatLkrMinor(money.paidMinor)}</p>
-          <p>{copy.remaining}: {formatLkrMinor(money.remainingMinor)}</p>
-          <p>{copy.overrun}: {formatLkrMinor(money.overrunMinor)}</p>
-          <p>{copy.financeProvisional}</p>
-          <p>{money.provenance}</p>
-          {finance ? <p>{copy.calculatedAt}: {finance.calculatedAt}</p> : null}
-        </>
+        <div className="space-y-3 pt-2">
+          {money.ratioPercent > 100 ? (
+            <p className="text-xs font-semibold text-[#8c1f28]">{copy.barCapped}</p>
+          ) : null}
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <MetricCard label={copy.budget} value={formatLkrMinor(money.budgetMinor)} />
+            <MetricCard label={copy.paid} value={formatLkrMinor(money.paidMinor)} tone="success" />
+            <MetricCard label={copy.remaining} value={formatLkrMinor(money.remainingMinor)} />
+            <MetricCard
+              label={copy.overrun}
+              value={formatLkrMinor(money.overrunMinor)}
+              tone={money.overrunMinor > 0 ? "critical" : "neutral"}
+            />
+          </div>
+          <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500">
+            <span>{copy.financeProvisional}</span>
+            <span>{money.provenance}</span>
+            {finance ? <span>{copy.calculatedAt}: {finance.calculatedAt}</span> : null}
+          </div>
+        </div>
       ) : null}
     </section>
   );

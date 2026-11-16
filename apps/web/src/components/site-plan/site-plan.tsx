@@ -141,7 +141,7 @@ export function DualProgress({
               </span>
             </div>
             <div
-              className="sp-track"
+              className="sp-track relative"
               data-kind={t.kind}
               data-unavailable={t.value === null ? "true" : undefined}
               data-over={t.over ? "true" : undefined}
@@ -153,6 +153,14 @@ export function DualProgress({
               aria-valuetext={t.value === null ? undefined : t.label}
             >
               {t.value !== null ? <div className="sp-track-fill" style={{ width: `${t.fill}%` }} /> : <span className="mc-sr">{t.label}</span>}
+              <div aria-hidden="true" className="pointer-events-none absolute inset-0 flex items-end justify-between px-1">
+                {[0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100].map((tick) => (
+                  <span
+                    key={tick}
+                    className={tick % 50 === 0 ? "h-2 w-px bg-slate-600/40" : "h-1 w-px bg-slate-500/30"}
+                  />
+                ))}
+              </div>
             </div>
           </div>
         );

@@ -11,7 +11,7 @@ import {
   fetchProjectRiskHistory,
 } from "@/lib/risk/api";
 import { canHintRisk, canResolveRisk } from "@/lib/risk/session";
-import type { RiskComparisonDto, RiskResolutionDto } from "@/lib/risk/types";
+import type { RiskComparisonDto, RiskIndicatorDto, RiskLevel, RiskResolutionDto } from "@/lib/risk/types";
 import { LevelChip } from "./level-chip";
 import { RiskHistoryTimeline } from "./risk-history-timeline";
 import { AssessmentCompareModal } from "./assessment-compare";
@@ -36,7 +36,7 @@ export function ProjectRiskTabClient({
 
   const [activeTab, setActiveTab] = useState<"ANALYSIS" | "HISTORY">("ANALYSIS");
   const [isAssessing, setIsAssessing] = useState(false);
-  const [selectedIndicatorForResolution, setSelectedIndicatorForResolution] = useState<any>(null);
+  const [selectedIndicatorForResolution, setSelectedIndicatorForResolution] = useState<RiskIndicatorDto | null>(null);
   const [activeComparison, setActiveComparison] = useState<RiskComparisonDto | null>(null);
 
   // 1. Latest Risk Assessment
@@ -69,7 +69,7 @@ export function ProjectRiskTabClient({
       queryClient.invalidateQueries({ queryKey: ["risk"] });
       refetchLatest();
       refetchHistory();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Assessment failed:", err);
     } finally {
       setIsAssessing(false);
@@ -80,7 +80,7 @@ export function ProjectRiskTabClient({
     try {
       const diff = await compareRiskAssessments(projectId, fromId, toId);
       setActiveComparison(diff);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Comparison failed:", err);
     }
   }
@@ -227,12 +227,12 @@ export function ProjectRiskTabClient({
                             <span className="font-mono text-xs font-bold text-infra-orange">
                               {ind.code}
                             </span>
-                            <LevelChip level={ind.severity as any} size="sm" />
+                            <LevelChip level={ind.severity as RiskLevel} size="sm" />
                             <BasisChip basis={ind.basis} />
                             {resolution ? (
                               <ResolutionChip
                                 status={resolution.status}
-                                isReopened={Boolean((resolution as any).isReopened)}
+                                isReopened={Boolean(resolution.reopened)}
                               />
                             ) : null}
                           </div>
@@ -346,7 +346,7 @@ export function ProjectRiskTabClient({
           projectId={projectId}
           indicator={selectedIndicatorForResolution}
           existingResolution={resolutionMap.get(selectedIndicatorForResolution.fingerprint)}
-          assessmentId={assessment.id ?? (assessment as any)._id}
+          assessmentId={assessment.id ?? (assessment as unknown as { _id?: string })._id ?? ""}
           onClose={() => setSelectedIndicatorForResolution(null)}
           onSaved={() => {
             refetchResolutions();

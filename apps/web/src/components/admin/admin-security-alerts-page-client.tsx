@@ -344,18 +344,18 @@ export function AdminSecurityAlertsPageClient() {
           <div className="bg-surface-container-lowest p-4 rounded-lg border border-outline-variant/40 shadow-2xs">
             <div className="flex items-center justify-between mb-1.5">
               <span className="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
-                Hardware Key Attestation
+                Session Attestation
               </span>
-              <span className="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[10px] font-bold font-mono">
-                99.4%
+              <span className="px-2 py-0.5 rounded bg-amber-100 text-amber-900 text-[10px] font-bold font-mono">
+                SYNTHETIC DEMO
               </span>
             </div>
             <div className="flex items-baseline justify-between">
               <span className="text-2xl font-bold text-on-surface font-mono">340 / 342</span>
-              <span className="text-xs text-emerald-700 font-mono">FIDO2 Bound</span>
+              <span className="text-xs text-amber-800 font-mono">Demo Sample</span>
             </div>
             <p className="text-[11px] text-on-surface-variant mt-2">
-              2 newly provisioned accounts awaiting first-login key enrollment
+              2 newly provisioned demo accounts awaiting first-login enrollment
             </p>
           </div>
         </section>

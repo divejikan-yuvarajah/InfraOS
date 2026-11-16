@@ -3,7 +3,7 @@ import type { RiskIndicatorDto } from "./types";
 
 export interface IndicatorCopyItem {
   title: string;
-  explanation: (inputs: Record<string, any>) => string;
+  explanation: (inputs: Record<string, unknown>) => string;
 }
 
 export const INDICATOR_CATALOG_EN: Record<string, IndicatorCopyItem> = {

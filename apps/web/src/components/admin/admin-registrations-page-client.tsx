@@ -113,13 +113,14 @@ export function AdminRegistrationsPageClient() {
   // Automatically select request if ?id= is present in URL (e.g. from admin email button)
   const urlRequestId = searchParams.get("id") || searchParams.get("requestId");
   useEffect(() => {
-    if (urlRequestId && listQuery.data?.items) {
-      const match = listQuery.data.items.find((item) => item.id === urlRequestId);
-      if (match) {
-        setSelectedRequest(match);
-        setTargetAgencyCode(match.organizationCode);
-      }
-    }
+    if (!urlRequestId || !listQuery.data?.items) return;
+    const match = listQuery.data.items.find((item) => item.id === urlRequestId);
+    if (!match) return;
+    const timer = window.setTimeout(() => {
+      setSelectedRequest(match);
+      setTargetAgencyCode(match.organizationCode);
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, [urlRequestId, listQuery.data?.items]);
 
   const approveMutation = useMutation({
@@ -150,10 +151,10 @@ export function AdminRegistrationsPageClient() {
         message: "Applicant registration approved. Account is now ACTIVE and an activation email has been sent.",
       });
     },
-    onError: (err: any) => {
+    onError: (err: unknown) => {
       setFeedback({
         type: "error",
-        message: err?.message || "Failed to approve registration request.",
+        message: err instanceof Error ? err.message : "Failed to approve registration request.",
       });
     },
   });
@@ -171,10 +172,10 @@ export function AdminRegistrationsPageClient() {
         message: "Registration request rejected. A notification email has been dispatched to the applicant.",
       });
     },
-    onError: (err: any) => {
+    onError: (err: unknown) => {
       setFeedback({
         type: "error",
-        message: err?.message || "Failed to reject registration request.",
+        message: err instanceof Error ? err.message : "Failed to reject registration request.",
       });
     },
   });

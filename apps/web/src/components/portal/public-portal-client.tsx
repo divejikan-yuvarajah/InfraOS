@@ -206,7 +206,7 @@ export function PublicPortalClient() {
   const handleSubmitIncident = (e: React.FormEvent) => {
     e.preventDefault();
     if (!incidentDescription.trim()) return;
-    const refId = `CIT-2026-${Math.floor(1000 + Math.random() * 9000)}`;
+    const refId = `CIT-2026-DEMO-${String(incidentDescription.trim().length).padStart(4, "0")}`;
     setSubmittedRef(refId);
     setIncidentDescription("");
   };
@@ -307,9 +307,9 @@ export function PublicPortalClient() {
             </button>
           </div>
 
-          <div className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 bg-[#f1f3ff] rounded border border-[#c4c6cc]/40 text-xs">
-            <span className="w-2 h-2 rounded-full bg-emerald-600" />
-            <span className="font-semibold text-[11px] text-[#141b2b]">Telemetry: Synced</span>
+          <div className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 bg-[#fffbeb] rounded border border-[#fde68a] text-xs">
+            <span className="w-2 h-2 rounded-full bg-amber-500" />
+            <span className="font-semibold text-[11px] text-[#6c5311]">Synthetic demo</span>
           </div>
 
           <Link

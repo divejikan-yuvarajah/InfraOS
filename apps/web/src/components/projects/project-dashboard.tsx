@@ -512,17 +512,36 @@ function RoleCommandPerspectiveBar({
           },
         ];
 
+  const isPreviewingOtherRole = effectiveView !== roleDefaultView;
+  const previewRoleLabel =
+    ROLE_LABELS[effectiveView as keyof typeof ROLE_LABELS] ?? effectiveView;
+
   return (
     <div className="bg-[#14202d] text-white border-b border-white/10 px-4 sm:px-gutter-desktop py-2.5">
       <div className="max-w-[1600px] mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
-        <div className="flex items-center gap-2.5 text-xs">
+        <div className="flex flex-wrap items-center gap-2.5 text-xs">
           <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-secondary/20 border border-secondary/40 text-[#ffb59a] text-[10px] font-mono font-bold uppercase tracking-wider">
             <span className="w-1.5 h-1.5 rounded-full bg-secondary-container" />
-            Role-Aware Command V2
+            Civic Atlas Command 2.0
           </span>
           <span className="text-slate-300 text-[11px]">
             Authenticated as <strong className="text-white">{roleLabel}</strong>
           </span>
+          {isPreviewingOtherRole ? (
+            <span
+              role="status"
+              className="inline-flex items-center gap-1.5 rounded-full border border-amber-400/50 bg-amber-400/15 px-2.5 py-0.5 font-mono text-[11px] font-bold text-amber-200"
+            >
+              <span>● Viewing as {previewRoleLabel}</span>
+              <button
+                type="button"
+                onClick={() => onSelectView(roleDefaultView)}
+                className="ml-1 underline hover:text-white"
+              >
+                Reset
+              </button>
+            </span>
+          ) : null}
         </div>
 
         <div

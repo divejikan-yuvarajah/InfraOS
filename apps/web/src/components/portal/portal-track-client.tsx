@@ -2,6 +2,12 @@
 
 import { useState, type FormEvent } from "react";
 
+import {
+  AlignmentTimeline,
+  BenchmarkStatusBadge,
+  CommandHeader,
+  DataSourceBadge,
+} from "@/components/common/civic-atlas-primitives";
 import type { AuthLocale } from "@/lib/auth/types";
 import { publicIssuePhotoUrl, trackPublicIssue } from "@/lib/public/api";
 import { PORTAL_COPY } from "@/lib/public/messages";
@@ -31,69 +37,139 @@ export function PortalTrackClient({ locale = "en" }: { locale?: AuthLocale }) {
     }
   }
 
+  const normalizedStatus = result?.status?.toUpperCase() ?? "";
+  const isResolved = normalizedStatus === "RESOLVED" || normalizedStatus === "CLOSED";
+  const isInProgress =
+    isResolved || normalizedStatus === "IN_PROGRESS" || normalizedStatus === "ASSIGNED";
+  const isUnderReview =
+    isInProgress || normalizedStatus === "TRIAGED" || normalizedStatus === "UNDER_REVIEW";
+
   return (
     <PortalShell locale={locale} activeNav="track">
-      <div className="mx-auto max-w-2xl space-y-6">
-        <div>
-          <h1 className="text-2xl font-semibold text-slate-900">{copy.trackTitle}</h1>
-          <p className="mt-1 text-sm text-slate-600">{copy.trackSubtitle}</p>
-        </div>
+      <div className="mx-auto max-w-3xl space-y-6">
+        <CommandHeader
+          variant="light"
+          eyebrow="CITIZEN REPORT TRACKING"
+          title={copy.trackTitle}
+          subtitle={copy.trackSubtitle}
+          sourceKind="live"
+        />
 
-        <form onSubmit={handleSubmit} className="space-y-4 rounded-lg border border-slate-200 bg-white p-5 shadow-xs">
-          <div>
-            <label htmlFor="ref-no" className="block text-xs font-medium text-slate-700">
-              {copy.referenceLabel}
-            </label>
-            <input
-              id="ref-no"
-              required
-              value={referenceNo}
-              onChange={(e) => setReferenceNo(e.target.value)}
-              placeholder="ISS-2026-000001"
-              className="mt-1 h-10 w-full rounded-md border border-slate-300 px-3 text-sm"
-            />
+        <form onSubmit={handleSubmit} className="cac-card space-y-4 p-6">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div>
+              <label htmlFor="ref-no" className="block text-xs font-semibold text-slate-700 mb-1">
+                {copy.referenceLabel}
+              </label>
+              <input
+                id="ref-no"
+                required
+                value={referenceNo}
+                onChange={(e) => setReferenceNo(e.target.value)}
+                placeholder="ISS-2026-000001"
+                className="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 font-mono text-sm focus:border-[#ff5b00] focus:outline-2 focus:outline-offset-2 focus:outline-[#ff5b00]"
+              />
+            </div>
+            <div>
+              <label htmlFor="track-secret" className="block text-xs font-semibold text-slate-700 mb-1">
+                {copy.secretLabel}
+              </label>
+              <input
+                id="track-secret"
+                required
+                value={trackingSecret}
+                onChange={(e) => setTrackingSecret(e.target.value)}
+                placeholder="Paste your one-time tracking secret"
+                className="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 font-mono text-sm focus:border-[#ff5b00] focus:outline-2 focus:outline-offset-2 focus:outline-[#ff5b00]"
+              />
+            </div>
           </div>
-          <div>
-            <label htmlFor="track-secret" className="block text-xs font-medium text-slate-700">
-              {copy.secretLabel}
-            </label>
-            <input
-              id="track-secret"
-              required
-              value={trackingSecret}
-              onChange={(e) => setTrackingSecret(e.target.value)}
-              placeholder="Paste your one-time tracking secret"
-              className="mt-1 h-10 w-full rounded-md border border-slate-300 px-3 font-mono text-sm"
-            />
+
+          {error ? (
+            <p role="alert" className="text-xs font-semibold text-[#8c1f28]">
+              {error}
+            </p>
+          ) : null}
+
+          <div className="flex justify-end">
+            <button
+              type="submit"
+              disabled={loading}
+              className="inline-flex min-h-10 items-center rounded-lg bg-[#c43d00] px-5 py-2 text-xs font-semibold text-white hover:bg-[#802a00] disabled:opacity-50"
+            >
+              {loading ? "Checking…" : copy.trackSubmit}
+            </button>
           </div>
-          {error ? <p className="text-sm text-red-600">{error}</p> : null}
-          <button
-            type="submit"
-            disabled={loading}
-            className="h-10 rounded-md bg-blue-700 px-4 text-sm font-medium text-white hover:bg-blue-800 disabled:opacity-50"
-          >
-            {loading ? "Checking…" : copy.trackSubmit}
-          </button>
         </form>
 
         {result ? (
-          <section className="space-y-4 rounded-lg border border-slate-200 bg-white p-5 shadow-xs">
-            <div className="flex flex-wrap items-center justify-between gap-2">
+          <section className="cac-card space-y-5 p-6">
+            <div className="flex flex-wrap items-start justify-between gap-3 border-b border-slate-100 pb-4">
               <div>
-                <div className="font-mono text-xs text-slate-500">{result.referenceNo}</div>
-                <h2 className="text-lg font-semibold text-slate-900">{result.title || result.category}</h2>
-                <p className="text-xs text-slate-500">
-                  {result.district}, {result.province} {result.assignedAgencyName ? `· ${result.assignedAgencyName}` : ""}
+                <div className="flex items-center gap-2">
+                  <span className="rounded bg-slate-100 px-2 py-0.5 font-mono text-xs font-bold text-slate-700">
+                    {result.referenceNo}
+                  </span>
+                  <DataSourceBadge kind="recorded" label="Public-Safe Status" />
+                </div>
+                <h2 className="mt-1.5 text-lg font-bold text-slate-900">
+                  {result.title || result.category}
+                </h2>
+                <p className="text-xs text-slate-600">
+                  {result.district}, {result.province}{" "}
+                  {result.assignedAgencyName ? `· ${result.assignedAgencyName}` : ""}
                 </p>
               </div>
-              <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-800">{result.status}</span>
+              <BenchmarkStatusBadge status={result.status} />
             </div>
+
+            {/* Citizen Report Alignment Timeline (§5.8) */}
+            <AlignmentTimeline
+              orientation="horizontal"
+              ariaLabel="Report resolution stages"
+              items={[
+                {
+                  id: "rep-1",
+                  stationCode: "ST-01",
+                  title: "Submitted",
+                  subtitle: "Logged in public ledger",
+                  state: "completed",
+                  statusLabel: "Recorded",
+                },
+                {
+                  id: "rep-2",
+                  stationCode: "ST-02",
+                  title: "Agency Triage",
+                  subtitle: result.assignedAgencyName || "Jurisdiction routing",
+                  state: isUnderReview ? "completed" : "recorded",
+                  statusLabel: isUnderReview ? "Assigned" : "In Queue",
+                },
+                {
+                  id: "rep-3",
+                  stationCode: "ST-03",
+                  title: "Field Action",
+                  subtitle: "Inspection & repair",
+                  state: isResolved ? "completed" : isInProgress ? "recorded" : "planned",
+                  statusLabel: isResolved ? "Done" : isInProgress ? "Active" : "Pending",
+                },
+                {
+                  id: "rep-4",
+                  stationCode: "ST-04",
+                  title: "Resolution",
+                  subtitle: "Public closure notice",
+                  state: isResolved ? "verified" : "planned",
+                  statusLabel: isResolved ? "Resolved" : "Awaiting",
+                },
+              ]}
+            />
 
             <p className="text-sm text-slate-700">{result.description}</p>
 
             {result.photoCount > 0 ? (
               <div>
-                <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Submitted Photos ({result.photoCount})</h3>
+                <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  Submitted Photos ({result.photoCount})
+                </h3>
                 <div className="flex flex-wrap gap-2">
                   {Array.from({ length: result.photoCount }).map((_, idx) => (
                     <a
@@ -101,7 +177,7 @@ export function PortalTrackClient({ locale = "en" }: { locale?: AuthLocale }) {
                       href={publicIssuePhotoUrl(result.referenceNo, trackingSecret, idx)}
                       target="_blank"
                       rel="noreferrer"
-                      className="rounded border border-slate-200 px-3 py-1.5 text-xs font-medium text-blue-700 hover:bg-slate-50"
+                      className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-[#c43d00] hover:bg-slate-100"
                     >
                       Photo #{idx + 1}
                     </a>
@@ -111,30 +187,31 @@ export function PortalTrackClient({ locale = "en" }: { locale?: AuthLocale }) {
             ) : null}
 
             <div className="border-t border-slate-100 pt-4">
-              <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">{copy.updatesTitle}</h3>
-              <ul className="space-y-2">
-                {result.publicMessages.map((msg, i) => (
-                  <li key={i} className="rounded-md bg-slate-50 p-3 text-sm">
-                    <div className="flex justify-between text-xs text-slate-500">
-                      <span className="font-medium text-slate-700">{msg.authorLabel}</span>
-                      <span>{new Date(msg.createdAt).toLocaleString()}</span>
-                    </div>
-                    <p className="mt-1 text-slate-800">{msg.body}</p>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div className="border-t border-slate-100 pt-4">
-              <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">{copy.timelineTitle}</h3>
-              <ol className="space-y-1.5 text-xs text-slate-600">
-                {result.statusHistory.map((h, i) => (
-                  <li key={i} className="flex justify-between">
-                    <span>{h.fromStatus ? `${h.fromStatus} → ${h.toStatus}` : h.toStatus}</span>
-                    <span className="tabular-nums">{new Date(h.changedAt).toLocaleString()}</span>
-                  </li>
-                ))}
-              </ol>
+              <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                {copy.updatesTitle}
+              </h3>
+              {result.publicMessages.length > 0 ? (
+                <ul className="space-y-2">
+                  {result.publicMessages.map((msg, i) => (
+                    <li
+                      key={i}
+                      className="rounded-lg border border-slate-200 bg-slate-50 p-3.5 text-sm"
+                    >
+                      <div className="flex justify-between text-xs text-slate-500">
+                        <span className="font-semibold text-slate-800">{msg.authorLabel}</span>
+                        <span className="font-mono">
+                          {new Date(msg.createdAt).toLocaleString()}
+                        </span>
+                      </div>
+                      <p className="mt-1 text-slate-700">{msg.body}</p>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-xs text-slate-500">
+                  No public agency updates posted yet. Check back with your reference number.
+                </p>
+              )}
             </div>
           </section>
         ) : null}

@@ -26,16 +26,18 @@ export function NarrativePanel({
     setIsGenerating(true);
     setErrorMsg(null);
     try {
-      const aid = assessment.id ?? (assessment as any)._id;
+      const aid = assessment.id ?? (assessment as unknown as { _id?: string })._id ?? "";
       const res = await explainAssessmentNarrative(projectId, aid, {
         language,
         regenerate,
       });
       setNarrative(res.narrative);
       setIsOpen(true);
-    } catch (err: any) {
+    } catch (err: unknown) {
       setErrorMsg(
-        err.message ?? "AI service unavailable. Deterministic rule explanations remain active.",
+        err instanceof Error
+          ? err.message
+          : "AI service unavailable. Deterministic rule explanations remain active.",
       );
     } finally {
       setIsGenerating(false);
@@ -118,7 +120,7 @@ export function NarrativePanel({
                 <span className="text-text-secondary text-[11px]">Language:</span>
                 <select
                   value={language}
-                  onChange={(e) => setLanguage(e.target.value as any)}
+                  onChange={(e) => setLanguage(e.target.value as "en" | "si" | "ta")}
                   disabled={isGenerating}
                   className="rounded border border-border bg-background px-2 py-1 text-xs"
                 >

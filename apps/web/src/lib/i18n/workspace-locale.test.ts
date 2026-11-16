@@ -32,6 +32,6 @@ describe("nav labels", () => {
     expect(navLabel(work, "si")).toBe("වැඩ ඉල්ලීම්");
     expect(navLabel(aiGovernance, "si")).toBe("AI පාලනය");
     expect(navLabel(aiGovernance, "ta")).toBe("AI ஆளுகை");
-    expect(all).toHaveLength(33); // includes Assets, Maintenance, Agency insights, RoadSync, InfraMap, Risk Intelligence, Contractors, Finance, Public Portal, CORE-03 Governance/Audit/System/Security, DocTrace, AI Processing, AI Documents, and AI Governance
+    expect(all).toHaveLength(36);
   });
 });

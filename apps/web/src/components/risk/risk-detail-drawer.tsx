@@ -234,12 +234,12 @@ export function RiskDetailDrawer({
                             <span className="font-mono text-xs font-bold text-infra-orange">
                               {ind.code}
                             </span>
-                            <LevelChip level={ind.severity as any} size="sm" />
+                            <LevelChip level={ind.severity === "INFO" ? "LOW" : ind.severity} size="sm" />
                             <BasisChip basis={ind.basis} />
                             {resolution ? (
                               <ResolutionChip
                                 status={resolution.status}
-                                isReopened={Boolean((resolution as any).isReopened)}
+                                isReopened={Boolean(resolution.reopened)}
                               />
                             ) : null}
                           </div>
@@ -389,7 +389,7 @@ export function RiskDetailDrawer({
           projectId={projectId}
           indicator={selectedIndicatorForResolution}
           existingResolution={resolutionMap.get(selectedIndicatorForResolution.fingerprint)}
-          assessmentId={assessment.id ?? (assessment as any)._id}
+          assessmentId={assessment.id ?? (assessment as unknown as { _id?: string })._id ?? ""}
           onClose={() => setSelectedIndicatorForResolution(null)}
           onSaved={(updated) => {
             if (onResolutionUpdated) onResolutionUpdated(updated);
