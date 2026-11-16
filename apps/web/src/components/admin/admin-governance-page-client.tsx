@@ -5,6 +5,7 @@ import { useMemo, useState, useSyncExternalStore } from "react";
 import { useQuery } from "@tanstack/react-query";
 
 import { StaffWorkspaceShell } from "@/components/auth/staff-workspace-shell";
+import { DataSourceBadge } from "@/components/common/civic-atlas-primitives";
 import { fetchAdminAuditLogs } from "@/lib/admin-audit/api";
 import { fetchAgencies } from "@/lib/admin-agencies/api";
 import { fetchRoles } from "@/lib/admin-roles/api";
@@ -235,21 +236,19 @@ export function AdminGovernancePageClient() {
               <span className="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">
                 Active Staff Accounts
               </span>
-              <span className="w-8 h-8 rounded-lg bg-surface-container-low flex items-center justify-center text-on-surface">
-                <span className="material-symbols-outlined text-[18px]">badge</span>
-              </span>
+              <DataSourceBadge kind={usersQ.data?.total !== undefined ? "live" : "demo"} />
             </div>
             <div>
               <div className="flex items-baseline gap-2">
-                <span className="font-headline-lg text-headline-lg text-on-surface font-mono">
+                <span className="font-headline-lg text-headline-lg text-on-surface font-mono tabular-nums">
                   {totalStaffCount}
                 </span>
-                <span className="font-label-sm text-label-sm text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded">
-                  98.6% MFA Bound
+                <span className="font-label-sm text-label-sm text-on-surface bg-surface-container-high px-1.5 py-0.5 rounded">
+                  Scoped Principals
                 </span>
               </div>
               <p className="font-body-sm text-body-sm text-on-surface-variant mt-1">
-                6 Pending Provisioning · 3 Suspended Accounts
+                Institutional directory &amp; role assignments
               </p>
             </div>
           </div>
@@ -259,21 +258,19 @@ export function AdminGovernancePageClient() {
               <span className="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">
                 Registered Agencies
               </span>
-              <span className="w-8 h-8 rounded-lg bg-surface-container-low flex items-center justify-center text-secondary">
-                <span className="material-symbols-outlined text-[18px]">account_tree</span>
-              </span>
+              <DataSourceBadge kind={agenciesQ.data?.total !== undefined ? "live" : "demo"} />
             </div>
             <div>
               <div className="flex items-baseline gap-2">
-                <span className="font-headline-lg text-headline-lg text-on-surface font-mono">
+                <span className="font-headline-lg text-headline-lg text-on-surface font-mono tabular-nums">
                   {activeAgenciesCount}
                 </span>
                 <span className="font-label-sm text-label-sm text-on-surface bg-surface-container-high px-1.5 py-0.5 rounded">
-                  DAG Verified
+                  DAG Hierarchy
                 </span>
               </div>
               <p className="font-body-sm text-body-sm text-on-surface-variant mt-1">
-                5 National Ministries · 9 Statutory Boards · 4 Municipal
+                National Ministries · Statutory Boards · Municipal
               </p>
             </div>
           </div>
@@ -696,10 +693,10 @@ export function AdminGovernancePageClient() {
                     vpn_key_alert
                   </span>
                   <span className="font-label-md text-label-md text-on-surface">
-                    Rotate Root Keys
+                    Simulate Epoch Rotation
                   </span>
                   <span className="text-[11px] text-on-surface-variant">
-                    GovPKI HSM session epoch
+                    Session epoch demo control
                   </span>
                 </button>
               </div>
@@ -768,9 +765,12 @@ export function AdminGovernancePageClient() {
           <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
             <div className="bg-surface-container-lowest border border-outline-variant/40 rounded-lg max-w-md w-full p-6 shadow-xl flex flex-col gap-4">
               <div className="flex items-center justify-between">
-                <h3 className="font-title-lg text-title-lg text-on-surface">
-                  GovPKI HSM Root Key Rotation
-                </h3>
+                <div className="flex items-center gap-2">
+                  <h3 className="font-title-lg text-title-lg text-on-surface">
+                    Session Epoch Rotation
+                  </h3>
+                  <DataSourceBadge kind="demo" />
+                </div>
                 <button
                   type="button"
                   onClick={() => setRotateKeysModalOpen(false)}
@@ -780,10 +780,10 @@ export function AdminGovernancePageClient() {
                 </button>
               </div>
               <p className="font-body-sm text-body-sm text-on-surface-variant">
-                Rotating the GovPKI session epoch key increments the platform cryptographic counter and re-signs active session attestation headers without disrupting valid staff hardware tokens.
+                Simulates rotating the session epoch counter in the demonstration environment.
               </p>
               <div className="p-3 rounded bg-surface-container-low font-mono text-xs text-on-surface flex flex-col gap-1">
-                <span>ACTIVE ENCLAVE: LK-GOVPKI-HSM-01</span>
+                <span>ENVIRONMENT: DEMO SESSION EPOCH</span>
                 <span>NEXT EPOCH: #2026-05-R4</span>
               </div>
               <div className="flex justify-end gap-2 pt-2">
@@ -799,12 +799,12 @@ export function AdminGovernancePageClient() {
                   onClick={() => {
                     setRotateKeysModalOpen(false);
                     setStatusBanner(
-                      "GovPKI HSM Root Key Epoch #2026-05-R4 rotated and recorded in the immutable audit ledger.",
+                      "Synthetic demo: Session Epoch #2026-05-R4 rotation simulated.",
                     );
                   }}
                   className="h-9 px-4 rounded bg-secondary text-on-secondary text-xs font-semibold hover:bg-secondary-container"
                 >
-                  Execute Key Rotation
+                  Simulate Rotation
                 </button>
               </div>
             </div>

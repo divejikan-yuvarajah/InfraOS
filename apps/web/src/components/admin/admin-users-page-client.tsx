@@ -5,6 +5,8 @@ import { useMemo, useState, useSyncExternalStore } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { StaffWorkspaceShell } from "@/components/auth/staff-workspace-shell";
+import { DataSourceBadge } from "@/components/common/civic-atlas-primitives";
+import { ContentSkeleton } from "@/components/feedback/content-skeleton";
 import { ApiError } from "@/lib/api/client";
 import { fetchAgencies } from "@/lib/admin-agencies/api";
 import {
@@ -226,7 +228,7 @@ export function AdminUsersPageClient() {
   if (!hasToken || listQuery.isPending) {
     return (
       <StaffWorkspaceShell title={copy.title} description={copy.subtitle} wide>
-        <p role="status">Loading…</p>
+        <ContentSkeleton variant="table" label="Loading staff directory" />
       </StaffWorkspaceShell>
     );
   }
@@ -639,10 +641,16 @@ export function AdminUsersPageClient() {
             </div>
           </div>
 
-          {/* RIGHT 5 COLUMNS: CORE-03.14 Institutional Assignment & Lifecycle Studio */}
-          <div className="xl:col-span-5 flex flex-col gap-space-md">
+          {/* RIGHT 5 COLUMNS: CORE-03.14 Institutional Assignment & Lifecycle Studio (Mobile Drawer / Desktop Side Panel) */}
+          <div
+            className={
+              selected
+                ? "fixed inset-0 z-50 bg-slate-900/50 p-4 overflow-y-auto flex items-start justify-center xl:static xl:z-auto xl:bg-transparent xl:p-0 xl:block xl:col-span-5"
+                : "hidden xl:flex xl:col-span-5 flex-col gap-space-md"
+            }
+          >
             {activeSelected ? (
-              <div className="bg-surface-container-lowest rounded-lg border-2 border-primary-container shadow-lg overflow-hidden">
+              <div className="bg-surface-container-lowest rounded-lg border-2 border-primary-container shadow-lg overflow-hidden w-full max-w-lg xl:max-w-none my-auto xl:my-0">
                 {/* Studio Header */}
                 <div className="bg-primary-container text-surface-container-lowest p-space-md flex items-center justify-between">
                   <div className="flex flex-col">
@@ -650,17 +658,26 @@ export function AdminUsersPageClient() {
                       <span className="px-1.5 py-0.5 rounded bg-secondary text-on-secondary font-mono text-[10px] font-bold">
                         CORE-03.14
                       </span>
-                      <span className="font-label-sm text-label-sm uppercase tracking-widest text-on-primary-container">
-                        ASSIGNMENT &amp; LIFECYCLE STUDIO
-                      </span>
+                      <DataSourceBadge kind="live" />
                     </div>
                     <h2 className="font-title-lg text-title-lg text-surface-container-lowest mt-1">
                       Institutional Role &amp; Agency Reassignment
                     </h2>
                   </div>
-                  <span className="material-symbols-outlined text-secondary-fixed text-[24px]">
-                    admin_panel_settings
-                  </span>
+                  <div className="flex items-center gap-2">
+                    {selected && (
+                      <button
+                        type="button"
+                        onClick={() => setSelected(null)}
+                        className="xl:hidden rounded bg-white/10 px-2.5 py-1 text-xs font-semibold text-white hover:bg-white/20"
+                      >
+                        Close
+                      </button>
+                    )}
+                    <span className="material-symbols-outlined text-secondary-fixed text-[24px]">
+                      admin_panel_settings
+                    </span>
+                  </div>
                 </div>
 
                 {/* Selected Staff Summary Card */}
