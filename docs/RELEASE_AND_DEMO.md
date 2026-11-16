@@ -45,7 +45,7 @@
 |---|---|---|---|
 | 1 | Public Citizen | Open `/portal`, browse released projects & `/portal/map` | Only allowlisted public fields shown; coarsened coordinates; no internal IDs/finance/notes |
 | 2 | Public Citizen | Submit issue at `/portal/report`, save reference & secret, track at `/portal/track` | Returns `ISS-*` + secret once; `/portal/track` shows live status timeline |
-| 3 | Agency Officer | Sign in at `/auth/login`, open `/issues`, route & update status | Out-of-scope agency projects return 404; citizen timeline updates; staff bell notifies |
+| 3 | Agency Officer | Sign in at `/login`, open `/issues`, route & update status | Out-of-scope agency projects return 404; citizen timeline updates; staff bell notifies |
 | 4 | Project Manager | Open `/projects`, inspect milestones & dependencies | Scope-filtered project list; milestone status & progress visible |
 | 5 | Project Manager | Open `/roadsync/conflicts` | Shows spatial/temporal overlap candidates and conflict resolution workspace |
 | 6 | Inspector | Open `/inspections`, upload site evidence & verify progress | Private GridFS storage; verified progress feeds Finance payment gate |
@@ -58,7 +58,7 @@
 
 ## 4. Demo Script (8–10 Minutes)
 1. **Intro & Public Transparency (1.5 min)**: Open `/portal` → highlight trilingual `en/si/ta` switcher and public project directory → open `/portal/map` → submit a quick pothole report at `/portal/report` and copy the one-time tracking secret.
-2. **Staff Login & Executive Overview (1 min)**: Sign in as `SUPER_ADMIN` at `/auth/login` → show role dashboard KPIs and agency scope.
+2. **Staff Login & Executive Overview (1 min)**: Sign in as `SUPER_ADMIN` at `/login` → show role dashboard KPIs and agency scope.
 3. **Citizen Triage & Real-Time Bell (1 min)**: Open `/issues` → open the newly submitted `ISS-*` issue → update status to `UNDER_REVIEW` with a public message → switch back to `/portal/track` to show live timeline update; point out the notification bell.
 4. **InfraMap & RoadSync Conflict (1.5 min)**: Open `/inframap` → show corridor & utility layers → open `/roadsync/conflicts` to demonstrate cross-agency overlap detection.
 5. **Contractors, Inspections & Finance Gate (1.5 min)**: Open a showcase project → show contractor assignment, inspection verified-progress chip, and finance ledger in LKR integer cents.
