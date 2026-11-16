@@ -232,7 +232,7 @@ export function RiskDashboard() {
         ) : null}
 
         {/* Source Availability Banner */}
-        <SourceAvailabilityBanner sourceFreshness={overview?.sourceNotices as Record<string, string> | undefined} />
+        <SourceAvailabilityBanner sourceFreshness={overview?.sourceNotices} />
 
         {/* Severity Metrics Cards */}
         <SeverityCards

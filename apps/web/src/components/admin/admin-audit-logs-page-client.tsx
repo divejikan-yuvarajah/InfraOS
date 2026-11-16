@@ -281,7 +281,7 @@ export function AdminAuditLogsPageClient() {
                 CORE-03.48 &amp; CORE-03.49 · APPEND-ONLY AUDIT LEDGER
               </span>
               <DataSourceBadge
-                kind={(auditQuery.data?.items?.length ?? 0) > 0 ? "live" : "recorded"}
+                kind={(auditQ.data?.items?.length ?? 0) > 0 ? "live" : "recorded"}
                 label="Append-Only Audit Log"
               />
               <DataSourceBadge kind="demo" label="Includes Seeded Reference Events" />
@@ -298,7 +298,7 @@ export function AdminAuditLogsPageClient() {
               type="button"
               onClick={() =>
                 setVerifyBanner(
-                  `Audit Log Check at ${new Date().toLocaleTimeString()}: ${combinedRecords.length} loaded records inspected (${auditQuery.data?.items?.length ?? 0} live database events + ${SEEDED_AUDIT_RECORDS.length} seeded reference events).`,
+                  `Audit Log Check at ${new Date().toLocaleTimeString()}: ${combinedRecords.length} loaded records inspected (${auditQ.data?.items?.length ?? 0} live database events + ${SEEDED_AUDIT_RECORDS.length} seeded reference events).`,
                 )
               }
               className="h-10 px-3.5 rounded-lg border border-outline-variant bg-surface-container-lowest hover:bg-surface-container-low text-on-surface font-label-md text-label-md flex items-center gap-2 transition-colors"
@@ -347,14 +347,14 @@ export function AdminAuditLogsPageClient() {
               <span className="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">
                 Loaded Audit Entries
               </span>
-              <DataSourceBadge kind={(auditQuery.data?.items?.length ?? 0) > 0 ? "live" : "demo"} />
+              <DataSourceBadge kind={(auditQ.data?.items?.length ?? 0) > 0 ? "live" : "demo"} />
             </div>
             <div className="flex items-baseline gap-2">
               <span className="font-headline-lg text-headline-lg font-mono text-on-surface tabular-nums">
                 {combinedRecords.length}
               </span>
               <span className="font-label-sm text-label-sm text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                {auditQuery.data?.items?.length ?? 0} Live · {SEEDED_AUDIT_RECORDS.length} Demo
+                {auditQ.data?.items?.length ?? 0} Live · {SEEDED_AUDIT_RECORDS.length} Demo
               </span>
             </div>
             <p className="font-body-sm text-body-sm text-on-surface-variant">

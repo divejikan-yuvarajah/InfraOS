@@ -421,7 +421,6 @@ export const WORKSPACE_NAV: readonly WorkspaceNavGroup[] = [
         icon: SlidersHorizontalIcon,
         materialIcon: "settings",
         nodeGlyph: "○",
-        i18n: { si: "සැකසුම්", ta: "அமைப்புகள்" },
       },
       {
         href: "/settings/ai",

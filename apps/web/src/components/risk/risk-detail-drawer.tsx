@@ -234,7 +234,7 @@ export function RiskDetailDrawer({
                             <span className="font-mono text-xs font-bold text-infra-orange">
                               {ind.code}
                             </span>
-                            <LevelChip level={ind.severity} size="sm" />
+                            <LevelChip level={ind.severity === "INFO" ? "LOW" : ind.severity} size="sm" />
                             <BasisChip basis={ind.basis} />
                             {resolution ? (
                               <ResolutionChip

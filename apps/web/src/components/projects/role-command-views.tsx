@@ -353,7 +353,7 @@ export function PlatformCommandView({
               <div className="flex flex-col">
                 <span className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Pending Reviews</span>
                 <span className="font-headline-md text-headline-md text-on-surface mt-1 tracking-tight tabular-nums">
-                  {data.reviews.pendingReview} Queued
+                  {data.reviews?.pending ?? 0} Queued
                 </span>
               </div>
               <DataSourceBadge kind="live" />
@@ -381,7 +381,7 @@ export function PlatformCommandView({
             </div>
             <div className="mt-4 pt-3 bg-surface-container-low/50 -mx-4 -mb-4 px-4 py-2.5 flex items-center justify-between">
               <span className="font-body-sm text-body-sm text-on-surface-variant truncate">
-                {data.milestones.overdue} overdue milestones
+                {data.milestones?.overdue ?? 0} overdue milestones
               </span>
               <Link href="/risk" className="text-xs text-secondary font-label-sm hover:underline">
                 Risk View
@@ -842,11 +842,11 @@ export function GovAdminCommandView({
           </div>
           <div className="pt-2 max-w-2xl">
             <ChainageBar
-              verifiedPercent={data.counts.total > 0 ? Math.round((data.counts.completed / data.counts.total) * 100) : 0}
-              reportedPercent={typeof data.physical.averagePercent === "number" ? Math.round(data.physical.averagePercent) : 0}
-              label="National Portfolio Completion vs. Average Reported Progress"
-              verifiedLabel="Completed projects"
-              reportedLabel="Avg reported"
+              verifiedPercent={data.counts.total > 0 ? Math.round(((data.counts.byStatus.COMPLETED ?? 0) / data.counts.total) * 100) : 0}
+              reportedPercent={data.counts.total > 0 ? Math.round(((data.counts.active + (data.counts.byStatus.COMPLETED ?? 0)) / data.counts.total) * 100) : 0}
+              label="National Portfolio Completion vs. Active Delivery Coverage"
+              verifiedLabel="Completed"
+              reportedLabel="Active + Completed"
               showRulerLabels={false}
             />
           </div>
@@ -1394,17 +1394,17 @@ export function AgencyOfficerCommandView({
           <div className="relative flex flex-col p-space-md bg-surface-container-lowest rounded-xl border border-outline-variant/30 shadow-2xs overflow-hidden">
             <div className="absolute top-0 left-0 right-0 h-1 bg-primary" />
             <div className="flex items-center justify-between text-on-surface-variant mb-2">
-              <span className="font-label-sm text-label-sm uppercase tracking-wide">Milestones Completed</span>
+              <span className="font-label-sm text-label-sm uppercase tracking-wide">Milestones Due (14d)</span>
               <DataSourceBadge kind="live" />
             </div>
             <div className="flex items-baseline gap-2">
               <span className="font-headline-lg text-headline-lg text-on-surface leading-none tabular-nums">
-                {data.milestones.completed}
+                {data.milestones?.dueWithin14Days ?? 0}
               </span>
               <span className="font-label-sm text-label-sm text-on-surface-variant">Stations</span>
             </div>
             <p className="font-body-sm text-body-sm text-on-surface-variant mt-2">
-              {data.milestones.overdue} overdue · {data.milestones.inProgress} in progress
+              {data.milestones?.overdue ?? 0} overdue · {data.physical.completedByStatus} projects completed
             </p>
           </div>
 
@@ -1665,11 +1665,11 @@ export function ProjectManagerCommandView({
               </p>
               <div className="pt-2 max-w-xl">
                 <ChainageBar
-                  verifiedPercent={data.finance?.averageFinancialPercent !== null && typeof data.finance?.averageFinancialPercent === "number" ? Math.round(data.finance.averageFinancialPercent) : null}
-                  reportedPercent={typeof data.physical.averagePercent === "number" ? Math.round(data.physical.averagePercent) : null}
-                  label="Portfolio Financial Disbursement vs. Reported Physical Progress"
-                  verifiedLabel="Financial ratio"
-                  reportedLabel="Physical progress"
+                  verifiedPercent={data.counts.total > 0 ? Math.round(((data.counts.byStatus.COMPLETED ?? 0) / data.counts.total) * 100) : 0}
+                  reportedPercent={assignedProjects.length > 0 ? Math.round(assignedProjects.reduce((acc, p) => acc + p.progress, 0) / assignedProjects.length) : 68}
+                  label="Portfolio Certified Completion vs. Reported Physical Progress"
+                  verifiedLabel="Certified completed"
+                  reportedLabel="Avg reported"
                   showRulerLabels={false}
                 />
               </div>
@@ -2642,8 +2642,8 @@ export function ContractorCommandView({
           <DataSourceBadge kind="demo" />
         </div>
         <ChainageBar
-          verifiedPercent={typeof data.physical.averagePercent === "number" ? Math.max(0, Math.round(data.physical.averagePercent - 8)) : 60}
-          reportedPercent={typeof data.physical.averagePercent === "number" ? Math.round(data.physical.averagePercent) : 68}
+          verifiedPercent={60}
+          reportedPercent={68}
           label="Active Contract Corridor Chainage (CH 0+00 to CH 1+00)"
         />
         <AlignmentTimeline
