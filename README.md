@@ -699,7 +699,41 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) and [docs/team/git-workflow.md](docs/team
 
 ---
 
-## 20. Team & licence
+## 20. Quick Demo Start, Deployment & Release Pack
+
+See [docs/RELEASE_AND_DEMO.md](docs/RELEASE_AND_DEMO.md) for the complete release notes, 10-journey UAT checklist, 8–10 minute demo script, pitch outline, deployment checklist, and known limitations.
+
+### Minimal Local Demo Start
+1. Copy `.env.example` values into `apps/api/.env`, `apps/web/.env.local`, and `apps/ai-service/.env` (never commit real secrets).
+2. Ensure local MongoDB (`127.0.0.1:27017`) is running, then seed synthetic demo data:
+   ```bash
+   npm run db:seed:demo
+   npm run db:seed:verify
+   ```
+3. Fixture demo users are seeded with non-login hashes. Enable any local demo account for interactive sign-in using:
+   ```bash
+   npm run db:set-password -- <email> <temporary-local-password>
+   ```
+   Seeded fixture emails: `demo.fixture.project_manager@infraos-demo.invalid`, `demo.fixture.agency_officer@infraos-demo.invalid`, `demo.fixture.inspector@infraos-demo.invalid`, `demo.fixture.finance_officer@infraos-demo.invalid`, `demo.fixture.citizen@infraos-demo.invalid` (plus `superadmin@infraos.test` if seeded by core).
+4. Start services:
+   - API + Socket.IO: `npm run dev:api` (`http://localhost:4000`, health `/api/v1/health`)
+   - Web: `npm run dev:web` (`http://localhost:3000`, public portal `/portal`)
+   - AI Service (optional; graceful fallback when offline): `uvicorn app.main:app --port 8000` inside `apps/ai-service`
+
+### Deployment Architecture Summary
+- **Web (`apps/web`)** → Vercel (`NEXT_PUBLIC_API_BASE_URL` pointing to Render API).
+- **API + Socket.IO (`apps/api`)** → Render Web Service (long-running Node 22 process; Vercel serverless cannot host persistent Socket.IO).
+- **AI Service (`apps/ai-service`)** → Render Web Service (FastAPI + Qdrant Cloud + OpenRouter; authenticated via `AI_INTERNAL_SECRET` HMAC).
+- **Database & Storage** → MongoDB Atlas + GridFS (R2 adapter planned per ADR-010).
+
+### Known Limitations (Release Snapshot)
+- **Live OpenRouter LLM / Vision calls**: Unverified from offline/IPv6-restricted networks; deterministic fallback / stub mode operates cleanly without crashing.
+- **Translations**: Phase 10/11 Sinhala (`si`) and Tamil (`ta`) strings include `unverified-draft` markers pending native review.
+- **Storage**: Currently GridFS-backed for documents/evidence/issue photos; Cloudflare R2 adapter is configured as future storage target per ADR-010.
+
+---
+
+## 21. Team & licence
 
 **INFRAOS Development Team**, South Eastern University of Sri Lanka.
 
