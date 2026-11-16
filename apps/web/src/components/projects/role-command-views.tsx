@@ -830,6 +830,7 @@ export function GovAdminCommandView({
             <span className="px-2 py-0.5 rounded bg-surface-container-low text-on-surface font-label-sm text-label-sm uppercase tracking-wider">
               [ SOVEREIGN OVERSIGHT ]
             </span>
+            <DataSourceBadge kind="live" asOf={data.asOf ? new Date(data.asOf).toLocaleTimeString() : undefined} />
           </div>
           <div className="flex flex-col">
             <h1 className="font-headline-lg text-headline-lg text-on-surface tracking-tight">
@@ -838,6 +839,16 @@ export function GovAdminCommandView({
             <p className="font-body-md text-body-md text-on-surface-variant">
               Monitor inter-agency infrastructure delivery, statutory approvals, RoadSync coordination, and provincial capital performance.
             </p>
+          </div>
+          <div className="pt-2 max-w-2xl">
+            <ChainageBar
+              verifiedPercent={data.counts.total > 0 ? Math.round((data.counts.completed / data.counts.total) * 100) : 0}
+              reportedPercent={typeof data.physical.averagePercent === "number" ? Math.round(data.physical.averagePercent) : 0}
+              label="National Portfolio Completion vs. Average Reported Progress"
+              verifiedLabel="Completed projects"
+              reportedLabel="Avg reported"
+              showRulerLabels={false}
+            />
           </div>
           <div className="flex items-center gap-2 pt-1 font-body-sm text-body-sm text-outline flex-wrap">
             <span className="w-2 h-2 rounded-full bg-secondary-container animate-ping" />
@@ -1644,9 +1655,7 @@ export function ProjectManagerCommandView({
                 <span className="font-label-sm text-label-sm tracking-widest uppercase text-on-surface-variant font-bold">
                   PERSONAL WORKSPACE • PROJECT OPERATIONS COMMAND
                 </span>
-                <span className="px-2 py-0.5 rounded text-[10px] font-label-sm font-bold bg-secondary-fixed text-on-secondary-fixed uppercase">
-                  [ LIVE TELEMETRY ]
-                </span>
+                <DataSourceBadge kind="live" />
               </div>
               <h1 className="font-headline-lg text-headline-lg text-primary tracking-tight">
                 My Project Command &amp; Assigned Deliverables
@@ -1654,6 +1663,16 @@ export function ProjectManagerCommandView({
               <p className="font-body-md text-body-md text-on-surface-variant">
                 Operational tracking of assigned infrastructure projects, milestone timelines, contractor physical progress reports, and roadwork coordination clearances across Western Province corridors.
               </p>
+              <div className="pt-2 max-w-xl">
+                <ChainageBar
+                  verifiedPercent={data.finance?.averageFinancialPercent !== null && typeof data.finance?.averageFinancialPercent === "number" ? Math.round(data.finance.averageFinancialPercent) : null}
+                  reportedPercent={typeof data.physical.averagePercent === "number" ? Math.round(data.physical.averagePercent) : null}
+                  label="Portfolio Financial Disbursement vs. Reported Physical Progress"
+                  verifiedLabel="Financial ratio"
+                  reportedLabel="Physical progress"
+                  showRulerLabels={false}
+                />
+              </div>
             </div>
             <div className="flex flex-wrap items-center gap-space-sm self-start lg:self-center">
               <button
@@ -2111,9 +2130,7 @@ export function InspectorCommandView({
               <span className="font-label-sm text-label-sm uppercase tracking-widest text-secondary font-bold">
                 FIELD OPERATIONS COMMAND • QUALITY ASSURANCE &amp; STATUTORY VERIFICATION
               </span>
-              <span className="inline-flex px-1.5 py-0.5 rounded text-[10px] font-label-sm font-bold bg-secondary-fixed text-on-secondary-fixed">
-                LIVE CADASTRE
-              </span>
+              <DataSourceBadge kind={(summaryQ.data !== undefined) ? "live" : "demo"} />
             </div>
             <div className="flex items-baseline gap-3 flex-wrap">
               <h1 className="font-headline-lg text-headline-lg text-on-surface tracking-tight">Field Inspection Command</h1>
