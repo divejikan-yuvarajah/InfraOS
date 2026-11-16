@@ -308,7 +308,7 @@ export async function createPublicIssue(input: {
     description: input.description,
     priority: input.priority ?? "NORMAL",
     location: {
-      addressLine: input.location.addressLine,
+      ...(input.location.addressLine ? { roadName: input.location.addressLine.slice(0, 160) } : {}),
       district: input.location.district,
       province: input.location.province,
     },
