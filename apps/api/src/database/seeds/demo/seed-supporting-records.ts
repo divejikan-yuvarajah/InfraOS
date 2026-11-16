@@ -192,29 +192,26 @@ export async function seedDemoSupportingRecords(
     { upsert: true, runValidators: true },
   );
 
-  await RiskAssessment.findOneAndUpdate(
-    { projectId: delayedProject, modelVersion: "DEMO-RULES-v1" },
-    {
-      $set: {
-        overallRisk: 72,
-        delayRisk: 80,
-        budgetRisk: 55,
-        scheduleRisk: 78,
-        factors: [
-          {
-            category: "SCHEDULE",
-            description: "Synthetic delayed milestone pattern for demo dashboards.",
-            score: 78,
-          },
-        ],
-        recommendations: [
-          "Review delayed mobilization milestone before approving additional spend (demo text only).",
-        ],
-      },
-      $setOnInsert: { projectId: delayedProject, modelVersion: "DEMO-RULES-v1" },
-    },
-    { upsert: true, runValidators: true },
-  );
+  const existingRisk = await RiskAssessment.findOne({ projectId: delayedProject, modelVersion: "DEMO-RULES-v1" }).select("_id").lean();
+  if (!existingRisk) {
+    await RiskAssessment.create({
+      projectId: delayedProject,
+      modelVersion: "DEMO-RULES-v1",
+      overallLevel: "HIGH",
+      overallIndex: 72,
+      overallRisk: 72,
+      delayRisk: 80,
+      budgetRisk: 55,
+      scheduleRisk: 78,
+      factors: [
+        {
+          category: "SCHEDULE",
+          description: "Synthetic delayed milestone pattern for demo dashboards.",
+          score: 78,
+        },
+      ],
+    });
+  }
 
   const issueFixtures = [
     {
