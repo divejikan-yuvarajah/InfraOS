@@ -3,6 +3,8 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 
+import { BrandMark } from "@/components/common/brand-mark";
+import { DataSourceBadge } from "@/components/common/civic-atlas-primitives";
 import type { AuthLocale } from "@/lib/auth/types";
 import { PORTAL_COPY } from "@/lib/public/messages";
 
@@ -30,48 +32,87 @@ export function PortalShell({
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900">
-      <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/95 backdrop-blur">
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6">
-          <div className="min-w-0">
-            <Link href={`${prefix}/portal`} className="text-base font-semibold tracking-tight text-slate-900 sm:text-lg">
-              {copy.brandTitle}
+    <div className="min-h-screen bg-[#f7f9fb] text-[#111827] flex flex-col">
+      <header className="sticky top-0 z-30 border-b-2 border-b-[#ff5b00] bg-white/95 backdrop-blur">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-3.5 sm:px-6">
+          <div className="flex items-center gap-3 min-w-0">
+            <Link href="/" className="shrink-0" aria-label="INFRAOS Home">
+              <BrandMark size={34} />
             </Link>
-            <p className="truncate text-xs text-slate-500">{copy.brandSubtitle}</p>
+            <div className="min-w-0">
+              <div className="flex items-center gap-2">
+                <Link
+                  href={`${prefix}/portal`}
+                  className="text-base font-bold tracking-tight text-slate-900 sm:text-lg"
+                >
+                  {copy.brandTitle}
+                </Link>
+                <DataSourceBadge kind="live" label="Public Release" />
+              </div>
+              <p className="truncate text-xs text-slate-600">{copy.brandSubtitle}</p>
+            </div>
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            <nav aria-label="Public portal navigation" className="flex flex-wrap items-center gap-1">
-              {navItems.map((item) => (
-                <Link
-                  key={item.id}
-                  href={item.href}
-                  className={`rounded-md px-3 py-2 text-xs font-medium transition-colors sm:text-sm ${
-                    activeNav === item.id
-                      ? "bg-blue-700 text-white"
-                      : "text-slate-700 hover:bg-slate-100"
-                  }`}
-                >
-                  {item.label}
-                </Link>
-              ))}
+            <nav
+              aria-label="Public portal navigation"
+              className="flex flex-wrap items-center gap-1"
+            >
+              {navItems.map((item) => {
+                const isActive = activeNav === item.id;
+                return (
+                  <Link
+                    key={item.id}
+                    href={item.href}
+                    aria-current={isActive ? "page" : undefined}
+                    className={`rounded-lg px-3 py-2 text-xs font-semibold transition-colors sm:text-sm ${
+                      isActive
+                        ? "bg-[#c43d00] text-white shadow-2xs"
+                        : "text-slate-700 hover:bg-slate-100"
+                    }`}
+                  >
+                    {item.label}
+                  </Link>
+                );
+              })}
             </nav>
 
             <div className="flex items-center gap-1 border-l border-slate-200 pl-2 text-xs">
-              <Link href="/portal" className={`rounded px-2 py-1 ${locale === "en" ? "bg-slate-900 text-white" : "text-slate-600 hover:bg-slate-100"}`}>
+              <Link
+                href="/portal"
+                className={`rounded px-2 py-1 font-semibold ${
+                  locale === "en"
+                    ? "bg-[#111827] text-white"
+                    : "text-slate-600 hover:bg-slate-100"
+                }`}
+              >
                 EN
               </Link>
-              <Link href="/si/portal" className={`rounded px-2 py-1 ${locale === "si" ? "bg-slate-900 text-white" : "text-slate-600 hover:bg-slate-100"}`}>
+              <Link
+                href="/si/portal"
+                className={`rounded px-2 py-1 font-semibold ${
+                  locale === "si"
+                    ? "bg-[#111827] text-white"
+                    : "text-slate-600 hover:bg-slate-100"
+                }`}
+              >
                 සිං
               </Link>
-              <Link href="/ta/portal" className={`rounded px-2 py-1 ${locale === "ta" ? "bg-slate-900 text-white" : "text-slate-600 hover:bg-slate-100"}`}>
+              <Link
+                href="/ta/portal"
+                className={`rounded px-2 py-1 font-semibold ${
+                  locale === "ta"
+                    ? "bg-[#111827] text-white"
+                    : "text-slate-600 hover:bg-slate-100"
+                }`}
+              >
                 த
               </Link>
             </div>
 
             <Link
               href="/login"
-              className="rounded-md border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-100"
+              className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-800 hover:bg-slate-50"
             >
               {copy.navStaffSignIn}
             </Link>
@@ -79,7 +120,9 @@ export function PortalShell({
         </div>
       </header>
 
-      <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6">{children}</main>
+      <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:px-6">
+        {children}
+      </main>
     </div>
   );
 }
