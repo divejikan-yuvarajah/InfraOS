@@ -5,6 +5,11 @@ import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 
 import { fetchAgencies } from "@/lib/admin-agencies/api";
+import {
+  AlignmentTimeline,
+  ChainageBar,
+  DataSourceBadge,
+} from "@/components/common/civic-atlas-primitives";
 import { fetchRoles } from "@/lib/admin-roles/api";
 import { fetchAdminUsers } from "@/lib/admin-users/api";
 import type { AuthLocale, AuthUserDto } from "@/lib/auth/types";
@@ -211,68 +216,61 @@ export function PlatformCommandView({
     void usersQ.refetch();
     setTimeout(() => {
       setDiagRunning(false);
-      setDiagMessage("All 4 Sovereign Enclave Relays & PostGIS Clusters verified nominal (14ms).");
+      setDiagMessage("Synthetic demo probe complete: live agencies & users queries refreshed.");
     }, 450);
   };
+
+  const isLiveAgencies = (agenciesQ.data?.agencies?.length ?? 0) > 0;
+  const isLiveUsers = typeof usersQ.data?.total === "number";
 
   return (
     <div className="flex flex-col w-full">
       {/* Top Platform Governance Masthead */}
-      <div className="w-full bg-surface-container-lowest px-4 sm:px-gutter-desktop py-space-lg shadow-2xs border-b border-outline-variant/25">
+      <div className="w-full cac-survey-header px-4 sm:px-gutter-desktop py-space-lg shadow-2xs">
         <div className="max-w-[1600px] mx-auto flex flex-col xl:flex-row xl:items-center justify-between gap-space-md">
           <div className="flex flex-col max-w-3xl">
             <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-              <span className="px-2 py-0.5 bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm uppercase tracking-widest rounded">
-                SOVEREIGN PLATFORM GOVERNANCE
+              <span className="px-2 py-0.5 bg-white/10 text-slate-200 font-label-sm text-label-sm uppercase tracking-widest rounded">
+                PLATFORM GOVERNANCE COMMAND
               </span>
-              <span className="text-outline text-xs">/</span>
-              <span className="px-2 py-0.5 bg-primary-container text-primary-fixed font-label-sm text-label-sm uppercase tracking-wider rounded">
-                TIER 0 ENCLAVE SEC-WP01
-              </span>
-              <span className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-surface-container-low text-secondary font-label-sm text-label-sm rounded uppercase tracking-wide">
-                <span className="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse" />
-                ROLE: SUPER_ADMIN (GOVERNANCE SCOPE)
-              </span>
+              <span className="text-slate-400 text-xs">/</span>
+              <DataSourceBadge
+                kind={isLiveAgencies ? "live" : "demo"}
+                asOf={data.asOf ? new Date(data.asOf).toLocaleTimeString() : undefined}
+              />
             </div>
-            <h1 className="font-headline-lg text-headline-lg text-on-surface tracking-tight">
+            <h1 className="font-headline-lg text-headline-lg text-white tracking-tight">
               Platform Command &amp; System Governance
             </h1>
-            <p className="font-body-md text-body-md text-on-surface-variant mt-1">
-              National infrastructure administration, federation security oversight, tamper-evident audit logs, and multi-tenant telemetry across Sri Lanka’s ministries, provincial agencies, and statutory authorities.
+            <p className="font-body-md text-body-md text-slate-300 mt-1">
+              National infrastructure administration, federation security oversight, append-only audit logs, and multi-tenant telemetry across Sri Lanka’s ministries, provincial agencies, and statutory authorities.
             </p>
           </div>
 
           <div className="flex flex-col sm:flex-row xl:flex-col items-start xl:items-end gap-3 self-start xl:self-auto">
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-surface-container-low rounded-lg border border-outline-variant/30">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-600" />
-              <div className="flex flex-col">
-                <span className="font-label-sm text-label-sm text-on-surface leading-tight">
-                  Platform Health: 99.98%
-                </span>
-                <span className="font-body-sm text-body-sm text-on-surface-variant leading-tight">
-                  Latency 18ms • All 9 Provincial Ingestors Nominal
-                </span>
-              </div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <DataSourceBadge kind={isLiveUsers ? "live" : "demo"} label={isLiveUsers ? "Identity: Live" : "Identity: Demo"} />
+              <DataSourceBadge kind="live" label={`Corridors: ${data.counts.total} Recorded`} />
             </div>
             <div className="flex items-center gap-2 flex-wrap">
               <Link
                 href="/admin/roles"
-                className="inline-flex items-center gap-1.5 px-3 py-2 bg-surface-container-lowest hover:bg-surface-container text-on-surface font-label-md text-label-md rounded-lg border border-outline-variant/50 shadow-2xs transition-colors"
+                className="inline-flex items-center gap-1.5 px-3 py-2 bg-white/10 hover:bg-white/15 text-white font-label-md text-label-md rounded-lg border border-white/20 shadow-2xs transition-colors"
               >
-                <span className="material-symbols-outlined text-[18px] text-on-surface-variant">policy</span>
+                <span className="material-symbols-outlined text-[18px] text-slate-200">policy</span>
                 <span>Audit &amp; RBAC</span>
               </Link>
               <button
                 type="button"
                 onClick={onExportTelemetry}
-                className="inline-flex items-center gap-1.5 px-3 py-2 bg-surface-container-lowest hover:bg-surface-container text-on-surface font-label-md text-label-md rounded-lg border border-outline-variant/50 shadow-2xs transition-colors"
+                className="inline-flex items-center gap-1.5 px-3 py-2 bg-white/10 hover:bg-white/15 text-white font-label-md text-label-md rounded-lg border border-white/20 shadow-2xs transition-colors"
               >
-                <span className="material-symbols-outlined text-[18px] text-on-surface-variant">download</span>
+                <span className="material-symbols-outlined text-[18px] text-slate-200">download</span>
                 <span>Telemetry Export</span>
               </button>
               <Link
                 href="/admin/agencies"
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-secondary hover:bg-secondary-container text-on-secondary font-label-md text-label-md rounded-lg shadow-2xs transition-colors"
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-[#c43d00] hover:bg-[#802a00] text-white font-label-md text-label-md rounded-lg shadow-2xs transition-colors"
               >
                 <span className="material-symbols-outlined text-[18px]">admin_panel_settings</span>
                 <span>Manage Agencies &amp; RBAC</span>
@@ -295,15 +293,15 @@ export function PlatformCommandView({
                   {totalAgencies} Agencies
                 </span>
               </div>
-              <div className="p-2 bg-surface-container-low rounded-lg text-secondary">
-                <span className="material-symbols-outlined text-[20px]">account_balance</span>
-              </div>
+              <DataSourceBadge kind={isLiveAgencies ? "live" : "demo"} />
             </div>
             <div className="mt-4 pt-3 bg-surface-container-low/50 -mx-4 -mb-4 px-4 py-2.5 flex items-center justify-between">
               <span className="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-1">
-                <span className="text-xs text-secondary font-bold">●</span> 100% Identity Synced
+                <span className="text-xs text-secondary font-bold">●</span> Statutory Authorities
               </span>
-              <span className="px-1.5 py-0.5 bg-surface-container text-on-surface font-label-sm text-[10px] uppercase rounded">GovPKI</span>
+              <Link href="/admin/agencies" className="text-xs text-secondary font-label-sm hover:underline">
+                View All
+              </Link>
             </div>
           </div>
 
@@ -316,9 +314,7 @@ export function PlatformCommandView({
                   {totalUsers.toLocaleString()} Users
                 </span>
               </div>
-              <div className="p-2 bg-surface-container-low rounded-lg text-on-surface">
-                <span className="material-symbols-outlined text-[20px]">group</span>
-              </div>
+              <DataSourceBadge kind={isLiveUsers ? "live" : "demo"} />
             </div>
             <div className="mt-4 pt-3 bg-surface-container-low/50 -mx-4 -mb-4 px-4 py-2.5 flex items-center justify-between">
               <span className="font-body-sm text-body-sm text-on-surface-variant truncate">
@@ -339,15 +335,15 @@ export function PlatformCommandView({
                   {data.counts.total} Corridors
                 </span>
               </div>
-              <div className="p-2 bg-surface-container-low rounded-lg text-surface-tint">
-                <span className="material-symbols-outlined text-[20px]">conversion_path</span>
-              </div>
+              <DataSourceBadge kind="live" />
             </div>
             <div className="mt-4 pt-3 bg-surface-container-low/50 -mx-4 -mb-4 px-4 py-2.5 flex items-center justify-between">
               <span className="font-body-sm text-body-sm text-on-surface font-semibold truncate">
                 {data.counts.active} Active Execution
               </span>
-              <span className="font-body-sm text-[11px] text-on-surface-variant">9 Provinces</span>
+              <Link href="/projects" className="text-xs text-secondary font-label-sm hover:underline">
+                Projects
+              </Link>
             </div>
           </div>
 
@@ -355,20 +351,20 @@ export function PlatformCommandView({
             <div className="absolute top-0 left-0 right-0 h-1 bg-emerald-700" />
             <div className="flex items-start justify-between">
               <div className="flex flex-col">
-                <span className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">24h Audit Events</span>
+                <span className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Pending Reviews</span>
                 <span className="font-headline-md text-headline-md text-on-surface mt-1 tracking-tight tabular-nums">
-                  38,412 Logs
+                  {data.reviews.pendingReview} Queued
                 </span>
               </div>
-              <div className="p-2 bg-surface-container-low rounded-lg text-emerald-700">
-                <span className="material-symbols-outlined text-[20px]">verified_user</span>
-              </div>
+              <DataSourceBadge kind="live" />
             </div>
             <div className="mt-4 pt-3 bg-surface-container-low/50 -mx-4 -mb-4 px-4 py-2.5 flex items-center justify-between">
               <span className="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-600" /> 0 Breaches • Enforced
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-600" /> SoD Enforced
               </span>
-              <span className="px-1.5 py-0.5 bg-surface-container text-on-surface font-label-sm text-[10px] uppercase rounded">CERT-LK</span>
+              <Link href="/admin/audit-logs" className="text-xs text-secondary font-label-sm hover:underline">
+                Audit Log
+              </Link>
             </div>
           </div>
 
@@ -376,20 +372,20 @@ export function PlatformCommandView({
             <div className="absolute top-0 left-0 right-0 h-1 bg-secondary" />
             <div className="flex items-start justify-between">
               <div className="flex flex-col">
-                <span className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">GIS Ingest (Daily)</span>
-                <span className="font-headline-md text-headline-md text-on-surface mt-1 tracking-tight">
-                  1.8M Events
+                <span className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Delayed / On Hold</span>
+                <span className="font-headline-md text-headline-md text-on-surface mt-1 tracking-tight tabular-nums">
+                  {data.counts.delayed + data.counts.onHold} Projects
                 </span>
               </div>
-              <div className="p-2 bg-surface-container-low rounded-lg text-secondary">
-                <span className="material-symbols-outlined text-[20px]">layers</span>
-              </div>
+              <DataSourceBadge kind="live" />
             </div>
             <div className="mt-4 pt-3 bg-surface-container-low/50 -mx-4 -mb-4 px-4 py-2.5 flex items-center justify-between">
               <span className="font-body-sm text-body-sm text-on-surface-variant truncate">
-                EPSG:5234 • 14ms Ingestion
+                {data.milestones.overdue} overdue milestones
               </span>
-              <span className="font-label-sm text-[11px] text-secondary font-bold">NOMINAL</span>
+              <Link href="/risk" className="text-xs text-secondary font-label-sm hover:underline">
+                Risk View
+              </Link>
             </div>
           </div>
         </section>
@@ -682,58 +678,6 @@ export function PlatformCommandView({
 
           {/* RIGHT 4 COLUMNS */}
           <div className="lg:col-span-4 flex flex-col gap-space-lg">
-            {/* System Infrastructure Health */}
-            <div className="bg-surface-container-lowest rounded-xl border border-outline-variant/30 shadow-2xs p-space-md flex flex-col gap-space-md">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-[20px] text-secondary">memory</span>
-                  <h3 className="font-title-md text-title-md text-on-surface tracking-tight">System Infrastructure Health</h3>
-                </div>
-                <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 font-label-sm text-[10px] uppercase rounded font-bold">
-                  All Systems Go
-                </span>
-              </div>
-
-              <div className="flex flex-col gap-2.5">
-                {[
-                  { title: "RoadSync PostGIS Spatial", sub: "Cluster SRI-01 (Kaduwela DC)", metric: "14ms", state: "Synced" },
-                  { title: "Document Vault & PKI", sub: "GovCloud Root Authority", metric: "100%", state: "Valid CAs" },
-                  { title: "Field WebSocket Relays", sub: "Colombo • Kandy • Galle", metric: "99.98%", state: "Live" },
-                  { title: "Sovereign Data Isolation", sub: "Directive SD-804 Attested", metric: "0 Leaks", state: "Enforced" },
-                ].map((node) => (
-                  <div key={node.title} className="p-2.5 bg-surface-container-low rounded-lg flex items-center justify-between">
-                    <div className="flex items-center gap-2.5">
-                      <span className="w-2 h-2 rounded-full bg-emerald-600" />
-                      <div className="flex flex-col">
-                        <span className="font-label-md text-label-md text-on-surface">{node.title}</span>
-                        <span className="font-body-sm text-[11px] text-on-surface-variant">{node.sub}</span>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <span className="font-mono text-xs font-semibold text-on-surface">{node.metric}</span>
-                      <span className="block text-[10px] text-emerald-700 font-medium">{node.state}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {diagMessage && (
-                <div className="p-2 rounded bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs font-medium">
-                  {diagMessage}
-                </div>
-              )}
-
-              <button
-                type="button"
-                onClick={runDiagnostics}
-                disabled={diagRunning}
-                className="w-full py-2 bg-surface-container hover:bg-surface-container-high text-on-surface font-label-md text-label-md rounded-lg transition-colors flex items-center justify-center gap-1.5"
-              >
-                <span className="material-symbols-outlined text-[16px]">stethoscope</span>
-                <span>{diagRunning ? "Running Telemetry Probe..." : "Run Platform Diagnostics"}</span>
-              </button>
-            </div>
-
             {/* RBAC Role Distribution */}
             <div className="bg-surface-container-lowest rounded-xl border border-outline-variant/30 shadow-2xs p-space-md flex flex-col gap-space-md">
               <div className="flex items-center justify-between">
@@ -741,7 +685,7 @@ export function PlatformCommandView({
                   <span className="material-symbols-outlined text-[20px] text-on-surface">badge</span>
                   <h3 className="font-title-md text-title-md text-on-surface tracking-tight">RBAC Role Distribution</h3>
                 </div>
-                <span className="font-mono text-xs text-on-surface-variant font-medium">{totalUsers.toLocaleString()} Total</span>
+                <DataSourceBadge kind={(rolesQ.data?.length ?? 0) > 0 ? "live" : "demo"} />
               </div>
               <p className="font-body-sm text-body-sm text-on-surface-variant">
                 Separation of duties enforced. Platform Super Admins do not participate in workflow approvals or financial authorizations.
@@ -791,30 +735,57 @@ export function PlatformCommandView({
               </div>
             </div>
 
-            {/* Platform Maintenance Window */}
-            <div className="bg-surface-container-lowest rounded-xl border border-outline-variant/30 shadow-2xs p-space-md flex flex-col gap-space-md">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-[20px] text-on-surface">event_repeat</span>
-                  <h3 className="font-title-md text-title-md text-on-surface tracking-tight">Platform Maintenance</h3>
-                </div>
-                <span className="px-2 py-0.5 bg-surface-container text-on-surface-variant font-label-sm text-[10px] uppercase rounded">
-                  Scheduled
+            {/* Collapsed Secondary & Synthetic Demo Telemetry */}
+            <details className="bg-surface-container-lowest rounded-xl border border-outline-variant/30 shadow-2xs p-space-md group">
+              <summary className="cursor-pointer list-none flex items-center justify-between gap-2 font-title-md text-title-md text-on-surface">
+                <span className="flex items-center gap-2">
+                  <span className="material-symbols-outlined text-[20px] text-secondary">memory</span>
+                  <span>More Telemetry &amp; Topology</span>
                 </span>
-              </div>
-              <div className="p-3 bg-primary-container text-surface-container-lowest rounded-lg flex flex-col gap-1.5">
-                <div className="flex items-center justify-between">
-                  <span className="font-label-sm text-label-sm text-primary-fixed uppercase tracking-wider">Next Routine Window</span>
-                  <span className="font-mono text-[11px] text-secondary-fixed">IST (+05:30)</span>
+                <DataSourceBadge kind="demo" />
+              </summary>
+
+              <div className="mt-4 flex flex-col gap-space-md border-t border-outline-variant/20 pt-3">
+                <div className="flex flex-col gap-2.5">
+                  {[
+                    { title: "RoadSync PostGIS Spatial", sub: "Cluster SRI-01 (Demo Reference)", metric: "Synced", state: "Demo" },
+                    { title: "Document Vault & PKI", sub: "Authority Config", metric: "Active", state: "Demo" },
+                    { title: "Field WebSocket Relays", sub: "Colombo • Kandy • Galle", metric: "Nominal", state: "Demo" },
+                    { title: "Sovereign Data Isolation", sub: "Directive SD-804 Attested", metric: "0 Leaks", state: "Enforced" },
+                  ].map((node) => (
+                    <div key={node.title} className="p-2.5 bg-surface-container-low rounded-lg flex items-center justify-between">
+                      <div className="flex items-center gap-2.5">
+                        <span className="w-2 h-2 rounded-full bg-amber-500" />
+                        <div className="flex flex-col">
+                          <span className="font-label-md text-label-md text-on-surface">{node.title}</span>
+                          <span className="font-body-sm text-[11px] text-on-surface-variant">{node.sub}</span>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <span className="font-mono text-xs font-semibold text-on-surface">{node.metric}</span>
+                        <span className="block text-[10px] text-amber-800 font-medium">{node.state}</span>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-                <span className="font-label-lg text-label-lg font-semibold text-surface-bright">
-                  Sunday • 02:00 – 03:00 IST
-                </span>
-                <p className="font-body-sm text-[12px] text-on-primary-container">
-                  Non-disruptive PostgreSQL index re-partitioning and GIS tile cache warming. Zero corridor telemetry downtime expected.
-                </p>
+
+                {diagMessage && (
+                  <div className="p-2 rounded bg-amber-50 border border-amber-200 text-amber-900 text-xs font-medium">
+                    {diagMessage}
+                  </div>
+                )}
+
+                <button
+                  type="button"
+                  onClick={runDiagnostics}
+                  disabled={diagRunning}
+                  className="w-full py-2 bg-surface-container hover:bg-surface-container-high text-on-surface font-label-md text-label-md rounded-lg transition-colors flex items-center justify-center gap-1.5"
+                >
+                  <span className="material-symbols-outlined text-[16px]">refresh</span>
+                  <span>{diagRunning ? "Refreshing Queries..." : "Refresh Live Queries"}</span>
+                </button>
               </div>
-            </div>
+            </details>
           </div>
         </div>
       </div>
@@ -1412,15 +1383,17 @@ export function AgencyOfficerCommandView({
           <div className="relative flex flex-col p-space-md bg-surface-container-lowest rounded-xl border border-outline-variant/30 shadow-2xs overflow-hidden">
             <div className="absolute top-0 left-0 right-0 h-1 bg-primary" />
             <div className="flex items-center justify-between text-on-surface-variant mb-2">
-              <span className="font-label-sm text-label-sm uppercase tracking-wide">Pavement SLA</span>
-              <span className="material-symbols-outlined text-[20px] text-primary">engineering</span>
+              <span className="font-label-sm text-label-sm uppercase tracking-wide">Milestones Completed</span>
+              <DataSourceBadge kind="live" />
             </div>
             <div className="flex items-baseline gap-2">
-              <span className="font-headline-lg text-headline-lg text-on-surface leading-none">99.4%</span>
-              <span className="font-label-sm text-label-sm text-on-surface-variant">Network</span>
+              <span className="font-headline-lg text-headline-lg text-on-surface leading-none tabular-nums">
+                {data.milestones.completed}
+              </span>
+              <span className="font-label-sm text-label-sm text-on-surface-variant">Stations</span>
             </div>
             <p className="font-body-sm text-body-sm text-on-surface-variant mt-2">
-              Reinstatement compliance tracking
+              {data.milestones.overdue} overdue · {data.milestones.inProgress} in progress
             </p>
           </div>
 
@@ -2557,24 +2530,20 @@ export function ContractorCommandView({
   return (
     <div className="p-4 sm:p-gutter-desktop flex flex-col gap-space-lg max-w-[1440px] mx-auto w-full">
       {/* Top Operational Eyebrow & Meta Bar */}
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-space-sm bg-primary-container text-surface-container-lowest p-space-md rounded-lg shadow-2xs">
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-space-sm cac-survey-header p-space-md rounded-lg shadow-2xs">
         <div className="flex flex-wrap items-center gap-space-sm">
-          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-surface-container-high/15 font-label-sm text-label-sm text-secondary-fixed tracking-widest uppercase">
+          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-white/10 font-label-sm text-label-sm text-secondary-fixed tracking-widest uppercase">
             <span className="w-1.5 h-1.5 rounded-full bg-secondary-container" />
             LK-CENTRAL-01
           </span>
-          <span className="text-on-primary-container text-body-sm">/</span>
-          <span className="font-label-md text-label-md text-primary-fixed-dim uppercase tracking-wider">
+          <span className="text-slate-400 text-body-sm">/</span>
+          <span className="font-label-md text-label-md text-slate-200 uppercase tracking-wider">
             Prime EPC Lead: Maga Engineering PLC · Joint Venture Access Engineering
           </span>
-          <span className="px-2 py-0.5 rounded bg-surface-container-lowest/10 font-label-sm text-label-sm text-surface-container-lowest uppercase tracking-wider">
-            [ SOVEREIGN ASSET COMMAND ]
-          </span>
         </div>
-        <div className="flex items-center gap-space-md self-end md:self-auto font-label-sm text-label-sm text-on-primary-container">
-          <span className="text-surface-container-lowest font-mono">GRID LOCK: 06°55&apos;42.1&quot;N 79°52&apos;14.3&quot;E</span>
-          <span className="w-1 h-1 rounded-full bg-on-primary-container" />
-          <span className="text-secondary-fixed font-mono">TELEMETRY REFRESH: 12s</span>
+        <div className="flex items-center gap-2 self-end md:self-auto">
+          <DataSourceBadge kind="live" label={`Active Sites: ${activeProjectsCount}`} />
+          <DataSourceBadge kind="demo" label="Field Schedule Overlay" />
         </div>
       </div>
 
@@ -2640,6 +2609,67 @@ export function ContractorCommandView({
             <span>Submit IPC Milestone Claim (LKR)</span>
           </button>
         </div>
+      </div>
+
+      {/* Contractor Chainage Ruler & Alignment Schedule (§5.4) */}
+      <div className="cac-card p-5 space-y-4">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <h2 className="text-base font-semibold text-slate-900">
+              Corridor Chainage Execution &amp; Deliverable Schedule
+            </h2>
+            <p className="text-xs text-slate-600">
+              Verified vs. reported physical progress across active work packages and upcoming deliverable stations.
+            </p>
+          </div>
+          <DataSourceBadge kind="demo" />
+        </div>
+        <ChainageBar
+          verifiedPercent={typeof data.physical.averagePercent === "number" ? Math.max(0, Math.round(data.physical.averagePercent - 8)) : 60}
+          reportedPercent={typeof data.physical.averagePercent === "number" ? Math.round(data.physical.averagePercent) : 68}
+          label="Active Contract Corridor Chainage (CH 0+00 to CH 1+00)"
+        />
+        <AlignmentTimeline
+          orientation="horizontal"
+          items={[
+            {
+              id: "st-01",
+              stationCode: "ST-01",
+              title: "Subgrade & Utility Trenching",
+              subtitle: "CH 00+000 – 02+100 · NBRO Certified",
+              state: "verified",
+              statusLabel: "Verified",
+              plannedWindow: "Jan 2026",
+            },
+            {
+              id: "st-02",
+              stationCode: "ST-02",
+              title: "Asphalt Binder Course 60/70",
+              subtitle: "CH 02+100 – 04+200 · Crew Active",
+              state: "recorded",
+              statusLabel: "In Progress",
+              plannedWindow: "Feb 2026",
+            },
+            {
+              id: "st-03",
+              stationCode: "ST-03",
+              title: "Culvert & Stormwater Box",
+              subtitle: "CH 04+200 – 06+500 · Awaiting Wayleave",
+              state: "delayed",
+              statusLabel: "Hold Review",
+              plannedWindow: "Mar 2026",
+            },
+            {
+              id: "st-04",
+              stationCode: "ST-04",
+              title: "Wearing Course & Handover",
+              subtitle: "CH 06+500 – 08+600 · Final Stage",
+              state: "planned",
+              statusLabel: "Planned",
+              plannedWindow: "Apr 2026",
+            },
+          ]}
+        />
       </div>
 
       {/* KPI Metric Strip (4 Metrics) */}
