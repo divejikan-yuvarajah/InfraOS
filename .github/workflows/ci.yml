@@ -25,6 +25,12 @@ jobs:
           NODE_OPTIONS: "--max-old-space-size=4096"
         run: npm run type-check
 
+      - name: Lint web and API
+        run: npm run lint
+
+      - name: Run web unit tests
+        run: npm run test:web
+
       - name: Build API
         run: npm run build:api
 

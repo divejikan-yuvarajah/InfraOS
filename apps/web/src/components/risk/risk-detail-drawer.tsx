@@ -5,11 +5,7 @@ import {
   XIcon,
   RefreshCwIcon,
   ExternalLinkIcon,
-  AlertTriangleIcon,
-  CheckCircleIcon,
   HelpCircleIcon,
-  ChevronDownIcon,
-  ChevronUpIcon,
 } from "lucide-react";
 import { useState } from "react";
 import type {
@@ -21,9 +17,7 @@ import type {
 import { getIndicatorExplanation, getIndicatorTitle, RECOMMENDATION_COPY } from "@/lib/risk/indicator-copy";
 import { CATEGORY_LABELS } from "@/lib/risk/view";
 import { LevelChip } from "./level-chip";
-import { SufficiencyChip } from "./sufficiency-chip";
 import { BasisChip } from "./basis-chip";
-import { FreshnessChip } from "./freshness-chip";
 import { ResolutionChip } from "./resolution-chip";
 import { HowCalculatedPopover } from "./how-calculated-popover";
 import { NarrativePanel } from "./narrative-panel";

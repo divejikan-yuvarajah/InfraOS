@@ -121,7 +121,10 @@ export function AdminRolesPageClient() {
     onError,
   });
 
-  const roles: RoleRecord[] = rolesQuery.data ?? [];
+  const roles: RoleRecord[] = useMemo(
+    () => rolesQuery.data ?? [],
+    [rolesQuery.data],
+  );
   const allPermissions = useMemo(() => {
     const catalog = permissionsQuery.data ?? [];
     if (catalog.length > 0) {

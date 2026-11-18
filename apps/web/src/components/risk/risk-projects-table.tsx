@@ -3,13 +3,10 @@
 import Link from "next/link";
 import {
   ExternalLinkIcon,
-  MoreVerticalIcon,
   RefreshCwIcon,
   SlidersHorizontalIcon,
 } from "lucide-react";
-import { useState } from "react";
 import type { RiskProjectListItemDto } from "@/lib/risk/types";
-import { formatDaysAgo } from "@/lib/risk/view";
 import { CategoryStrip } from "./category-strip";
 import { FreshnessChip } from "./freshness-chip";
 import { LevelChip } from "./level-chip";
@@ -38,8 +35,6 @@ export function RiskProjectsTable({
   canAssess?: boolean;
   className?: string;
 }) {
-  const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
-
   const totalPages = Math.max(1, Math.ceil(total / limit));
   const fromIndex = total === 0 ? 0 : (page - 1) * limit + 1;
   const toIndex = Math.min(total, page * limit);

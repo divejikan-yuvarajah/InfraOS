@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { GitCommitIcon, ArrowRightIcon, RefreshCwIcon } from "lucide-react";
+import { ArrowRightIcon } from "lucide-react";
 import type { RiskHistoryItemDto } from "@/lib/risk/types";
 import { LevelChip } from "./level-chip";
 
