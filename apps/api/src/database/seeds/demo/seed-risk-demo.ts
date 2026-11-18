@@ -42,7 +42,6 @@ export async function seedDemoRiskProjects(): Promise<{ count: number; projectId
     });
   }
 
-  const defaultAgencyId = rdaAgency._id;
   const rdaId = rdaAgency._id;
   const waterId = waterAgency._id;
   const elecId = elecAgency._id;
@@ -53,7 +52,7 @@ export async function seedDemoRiskProjects(): Promise<{ count: number; projectId
   const seededIds: string[] = [];
 
   // Helper to upsert project
-  async function upsertProject(data: any) {
+  async function upsertProject(data: Record<string, unknown> & { projectCode: string; startDate?: Date | null; plannedEndDate?: Date | null; budget?: { currency: "LKR"; amountMinor: number } }) {
     const existing = await Project.findOne({ projectCode: data.projectCode });
     if (existing) {
       existing.startDate = data.startDate ?? null;
@@ -239,6 +238,7 @@ export async function seedDemoRiskProjects(): Promise<{ count: number; projectId
 
   await ConflictRecord.deleteMany({
     $or: [
+      { conflictNo: "RSC-2026-900001" },
       { aId: p4._id, aType: "project" },
       { bId: p4._id, bType: "project" },
     ],

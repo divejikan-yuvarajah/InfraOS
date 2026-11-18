@@ -27,9 +27,9 @@ export function tierAssessmentEvidence(
 
   const tieredIndicators: RiskIndicatorDto[] = (assessment.indicators ?? []).map(
     (ind) => {
-      let inputs = ind.inputs ? { ...ind.inputs } : undefined;
+      const inputs = ind.inputs ? { ...ind.inputs } : undefined;
       let evidence = [...ind.evidence];
-      let calc = ind.calc ? { ...ind.calc, steps: [...ind.calc.steps] } : undefined;
+      const calc = ind.calc ? { ...ind.calc, steps: [...ind.calc.steps] } : undefined;
 
       // 1. Finance Tiering
       if (!viewer.canReadFinance) {

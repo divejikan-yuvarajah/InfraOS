@@ -98,7 +98,7 @@ async function queueProjectFromWorkRequest(requestId: string): Promise<void> {
 export function registerRiskEventSubscribers(): () => void {
   unregisterRiskEventSubscribers();
 
-  const handleConflict = (e: any) => {
+  const handleConflict = (e: { requestId?: unknown } | null | undefined) => {
     if (e?.requestId) void queueProjectFromWorkRequest(String(e.requestId));
   };
 

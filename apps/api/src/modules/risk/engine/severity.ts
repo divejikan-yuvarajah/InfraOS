@@ -1,7 +1,6 @@
 import type {
   RiskIndicatorDto,
   RiskLevel,
-  RiskSeverity,
   RiskSufficiency,
 } from "@infraos/shared-types";
 

@@ -23,6 +23,7 @@ import { Project } from "../../../modules/projects/models/project.model.js";
 import { RiskAssessment } from "../../../modules/risk/models/risk-assessment.model.js";
 import { RiskResolution } from "../../../modules/risk/models/risk-resolution.model.js";
 import { RiskRun } from "../../../modules/risk/models/risk-run.model.js";
+import { ConflictRecord } from "../../../modules/roadsync/models/conflict-record.model.js";
 import { WorkRequest } from "../../../modules/roadsync/models/work-request.model.js";
 import { Contractor } from "../../../modules/contractors/models/contractor.model.js";
 import { ProjectBudgetRevision } from "../../../modules/finance/models/project-budget-revision.model.js";
@@ -127,6 +128,13 @@ export async function resetDemoData(seedEnv: SeedEnvSlice): Promise<void> {
     await RiskAssessment.deleteMany({ projectId: { $in: demoProjectIds } });
     await RiskResolution.deleteMany({ projectId: { $in: demoProjectIds } });
     await RiskRun.deleteMany({});
+    await ConflictRecord.deleteMany({
+      $or: [
+        { conflictNo: "RSC-2026-900001" },
+        { aId: { $in: demoProjectIds } },
+        { bId: { $in: demoProjectIds } },
+      ],
+    });
     // Evidence bytes (GridFS), evidence rows and the append-only verification ledger go before the inspections they point at.
     const inspectionIds = (await Inspection.find({ projectId: { $in: demoProjectIds } }).select("_id").lean()).map((i) => String(i._id));
     const db = mongoose.connection.db;

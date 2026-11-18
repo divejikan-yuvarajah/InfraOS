@@ -65,7 +65,7 @@ export async function fetchProjectSource(
     status: project.status,
     agencyId: project.agencyId.toString(),
     projectType: project.projectType,
-    district: (project as any).location?.district ?? undefined,
+    district: (project as unknown as { location?: { district?: string } }).location?.district ?? undefined,
     startDate: project.startDate ? new Date(project.startDate) : null,
     plannedEndDate: project.plannedEndDate ? new Date(project.plannedEndDate) : null,
     actualEndDate: project.actualEndDate ? new Date(project.actualEndDate) : null,
