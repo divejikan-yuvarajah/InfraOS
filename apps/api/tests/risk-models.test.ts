@@ -141,7 +141,7 @@ describe("Risk models & integrity (Batch 11 Step 119)", () => {
       agencyId: id(),
       fingerprint: "DL1:-",
       indicatorCode: "DL1",
-      status: "MAGIC_STATUS" as any,
+      status: "MAGIC_STATUS" as unknown as "OPEN",
       note: "Test note",
       severityAtDecision: "MODERATE",
       assessmentId: id(),

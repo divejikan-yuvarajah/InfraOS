@@ -7,7 +7,7 @@ import type { AuthenticatedActor } from "../identity/auth/require-authenticated.
 import {
   projectWriteFilter,
 } from "../identity/authorization/resource-scope.js";
-import { resolveRiskScope } from "./risk-scope.js";
+import { projectReadFilter, resolveRiskScope } from "./risk-scope.js";
 import { Project } from "../projects/models/project.model.js";
 import { RiskAssessment } from "./models/risk-assessment.model.js";
 import { RiskResolution } from "./models/risk-resolution.model.js";
@@ -33,7 +33,7 @@ export async function listProjectResolutions(
 
   const projectObjId = new mongoose.Types.ObjectId(projectId);
   const project = await Project.findOne({
-    _id: projectObjId,
+    $and: [projectReadFilter(scope), { _id: projectObjId }],
   }).lean();
 
   if (!project) {
@@ -103,7 +103,7 @@ export async function updateResolution(
       : null;
 
   // Optimistic concurrency check
-  let existing = await RiskResolution.findOne({
+  const existing = await RiskResolution.findOne({
     projectId: projectObjId,
     fingerprint,
   });

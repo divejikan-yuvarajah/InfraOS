@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { RefreshCwIcon, HistoryIcon, GitCompareIcon } from "lucide-react";
+import { RefreshCwIcon } from "lucide-react";
 import {
   assessProjectOnDemand,
   compareRiskAssessments,

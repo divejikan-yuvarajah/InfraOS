@@ -4,12 +4,10 @@ import { Agency } from "../src/modules/agencies/models/agency.model.js";
 import { Role } from "../src/modules/identity/models/role.model.js";
 import { User } from "../src/modules/identity/models/user.model.js";
 import { Project } from "../src/modules/projects/models/project.model.js";
+import type { AuthenticatedActor } from "../src/common/middleware/auth.middleware.js";
+import type { RiskAssessmentDto } from "@infraos/shared-types";
 import {
   assessProject,
-  compareProjectAssessments,
-  getProjectAssessmentById,
-  getProjectLatestAssessment,
-  getProjectRiskHistory,
 } from "../src/modules/risk/risk-assessment.service.js";
 import {
   exportRiskCsv,
@@ -35,7 +33,7 @@ describe("Risk Assessment, Resolutions & Read Service (§4.7, §4.8, Step 122)",
   let agencyId: mongoose.Types.ObjectId;
   let userId: mongoose.Types.ObjectId;
   let roleId: mongoose.Types.ObjectId;
-  let actor: any;
+  let actor: AuthenticatedActor;
 
   beforeAll(async () => {
     await startIsolatedMongo();
@@ -212,10 +210,19 @@ describe("Risk Assessment, Resolutions & Read Service (§4.7, §4.8, Step 122)",
     // List resolutions
     const list = await listProjectResolutions(actor, projectId.toString());
     expect(list).toHaveLength(1);
+
+    // 5. Cross-agency isolation: actor from another agency cannot list resolutions
+    const otherAgencyActor: AuthenticatedActor = {
+      ...actor,
+      agencyId: id().toString(),
+    };
+    await expect(
+      listProjectResolutions(otherAgencyActor, projectId.toString()),
+    ).rejects.toThrow(RiskAccessError);
   });
 
   it("tiers evidence when viewer lacks finance read permission", () => {
-    const mockAssessment: any = {
+    const mockAssessment = {
       overallLevel: "HIGH",
       indicators: [
         {
@@ -247,7 +254,7 @@ describe("Risk Assessment, Resolutions & Read Service (§4.7, §4.8, Step 122)",
           basis: "REPORTED",
         },
       ],
-    };
+    } as unknown as RiskAssessmentDto;
 
     // Viewer WITHOUT finance permission
     const tiered = tierAssessmentEvidence(mockAssessment, {

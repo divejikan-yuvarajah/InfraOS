@@ -1,9 +1,13 @@
+import mongoose from "mongoose";
 import { escapeSearchRegex } from "../../shared/http/list-query.js";
 import { Asset } from "../assets/models/asset.model.js";
 import { Contractor } from "../contractors/models/contractor.model.js";
+import { documentReadFilter, loadViewer } from "../documents/document-access.js";
 import { Document } from "../documents/models/document.model.js";
 import type { AuthenticatedActor } from "../identity/auth/require-authenticated.js";
+import { hasPermission } from "../identity/authorization/require-permission.js";
 import { projectReadFilter, resolveResourceScope } from "../identity/authorization/resource-scope.js";
+import { Role } from "../identity/models/role.model.js";
 import { CitizenIssue } from "../issues/models/citizen-issue.model.js";
 import { Project } from "../projects/models/project.model.js";
 
@@ -36,7 +40,23 @@ export async function runGlobalSearch(
 
   const limit = Math.min(20, Math.max(1, perCategoryLimit));
   const rx = new RegExp(escapeSearchRegex(q), "i");
-  const scope = await resolveResourceScope(actor);
+  const [scope, roleDoc] = await Promise.all([
+    resolveResourceScope(actor),
+    mongoose.isValidObjectId(actor.roleId)
+      ? Role.findById(actor.roleId).select("permissions isActive").lean()
+      : Promise.resolve(null),
+  ]);
+
+  const granted =
+    roleDoc && roleDoc.isActive !== false && Array.isArray(roleDoc.permissions)
+      ? roleDoc.permissions
+      : [];
+  const isSuper = actor.roleKey === "SUPER_ADMIN";
+  const canReadProjects = isSuper || hasPermission(granted, "project.read");
+  const canReadIssues = isSuper || hasPermission(granted, "citizen_issue.read");
+  const canReadContractors = isSuper || hasPermission(granted, "contractor.read");
+  const canReadDocuments = isSuper || hasPermission(granted, "document.read");
+  const canReadAssets = isSuper || hasPermission(granted, "asset.read");
 
   const projScope = projectReadFilter(scope);
   const agencyFilter =
@@ -60,42 +80,56 @@ export async function runGlobalSearch(
         ? { _id: { $in: [] } }
         : { assignedAgency: { $in: scope.agencyIds } };
 
+  const docScope = canReadDocuments
+    ? documentReadFilter(await loadViewer(actor, scope))
+    : { _id: { $in: [] } };
+
   const [projects, issues, contractors, documents, assets] = await Promise.all([
-    Project.find({
-      $and: [projScope, { $or: [{ title: rx }, { projectCode: rx }, { "location.district": rx }] }],
-    })
-      .select("_id projectCode title status location.district")
-      .sort({ updatedAt: -1 })
-      .limit(limit)
-      .lean(),
-    CitizenIssue.find({
-      $and: [issueFilter, { $or: [{ referenceNo: rx }, { title: rx }, { "location.district": rx }] }],
-    })
-      .select("_id referenceNo title category status location.district")
-      .sort({ createdAt: -1 })
-      .limit(limit)
-      .lean(),
-    Contractor.find({
-      $and: [contractorFilter, { $or: [{ name: rx }, { registrationNumber: rx }] }],
-    })
-      .select("_id registrationNumber name category status")
-      .sort({ updatedAt: -1 })
-      .limit(limit)
-      .lean(),
-    Document.find({
-      $and: [agencyFilter, { $or: [{ title: rx }, { docNo: rx }, { fileName: rx }] }],
-    })
-      .select("_id docNo title fileName category status")
-      .sort({ updatedAt: -1 })
-      .limit(limit)
-      .lean(),
-    Asset.find({
-      $and: [agencyFilter, { $or: [{ name: rx }, { assetNo: rx }, { "location.district": rx }] }],
-    })
-      .select("_id assetNo name assetType operationalStatus")
-      .sort({ updatedAt: -1 })
-      .limit(limit)
-      .lean(),
+    canReadProjects
+      ? Project.find({
+          $and: [projScope, { $or: [{ title: rx }, { projectCode: rx }, { "location.district": rx }] }],
+        })
+          .select("_id projectCode title status location.district")
+          .sort({ updatedAt: -1 })
+          .limit(limit)
+          .lean()
+      : Promise.resolve([]),
+    canReadIssues
+      ? CitizenIssue.find({
+          $and: [issueFilter, { $or: [{ referenceNo: rx }, { title: rx }, { "location.district": rx }] }],
+        })
+          .select("_id referenceNo title category status location.district")
+          .sort({ createdAt: -1 })
+          .limit(limit)
+          .lean()
+      : Promise.resolve([]),
+    canReadContractors
+      ? Contractor.find({
+          $and: [contractorFilter, { $or: [{ name: rx }, { registrationNumber: rx }] }],
+        })
+          .select("_id registrationNumber name category status")
+          .sort({ updatedAt: -1 })
+          .limit(limit)
+          .lean()
+      : Promise.resolve([]),
+    canReadDocuments
+      ? Document.find({
+          $and: [docScope, { $or: [{ title: rx }, { docNo: rx }, { fileName: rx }] }],
+        })
+          .select("_id docNo title fileName category status")
+          .sort({ updatedAt: -1 })
+          .limit(limit)
+          .lean()
+      : Promise.resolve([]),
+    canReadAssets
+      ? Asset.find({
+          $and: [agencyFilter, { $or: [{ name: rx }, { assetNo: rx }, { "location.district": rx }] }],
+        })
+          .select("_id assetNo name assetType operationalStatus")
+          .sort({ updatedAt: -1 })
+          .limit(limit)
+          .lean()
+      : Promise.resolve([]),
   ]);
 
   return {

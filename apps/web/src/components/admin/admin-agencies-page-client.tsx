@@ -101,7 +101,10 @@ export function AdminAgenciesPageClient() {
     retry: false,
   });
 
-  const allAgencies = listQuery.data?.agencies ?? [];
+  const allAgencies = useMemo(
+    () => listQuery.data?.agencies ?? [],
+    [listQuery.data?.agencies],
+  );
 
   const agencyById = useMemo(() => {
     const map = new Map<string, AgencyRecord>();

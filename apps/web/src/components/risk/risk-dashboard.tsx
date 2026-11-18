@@ -6,7 +6,6 @@ import { useEffect, useState, useSyncExternalStore } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   DownloadIcon,
-  PlayIcon,
   BookOpenIcon,
   RefreshCwIcon,
   ShieldAlertIcon,
@@ -30,7 +29,7 @@ import {
 import { buildRiskQueryString, parseRiskQueryParams } from "@/lib/risk/list-query";
 import { getRiskCopy } from "@/lib/risk/messages";
 import { canHintRisk, canResolveRisk } from "@/lib/risk/session";
-import type { RiskListFilters, RiskProjectListItemDto } from "@/lib/risk/types";
+import type { RiskListFilters } from "@/lib/risk/types";
 import { formatDaysAgo } from "@/lib/risk/view";
 
 import { CategoryBreakdown } from "./category-breakdown";
@@ -75,7 +74,7 @@ export function RiskDashboard() {
 
   // 2. Fetch Projects list
   const queryString = buildRiskQueryString(filters);
-  const { data: projectsData, isLoading: isProjectsLoading, refetch: refetchProjects } = useQuery({
+  const { data: projectsData, refetch: refetchProjects } = useQuery({
     queryKey: ["risk", "projects", queryString],
     queryFn: () => fetchRiskProjects(queryString),
     staleTime: 15_000,

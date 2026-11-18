@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import type { RiskNarrativeDto } from "@infraos/shared-types";
+import type { RiskAssessmentDto, RiskNarrativeDto } from "@infraos/shared-types";
 import { logger } from "../../shared/logger.js";
 import { aiClient } from "../ai/ai-client.js";
 import { aiConfig } from "../ai/ai.config.js";
@@ -47,27 +47,50 @@ export interface GenerateNarrativeOptions {
  */
 export function buildDeidentifiedNarrativeInput(
   projectCode: string,
-  assessment: any,
+  assessment: {
+    overallLevel: RiskAssessmentDto["overallLevel"];
+    overallIndex?: number | null;
+    categories?: Array<{
+      category: RiskAssessmentDto["categories"][number]["category"];
+      level: RiskAssessmentDto["categories"][number]["level"];
+      index?: number | null;
+      sufficiency: RiskAssessmentDto["categories"][number]["sufficiency"];
+      missing?: string[];
+    }>;
+    indicators?: Array<{
+      code: string;
+      category: RiskAssessmentDto["indicators"][number]["category"];
+      severity: RiskAssessmentDto["indicators"][number]["severity"];
+      points: number;
+      basis: RiskAssessmentDto["indicators"][number]["basis"];
+      evidence?: Array<{
+        kind: string;
+        value?: string | number | boolean | null;
+        unit?: string | null;
+        asOf?: Date | string | null;
+      }>;
+    }>;
+  },
 ) {
-  const deidentifiedCategories = (assessment.categories ?? []).map((c: any) => ({
+  const deidentifiedCategories = (assessment.categories ?? []).map((c) => ({
     category: c.category,
     level: c.level,
-    index: c.index,
+    index: c.index ?? undefined,
     sufficiency: c.sufficiency,
     missing: c.missing ?? [],
   }));
 
-  const deidentifiedIndicators = (assessment.indicators ?? []).map((i: any) => ({
+  const deidentifiedIndicators = (assessment.indicators ?? []).map((i) => ({
     code: i.code,
     category: i.category,
     severity: i.severity,
     points: i.points,
     basis: i.basis,
-    evidence: (i.evidence ?? []).map((e: any) => ({
+    evidence: (i.evidence ?? []).map((e) => ({
       kind: e.kind,
       value: e.value,
-      unit: e.unit,
-      asOf: e.asOf,
+      unit: e.unit ?? undefined,
+      asOf: e.asOf ? String(e.asOf) : undefined,
     })),
   }));
 
@@ -234,7 +257,10 @@ export async function generateRiskNarrative(
     };
 
     // 6. The single permitted post-creation write to RiskAssessment
-    assessment.narrative = narrative as any;
+    assessment.narrative = {
+      ...narrative,
+      generatedAt: new Date(narrative.generatedAt),
+    };
     await assessment.save();
 
     await recordGate({

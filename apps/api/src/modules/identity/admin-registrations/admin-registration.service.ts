@@ -3,10 +3,9 @@ import mongoose from "mongoose";
 import { Agency } from "../../agencies/models/agency.model.js";
 import { AuditLog } from "../../audit/models/audit-log.model.js";
 import { Role } from "../models/role.model.js";
-import { User, type UserDocument } from "../models/user.model.js";
+import { User } from "../models/user.model.js";
 import {
   RegistrationRequest,
-  type RegistrationRequestDocument,
 } from "../models/registration-request.model.js";
 import {
   sendUserRegistrationApprovedNotification,
@@ -69,27 +68,53 @@ export type AdminRegistrationListResult = {
   };
 };
 
-function toDto(doc: any): AdminRegistrationDto {
-  const reviewedByUser = doc.reviewedBy;
-  const assignedRole = doc.assignedRoleId;
-  const assignedAgency = doc.assignedAgencyId;
+type PopulatedRegistrationDoc = {
+  _id: mongoose.Types.ObjectId;
+  referenceCode: string;
+  firstName: string;
+  lastName: string;
+  fullName?: string;
+  email: string;
+  organizationCode: string;
+  organizationName: string;
+  department: string;
+  designation: string;
+  requestedResponsibility: string;
+  status: "PENDING" | "APPROVED" | "REJECTED";
+  accountStatus?: "pending" | "approved" | "rejected";
+  acceptedTermsAt?: Date | string | null;
+  createdAt?: Date | string | null;
+  reviewedBy?: { _id?: mongoose.Types.ObjectId; email?: string; displayName?: string; firstName?: string; lastName?: string } | null;
+  reviewedAt?: Date | string | null;
+  rejectionReason?: string | null;
+  approvalNotes?: string | null;
+  assignedRoleId?: { _id?: mongoose.Types.ObjectId; key?: string; name?: string } | null;
+  assignedAgencyId?: { _id?: mongoose.Types.ObjectId; code?: string; name?: string } | null;
+  createdUserId?: mongoose.Types.ObjectId | null;
+};
+
+function toDto(doc: unknown): AdminRegistrationDto {
+  const d = doc as PopulatedRegistrationDoc;
+  const reviewedByUser = d.reviewedBy;
+  const assignedRole = d.assignedRoleId;
+  const assignedAgency = d.assignedAgencyId;
 
   return {
-    id: doc._id.toString(),
-    referenceCode: doc.referenceCode,
-    firstName: doc.firstName,
-    lastName: doc.lastName,
-    fullName: doc.fullName || `${doc.firstName} ${doc.lastName}`.trim(),
-    email: doc.email,
-    organizationCode: doc.organizationCode,
-    organizationName: doc.organizationName,
-    department: doc.department,
-    designation: doc.designation,
-    requestedResponsibility: doc.requestedResponsibility,
-    status: doc.status,
-    accountStatus: doc.accountStatus || (doc.status === "APPROVED" ? "approved" : doc.status === "REJECTED" ? "rejected" : "pending"),
-    acceptedTermsAt: doc.acceptedTermsAt ? new Date(doc.acceptedTermsAt).toISOString() : "",
-    createdAt: doc.createdAt ? new Date(doc.createdAt).toISOString() : new Date().toISOString(),
+    id: d._id.toString(),
+    referenceCode: d.referenceCode,
+    firstName: d.firstName,
+    lastName: d.lastName,
+    fullName: d.fullName || `${d.firstName} ${d.lastName}`.trim(),
+    email: d.email,
+    organizationCode: d.organizationCode,
+    organizationName: d.organizationName,
+    department: d.department,
+    designation: d.designation,
+    requestedResponsibility: d.requestedResponsibility,
+    status: d.status,
+    accountStatus: d.accountStatus || (d.status === "APPROVED" ? "approved" : d.status === "REJECTED" ? "rejected" : "pending"),
+    acceptedTermsAt: d.acceptedTermsAt ? new Date(d.acceptedTermsAt).toISOString() : "",
+    createdAt: d.createdAt ? new Date(d.createdAt).toISOString() : new Date().toISOString(),
     reviewedBy: reviewedByUser
       ? {
           id: reviewedByUser._id ? reviewedByUser._id.toString() : String(reviewedByUser),
@@ -97,9 +122,9 @@ function toDto(doc: any): AdminRegistrationDto {
           displayName: reviewedByUser.displayName ?? `${reviewedByUser.firstName ?? ""} ${reviewedByUser.lastName ?? ""}`.trim(),
         }
       : null,
-    reviewedAt: doc.reviewedAt ? new Date(doc.reviewedAt).toISOString() : null,
-    rejectionReason: doc.rejectionReason ?? null,
-    approvalNotes: doc.approvalNotes ?? null,
+    reviewedAt: d.reviewedAt ? new Date(d.reviewedAt).toISOString() : null,
+    rejectionReason: d.rejectionReason ?? null,
+    approvalNotes: d.approvalNotes ?? null,
     assignedRole: assignedRole
       ? {
           id: assignedRole._id ? assignedRole._id.toString() : String(assignedRole),
@@ -114,7 +139,7 @@ function toDto(doc: any): AdminRegistrationDto {
           name: assignedAgency.name ?? "",
         }
       : null,
-    createdUserId: doc.createdUserId ? doc.createdUserId.toString() : null,
+    createdUserId: d.createdUserId ? d.createdUserId.toString() : null,
   };
 }
 
@@ -229,7 +254,7 @@ export async function approveRegistrationRequest(
   }
 
   // 2. Resolve Agency
-  let agency: any = null;
+  let agency: { _id: mongoose.Types.ObjectId } | null = null;
   if (input.agencyId && mongoose.Types.ObjectId.isValid(input.agencyId)) {
     agency = await Agency.findById(input.agencyId);
   } else if (input.agencyCode) {

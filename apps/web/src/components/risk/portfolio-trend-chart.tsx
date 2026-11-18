@@ -61,7 +61,6 @@ export function PortfolioTrendChart({
           const high = pt.counts.HIGH ?? 0;
           const mod = pt.counts.MODERATE ?? 0;
           const low = pt.counts.LOW ?? 0;
-          const total = crit + high + mod + low || 1;
 
           const critH = (crit / maxTotal) * 100;
           const highH = (high / maxTotal) * 100;

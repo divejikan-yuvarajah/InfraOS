@@ -54,7 +54,7 @@ export async function assessProject(
     now.getTime() - new Date(latestDoc.createdAt).getTime() < ttlMs;
 
   // Run pure engine
-  const result = evaluateRisk(inputs, now, latestDoc as any);
+  const result = evaluateRisk(inputs, now, latestDoc as unknown as Parameters<typeof evaluateRisk>[2]);
 
   if (isWithinTtl && latestDoc.inputsHash === result.inputsHash) {
     return {
@@ -133,7 +133,7 @@ export async function assessProject(
     return created!;
   };
 
-  let savedDoc: any;
+  let savedDoc: Awaited<ReturnType<typeof performPersist>> | undefined;
   if (options?.session) {
     savedDoc = await performPersist(options.session);
   } else {
@@ -148,7 +148,7 @@ export async function assessProject(
   }
 
   return {
-    assessment: savedDoc.toObject() as unknown as RiskAssessmentDto,
+    assessment: savedDoc!.toObject() as unknown as RiskAssessmentDto,
     unchanged: false,
   };
 }
@@ -192,14 +192,15 @@ export async function getProjectLatestAssessment(
     const resMap = new Map(resolutions.map((r) => [r.fingerprint, r]));
     const now = new Date();
 
+    const baseAssessment = latestDoc as unknown as RiskAssessmentDto;
     const withDisplayResolutions: RiskAssessmentDto = {
-      ...(latestDoc as any),
-      indicators: (latestDoc.indicators ?? []).map((ind: any) => {
+      ...baseAssessment,
+      indicators: (baseAssessment.indicators ?? []).map((ind) => {
         const res = resMap.get(ind.fingerprint);
         return {
           ...ind,
           displayResolutionStatus: computeEffectiveResolutionStatus(
-            res as any,
+            res as unknown as Parameters<typeof computeEffectiveResolutionStatus>[0],
             ind.severity,
             now,
           ),
@@ -263,7 +264,7 @@ export async function getProjectAssessmentById(
     throw new RiskAccessError(404, "NOT_FOUND", "Assessment not found");
   }
 
-  return tierAssessmentEvidence(doc as any, viewerPermissions);
+  return tierAssessmentEvidence(doc as unknown as RiskAssessmentDto, viewerPermissions);
 }
 
 export async function getProjectRiskHistory(
@@ -314,15 +315,18 @@ export async function getProjectRiskHistory(
       ? pageRows[pageRows.length - 1]!.createdAt.toISOString()
       : null;
 
-  const items: RiskAssessmentSummaryDto[] = pageRows.map((r: any) => ({
+  const items: RiskAssessmentSummaryDto[] = pageRows.map((r) => ({
     id: r._id.toString(),
     assessmentNo: r.assessmentNo ?? "RSK-LEGACY",
     overallLevel: r.overallLevel,
-    overallIndex: r.overallIndex,
+    overallIndex: r.overallIndex ?? undefined,
     trigger: r.trigger,
     createdAt: r.createdAt.toISOString(),
     changesCount: r.changes?.length ?? 0,
-    levelChange: r.levelChange ?? null,
+    levelChange:
+      r.levelChange?.from && r.levelChange?.to
+        ? { from: r.levelChange.from, to: r.levelChange.to }
+        : null,
   }));
 
   return { items, nextCursor };

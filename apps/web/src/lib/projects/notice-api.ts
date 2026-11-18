@@ -1,7 +1,7 @@
 import { ApiError, apiClient } from "@/lib/api/client";
 import { getAuthEpoch, getMemoryAccessToken } from "@/lib/auth/state";
 
-import type { NoticeItem, NoticePage } from "./notice-view";
+import type { NoticePage } from "./notice-view";
 
 function guard() {
   const atEpoch = getAuthEpoch();

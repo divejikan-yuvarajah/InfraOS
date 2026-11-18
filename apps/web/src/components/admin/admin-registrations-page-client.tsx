@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   AlertCircle,
@@ -51,7 +51,7 @@ const AVAILABLE_ROLES = [
 ] as const;
 
 export function AdminRegistrationsPageClient() {
-  const [locale] = useWorkspaceLocale();
+  useWorkspaceLocale();
   const searchParams = useSearchParams();
   const queryClient = useQueryClient();
 
