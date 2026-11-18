@@ -17,6 +17,11 @@ function sanitizeFreeText(text?: string | null): string {
   return cleaned.length > 120 ? `${cleaned.slice(0, 117)}...` : cleaned;
 }
 
+/** Escapes user-provided search strings before constructing Mongo $regex queries */
+function escapeRegex(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 /** Check whether actor has permission to view an agency's data */
 function canAccessAgency(actor: AuthenticatedActor, targetAgencyId?: string | mongoose.Types.ObjectId): boolean {
   if (actor.roleKey === "SUPER_ADMIN") return true;
@@ -38,13 +43,22 @@ export const COPILOT_TOOLS: Record<string, CopilotToolDefinition<Record<string, 
     link: (id) => (id ? `/projects/${id}/overview` : "/projects"),
     async run(actor, args, _ctx) {
       const agencyId = actor.roleKey === "SUPER_ADMIN" ? (args.agencyId || actor.agencyId) : actor.agencyId;
+      if (actor.roleKey !== "SUPER_ADMIN" && (!agencyId || !mongoose.Types.ObjectId.isValid(agencyId))) {
+        return { status: "OK", facts: [{ id: "T.f1", label: "search_results", value: `No projects found matching "${args.q}"` }] };
+      }
       const query: mongoose.FilterQuery<Record<string, unknown>> = {};
-      if (agencyId) query.agencyId = new mongoose.Types.ObjectId(agencyId);
+      if (agencyId) {
+        if (!mongoose.Types.ObjectId.isValid(agencyId)) {
+          return { status: "OK", facts: [{ id: "T.f1", label: "search_results", value: `No projects found matching "${args.q}"` }] };
+        }
+        query.agencyId = new mongoose.Types.ObjectId(agencyId);
+      }
       if (args.status) query.status = args.status;
 
+      const pattern = escapeRegex(args.q);
       query.$or = [
-        { title: { $regex: args.q, $options: "i" } },
-        { projectCode: { $regex: args.q, $options: "i" } },
+        { title: { $regex: pattern, $options: "i" } },
+        { projectCode: { $regex: pattern, $options: "i" } },
       ];
 
       const projects = await Project.find(query).limit(5).lean();
@@ -374,10 +388,18 @@ export const COPILOT_TOOLS: Record<string, CopilotToolDefinition<Record<string, 
     link: () => "/risk",
     async run(actor, args, _ctx) {
       const agencyId = actor.roleKey === "SUPER_ADMIN" ? (args.agencyId || actor.agencyId) : actor.agencyId;
+      if (actor.roleKey !== "SUPER_ADMIN" && (!agencyId || !mongoose.Types.ObjectId.isValid(agencyId))) {
+        return { status: "OK", facts: [{ id: "T.f1", label: "risky_projects", value: "No high or critical risk projects found in scope." }] };
+      }
       const query: mongoose.FilterQuery<Record<string, unknown>> = {
         riskLevel: args.level ? args.level : { $in: ["HIGH", "CRITICAL"] },
       };
-      if (agencyId) query.agencyId = new mongoose.Types.ObjectId(agencyId);
+      if (agencyId) {
+        if (!mongoose.Types.ObjectId.isValid(agencyId)) {
+          return { status: "OK", facts: [{ id: "T.f1", label: "risky_projects", value: "No high or critical risk projects found in scope." }] };
+        }
+        query.agencyId = new mongoose.Types.ObjectId(agencyId);
+      }
 
       const projects = await Project.find(query).limit(5).lean();
       const facts: CopilotFact[] = [];
@@ -598,11 +620,18 @@ export const COPILOT_TOOLS: Record<string, CopilotToolDefinition<Record<string, 
     readOnly: true,
     link: (id) => (id ? `/documents/${id}` : "/documents"),
     async run(actor, args, _ctx) {
-      const agencyId = actor.roleKey === "SUPER_ADMIN" ? actor.agencyId : actor.agencyId;
+      const agencyId = actor.agencyId;
+      if (actor.roleKey !== "SUPER_ADMIN" && (!agencyId || !mongoose.Types.ObjectId.isValid(agencyId))) {
+        return { status: "OK", facts: [{ id: "T.f1", label: "search_results", value: `No documents found matching "${args.q}"` }] };
+      }
+      const pattern = escapeRegex(args.q);
       const query: mongoose.FilterQuery<Record<string, unknown>> = {
-        title: { $regex: args.q, $options: "i" },
+        title: { $regex: pattern, $options: "i" },
+        deletedAt: null,
       };
-      if (agencyId) query.agencyId = new mongoose.Types.ObjectId(agencyId);
+      if (agencyId && mongoose.Types.ObjectId.isValid(agencyId)) {
+        query.agencyId = new mongoose.Types.ObjectId(agencyId);
+      }
       if (args.projectId && mongoose.Types.ObjectId.isValid(args.projectId)) {
         query.projectId = new mongoose.Types.ObjectId(args.projectId);
       }

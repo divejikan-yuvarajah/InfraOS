@@ -1,3 +1,4 @@
+import crypto from "node:crypto";
 import os from "node:os";
 import mongoose from "mongoose";
 import type {
@@ -135,7 +136,7 @@ export async function runRiskBatch(
 ): Promise<RiskRunDocument> {
   const now = new Date();
   const workerId = generateWorkerId();
-  const runId = `RUN-${trigger.slice(0, 4)}-${Date.now()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
+  const runId = `RUN-${trigger.slice(0, 4)}-${Date.now()}-${crypto.randomBytes(2).toString("hex").toUpperCase()}`;
 
   const run = await RiskRun.create({
     runId,
