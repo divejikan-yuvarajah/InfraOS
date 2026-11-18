@@ -1,6 +1,4 @@
 import type {
-  RiskFactorCategory,
-  RiskSeverity,
   RuleCatalogItemDto,
 } from "@infraos/shared-types";
 

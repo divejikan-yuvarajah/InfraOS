@@ -1,9 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { RISK_COPY, getRiskCopy } from "./messages";
+import { getRiskCopy } from "./messages";
 import {
-  INDICATOR_CATALOG_EN,
-  INDICATOR_CATALOG_SI,
-  INDICATOR_CATALOG_TA,
   getIndicatorTitle,
   getIndicatorExplanation,
 } from "./indicator-copy";

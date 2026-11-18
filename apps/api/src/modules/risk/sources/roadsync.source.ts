@@ -54,11 +54,11 @@ export async function fetchRoadsyncSource(
       const createdAt = rec.createdAt ? new Date(rec.createdAt) : today;
       const openDays = Math.max(0, calendarDaysBetween(createdAt, today));
 
-      const rawBand = (
-        (rec.severity as any)?.current?.band ??
-        (rec.severity as any)?.band ??
-        "LOW"
-      ).toUpperCase();
+      const sevObj = rec.severity as unknown as {
+        current?: { band?: string };
+        band?: string;
+      } | null | undefined;
+      const rawBand = (sevObj?.current?.band ?? sevObj?.band ?? "LOW").toUpperCase();
 
       let severityBand: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL" = "LOW";
       if (rawBand === "CRITICAL") severityBand = "CRITICAL";
@@ -80,7 +80,7 @@ export async function fetchRoadsyncSource(
       }
 
       // Check resolution open commitments
-      const res = rec.resolution as any;
+      const res = rec.resolution as unknown as { openCommitments?: number } | null | undefined;
       if (res?.openCommitments && typeof res.openCommitments === "number" && res.openCommitments > 0) {
         overdueCommitmentsCount += res.openCommitments;
         if (openDays > oldestOverdueCommitmentDays) {
@@ -95,7 +95,7 @@ export async function fetchRoadsyncSource(
         status: rec.status,
         openDays,
         affectedAgencyCount,
-        coordinationStatus: (rec.coordination as any)?.state ?? null,
+        coordinationStatus: (rec.coordination as unknown as { state?: string } | null | undefined)?.state ?? null,
         openCommitmentsCount: res?.openCommitments ?? 0,
       });
     }
@@ -111,7 +111,7 @@ export async function fetchRoadsyncSource(
         oldestOverdueCommitmentDays,
       },
     };
-  } catch (_err) {
+  } catch {
     return {
       available: false,
       asOf: null,

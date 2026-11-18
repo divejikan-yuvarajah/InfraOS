@@ -58,13 +58,18 @@ describe("Step 13 domain schema validation (no database)", () => {
     ["DocumentChunk", "documentId"], ["DocumentChunk", "agencyId"],
     ["Inspection", "projectId"], ["Inspection", "inspectorId"],
     ["Asset", "sourceProjectId"], ["Asset", "agencyId"], ["MaintenanceRecord", "assetId"],
-    ["CitizenIssue", "citizenId"], ["Notification", "userId"], ["RiskAssessment", "projectId"],
+    ["Notification", "userId"], ["RiskAssessment", "projectId"],
     ["AuditLog", "resourceId"],
   ];
   it.each(refs)("requires a well-formed %s.%s", async (name, field) => {
     for (const value of [undefined, "invalid-id"]) {
       await expect(fixtures[name]({ [field]: value }).validate()).rejects.toThrow(field);
     }
+  });
+
+  it("allows anonymous CitizenIssue.citizenId while rejecting malformed ObjectId", async () => {
+    await expect(fixtures.CitizenIssue({ citizenId: undefined }).validate()).resolves.toBeUndefined();
+    await expect(fixtures.CitizenIssue({ citizenId: "invalid-id" }).validate()).rejects.toThrow("citizenId");
   });
 
   it("allows draft project assignments to remain unset and preserves stable codes", async () => {

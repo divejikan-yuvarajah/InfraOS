@@ -1,12 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
   calculateRatioBps,
-  calendarDaysBetween,
   computeEffectiveResolutionStatus,
-  computeInputsHash,
   evaluateRisk,
   type RiskInputs,
-  THRESHOLDS,
 } from "../src/modules/risk/engine/index.js";
 
 function createMockInputs(overrides?: Partial<RiskInputs>): RiskInputs {
@@ -574,7 +571,11 @@ describe("Pure Risk Engine - Steps 119-121", () => {
           overallLevel: "LOW" as const,
         };
 
-        const result = evaluateRisk(inputs, referenceNow, previousAssessment as any);
+        const result = evaluateRisk(
+          inputs,
+          referenceNow,
+          previousAssessment as unknown as Parameters<typeof evaluateRisk>[2],
+        );
         const escalated = result.changes.find(
           (c) => c.code === "DL1" && c.type === "ESCALATED",
         );

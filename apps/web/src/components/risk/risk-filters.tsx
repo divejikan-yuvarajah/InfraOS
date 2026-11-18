@@ -2,7 +2,7 @@
 
 import { SearchIcon, XIcon, FilterIcon } from "lucide-react";
 import type { RiskListFilters } from "@/lib/risk/types";
-import { CATEGORY_LABELS, LEVEL_CONFIG } from "@/lib/risk/view";
+import { CATEGORY_LABELS } from "@/lib/risk/view";
 
 const PROJECT_TYPES = [
   "ROAD",

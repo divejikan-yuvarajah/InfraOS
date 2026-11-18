@@ -12,7 +12,7 @@ export function AssessmentCompareModal({
   comparison: RiskComparisonDto;
   onClose: () => void;
 }) {
-  const { fromAssessment, toAssessment, levelChange, indexDelta, categoryDeltas } = comparison;
+  const { fromAssessment, toAssessment, indexDelta, categoryDeltas } = comparison;
 
   return (
     <div

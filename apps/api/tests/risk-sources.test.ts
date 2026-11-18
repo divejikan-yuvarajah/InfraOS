@@ -10,7 +10,6 @@ import { Inspection } from "../src/modules/inspections/models/inspection.model.j
 import { ProgressVerification } from "../src/modules/inspections/models/progress-verification.model.js";
 import { Milestone } from "../src/modules/projects/models/milestone.model.js";
 import { ProgressReport } from "../src/modules/projects/models/progress-report.model.js";
-import { ProjectDependency } from "../src/modules/projects/models/project-dependency.model.js";
 import { Project } from "../src/modules/projects/models/project.model.js";
 import { ConflictRecord } from "../src/modules/roadsync/models/conflict-record.model.js";
 import {
@@ -19,14 +18,11 @@ import {
 } from "../src/modules/risk/risk-inputs.service.js";
 import {
   fetchContractorSource,
-  fetchDependenciesSource,
   fetchFinanceSource,
-  fetchHistorySource,
   fetchInspectionsSource,
   fetchMilestonesSource,
   fetchProgressSource,
   fetchProjectSource,
-  fetchReviewsSource,
   fetchRoadsyncSource,
 } from "../src/modules/risk/sources/index.js";
 import {

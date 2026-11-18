@@ -335,5 +335,34 @@ describe("Infrastructure Copilot Backend (Step 125)", () => {
       expect(fresh?.status).toBe("FAILED");
       expect(fresh?.errorCode).toBe("TURN_TIMEOUT");
     });
+
+    it("escapes regex metacharacters in search_projects/search_documents and fails closed on missing agencyId", async () => {
+      const world = await setupWorld();
+      const validActor = {
+        userId: world.user._id.toString(),
+        agencyId: world.agency._id.toString(),
+        roleKey: "PROJECT_MANAGER",
+        permissions: ["project.read", "document.read"],
+      };
+      const ctx = { requestId: "req-test-regex", permissions: ["project.read", "document.read"] };
+
+      // 1. Unbalanced regex metacharacters must not throw MongoServerError
+      const projRes = await COPILOT_TOOLS.search_projects!.run(validActor, { q: "Colombo ([a+" }, ctx);
+      expect(projRes.status).toBe("OK");
+
+      const docRes = await COPILOT_TOOLS.search_documents!.run(validActor, { q: "Contract ([a+" }, ctx);
+      expect(docRes.status).toBe("OK");
+
+      // 2. Non-platform actor without agencyId fails closed (never returns cross-agency projects)
+      const noAgencyActor = {
+        userId: world.user._id.toString(),
+        agencyId: "",
+        roleKey: "PROJECT_MANAGER",
+        permissions: ["project.read"],
+      };
+      const closedRes = await COPILOT_TOOLS.search_projects!.run(noAgencyActor, { q: "Colombo" }, ctx);
+      expect(closedRes.status).toBe("OK");
+      expect(closedRes.facts[0]?.label).toBe("search_results");
+    });
   });
 });

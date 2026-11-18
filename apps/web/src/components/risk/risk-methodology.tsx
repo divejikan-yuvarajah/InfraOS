@@ -2,12 +2,12 @@
 
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeftIcon, BookOpenIcon, CheckCircle2Icon, ShieldAlertIcon, DatabaseIcon } from "lucide-react";
+import { ArrowLeftIcon, BookOpenIcon, ShieldAlertIcon, DatabaseIcon } from "lucide-react";
 import { fetchRiskMethodology } from "@/lib/risk/api";
-import { CATEGORY_LABELS, LEVEL_CONFIG } from "@/lib/risk/view";
+import { CATEGORY_LABELS } from "@/lib/risk/view";
 
 export function RiskMethodologyClient() {
-  const { data: methodology, isLoading } = useQuery({
+  const { data: methodology } = useQuery({
     queryKey: ["risk", "methodology"],
     queryFn: fetchRiskMethodology,
     staleTime: 300_000,

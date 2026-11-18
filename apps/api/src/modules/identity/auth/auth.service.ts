@@ -89,10 +89,11 @@ export async function loginWithPassword(input: {
   }
 
   // If user originated from a registration request and is still PENDING or REJECTED:
-  if (user.status === "PENDING" && (user as any).registrationRequestId) {
+  const regReqId = (user as unknown as { registrationRequestId?: unknown }).registrationRequestId;
+  if (user.status === "PENDING" && regReqId) {
     throw new AccountPendingApprovalError();
   }
-  if ((user.status as string) === "REJECTED" && (user as any).registrationRequestId) {
+  if ((user.status as string) === "REJECTED" && regReqId) {
     throw new AccountRejectedError();
   }
 

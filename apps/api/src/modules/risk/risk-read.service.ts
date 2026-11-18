@@ -11,7 +11,7 @@ import {
   type RiskScatterPointDto,
   type RiskSeverity,
 } from "@infraos/shared-types";
-import { RULES_CATALOG, THRESHOLDS } from "./engine/catalog.js";
+import { RULES_CATALOG } from "./engine/catalog.js";
 import { colomboDayStart } from "./engine/math.js";
 import type { AuthenticatedActor } from "../identity/auth/require-authenticated.js";
 import {
@@ -31,14 +31,6 @@ const SEVERITY_POINTS: Record<RiskSeverity, number> = {
   MODERATE: 12,
   HIGH: 25,
   CRITICAL: 40,
-};
-
-const LEVEL_WEIGHT: Record<RiskLevel, number> = {
-  CRITICAL: 4,
-  HIGH: 3,
-  MODERATE: 2,
-  LOW: 1,
-  NOT_ASSESSABLE: 0,
 };
 
 export function csvSafe(value: unknown): string {
@@ -304,7 +296,7 @@ export async function getRiskProjects(
   const agencyMap = new Map(agencies.map((a) => [a._id.toString(), a.name]));
 
   // Map latest assessment per project
-  const assessmentMap = new Map<string, any>();
+  const assessmentMap = new Map<string, (typeof latestAssessments)[number]>();
   for (const a of latestAssessments) {
     const pid = a.projectId.toString();
     if (!assessmentMap.has(pid)) {
@@ -313,7 +305,7 @@ export async function getRiskProjects(
   }
 
   // Map resolutions per project
-  const resMap = new Map<string, any[]>();
+  const resMap = new Map<string, Array<(typeof resolutions)[number]>>();
   for (const r of resolutions) {
     const pid = r.projectId.toString();
     const existing = resMap.get(pid) ?? [];
@@ -358,9 +350,10 @@ export async function getRiskProjects(
     let reopenedCount = 0;
 
     for (const r of projResolutions) {
-      if (r.status === "OPEN") openCount++;
-      else if (r.status === "ACKNOWLEDGED") acknowledgedCount++;
-      else if (r.status === "REOPENED") reopenedCount++;
+      const statusStr = r.status as string;
+      if (statusStr === "OPEN") openCount++;
+      else if (statusStr === "ACKNOWLEDGED") acknowledgedCount++;
+      else if (statusStr === "REOPENED") reopenedCount++;
     }
 
     return {
@@ -372,14 +365,15 @@ export async function getRiskProjects(
       agencyId: p.agencyId.toString(),
       agencyName: agencyMap.get(p.agencyId.toString()),
       projectType: p.projectType,
-      district: (p as any).location?.district,
+      district: (p as unknown as { location?: { district?: string } }).location?.district,
       overallLevel: p.riskLevel ?? "NOT_ASSESSABLE",
       overallIndex: p.riskScore ?? undefined,
       categories,
       topIndicators: indicators,
       physicalProgress: p.physicalProgress ?? 0,
       financialProgress: p.financialProgress ?? 0,
-      physicalBasis: (assessment?.indicators?.[0]?.basis as any) ?? "REPORTED",
+      physicalBasis:
+        (assessment?.indicators?.[0]?.basis as RiskProjectRowDto["physicalBasis"]) ?? "REPORTED",
       assessedAt: p.riskAssessedAt
         ? new Date(p.riskAssessedAt).toISOString()
         : new Date(p.updatedAt ?? now).toISOString(),
