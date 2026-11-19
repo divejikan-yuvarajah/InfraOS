@@ -263,10 +263,12 @@ export async function approveRegistrationRequest(
     agency = await Agency.findOne({ code: reqDoc.organizationCode.toUpperCase(), status: "ACTIVE" });
   }
 
-  // If agency still not found, check if role allows platform scope
-  if (!agency && role.scopeType === "AGENCY") {
-    // Look up any active agency or default agency
-    agency = await Agency.findOne({ status: "ACTIVE" });
+  // Every authenticated user requires an active agencyId in accountCanSignIn / requireAuthenticated
+  if (!agency) {
+    // Prefer national/ministry agency (MPCLG) if present, otherwise any active agency
+    agency =
+      (await Agency.findOne({ code: "MPCLG", status: "ACTIVE" })) ??
+      (await Agency.findOne({ status: "ACTIVE" }));
   }
 
   // 3. Upsert / Create User in MongoDB
