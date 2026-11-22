@@ -1,0 +1,39 @@
+slide,slot,file,type,source,licence,captured_date,by,redaction_done
+1,photo-cover,assets\images\auto\photo-cover.png,PHOTO,"Southern Expressway.jpg — Sājidh Buhary — https://commons.wikimedia.org/wiki/File:Southern_Expressway.jpg (cropped, duotone-tinted derivative)",CC BY-SA 4.0,2026-11-22,Claude Code (auto),N/A
+2,s02-github,assets\images\auto\s02-github.png,REAL CAPTURE,"public GitHub repository home · github.com/divejikan-yuvarajah/InfraOS (no login, headless Edge 2× DPR)",project asset,2026-11-22,Claude Code (auto),Y
+4,s04-coordination,assets\images\auto\s04-coordination.png,REAL CAPTURE,docs/Screen/02 · route /roadsync (Coordination Command Center) · demo env,project asset,2026-11-08,Claude Code (auto),Y
+5,s20-assets,assets\images\auto\s20-assets.png,REAL CAPTURE,docs/Screen/18 · route /assets · demo env,project asset,2026-11-08,Claude Code (auto),Y
+6,band-B,assets\images\auto\band-B.png,PHOTO,"UG-LK Photowalk - Thumulla Junction - 2017-03-12.jpg — Rehman Abubakr — https://commons.wikimedia.org/wiki/File:UG-LK_Photowalk_-_Thumulla_Junction_-_2017-03-12.jpg (cropped, duotone-tinted derivative)",CC BY-SA 4.0,2026-11-22,Claude Code (auto),N/A
+6,s06-repo-tree,assets\images\auto\s06-repo-tree.png,RENDERED FROM SOURCE,ls / find on repo @ 2753c19 · 2026-11-22,project output,2026-11-22,Claude Code (auto),Y
+7,s07-packagejson,assets\images\auto\s07-packagejson.png,RENDERED FROM SOURCE,"apps/api/package.json L54–58, 62–62, 64–65 @ 2753c19",project source (MIT),2026-11-22,Claude Code (auto),Y
+8,s08-401,assets\images\auto\s08-401.png,RENDERED FROM SOURCE,curl live API · 2026-11-22 08:56 UTC (headers trimmed; body pretty-printed; meta.requestId omitted),project output,2026-11-22,Claude Code (auto),Y
+9,band-C,assets\images\auto\band-C.png,PHOTO,"Sun and clouds on highway.jpg — Yomal Indula Perera — https://commons.wikimedia.org/wiki/File:Sun_and_clouds_on_highway.jpg (cropped, duotone-tinted derivative)",CC BY-SA 4.0,2026-11-22,Claude Code (auto),N/A
+9,s09-compass,(none yet),PLACEHOLDER,MongoDB Compass: collection list with document counts (demo DB; hide cluster/connection details),,,team,N/A
+9,s09-models,assets\images\auto\s09-models.png,RENDERED FROM SOURCE,find apps/api/src/modules -name '*.model.ts' @ 2753c19 · 2026-11-22,project output,2026-11-22,Claude Code (auto),Y
+10,s10-conflict-model,assets\images\auto\s10-conflict-model.png,RENDERED FROM SOURCE,"apps/api/src/modules/roadsync/models/conflict.model.ts L5–7, 14–16 @ 2753c19",project source (MIT),2026-11-22,Claude Code (auto),Y
+10,s10-compass-doc,(none yet),PLACEHOLDER,Compass: one `conflicts` document (workRequestA/B visible; demo data),,,team,N/A
+11,s11-transaction,assets\images\auto\s11-transaction.png,RENDERED FROM SOURCE,apps/api/src/modules/finance/finance.common.ts L95–103 @ 2753c19,project source (MIT),2026-11-22,Claude Code (auto),Y
+12,band-D,assets\images\auto\band-D.png,PHOTO,"Southern Expressway.jpg — Sājidh Buhary — https://commons.wikimedia.org/wiki/File:Southern_Expressway.jpg (cropped, duotone-tinted derivative)",CC BY-SA 4.0,2026-11-22,Claude Code (auto),N/A
+12,s12-projects,assets\images\auto\s12-projects.png,REAL CAPTURE,docs/Screen/01 · route /projects · demo env,project asset,2026-11-08,Claude Code (auto),Y
+13,s13-projects-route,assets\images\auto\s13-projects-route.png,RENDERED FROM SOURCE,"apps/api/src/modules/projects/projects.routes.ts L223–224, 227–233 @ 2753c19",project source (MIT),2026-11-22,Claude Code (auto),Y
+14,s14-workrequests,assets\images\auto\s14-workrequests.png,REAL CAPTURE,docs/Screen/14 · route /roadsync work requests · demo env,project asset,2026-11-08,Claude Code (auto),Y
+15,s15-detection,assets\images\auto\s15-detection.png,RENDERED FROM SOURCE,"apps/api/src/modules/roadsync/detection.service.ts L175–175, 186–188, 192–193 @ 2753c19",project source (MIT),2026-11-22,Claude Code (auto),Y
+16,s16-inframap,assets\images\auto\s16-inframap.png,REAL CAPTURE,docs/Screen/03 · route /inframap · demo env,project asset,2026-11-08,Claude Code (auto),Y
+17,s17-inframap-route,assets\images\auto\s17-inframap-route.png,RENDERED FROM SOURCE,"apps/api/src/modules/inframap/inframap.routes.ts L77–77, 79–82, 84–85 @ 2753c19",project source (MIT),2026-11-22,Claude Code (auto),Y
+18,s18-portal,assets\images\auto\s18-portal.png,REAL CAPTURE,"live https://infraos-web.onrender.com/portal (headless Edge, 2× DPR)",project asset,2026-11-22,Claude Code (auto),Y
+18,s18-report,assets\images\auto\s18-report.png,REAL CAPTURE,live https://infraos-web.onrender.com/portal/report,project asset,2026-11-22,Claude Code (auto),Y
+19,s19-public-issue,assets\images\auto\s19-public-issue.png,RENDERED FROM SOURCE,"apps/api/src/modules/public/public.routes.ts L106–107, 112–112, 116–118, 122–122 @ 2753c19",project source (MIT),2026-11-22,Claude Code (auto),Y
+20,s20-finance,assets\images\auto\s20-finance.png,REAL CAPTURE,docs/Screen/06 · route /finance · demo env,project asset,2026-11-08,Claude Code (auto),Y
+20,s20-assets,assets\images\auto\s20-assets.png,REAL CAPTURE,docs/Screen/18 · route /assets · demo env,project asset,2026-11-08,Claude Code (auto),Y
+20,s20-payments,assets\images\auto\s20-payments.png,REAL CAPTURE,docs/Screen/21 · route /finance/payments · demo env,project asset,2026-11-08,Claude Code (auto),Y
+20,s20-document,assets\images\auto\s20-document.png,REAL CAPTURE,docs/Screen/22 · route /documents/:id · demo env,project asset,2026-11-08,Claude Code (auto),Y
+21,s21-risk-engine,assets\images\auto\s21-risk-engine.png,RENDERED FROM SOURCE,"apps/api/src/modules/risk/engine/index.ts L51–51, 56–62 @ 2753c19",project source (MIT),2026-11-22,Claude Code (auto),Y
+22,band-E,assets\images\auto\band-E.png,PHOTO,"UG-LK Photowalk - Thumulla Junction - 2017-03-12.jpg — Rehman Abubakr — https://commons.wikimedia.org/wiki/File:UG-LK_Photowalk_-_Thumulla_Junction_-_2017-03-12.jpg (cropped, duotone-tinted derivative)",CC BY-SA 4.0,2026-11-22,Claude Code (auto),N/A
+22,s22-github-prs,assets\images\auto\s22-github-prs.png,REAL CAPTURE,"public GitHub · /pulls?q=is:pr is:merged (no login, headless Edge 2× DPR)",project asset,2026-11-22,Claude Code (auto),Y
+23,s23-require-permission,assets\images\auto\s23-require-permission.png,RENDERED FROM SOURCE,"apps/api/src/modules/identity/authorization/require-permission.ts L77–79, 82–84, 89–90 @ 2753c19",project source (MIT),2026-11-22,Claude Code (auto),Y
+24,band-F,assets\images\auto\band-F.png,PHOTO,"Sun and clouds on highway.jpg — Yomal Indula Perera — https://commons.wikimedia.org/wiki/File:Sun_and_clouds_on_highway.jpg (cropped, duotone-tinted derivative)",CC BY-SA 4.0,2026-11-22,Claude Code (auto),N/A
+24,s24-actions,assets\images\auto\s24-actions.png,REAL CAPTURE,"public GitHub · /actions (InfraOS CI runs, no login, headless Edge 2× DPR)",project asset,2026-11-22,Claude Code (auto),Y
+24,s24-tests,assets\images\auto\s24-tests.png,RENDERED FROM SOURCE,"test-api.log, test-web.log, typecheck.log, lint.log, pytest.log · 2026-11-22 · 2753c19",project output,2026-11-22,Claude Code (auto),Y
+25,s25-render,(none yet),PLACEHOLDER,Render dashboard: services Live (env hidden),,,team,N/A
+27,band-close,assets\images\auto\band-close.png,PHOTO,"Work on Peel (48587427686).jpg — Dennis Sylvester Hurd — https://commons.wikimedia.org/wiki/File:Work_on_Peel_(48587427686).jpg (cropped, duotone-tinted derivative)",CC BY 2.0,2026-11-22,Claude Code (auto),N/A
+27,qr-repo,assets\images\auto\qr-repo.png,RENDERED FROM SOURCE,"QR code of the public repo URL (qrcode library, build venv)",n/a,2026-11-22,Claude Code (auto),Y
