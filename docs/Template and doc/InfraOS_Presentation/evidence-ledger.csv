@@ -1,0 +1,67 @@
+slide,id,claim,status,evidence_type,evidence_reference
+1,G9,Live web + API health HTTP 200 on 2026-11-22 (08:56 UTC),VERIFIED,command,curl -i …/api/v1/health -> 200 {status: ok}
+2,G9,Live web + API health HTTP 200 on 2026-11-22 (08:56 UTC),VERIFIED,command,curl -i …/api/v1/health -> 200 {status: ok}
+2,G1,"npm workspaces: apps/web, apps/api, packages/*; apps/ai-service is a separate Python app in the same repo",VERIFIED,file,package.json:11-14
+2,V1,"GitHub (public pages, 2026-11-22): 598 commits on main, 83 branches, 224 closed/merged PRs (0 open), 118 workflow runs. Supersedes the earlier local-clone figures (595 commits all refs, 168 refs incl. remote-tracking duplicates, 211 PR numbers), which were taken from a clone that was not fully fetched",VERIFIED,screenshot,"gh-home.png, gh-prs.png, gh-actions.png (public GitHub, no login)"
+5,G10,"Live GET /api/v1/projects without token -> 401 AUTH_REQUIRED, no-store",VERIFIED,command,curl -i …/api/v1/projects (curl-projects.txt)
+5,D3,"Risk engine deterministic, versioned, inputs hash, NOT_ASSESSABLE; no trained ML model",VERIFIED,file,risk/engine/index.ts:51-75
+5,D5,LLM document Q&A needs external provider config; off for ordinary testing,PARTIAL,file,.env.example names; project rules
+5,I1,"UI in English/Sinhala/Tamil (si/ta routes, messages files) — coverage not audited",PARTIAL,file,"apps/web/src/app/si, /ta"
+6,G1,"npm workspaces: apps/web, apps/api, packages/*; apps/ai-service is a separate Python app in the same repo",VERIFIED,file,package.json:11-14
+6,G2,"Web: Next.js 16.3.8, React 19.2.8, TanStack Query 5, react-hook-form, zod 4, MapLibre GL 6, socket.io-client 4",VERIFIED,file,apps/web/package.json
+6,G3,"API: Express 5.2, Mongoose 8.24, zod 4, jose 6.2.13, bcryptjs 3, helmet 8, express-rate-limit 8, socket.io 4",VERIFIED,file,apps/api/package.json:50-65
+6,G4,AI service is FastAPI with signed-request dependency (require_signed_body),VERIFIED,file,apps/ai-service/app/routers/health.py:18
+6,S1,requirePermission re-reads User and Role from MongoDB each request; 401/403/503,VERIFIED,file,identity/authorization/require-permission.ts:56-95
+7,G2,"Web: Next.js 16.3.8, React 19.2.8, TanStack Query 5, react-hook-form, zod 4, MapLibre GL 6, socket.io-client 4",VERIFIED,file,apps/web/package.json
+7,G3,"API: Express 5.2, Mongoose 8.24, zod 4, jose 6.2.13, bcryptjs 3, helmet 8, express-rate-limit 8, socket.io 4",VERIFIED,file,apps/api/package.json:50-65
+7,V3,"CI runs npm ci, type-check, lint, test:web, build:api",VERIFIED,file,.github/workflows/ci.yml
+8,P1,"POST /projects: project.create, JSON-only 415, zod 400, 201",VERIFIED,file,projects/projects.routes.ts:223-233
+8,S1,requirePermission re-reads User and Role from MongoDB each request; 401/403/503,VERIFIED,file,identity/authorization/require-permission.ts:56-95
+8,S3,jose SignJWT/jwtVerify; HttpOnly refresh cookie; RefreshSession/RefreshFamily models,VERIFIED,file,"identity/auth/jwt.ts:102,117; identity/auth/cookies.ts:6"
+8,G10,"Live GET /api/v1/projects without token -> 401 AUTH_REQUIRED, no-store",VERIFIED,command,curl -i …/api/v1/projects (curl-projects.txt)
+9,G6,56 Mongoose model files across 14 API modules,VERIFIED,command,gen_images.py s09-models (find *.model.ts per module)
+9,G8,"2dsphere indexes on projects, assets, citizen issues, hazard zones, conflict hotspots",VERIFIED,file,project.model.ts:61; asset.model.ts:42; citizen-issue.model.ts:79; hazard-zone.model.ts:36; conflict-record.model.ts:60
+10,P3,Project.agencyId/managerId/contractorId; Milestone/ProgressReport.projectId,VERIFIED,file,projects/models/*
+10,R2,"Conflict: workRequestA/B refs, strict:'throw', pair normalised, self-conflict rejected",VERIFIED,file,roadsync/models/conflict.model.ts:5-30
+11,D1,Finance writes in a MongoDB transaction; audit row in same session,VERIFIED,file,finance/finance.common.ts:88-103
+11,D2,Money as positive integer amountMinor,VERIFIED,file,finance/models/project-expense.model.ts:35
+12,P1,"POST /projects: project.create, JSON-only 415, zod 400, 201",VERIFIED,file,projects/projects.routes.ts:223-233
+12,P2,"Milestone, progress, review, transition, public-release routes",VERIFIED,file,projects.routes.ts:84-797
+13,P1,"POST /projects: project.create, JSON-only 415, zod 400, 201",VERIFIED,file,projects/projects.routes.ts:223-233
+13,P3,Project.agencyId/managerId/contractorId; Milestone/ProgressReport.projectId,VERIFIED,file,projects/models/*
+14,R3,POST /roadsync/work-requests; POST …/:id/detection/run; GET /roadsync/conflicts; 86 handlers,VERIFIED,file,work-requests.routes.ts:131; detection.routes.ts:121; conflict-record.routes.ts:144
+15,R1,Detection: $geoIntersects search polygon; spatial + temporal relation; candidate only when both apply,VERIFIED,file,"roadsync/detection.service.ts:90,175,186-194"
+15,R2,"Conflict: workRequestA/B refs, strict:'throw', pair normalised, self-conflict rejected",VERIFIED,file,roadsync/models/conflict.model.ts:5-30
+16,M1,InfraMap layers need map.view.internal + data permission; scope in data layer; unknown query -> 400; no-store,VERIFIED,file,inframap/inframap.routes.ts:60-98
+17,M1,InfraMap layers need map.view.internal + data permission; scope in data layer; unknown query -> 400; no-store,VERIFIED,file,inframap/inframap.routes.ts:60-98
+17,M2,"Test: restricted utility geometry never returned without map.layer.restricted, only a count",VERIFIED,command,test-api.log (tests/inframap-context.test.ts)
+18,C1,"POST /public/issues rate-limited, zod, honeypot, 201; POST /public/issues/track",VERIFIED,file,public/public.routes.ts:105-140
+18,C2,Staff routes /issues/:id/route|status|notes with citizen_issue.* permissions,VERIFIED,file,issues/issue.routes.ts:49-156
+18,C3,"Live /portal shows 3 released demo projects labelled synthetic; /portal/report, /portal/track live",VERIFIED,screenshot,live-portal-home.png etc. (2026-11-22)
+19,C1,"POST /public/issues rate-limited, zod, honeypot, 201; POST /public/issues/track",VERIFIED,file,public/public.routes.ts:105-140
+20,D1,Finance writes in a MongoDB transaction; audit row in same session,VERIFIED,file,finance/finance.common.ts:88-103
+20,D4,DocTrace ticket upload: POST /documents/uploads -> PUT …/content -> POST …/commit,VERIFIED,file,documents/document.routes.ts:53-75
+21,D3,"Risk engine deterministic, versioned, inputs hash, NOT_ASSESSABLE; no trained ML model",VERIFIED,file,risk/engine/index.ts:51-75
+21,D5,LLM document Q&A needs external provider config; off for ordinary testing,PARTIAL,file,.env.example names; project rules
+21,G4,AI service is FastAPI with signed-request dependency (require_signed_body),VERIFIED,file,apps/ai-service/app/routers/health.py:18
+22,V1,"GitHub (public pages, 2026-11-22): 598 commits on main, 83 branches, 224 closed/merged PRs (0 open), 118 workflow runs. Supersedes the earlier local-clone figures (595 commits all refs, 168 refs incl. remote-tracking duplicates, 211 PR numbers), which were taken from a clone that was not fully fetched",VERIFIED,screenshot,"gh-home.png, gh-prs.png, gh-actions.png (public GitHub, no login)"
+22,V2,Authorship evidence is kept out of the slides; team resolves attribution (MISSING_INFO #9),VERIFIED,file,MISSING_INFO.md
+22,V3,"CI runs npm ci, type-check, lint, test:web, build:api",VERIFIED,file,.github/workflows/ci.yml
+23,S1,requirePermission re-reads User and Role from MongoDB each request; 401/403/503,VERIFIED,file,identity/authorization/require-permission.ts:56-95
+23,S2,bcrypt cost 12,VERIFIED,file,identity/registration.service.ts:21
+23,S3,jose SignJWT/jwtVerify; HttpOnly refresh cookie; RefreshSession/RefreshFamily models,VERIFIED,file,"identity/auth/jwt.ts:102,117; identity/auth/cookies.ts:6"
+24,T1,"API tests: 116 files passed, 1 skipped; 1008 tests passed, 8 skipped; exit 0; 834 s",VERIFIED,command,test-api.log · 22 Nov 2026 · 2753c19
+24,T2,Web tests: 76 files passed; 427 tests passed; exit 0; 10 s,VERIFIED,command,test-web.log · 22 Nov 2026 · 2753c19
+24,T5,type-check web + api: exit 0,VERIFIED,command,typecheck.log · 22 Nov 2026
+24,T6,lint web + api: exit 0; web 0 errors / 4 warnings; api clean,VERIFIED,command,lint.log · 22 Nov 2026
+24,T7,"ai-service pytest: 96 passed, 3 warnings",VERIFIED,command,pytest.log · 22 Nov 2026
+24,T8,Web production build and browser E2E not executed: a build writes .next into the repository folder (repo is read-only for this deck); no E2E suite was run,UNVERIFIED,command,NOT EXECUTED
+24,V4,"GitHub Actions: InfraOS CI run #30 = commit 2753c19 (presented build), green",VERIFIED,screenshot,"gh-actions.png (public Actions page, 2026-11-22)"
+25,G9,Live web + API health HTTP 200 on 2026-11-22 (08:56 UTC),VERIFIED,command,curl -i …/api/v1/health -> 200 {status: ok}
+25,G1,"npm workspaces: apps/web, apps/api, packages/*; apps/ai-service is a separate Python app in the same repo",VERIFIED,file,package.json:11-14
+26,V2,Authorship evidence is kept out of the slides; team resolves attribution (MISSING_INFO #9),VERIFIED,file,MISSING_INFO.md
+27,D3,"Risk engine deterministic, versioned, inputs hash, NOT_ASSESSABLE; no trained ML model",VERIFIED,file,risk/engine/index.ts:51-75
+27,D5,LLM document Q&A needs external provider config; off for ordinary testing,PARTIAL,file,.env.example names; project rules
+27,I1,"UI in English/Sinhala/Tamil (si/ta routes, messages files) — coverage not audited",PARTIAL,file,"apps/web/src/app/si, /ta"
+27,T8,Web production build and browser E2E not executed: a build writes .next into the repository folder (repo is read-only for this deck); no E2E suite was run,UNVERIFIED,command,NOT EXECUTED
+(supporting),C4,/portal/public showcase and the public landing page show illustrative figures not from the API — not used as evidence,VERIFIED,file,"components/portal/public-portal-client.tsx:220,407,455; live landing capture 2026-11-22"
