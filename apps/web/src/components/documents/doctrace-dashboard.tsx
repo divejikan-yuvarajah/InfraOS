@@ -8,7 +8,12 @@ import { toast } from "sonner";
 import { DOCUMENT_CATEGORIES, DOCUMENT_CATEGORY_GROUPS, DOCUMENT_FILE_TYPES } from "@infraos/shared-types";
 
 import { StaffWorkspaceShell } from "@/components/auth/staff-workspace-shell";
-import { ContextBar } from "@/components/site-plan/site-plan";
+import {
+  CommandHeader,
+  DashboardCanvas,
+  DashboardKpiCard,
+  DashboardKpiGrid,
+} from "@/components/common/civic-atlas-primitives";
 import type { AuthLocale } from "@/lib/auth/types";
 import { bulkReprocess } from "@/lib/documents/ai/api";
 import { getAiCopy, type AiCopy } from "@/lib/documents/ai/messages";
@@ -27,14 +32,6 @@ import { ProjectPicker } from "./project-picker";
 type Common = { copy: Copy; locale: AuthLocale };
 const aiStatusLabel = (s: string, a: AiCopy): string => ({ NOT_STARTED: a.chip.notProcessed, QUEUED: a.chip.queued, PROCESSING: a.jobStatus.RUNNING, COMPLETED: a.chip.ready, FAILED: a.chip.failed, UNSUPPORTED: a.chip.unsupported } as Record<string, string>)[s] ?? s;
 const PAGE_SIZES = [10, 25, 50];
-
-function Kpi({ label, value, hint, active, onClick }: { label: string; value: number | undefined; hint: string; active?: boolean; onClick: () => void }) {
-  return (
-    <button type="button" className="ctr-card" aria-pressed={active} onClick={onClick} aria-label={`${label}: ${value ?? "—"}. ${hint}`}>
-      <span className="ctr-card-label">{label}</span><span className="ctr-card-value dt-tabnum">{value ?? "—"}</span><span className="ctr-card-hint">{hint}</span>
-    </button>
-  );
-}
 
 function BarList({ rows, max }: { rows: { label: string; n: number; text?: string }[]; max: number }) {
   return <div className="dt-bars">{rows.map((r) => <div key={r.label} className="dt-bar-row"><span title={r.label}>{r.label}</span><span className="dt-bar-track" aria-hidden="true"><i style={{ width: `${(r.n / Math.max(1, max)) * 100}%` }} /></span><b className="dt-tabnum">{r.text ?? r.n}</b></div>)}</div>;
@@ -254,27 +251,126 @@ export function DocTraceDashboard() {
   const maxBytes = Math.max(1, ...(sum?.storageByCategory ?? []).map((c) => c.bytes));
 
   return (
-    <StaffWorkspaceShell title={copy.dashboard.title} description={copy.dashboard.description} wide
-      context={<ContextBar crumbs={[{ label: copy.nav.title }]} scope={copy.dashboard.scope} asOf={null} actions={<div className="ctr-row">
-        <button type="button" className="ctr-btn" onClick={refresh}><RefreshCwIcon aria-hidden="true" />{copy.common.refresh}</button>
-        {hintExport(roleKey) ? <button type="button" className="ctr-btn" disabled={exportCsv.isPending || !total} onClick={() => exportCsv.mutate()}><DownloadIcon aria-hidden="true" />{copy.dashboard.exportCsv}</button> : null}
-        <div className="ctr-seg" role="group" aria-label={copy.dashboard.views}>
-          <button type="button" aria-pressed={layout === "table"} onClick={() => setLayout("table")}><TableIcon aria-hidden="true" style={{ width: "0.9rem", height: "0.9rem" }} /> {copy.dashboard.viewTable}</button>
-          <button type="button" aria-pressed={layout === "grid"} onClick={() => setLayout("grid")}><LayoutGridIcon aria-hidden="true" style={{ width: "0.9rem", height: "0.9rem" }} /> {copy.dashboard.viewGrid}</button>
-        </div>
-        {canUpload ? <Link className="ctr-btn" href="/documents/processing">{aiCopy.nav.processing}</Link> : null}
-        {canUpload ? <Link className="ctr-btn is-primary" href="/documents/upload"><PlusIcon aria-hidden="true" />{copy.dashboard.upload}</Link> : null}
-      </div>} />}>
+    <StaffWorkspaceShell title={copy.dashboard.title} description={copy.dashboard.description} wide hidePageHeader>
+      <DashboardCanvas>
+        <CommandHeader
+          eyebrow="DOCTRACE ARCHIVE COMMAND"
+          title={copy.dashboard.title}
+          subtitle={copy.dashboard.description}
+          scopeLabel={copy.dashboard.scope}
+          sourceKind="live"
+          secondaryActions={
+            <>
+              <button type="button" className="cac-header-btn" onClick={refresh}>
+                <RefreshCwIcon aria-hidden="true" />
+                <span>{copy.common.refresh}</span>
+              </button>
+              {hintExport(roleKey) ? (
+                <button type="button" className="cac-header-btn" disabled={exportCsv.isPending || !total} onClick={() => exportCsv.mutate()}>
+                  <DownloadIcon aria-hidden="true" />
+                  <span>{copy.dashboard.exportCsv}</span>
+                </button>
+              ) : null}
+              <div className="inline-flex rounded-lg border border-white/20 bg-white/10 p-0.5" role="group" aria-label={copy.dashboard.views}>
+                <button
+                  type="button"
+                  aria-pressed={layout === "table"}
+                  onClick={() => setLayout("table")}
+                  className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-semibold transition-colors ${layout === "table" ? "bg-white text-slate-900" : "text-slate-200 hover:bg-white/10"}`}
+                >
+                  <TableIcon aria-hidden="true" className="size-3.5" />
+                  <span>{copy.dashboard.viewTable}</span>
+                </button>
+                <button
+                  type="button"
+                  aria-pressed={layout === "grid"}
+                  onClick={() => setLayout("grid")}
+                  className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-semibold transition-colors ${layout === "grid" ? "bg-white text-slate-900" : "text-slate-200 hover:bg-white/10"}`}
+                >
+                  <LayoutGridIcon aria-hidden="true" className="size-3.5" />
+                  <span>{copy.dashboard.viewGrid}</span>
+                </button>
+              </div>
+              {canUpload ? (
+                <Link className="cac-header-btn" href="/documents/processing">
+                  {aiCopy.nav.processing}
+                </Link>
+              ) : null}
+            </>
+          }
+          primaryAction={
+            canUpload ? (
+              <Link className="cac-header-btn-primary" href="/documents/upload">
+                <PlusIcon aria-hidden="true" />
+                <span>{copy.dashboard.upload}</span>
+              </Link>
+            ) : undefined
+          }
+        />
+
       <div className="ins dt">
         {/* Insight strip: real numbers only; every tile filters the library. */}
-        <div className="dt-strip" role="group" aria-label={copy.dashboard.title} aria-live="polite">
-          <Kpi label={copy.dashboard.kpi.total} value={sum?.totalActive} hint={copy.dashboard.kpi.hint} onClick={() => url.set({ ...filterParams(DEFAULT_FILTERS) })} />
-          <Kpi label={copy.dashboard.kpi.added} value={sum?.addedThisMonth} hint={copy.dashboard.kpi.hint} active={filters.thisMonth} onClick={() => set({ thisMonth: !filters.thisMonth })} />
-          <Kpi label={copy.dashboard.kpi.drafts} value={sum?.drafts} hint={copy.dashboard.kpi.hint} active={filters.drafts} onClick={() => set({ drafts: !filters.drafts })} />
-          <Kpi label={copy.dashboard.kpi.expiring} value={sum?.expiringIn30Days} hint={copy.dashboard.kpi.hint} active={filters.expiring} onClick={() => set({ expiring: !filters.expiring })} />
-          <Kpi label={copy.dashboard.kpi.sensitive} value={sum?.sensitive} hint={copy.dashboard.kpi.hint} active={filters.sensitive} onClick={() => set({ sensitive: !filters.sensitive })} />
-          <Kpi label={copy.dashboard.kpi.awaiting} value={sum?.awaitingFiles} hint={copy.dashboard.kpi.awaitingHint} active={filters.awaiting} onClick={() => set({ awaiting: !filters.awaiting })} />
-        </div>
+        <DashboardKpiGrid columns={6} label={copy.dashboard.title}>
+          <DashboardKpiCard
+            label={copy.dashboard.kpi.total}
+            value={sum?.totalActive ?? "—"}
+            hint={copy.dashboard.kpi.hint}
+            tone="brand"
+            loading={summary.isPending}
+            onClick={() => url.set({ ...filterParams(DEFAULT_FILTERS) })}
+            ariaLabel={`${copy.dashboard.kpi.total}: ${sum?.totalActive ?? "—"}. ${copy.dashboard.kpi.hint}`}
+          />
+          <DashboardKpiCard
+            label={copy.dashboard.kpi.added}
+            value={sum?.addedThisMonth ?? "—"}
+            hint={copy.dashboard.kpi.hint}
+            tone="success"
+            loading={summary.isPending}
+            active={filters.thisMonth}
+            onClick={() => set({ thisMonth: !filters.thisMonth })}
+            ariaLabel={`${copy.dashboard.kpi.added}: ${sum?.addedThisMonth ?? "—"}. ${copy.dashboard.kpi.hint}`}
+          />
+          <DashboardKpiCard
+            label={copy.dashboard.kpi.drafts}
+            value={sum?.drafts ?? "—"}
+            hint={copy.dashboard.kpi.hint}
+            tone="neutral"
+            loading={summary.isPending}
+            active={filters.drafts}
+            onClick={() => set({ drafts: !filters.drafts })}
+            ariaLabel={`${copy.dashboard.kpi.drafts}: ${sum?.drafts ?? "—"}. ${copy.dashboard.kpi.hint}`}
+          />
+          <DashboardKpiCard
+            label={copy.dashboard.kpi.expiring}
+            value={sum?.expiringIn30Days ?? "—"}
+            hint={copy.dashboard.kpi.hint}
+            tone={(sum?.expiringIn30Days ?? 0) > 0 ? "warning" : "neutral"}
+            loading={summary.isPending}
+            active={filters.expiring}
+            onClick={() => set({ expiring: !filters.expiring })}
+            ariaLabel={`${copy.dashboard.kpi.expiring}: ${sum?.expiringIn30Days ?? "—"}. ${copy.dashboard.kpi.hint}`}
+          />
+          <DashboardKpiCard
+            label={copy.dashboard.kpi.sensitive}
+            value={sum?.sensitive ?? "—"}
+            hint={copy.dashboard.kpi.hint}
+            tone="critical"
+            loading={summary.isPending}
+            active={filters.sensitive}
+            onClick={() => set({ sensitive: !filters.sensitive })}
+            ariaLabel={`${copy.dashboard.kpi.sensitive}: ${sum?.sensitive ?? "—"}. ${copy.dashboard.kpi.hint}`}
+          />
+          <DashboardKpiCard
+            label={copy.dashboard.kpi.awaiting}
+            value={sum?.awaitingFiles ?? "—"}
+            hint={copy.dashboard.kpi.awaitingHint}
+            tone={(sum?.awaitingFiles ?? 0) > 0 ? "warning" : "neutral"}
+            loading={summary.isPending}
+            active={filters.awaiting}
+            onClick={() => set({ awaiting: !filters.awaiting })}
+            ariaLabel={`${copy.dashboard.kpi.awaiting}: ${sum?.awaitingFiles ?? "—"}. ${copy.dashboard.kpi.awaitingHint}`}
+          />
+        </DashboardKpiGrid>
         {summary.isError ? <ErrorState error={summary.error} copy={copy} onRetry={() => void summary.refetch()} /> : null}
 
         <div className="dt-charts">
@@ -368,6 +464,7 @@ export function DocTraceDashboard() {
         )}
         <p className="ins-muted">{copy.common.syntheticNote}</p>
       </div>
+      </DashboardCanvas>
 
       {canUpload ? <Link className="ctr-btn is-primary dt-fab" href="/documents/upload" aria-label={copy.dashboard.upload}><UploadCloudIcon aria-hidden="true" />{copy.common.upload}</Link> : null}
       {drawerDoc ? <DocumentPreviewDrawer doc={drawerDoc} copy={copy} locale={locale} onClose={closeDrawer} onPrev={drawerIndex > 0 ? () => setDrawer(rows[drawerIndex - 1]!.id) : undefined} onNext={drawerIndex < rows.length - 1 ? () => setDrawer(rows[drawerIndex + 1]!.id) : undefined} onReplace={() => { setReplace(drawerDoc); setDrawer(null); }} /> : null}

@@ -8,6 +8,7 @@ import { AlertTriangleIcon, ArrowDownRightIcon, ArrowUpRightIcon, CheckCircle2Ic
 import { Popover } from "radix-ui";
 
 import { StaffWorkspaceShell } from "@/components/auth/staff-workspace-shell";
+import { CommandHeader, DashboardCanvas } from "@/components/common/civic-atlas-primitives";
 import { ApiError } from "@/lib/api/client";
 import { useWorkspaceLocale } from "@/lib/i18n/workspace-locale";
 import { BAND_COLOR, fmt } from "@/lib/roadsync/assessment";
@@ -108,16 +109,43 @@ export function CommandCenter() {
   const stale = Boolean(data?.cached && now - new Date(data.generatedAt).getTime() > STALE_MS);
 
   return (
-    <StaffWorkspaceShell title={copy.title} description={copy.subtitle} wide>
+    <StaffWorkspaceShell title={copy.title} description={copy.subtitle} wide hidePageHeader>
+      <DashboardCanvas>
+        <CommandHeader
+          eyebrow="ROADSYNC COORDINATION COMMAND"
+          title={copy.title}
+          subtitle={copy.subtitle}
+          scopeLabel={data ? copy.scope[data.scope.level] : undefined}
+          asOf={data ? (ageMin < 1 ? copy.updated.now : fmt(copy.updated.min, { n: ageMin })) : undefined}
+          sourceKind={stale ? "recorded" : "live"}
+          secondaryActions={
+            <>
+              <button type="button" className="cac-header-btn" onClick={() => void refresh()} disabled={busy || !ready}>
+                {busy ? <Loader2Icon aria-hidden="true" className="animate-spin" /> : <RefreshCwIcon aria-hidden="true" />}
+                <span>{copy.updated.refresh}</span>
+              </button>
+              <button type="button" className="cac-header-btn" disabled={!data} onClick={() => void downloadFile(dashboardCsvPath(qs), "roadsync-dashboard.csv").catch(() => setFailed(true))}>
+                <DownloadIcon aria-hidden="true" />
+                <span>{copy.actions.export}</span>
+              </button>
+              <Link className="cac-header-btn" href={`/roadsync/dashboard/brief?${qs}`}>
+                <PrinterIcon aria-hidden="true" />
+                <span>{copy.actions.brief}</span>
+              </Link>
+            </>
+          }
+          primaryAction={
+            <Link className="cac-header-btn-primary" href="/roadsync/conflicts">
+              {copy.map.openMap}
+            </Link>
+          }
+        />
+
       <div className="dc">
         <header className="dc-band">
           <div className="dc-band-top">
-            <div><span className="dc-scope">{data ? copy.scope[data.scope.level] : "…"}</span><p className="rs-help">{copy.demoNote}</p></div>
+            <p className="rs-help" style={{ margin: 0 }}>{copy.demoNote}</p>
             <div className="dc-band-actions">
-              <span className="dc-updated" role="status">{data ? (ageMin < 1 ? copy.updated.now : fmt(copy.updated.min, { n: ageMin })) : ""}</span>
-              <button type="button" className="rs-btn" onClick={() => void refresh()} disabled={busy || !ready}>{busy ? <Loader2Icon aria-hidden="true" className="animate-spin" /> : <RefreshCwIcon aria-hidden="true" />}{copy.updated.refresh}</button>
-              <button type="button" className="rs-btn" disabled={!data} onClick={() => void downloadFile(dashboardCsvPath(qs), "roadsync-dashboard.csv").catch(() => setFailed(true))}><DownloadIcon aria-hidden="true" />{copy.actions.export}</button>
-              <Link className="rs-btn" href={`/roadsync/dashboard/brief?${qs}`}><PrinterIcon aria-hidden="true" />{copy.actions.brief}</Link>
               <Customize copy={copy} hidden={hidden} toggle={toggle} reset={() => writeHidden([])} />
             </div>
           </div>
@@ -152,6 +180,7 @@ export function CommandCenter() {
           </>
         )}
       </div>
+      </DashboardCanvas>
     </StaffWorkspaceShell>
   );
 }

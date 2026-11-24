@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
@@ -851,6 +852,256 @@ export function ChartFrame({
       ) : (
         <div>{children}</div>
       )}
+    </section>
+  );
+}
+
+/* ==========================================================================
+ * 8. Unified Dashboard Primitives (Civic Atlas Command 2.0)
+ *    Shared canvas, KPI strip, interactive KPI cards, and section panels so
+ *    every role dashboard and module dashboard shares one cohesive UI system.
+ * ========================================================================== */
+
+export function DashboardCanvas({
+  children,
+  className,
+}: {
+  children: ReactNode;
+  className?: string;
+}) {
+  return (
+    <div
+      className={cn(
+        "max-w-[1600px] mx-auto w-full px-4 sm:px-gutter-desktop py-6 pb-12 space-y-6",
+        className,
+      )}
+    >
+      {children}
+    </div>
+  );
+}
+
+export function DashboardKpiGrid({
+  children,
+  columns = 4,
+  label = "Key metrics",
+  className,
+}: {
+  children: ReactNode;
+  columns?: 4 | 5 | 6 | 8;
+  label?: string;
+  className?: string;
+}) {
+  const colClass =
+    columns === 8
+      ? "grid-cols-2 sm:grid-cols-4 xl:grid-cols-8"
+      : columns === 6
+        ? "grid-cols-2 sm:grid-cols-3 xl:grid-cols-6"
+        : columns === 5
+          ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5"
+          : "grid-cols-1 sm:grid-cols-2 xl:grid-cols-4";
+
+  return (
+    <section
+      aria-label={label}
+      aria-live="polite"
+      className={cn("grid gap-3.5", colClass, className)}
+    >
+      {children}
+    </section>
+  );
+}
+
+export type DashboardKpiTone =
+  | "neutral"
+  | "brand"
+  | "success"
+  | "warning"
+  | "critical";
+
+export function DashboardKpiCard({
+  label,
+  value,
+  hint,
+  tone = "neutral",
+  badge,
+  progressPercent,
+  active = false,
+  loading = false,
+  onClick,
+  href,
+  ariaLabel,
+  className,
+}: {
+  label: string;
+  value: ReactNode;
+  hint?: ReactNode;
+  tone?: DashboardKpiTone;
+  badge?: ReactNode;
+  progressPercent?: number | null;
+  active?: boolean;
+  loading?: boolean;
+  onClick?: () => void;
+  href?: string;
+  ariaLabel?: string;
+  className?: string;
+}) {
+  const accentBorder =
+    tone === "critical"
+      ? "border-t-[3px] border-t-[#8c1f28]"
+      : tone === "warning"
+        ? "border-t-[3px] border-t-[#feb600]"
+        : tone === "success"
+          ? "border-t-[3px] border-t-[#279541]"
+          : tone === "brand"
+            ? "border-t-[3px] border-t-[#ff5b00]"
+            : "border-t-[3px] border-t-[#14202d]";
+
+  const barColor =
+    tone === "critical"
+      ? "bg-[#8c1f28]"
+      : tone === "warning"
+        ? "bg-[#feb600]"
+        : tone === "success"
+          ? "bg-[#279541]"
+          : "bg-[#ff5b00]";
+
+  if (loading) {
+    return (
+      <div
+        role="status"
+        aria-label={`Loading ${label}`}
+        className={cn("cac-card p-4 space-y-2.5", accentBorder, className)}
+      >
+        <div className="h-3.5 w-24 rounded bg-slate-200 motion-safe:animate-pulse" />
+        <div className="h-7 w-20 rounded bg-slate-200 motion-safe:animate-pulse" />
+        <div className="h-3 w-32 rounded bg-slate-100 motion-safe:animate-pulse" />
+      </div>
+    );
+  }
+
+  const interactive = Boolean(onClick || href);
+  const sharedClasses = cn(
+    "cac-card flex flex-col justify-between p-4 text-left transition-all cac-stagger-enter min-h-[104px]",
+    accentBorder,
+    interactive
+      ? "cursor-pointer hover:-translate-y-0.5 hover:shadow-md hover:border-slate-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ff5b00]"
+      : "",
+    active ? "ring-2 ring-[#ff5b00] bg-[#fffaf7]" : "",
+    className,
+  );
+
+  const clampedProgress =
+    typeof progressPercent === "number" && !Number.isNaN(progressPercent)
+      ? Math.max(0, Math.min(100, progressPercent))
+      : null;
+
+  const content = (
+    <>
+      <div className="flex items-start justify-between gap-2">
+        <span className="text-[11px] font-bold uppercase tracking-wider text-slate-600 leading-snug">
+          {label}
+        </span>
+        {badge ? <span className="shrink-0">{badge}</span> : null}
+      </div>
+      <div className="mt-2 font-mono text-2xl font-bold tracking-tight text-slate-900 tabular-nums">
+        {value}
+      </div>
+      {clampedProgress !== null ? (
+        <div
+          className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-slate-100"
+          aria-hidden="true"
+        >
+          <div
+            className={cn("h-full rounded-full transition-all", barColor)}
+            style={{ width: `${clampedProgress}%` }}
+          />
+        </div>
+      ) : null}
+      {hint ? (
+        <div className="mt-2 text-xs text-slate-600 leading-snug line-clamp-2">
+          {hint}
+        </div>
+      ) : null}
+    </>
+  );
+
+  if (href) {
+    return (
+      <Link
+        href={href}
+        aria-label={ariaLabel}
+        className={cn(sharedClasses, "no-underline")}
+      >
+        {content}
+      </Link>
+    );
+  }
+
+  if (onClick) {
+    return (
+      <button
+        type="button"
+        onClick={onClick}
+        aria-pressed={active}
+        aria-label={ariaLabel}
+        className={sharedClasses}
+      >
+        {content}
+      </button>
+    );
+  }
+
+  return (
+    <div aria-label={ariaLabel} className={sharedClasses}>
+      {content}
+    </div>
+  );
+}
+
+export function DashboardSection({
+  title,
+  eyebrow,
+  subtitle,
+  sourceKind,
+  actions,
+  children,
+  className,
+}: {
+  title: string;
+  eyebrow?: string;
+  subtitle?: ReactNode;
+  sourceKind?: DataSourceKind;
+  actions?: ReactNode;
+  children: ReactNode;
+  className?: string;
+}) {
+  return (
+    <section className={cn("cac-card p-5", className)} aria-label={title}>
+      <div className="mb-4 flex flex-wrap items-start justify-between gap-3 border-b border-slate-100 pb-3">
+        <div className="min-w-0">
+          {eyebrow ? (
+            <div className="font-mono text-[10px] font-bold uppercase tracking-widest text-[#a83900] mb-0.5">
+              {eyebrow}
+            </div>
+          ) : null}
+          <div className="flex flex-wrap items-center gap-2">
+            <h2 className="text-base font-bold tracking-tight text-slate-900">
+              {title}
+            </h2>
+            {sourceKind ? <DataSourceBadge kind={sourceKind} /> : null}
+          </div>
+          {subtitle ? (
+            <p className="mt-0.5 text-xs text-slate-600">{subtitle}</p>
+          ) : null}
+        </div>
+        {actions ? (
+          <div className="flex flex-wrap items-center gap-2 shrink-0">
+            {actions}
+          </div>
+        ) : null}
+      </div>
+      {children}
     </section>
   );
 }

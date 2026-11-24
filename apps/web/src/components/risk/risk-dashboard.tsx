@@ -8,10 +8,10 @@ import {
   DownloadIcon,
   BookOpenIcon,
   RefreshCwIcon,
-  ShieldAlertIcon,
 } from "lucide-react";
 
 import { StaffWorkspaceShell } from "@/components/auth/staff-workspace-shell";
+import { CommandHeader, DashboardCanvas } from "@/components/common/civic-atlas-primitives";
 import { getMemorySession, subscribeAuth } from "@/lib/auth/state";
 import { useWorkspaceLocale } from "@/lib/i18n/workspace-locale";
 import {
@@ -173,59 +173,43 @@ export function RiskDashboard() {
       wide
       hidePageHeader
     >
-      <div className="space-y-6 pb-12">
-        {/* Top Header Bar */}
-        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border/60 pb-4">
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="inline-flex items-center gap-1 rounded bg-orange-100 px-2 py-0.5 text-xs font-bold text-orange-900 dark:bg-orange-950/40 dark:text-orange-300">
-                <ShieldAlertIcon className="size-3.5" aria-hidden="true" />
-                Explainable Risk Engine
-              </span>
-              <span className="text-xs text-text-muted">·</span>
-              <span className="text-xs font-mono text-text-muted">
-                {latestRun ? `Last Run: ${formatDaysAgo(latestRun.finishedAt ?? latestRun.startedAt)}` : "No runs recorded"}
-              </span>
-            </div>
-            <h1 className="text-xl font-bold tracking-tight text-text-primary mt-1">
-              {copy.dashboardTitle}
-            </h1>
-            <p className="text-xs text-text-muted mt-0.5">
-              {copy.honesty.notPredictionModel}
-            </p>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2">
-            {canAssess ? (
-              <button
-                type="button"
-                onClick={handleBulkAssess}
-                disabled={isBulkAssessing}
-                className="inline-flex items-center gap-1.5 rounded-md border border-border bg-surface px-3 py-1.5 text-xs font-medium text-text-primary hover:bg-surface-container-low disabled:opacity-50"
+      <DashboardCanvas>
+        <CommandHeader
+          eyebrow="EXPLAINABLE RISK ENGINE"
+          title={copy.dashboardTitle}
+          subtitle={copy.honesty.notPredictionModel}
+          scopeLabel={latestRun ? `Last Run: ${formatDaysAgo(latestRun.finishedAt ?? latestRun.startedAt)}` : "No runs recorded"}
+          sourceKind="live"
+          secondaryActions={
+            <>
+              {canAssess ? (
+                <button
+                  type="button"
+                  onClick={handleBulkAssess}
+                  disabled={isBulkAssessing}
+                  className="cac-header-btn"
+                >
+                  <RefreshCwIcon className={isBulkAssessing ? "animate-spin text-[#ff5b00]" : ""} aria-hidden="true" />
+                  <span>{isBulkAssessing ? copy.header.assessingAll : copy.header.assessAll}</span>
+                </button>
+              ) : null}
+              <a
+                href={getRiskExportCsvUrl()}
+                download="risk-intelligence-export.csv"
+                className="cac-header-btn"
               >
-                <RefreshCwIcon className={`size-3.5 ${isBulkAssessing ? "animate-spin text-infra-orange" : ""}`} />
-                <span>{isBulkAssessing ? copy.header.assessingAll : copy.header.assessAll}</span>
-              </button>
-            ) : null}
-
-            <a
-              href={getRiskExportCsvUrl()}
-              download="risk-intelligence-export.csv"
-              className="inline-flex items-center gap-1.5 rounded-md border border-border bg-surface px-3 py-1.5 text-xs font-medium text-text-secondary hover:bg-surface-container-low hover:text-text-primary"
-            >
-              <DownloadIcon className="size-3.5" aria-hidden="true" />
-              <span>{copy.header.exportCsv}</span>
-            </a>
-
-            <Link
-              href="/risk/methodology"
-              className="inline-flex items-center gap-1.5 rounded-md bg-infra-orange px-3 py-1.5 text-xs font-semibold text-white shadow-xs hover:bg-orange-600"
-            >
-              <BookOpenIcon className="size-3.5" aria-hidden="true" />
+                <DownloadIcon aria-hidden="true" />
+                <span>{copy.header.exportCsv}</span>
+              </a>
+            </>
+          }
+          primaryAction={
+            <Link href="/risk/methodology" className="cac-header-btn-primary">
+              <BookOpenIcon aria-hidden="true" />
               <span>{copy.header.methodology}</span>
             </Link>
-          </div>
-        </div>
+          }
+        />
 
         {bulkRunMsg ? (
           <div className="rounded-lg border border-sky-200 bg-sky-50 p-3 text-xs text-sky-900 dark:border-sky-800 dark:bg-sky-950/40 dark:text-sky-300">
@@ -292,7 +276,7 @@ export function RiskDashboard() {
           assessingProjectId={assessingProjectId}
           canAssess={canAssess}
         />
-      </div>
+      </DashboardCanvas>
 
       {/* Slide-over Risk Drawer */}
       {selectedProjectId && selectedProjectRisk?.assessment ? (
