@@ -6,6 +6,7 @@ export const COPILOT_EN = {
     unreadBadge: "{n} completed reply",
   },
   header: {
+    status: { live: "Live", limited: "Limited", offline: "Offline" }, // unverified-draft
     title: "Infrastructure Copilot",
     subtitle: "Read-only assistant · answers must link to verified records",
     expandWidth: "Widen panel",
@@ -19,6 +20,7 @@ export const COPILOT_EN = {
     deleteThread: "Delete conversation",
     aboutLink: "How AI is used",
   },
+  documents: { body: "Ask a question about one document. Answers cite the document passages they came from.", open: "Open document Q&A" }, // unverified-draft
   context: {
     thisPage: "This page",
     include: "Using page context",
@@ -27,6 +29,7 @@ export const COPILOT_EN = {
     toggleExclude: "Exclude current record context",
   },
   tabs: {
+    documents: "Ask about a document", // unverified-draft
     chat: "Chat",
     quickFacts: "Quick facts",
   },

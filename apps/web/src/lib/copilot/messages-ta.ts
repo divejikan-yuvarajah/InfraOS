@@ -8,6 +8,7 @@ export const COPILOT_TA: CopilotMessages = {
     unreadBadge: "நிறைவடைந்த பதில் {n}",
   },
   header: {
+    status: { live: "செயலில்", limited: "வரையறுக்கப்பட்டது", offline: "ஆஃப்லைன்" }, // unverified-draft
     title: "உள்கட்டமைப்பு Copilot",
     subtitle: "படிக்க மட்டும் உதவியாளர் · பதில்கள் சரிபார்க்கப்பட்ட பதிவுகளுடன் இணைக்கப்பட வேண்டும்",
     expandWidth: "பலகையை விரிவாக்கு",
@@ -21,6 +22,7 @@ export const COPILOT_TA: CopilotMessages = {
     deleteThread: "உரையாடலை நீக்கு",
     aboutLink: "AI எவ்வாறு பயன்படுகிறது",
   },
+  documents: { body: "ஒரு ஆவணம் பற்றி கேளுங்கள். பதில்கள் ஆவணப் பகுதிகளை மேற்கோள் காட்டும்.", open: "ஆவண Q&A திற" }, // unverified-draft
   context: {
     thisPage: "இந்தப் பக்கம்",
     include: "பக்கச் சூழலைப் பயன்படுத்துகிறது",
@@ -29,6 +31,7 @@ export const COPILOT_TA: CopilotMessages = {
     toggleExclude: "தற்போதைய பதிவுச் சூழலை விலக்கு",
   },
   tabs: {
+    documents: "ஆவணம் பற்றி கேளுங்கள்", // unverified-draft
     chat: "உரையாடல்",
     quickFacts: "விரைவுத் தகவல்கள்",
   },

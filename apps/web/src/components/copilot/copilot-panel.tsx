@@ -21,7 +21,7 @@ import { MessageList } from "./message-list";
 import { QuickFactsTab } from "./quick-facts-tab";
 import { UnavailableState } from "./unavailable-state";
 
-export type CopilotTab = "chat" | "quickFacts";
+export type CopilotTab = "chat" | "quickFacts" | "documents";
 
 export function CopilotPanel({
   open,
@@ -129,6 +129,7 @@ export function CopilotPanel({
           }}
         >
           <CopilotHeader
+            featureStatus={featureStatus}
             wide={wide}
             includeContext={includeContext}
             pageContext={pageContext}
@@ -164,6 +165,15 @@ export function CopilotPanel({
             >
               {copy.tabs.quickFacts}
             </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={tab === "documents"}
+              className="cop-tab"
+              onClick={() => onTabChange("documents")}
+            >
+              {copy.tabs.documents}
+            </button>
           </div>
 
           <div className="cop-scroll">
@@ -171,7 +181,14 @@ export function CopilotPanel({
               {liveAnnouncement}
             </div>
 
-            {tab === "chat" ? (
+            {tab === "documents" ? (
+              <div className="ctr-small" style={{ padding: "1rem", display: "grid", gap: "0.75rem" }}>
+                <p>{copy.documents.body}</p>
+                <Link href="/documents/ai" className="underline hover:text-foreground" onClick={onNavigate}>
+                  {copy.documents.open}
+                </Link>
+              </div>
+            ) : tab === "chat" ? (
               <>
                 {errorMessage && !rateLimitUntilMs && !budgetResetAt ? (
                   <LimitBanner
