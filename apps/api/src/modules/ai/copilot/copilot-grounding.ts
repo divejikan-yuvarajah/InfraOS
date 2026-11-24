@@ -99,7 +99,7 @@ export function verifyCopilotAnswer(input: GroundingInput): GroundedCopilotAnswe
     const combinedFactText = validRefs
       .map((n) => {
         const f = factsByN.get(n)!.fact;
-        return `${f.label} ${String(f.value)} ${f.unit || ""}`;
+        return `${f.label} ${String(f.value)} ${f.unit || ""} ${f.asOf || ""} ${f.ref?.label || ""}`;
       })
       .join(" ");
 

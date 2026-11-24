@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll, afterAll, beforeEach } from "vitest";
+import { describe, it, expect, beforeAll, afterAll, beforeEach, vi } from "vitest";
 import request from "supertest";
 import { createApp } from "../src/app.js";
 import { env } from "../src/config/env.js";
@@ -17,6 +17,8 @@ import { verifyCopilotAnswer } from "../src/modules/ai/copilot/copilot-grounding
 import { getQuickFacts } from "../src/modules/ai/copilot/quick-facts.service.js";
 import { getSuggestions } from "../src/modules/ai/copilot/copilot-suggestions.service.js";
 import { reconcileStaleCopilotTurns } from "../src/modules/ai/copilot/copilot-turn.service.js";
+import { runCopilotPlanner } from "../src/modules/ai/copilot/copilot-planner.js";
+import * as aiClientMod from "../src/modules/ai/ai-client.js";
 import { startIsolatedMongo, stopIsolatedMongo } from "./helpers/mongo-memory.js";
 
 describe("Infrastructure Copilot Backend (Step 125)", () => {
@@ -363,6 +365,137 @@ describe("Infrastructure Copilot Backend (Step 125)", () => {
       const closedRes = await COPILOT_TOOLS.search_projects!.run(noAgencyActor, { q: "Colombo" }, ctx);
       expect(closedRes.status).toBe("OK");
       expect(closedRes.facts[0]?.label).toBe("search_results");
+    });
+
+    it("retrieves active and high-risk projects via list_projects/list_risky_projects and enforces agency scope", async () => {
+      const world = await setupWorld();
+      await Project.updateOne({ _id: world.project._id }, { $set: { riskLevel: "HIGH", riskScore: 78 } });
+
+      const otherAgency = await Agency.create({ code: `WAT_${Math.floor(Math.random() * 90000)}`, name: "Water Board", type: "MINISTRY", status: "ACTIVE" });
+      await Project.create({
+        projectCode: `INF-WATER-${Math.floor(Math.random() * 900) + 100}`,
+        title: "Foreign Agency Reservoir",
+        projectType: "WATER",
+        agencyId: otherAgency._id,
+        budget: { amountMinor: 10_000_000_00, currency: "LKR" },
+        createdBy: world.user._id,
+        status: "ACTIVE",
+        riskLevel: "CRITICAL",
+        riskScore: 95,
+      });
+
+      const actor = {
+        userId: world.user._id.toString(),
+        agencyId: world.agency._id.toString(),
+        roleKey: "PROJECT_MANAGER",
+        permissions: ["project.read"],
+      };
+      const ctx = { requestId: "req-portfolio", provenancePool: new Set<string>(), permissions: ["project.read"] };
+
+      const activeRes = await COPILOT_TOOLS.list_projects!.run(actor, { status: "ACTIVE" }, ctx);
+      expect(activeRes.status).toBe("OK");
+      expect(activeRes.facts.some((f) => String(f.value).includes(world.project.projectCode))).toBe(true);
+      expect(activeRes.facts.some((f) => String(f.value).includes("Foreign Agency Reservoir"))).toBe(false);
+
+      const riskyRes = await COPILOT_TOOLS.list_risky_projects!.run(actor, {}, ctx);
+      expect(riskyRes.status).toBe("OK");
+      expect(riskyRes.facts.some((f) => String(f.value).includes("HIGH risk"))).toBe(true);
+      expect(riskyRes.facts.some((f) => String(f.value).includes("Foreign Agency Reservoir"))).toBe(false);
+    });
+
+    it("planner sends populated argsSchema, recovers from empty tool_calls, and grounds active & risky project answers with clickable sources", async () => {
+      const world = await setupWorld();
+      await Project.updateOne({ _id: world.project._id }, { $set: { riskLevel: "HIGH", riskScore: 82 } });
+
+      let seenToolCatalogArgs: Record<string, unknown> | undefined;
+      let seenSourceRefs: unknown[] = [];
+      let stepCall = 0;
+
+      const fakeClient = {
+        isCold: false,
+        health: vi.fn().mockResolvedValue(true),
+        wake: vi.fn().mockResolvedValue(undefined),
+        copilotStep: vi.fn().mockImplementation(async (req: { toolCatalog: Array<{ name: string; argsSchema: Record<string, unknown> }>; toolResults: Array<{ facts: Array<{ sourceRef?: number }> }> }) => {
+          stepCall++;
+          if (stepCall === 1) {
+            const lp = req.toolCatalog.find((t) => t.name === "list_projects");
+            seenToolCatalogArgs = lp?.argsSchema;
+            // Simulate LLM returning empty calls on first attempt
+            return {
+              output: { type: "tool_calls", calls: [], answer: null, claims: [], missingInfo: [] },
+              usage: { inputTokens: 100, outputTokens: 20 },
+              model: "openai/gpt-4.1-mini",
+              promptVersion: "copilot.v1",
+            };
+          }
+          if (stepCall === 2) {
+            return {
+              output: {
+                type: "tool_calls",
+                calls: [
+                  { id: "c1", tool: "list_projects", args: { status: "ACTIVE" } },
+                  { id: "c2", tool: "list_risky_projects", args: {} },
+                ],
+                answer: null,
+                claims: [],
+                missingInfo: [],
+              },
+              usage: { inputTokens: 120, outputTokens: 40 },
+              model: "openai/gpt-4.1-mini",
+              promptVersion: "copilot.v1",
+            };
+          }
+          seenSourceRefs = req.toolResults.flatMap((tr) => tr.facts.map((f) => f.sourceRef).filter(Boolean));
+          return {
+            output: {
+              type: "final",
+              calls: [],
+              answer: `Project ${world.project.projectCode} is ACTIVE with 55% reported progress and HIGH risk (score 82).`,
+              claims: [
+                {
+                  text: `Project ${world.project.projectCode} is ACTIVE with 55% reported progress.`,
+                  sourceRefs: [2],
+                },
+                {
+                  text: `Project ${world.project.projectCode} is flagged HIGH risk with score 82.`,
+                  sourceRefs: [3],
+                },
+              ],
+              missingInfo: [],
+            },
+            usage: { inputTokens: 150, outputTokens: 60 },
+            model: "openai/gpt-4.1-mini",
+            promptVersion: "copilot.v1",
+          };
+        }),
+      };
+
+      const spy = vi.spyOn(aiClientMod, "aiClient").mockReturnValue(fakeClient as unknown as ReturnType<typeof aiClientMod.aiClient>);
+      try {
+        const res = await runCopilotPlanner({
+          turnId: "turn-e2e-recovery",
+          message: "Summarize all active infrastructure projects and high risk projects in my agency",
+          language: "en",
+          actor: {
+            userId: world.user._id.toString(),
+            agencyId: world.agency._id.toString(),
+            roleKey: "PROJECT_MANAGER",
+            permissions: ["copilot.use", "project.read"],
+          },
+          requestId: "req-e2e-recovery",
+          isCancelled: async () => false,
+        });
+
+        expect(seenToolCatalogArgs).toBeDefined();
+        expect(Object.keys((seenToolCatalogArgs as { properties?: Record<string, unknown> })?.properties ?? {})).toContain("status");
+        expect(seenSourceRefs.length).toBeGreaterThanOrEqual(3);
+        expect(res.status).toBe("ANSWERED");
+        expect(res.toolsUsed).toEqual(expect.arrayContaining(["list_projects", "list_risky_projects"]));
+        expect(res.sources.length).toBeGreaterThanOrEqual(2);
+        expect(res.sources.every((s) => s.link.startsWith("/projects/"))).toBe(true);
+      } finally {
+        spy.mockRestore();
+      }
     });
   });
 });

@@ -86,6 +86,8 @@ export const COPILOT_TA: CopilotMessages = {
     "copilot.step.invalid_tool_args": "தவறான கருவி வினவல் அளவுருக்கள் நிராகரிக்கப்பட்டன",
     "copilot.step.unprovenanced_id": "சான்றில்லாத அடையாள எண் தேடல் தடுக்கப்பட்டது",
     "copilot.step.unknown_tool": "அறியப்படாத கருவி அழைப்பு நிராகரிக்கப்பட்டது",
+    "copilot.step.plan_empty_calls": "AI திட்டமிடுபவர் கருவி அழைப்புகளைத் தரவில்லை", // unverified-draft
+    "copilot.step.list_projects": "வரம்பில் உள்ள திட்டங்களைப் பட்டியலிடுகிறது…", // unverified-draft
     "copilot.step.search_projects": "அணுகக்கூடிய திட்டங்களைத் தேடுகிறது…",
     "copilot.step.get_project_summary": "திட்டச் சுருக்கம் மற்றும் முன்னேற்றச் சரிபார்ப்பைப் படிக்கிறது…",
     "copilot.step.get_project_milestones": "திட்ட மைல்கற்கள் மற்றும் தாமதங்களைச் சரிபார்க்கிறது…",

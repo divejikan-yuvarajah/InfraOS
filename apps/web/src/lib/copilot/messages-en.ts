@@ -84,6 +84,8 @@ export const COPILOT_EN = {
     "copilot.step.invalid_tool_args": "Rejected invalid tool query parameters",
     "copilot.step.unprovenanced_id": "Blocked unprovenanced identifier lookup",
     "copilot.step.unknown_tool": "Rejected unknown tool call",
+    "copilot.step.plan_empty_calls": "AI planner returned no tool calls",
+    "copilot.step.list_projects": "Listing accessible projects in scope…",
     "copilot.step.search_projects": "Searching accessible projects…",
     "copilot.step.get_project_summary": "Reading project summary & progress verification…",
     "copilot.step.get_project_milestones": "Checking project milestones & delays…",

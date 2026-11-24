@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 Language = Literal["en", "si", "ta"]
 
@@ -277,6 +277,31 @@ class CopilotStepOutput(Lenient):
     answer: str | None = Field(default=None, max_length=6000)
     claims: list[CopilotClaim] = Field(default_factory=list)
     missingInfo: list[str] = Field(default_factory=list)
+
+    @model_validator(mode="before")
+    @classmethod
+    def _normalize_aliases(cls, data: Any) -> Any:
+        if not isinstance(data, dict):
+            return data
+        out = dict(data)
+        if not out.get("calls") and isinstance(out.get("tool_calls"), list):
+            out["calls"] = out["tool_calls"]
+        if not out.get("missingInfo") and isinstance(out.get("missing_info"), list):
+            out["missingInfo"] = out["missing_info"]
+        if isinstance(out.get("calls"), list):
+            norm_calls = []
+            for idx, c in enumerate(out["calls"], start=1):
+                if isinstance(c, dict):
+                    item = dict(c)
+                    if not item.get("id"):
+                        item["id"] = f"c{idx}"
+                    if not item.get("tool") and isinstance(item.get("name"), str):
+                        item["tool"] = item["name"]
+                    if item.get("args") is None:
+                        item["args"] = item.get("arguments") if isinstance(item.get("arguments"), dict) else {}
+                    norm_calls.append(item)
+            out["calls"] = norm_calls
+        return out
 
 
 class CopilotConversationTurn(Strict):

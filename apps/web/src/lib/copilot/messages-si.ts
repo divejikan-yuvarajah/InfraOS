@@ -86,6 +86,8 @@ export const COPILOT_SI: CopilotMessages = {
     "copilot.step.invalid_tool_args": "වලංගු නොවන මෙවලම් පරාමිතීන් ප්‍රතික්ෂේප විය",
     "copilot.step.unprovenanced_id": "තහවුරු නොකළ හැඳුනුම්පත් සෙවීම අවහිර කළා",
     "copilot.step.unknown_tool": "නොදන්නා මෙවලම් ඇමතුම ප්‍රතික්ෂේප කළා",
+    "copilot.step.plan_empty_calls": "AI සැලසුම්කරු මෙවලම් ඇමතුම් ලබා නොදුන්නේය", // unverified-draft
+    "copilot.step.list_projects": "විෂය පථයේ ඇති ව්‍යාපෘති ලැයිස්තුගත කරමින්…", // unverified-draft
     "copilot.step.search_projects": "ප්‍රවේශ විය හැකි ව්‍යාපෘති සොයමින්…",
     "copilot.step.get_project_summary": "ව්‍යාපෘති සාරාංශය සහ ප්‍රගති සත්‍යාපනය කියවමින්…",
     "copilot.step.get_project_milestones": "ව්‍යාපෘති සන්ධිස්ථාන සහ ප්‍රමාදයන් පරීක්ෂා කරමින්…",

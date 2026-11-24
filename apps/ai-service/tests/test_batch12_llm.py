@@ -291,3 +291,35 @@ def test_copilot_step_invalid_output_never_leaks_model_text(settings: Settings) 
     assert r.json()["code"] == "LLM_INVALID_OUTPUT"
     assert "SECRET_RAW_MODEL_LEAK" not in r.text
 
+
+def test_copilot_step_downgrades_json_schema_400_and_normalizes_tool_calls_alias(settings: Settings) -> None:
+    modes_seen: list[str] = []
+
+    def h(req: httpx.Request) -> httpx.Response:
+        payload = json.loads(req.content)
+        rf_type = (payload.get("response_format") or {}).get("type", "plain")
+        modes_seen.append(rf_type)
+        if rf_type == "json_schema":
+            return httpx.Response(400, json={"error": {"message": "json_schema not supported for this model"}})
+        return _reply(
+            {
+                "type": "tool_calls",
+                "tool_calls": [
+                    {"tool": "list_projects", "args": {"status": "ACTIVE"}},
+                ],
+                "answer": None,
+                "claims": [],
+                "missing_info": [],
+            },
+            model=payload["model"],
+        )
+
+    client = _make_app(settings, h)
+    r = _post(client, "/v1/llm/copilot-step", {**COPILOT_REQ, "language": "ta", "round": 1})
+    assert r.status_code == 200
+    assert modes_seen == ["json_schema", "json_object"]
+    body = r.json()
+    assert body["structuredMode"] == "json_object"
+    assert body["output"]["calls"] == [{"id": "c1", "tool": "list_projects", "args": {"status": "ACTIVE"}}]
+
+

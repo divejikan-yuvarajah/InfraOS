@@ -1,3 +1,5 @@
+import { z } from "zod";
+import { logger } from "../../../shared/logger.js";
 import { aiClient } from "../ai-client.js";
 import type {
   CopilotFact,
@@ -90,22 +92,33 @@ export async function runCopilotPlanner(params: RunPlannerParams): Promise<Plann
     return tool.requires.every((perm) => params.actor.permissions?.includes(perm) || params.actor.roleKey === "SUPER_ADMIN");
   });
 
-  const toolCatalog = allowedTools.map((t) => ({
-    name: t.name,
-    description: t.description,
-    argsSchema: {}, // Schema metadata
-  }));
+  const toolCatalog = allowedTools.map((t) => {
+    let argsSchema: Record<string, unknown> = {};
+    try {
+      const jsonSchema = z.toJSONSchema(t.argsSchema) as Record<string, unknown>;
+      delete jsonSchema.$schema;
+      argsSchema = jsonSchema;
+    } catch {
+      argsSchema = {};
+    }
+    return {
+      name: t.name,
+      description: t.description,
+      argsSchema,
+    };
+  });
 
   const toolResultsForLlm: Array<{
     callId: string;
     tool: string;
-    facts: CopilotFact[];
+    facts: Array<CopilotFact & { sourceRef?: number }>;
     status: "OK" | "DENIED" | "NOT_FOUND" | "UNAVAILABLE" | "ERROR";
   }> = [];
 
   let finalRawAnswer: string | null = null;
   let finalRawClaims: Array<{ text: string; sourceRefs?: number[] }> = [];
   let finalRawMissingInfo: string[] = [];
+  let emptyCallsRecovered = false;
 
   // Cold-start tolerance (Render free tier sleeps; first call can take 30-60 s): if the service does not answer a
   // liveness probe quickly, tell the user it is warming up, wait for it, and only then start the wall-clock budget.
@@ -207,7 +220,7 @@ export async function runCopilotPlanner(params: RunPlannerParams): Promise<Plann
     const output = stepResponse.output;
 
     // 3. Process LLM step output
-    if (output.type === "final" || round === MAX_ROUNDS) {
+    if (output.type === "final") {
       finalRawAnswer = output.answer || null;
       finalRawClaims = output.claims || [];
       finalRawMissingInfo = output.missingInfo || [];
@@ -227,7 +240,38 @@ export async function runCopilotPlanner(params: RunPlannerParams): Promise<Plann
     // 4. Handle tool calls
     const calls = (output.calls || []).slice(0, 3); // Max 3 calls per round
     if (calls.length === 0) {
-      // LLM requested tool_calls but returned 0 calls -> break to prevent looping
+      logger.warn(
+        { requestId: params.requestId, round, model: usedModel, executedFactsCount: executedFacts.length },
+        "copilot planner returned type=tool_calls with empty calls array",
+      );
+      if (!emptyCallsRecovered && round < MAX_ROUNDS) {
+        emptyCallsRecovered = true;
+        toolResultsForLlm.push({
+          callId: `recovery_${round}`,
+          tool: "planner_hint",
+          status: "ERROR",
+          facts: [
+            {
+              id: "T.hint",
+              label: "planner_instruction",
+              value:
+                executedFacts.length > 0
+                  ? "You returned empty calls. Synthesize type='final' now citing the integer sourceRef numbers above."
+                  : "You returned empty calls. Select 1-3 tools from toolCatalog (e.g. list_projects or list_risky_projects) with valid args matching argsSchema.",
+            },
+          ],
+        });
+        continue;
+      }
+      const emptyStep: CopilotStepDto = {
+        at: new Date().toISOString(),
+        kind: "PLAN",
+        status: "ERROR",
+        labelKey: "copilot.step.plan_empty_calls",
+        durationMs: Date.now() - planStepStart,
+      };
+      steps.push(emptyStep);
+      await params.onStep?.(emptyStep);
       break;
     }
 
@@ -384,14 +428,20 @@ export async function runCopilotPlanner(params: RunPlannerParams): Promise<Plann
 
       const argProjectId = typeof validatedArgs.projectId === "string" ? validatedArgs.projectId : undefined;
       const argAssetId = typeof validatedArgs.assetId === "string" ? validatedArgs.assetId : undefined;
+      const annotatedFacts: Array<CopilotFact & { sourceRef?: number }> = [];
       for (const fact of cappedFacts) {
+        const assignedN = factCounter++;
         const linkTargetId = toolRes.primaryRecordId || fact.ref?.id || argProjectId || argAssetId;
         const link = toolDef.link(linkTargetId);
         executedFacts.push({
-          n: factCounter++,
+          n: assignedN,
           fact,
           tool: call.tool,
           link,
+        });
+        annotatedFacts.push({
+          ...fact,
+          sourceRef: assignedN,
         });
       }
 
@@ -399,8 +449,45 @@ export async function runCopilotPlanner(params: RunPlannerParams): Promise<Plann
         callId: call.id,
         tool: call.tool,
         status: toolRes.status,
-        facts: cappedFacts,
+        facts: annotatedFacts,
       });
+    }
+  }
+
+  // If the loop reached MAX_ROUNDS while executing tools and never received a `final` synthesis, run one final synthesis call.
+  if (!finalRawAnswer && finalRawClaims.length === 0 && executedFacts.length > 0 && Date.now() - startTime <= MAX_WALL_CLOCK_MS) {
+    const synthStart = Date.now();
+    try {
+      const synthResp = await aiClient().copilotStep({
+        language: params.language,
+        conversation: [{ role: "user", content: params.message }],
+        pageContext: params.pageContext,
+        toolCatalog: [],
+        toolResults: toolResultsForLlm,
+        round: MAX_ROUNDS,
+        maxOutputTokens: 2000,
+        ...(params.model ? { model: params.model } : {}),
+      });
+      totalInputTokens += synthResp.usage.inputTokens;
+      totalOutputTokens += synthResp.usage.outputTokens;
+      usedModel = synthResp.model;
+      finalRawAnswer = synthResp.output.answer || null;
+      finalRawClaims = synthResp.output.claims || [];
+      finalRawMissingInfo = synthResp.output.missingInfo || [];
+      const synthStep: CopilotStepDto = {
+        at: new Date().toISOString(),
+        kind: "PLAN",
+        status: "OK",
+        labelKey: "copilot.step.plan_completed",
+        durationMs: Date.now() - synthStart,
+      };
+      steps.push(synthStep);
+      await params.onStep?.(synthStep);
+    } catch (err: unknown) {
+      logger.warn(
+        { requestId: params.requestId, code: (err as { code?: string } | null)?.code },
+        "copilot final synthesis round failed",
+      );
     }
   }
 

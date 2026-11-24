@@ -8,6 +8,10 @@ import { ProgressVerification } from "../../inspections/models/progress-verifica
 import { Inspection } from "../../inspections/models/inspection.model.js";
 import { RiskAssessment } from "../../risk/models/risk-assessment.model.js";
 import { Document } from "../../documents/models/document.model.js";
+import { ConflictRecord } from "../../roadsync/models/conflict-record.model.js";
+import { Asset } from "../../assets/models/asset.model.js";
+import { Contractor } from "../../contractors/models/contractor.model.js";
+import { ProjectPayment } from "../../finance/models/project-payment.model.js";
 import { askQuestion } from "../rag/rag.service.js";
 
 /** Truncates untrusted free-text user fields to <= 120 chars */
@@ -30,11 +34,76 @@ function canAccessAgency(actor: AuthenticatedActor, targetAgencyId?: string | mo
 }
 
 export const COPILOT_TOOLS: Record<string, CopilotToolDefinition<Record<string, unknown>>> = {
+  list_projects: defineCopilotTool({
+    name: "list_projects",
+    description: "List accessible infrastructure projects in the user's agency (or across agencies for SUPER_ADMIN), optionally filtered by status (e.g. ACTIVE, DRAFT, SUBMITTED, UNDER_REVIEW, APPROVED, ON_HOLD, COMPLETED) or district.",
+    argsSchema: z.object({
+      status: z.enum(["DRAFT", "SUBMITTED", "UNDER_REVIEW", "APPROVED", "ACTIVE", "ON_HOLD", "COMPLETED", "REJECTED", "CANCELLED"]).optional(),
+      district: z.string().trim().max(80).optional(),
+      agencyId: z.string().optional(),
+      limit: z.number().int().min(1).max(15).default(10),
+    }).strict(),
+    requires: ["project.read"],
+    readOnly: true,
+    link: (id) => (id ? `/projects/${id}/overview` : "/projects"),
+    async run(actor, args, _ctx) {
+      const agencyId = actor.roleKey === "SUPER_ADMIN" ? (args.agencyId || actor.agencyId) : actor.agencyId;
+      if (actor.roleKey !== "SUPER_ADMIN" && (!agencyId || !mongoose.Types.ObjectId.isValid(agencyId))) {
+        return { status: "OK", facts: [{ id: "T.f1", label: "projects_list", value: "No accessible projects found in agency scope." }] };
+      }
+      const query: mongoose.FilterQuery<Record<string, unknown>> = {};
+      if (agencyId) {
+        if (!mongoose.Types.ObjectId.isValid(agencyId)) {
+          return { status: "OK", facts: [{ id: "T.f1", label: "projects_list", value: "No accessible projects found in agency scope." }] };
+        }
+        query.agencyId = new mongoose.Types.ObjectId(agencyId);
+      }
+      if (args.status) query.status = args.status;
+      if (args.district) query["location.district"] = { $regex: escapeRegex(args.district), $options: "i" };
+
+      const [totalCount, projects] = await Promise.all([
+        Project.countDocuments(query),
+        Project.find(query)
+          .sort({ updatedAt: -1 })
+          .limit(args.limit ?? 10)
+          .select("_id projectCode title status projectType physicalProgress riskLevel location.district")
+          .lean(),
+      ]);
+
+      if (projects.length === 0) {
+        const label = args.status ? `${args.status} projects` : "projects";
+        return { status: "OK", facts: [{ id: "T.f1", label: "projects_list", value: `No ${label} found in scope.` }] };
+      }
+
+      const facts: CopilotFact[] = [
+        {
+          id: "T.f1",
+          label: "projects_count",
+          value: `${totalCount} ${args.status ? `${args.status} ` : ""}project(s) in scope (showing ${projects.length})`,
+          basis: "RECORDED",
+        },
+      ];
+      let factIdx = 2;
+      for (const p of projects) {
+        const riskPart = p.riskLevel ? `, risk: ${p.riskLevel}` : "";
+        const distPart = p.location?.district ? `, ${p.location.district}` : "";
+        facts.push({
+          id: `T.f${factIdx++}`,
+          label: "project_summary_row",
+          value: `${p.projectCode}: ${p.title} (${p.status}, ${p.physicalProgress ?? 0}% reported progress${riskPart}${distPart})`,
+          ref: { type: "Project", id: p._id.toString(), label: p.projectCode },
+          basis: "RECORDED",
+        });
+      }
+      return { status: "OK", facts };
+    },
+  }),
+
   search_projects: defineCopilotTool({
     name: "search_projects",
-    description: "Search projects by title or project code within permitted agency scope.",
+    description: "Search projects by title, project code, or status within permitted agency scope.",
     argsSchema: z.object({
-      q: z.string().trim().min(1).max(100),
+      q: z.string().trim().min(1).max(100).optional(),
       status: z.string().optional(),
       agencyId: z.string().optional(),
     }).strict(),
@@ -44,24 +113,26 @@ export const COPILOT_TOOLS: Record<string, CopilotToolDefinition<Record<string, 
     async run(actor, args, _ctx) {
       const agencyId = actor.roleKey === "SUPER_ADMIN" ? (args.agencyId || actor.agencyId) : actor.agencyId;
       if (actor.roleKey !== "SUPER_ADMIN" && (!agencyId || !mongoose.Types.ObjectId.isValid(agencyId))) {
-        return { status: "OK", facts: [{ id: "T.f1", label: "search_results", value: `No projects found matching "${args.q}"` }] };
+        return { status: "OK", facts: [{ id: "T.f1", label: "search_results", value: `No projects found matching "${args.q || args.status || ""}"` }] };
       }
       const query: mongoose.FilterQuery<Record<string, unknown>> = {};
       if (agencyId) {
         if (!mongoose.Types.ObjectId.isValid(agencyId)) {
-          return { status: "OK", facts: [{ id: "T.f1", label: "search_results", value: `No projects found matching "${args.q}"` }] };
+          return { status: "OK", facts: [{ id: "T.f1", label: "search_results", value: `No projects found matching "${args.q || args.status || ""}"` }] };
         }
         query.agencyId = new mongoose.Types.ObjectId(agencyId);
       }
       if (args.status) query.status = args.status;
 
-      const pattern = escapeRegex(args.q);
-      query.$or = [
-        { title: { $regex: pattern, $options: "i" } },
-        { projectCode: { $regex: pattern, $options: "i" } },
-      ];
+      if (args.q) {
+        const pattern = escapeRegex(args.q);
+        query.$or = [
+          { title: { $regex: pattern, $options: "i" } },
+          { projectCode: { $regex: pattern, $options: "i" } },
+        ];
+      }
 
-      const projects = await Project.find(query).limit(5).lean();
+      const projects = await Project.find(query).sort({ updatedAt: -1 }).limit(8).lean();
       const facts: CopilotFact[] = [];
       let factIdx = 1;
 
@@ -69,14 +140,14 @@ export const COPILOT_TOOLS: Record<string, CopilotToolDefinition<Record<string, 
         facts.push({
           id: `T.f${factIdx++}`,
           label: "project_found",
-          value: `${p.projectCode}: ${p.title} (${p.status})`,
+          value: `${p.projectCode}: ${p.title} (${p.status}, ${p.physicalProgress ?? 0}% reported progress)`,
           ref: { type: "Project", id: p._id.toString(), label: p.projectCode },
           basis: "RECORDED",
         });
       }
 
       if (facts.length === 0) {
-        return { status: "OK", facts: [{ id: "T.f1", label: "search_results", value: `No projects found matching "${args.q}"` }] };
+        return { status: "OK", facts: [{ id: "T.f1", label: "search_results", value: `No projects found matching "${args.q || args.status || ""}"` }] };
       }
 
       return { status: "OK", facts };
@@ -280,10 +351,29 @@ export const COPILOT_TOOLS: Record<string, CopilotToolDefinition<Record<string, 
 
       if (hasFinancePerm) {
         const budgetRupees = (project.budget?.amountMinor ?? 0) / 100;
+        const payments = await ProjectPayment.find({ projectId: project._id }).select("amount.amountMinor status").lean();
+        const paidMinor = payments.filter((p) => p.status === "PAID").reduce((sum, p) => sum + (p.amount?.amountMinor ?? 0), 0);
+        const pendingMinor = payments.filter((p) => p.status === "PENDING" || p.status === "APPROVED").reduce((sum, p) => sum + (p.amount?.amountMinor ?? 0), 0);
         facts.push({
           id: "T.f3",
           label: "budget",
           value: budgetRupees,
+          unit: "LKR",
+          ref: { type: "Project", id: project._id.toString(), label: project.projectCode },
+          basis: "RECORDED",
+        });
+        facts.push({
+          id: "T.f4",
+          label: "paid_payments",
+          value: paidMinor / 100,
+          unit: "LKR",
+          ref: { type: "Project", id: project._id.toString(), label: project.projectCode },
+          basis: "RECORDED",
+        });
+        facts.push({
+          id: "T.f5",
+          label: "pending_payments",
+          value: pendingMinor / 100,
           unit: "LKR",
           ref: { type: "Project", id: project._id.toString(), label: project.projectCode },
           basis: "RECORDED",
@@ -385,14 +475,15 @@ export const COPILOT_TOOLS: Record<string, CopilotToolDefinition<Record<string, 
     }).strict(),
     requires: ["project.read"],
     readOnly: true,
-    link: () => "/risk",
+    link: (id) => (id ? `/projects/${id}/risk` : "/risk"),
     async run(actor, args, _ctx) {
       const agencyId = actor.roleKey === "SUPER_ADMIN" ? (args.agencyId || actor.agencyId) : actor.agencyId;
       if (actor.roleKey !== "SUPER_ADMIN" && (!agencyId || !mongoose.Types.ObjectId.isValid(agencyId))) {
         return { status: "OK", facts: [{ id: "T.f1", label: "risky_projects", value: "No high or critical risk projects found in scope." }] };
       }
+      const levels = args.level ? [args.level] : ["HIGH", "CRITICAL"];
       const query: mongoose.FilterQuery<Record<string, unknown>> = {
-        riskLevel: args.level ? args.level : { $in: ["HIGH", "CRITICAL"] },
+        riskLevel: { $in: levels },
       };
       if (agencyId) {
         if (!mongoose.Types.ObjectId.isValid(agencyId)) {
@@ -401,7 +492,7 @@ export const COPILOT_TOOLS: Record<string, CopilotToolDefinition<Record<string, 
         query.agencyId = new mongoose.Types.ObjectId(agencyId);
       }
 
-      const projects = await Project.find(query).limit(5).lean();
+      const projects = await Project.find(query).sort({ riskScore: -1, updatedAt: -1 }).limit(8).lean();
       const facts: CopilotFact[] = [];
       let factIdx = 1;
 
@@ -409,10 +500,32 @@ export const COPILOT_TOOLS: Record<string, CopilotToolDefinition<Record<string, 
         facts.push({
           id: `T.f${factIdx++}`,
           label: "risky_project",
-          value: `${p.projectCode}: ${p.title} (${p.riskLevel} risk, score: ${p.riskScore ?? 0})`,
+          value: `${p.projectCode}: ${p.title} (${p.riskLevel} risk, score: ${p.riskScore ?? 0}, status: ${p.status})`,
           ref: { type: "Project", id: p._id.toString(), label: p.projectCode },
           basis: "RECORDED",
         });
+      }
+
+      if (facts.length === 0) {
+        const assessQuery: mongoose.FilterQuery<Record<string, unknown>> = { overallLevel: { $in: levels } };
+        if (agencyId) assessQuery.agencyId = new mongoose.Types.ObjectId(agencyId);
+        const assessments = await RiskAssessment.find(assessQuery).sort({ createdAt: -1 }).limit(8).lean();
+        const projIds = [...new Set(assessments.map((a) => a.projectId?.toString()).filter(Boolean))];
+        if (projIds.length > 0) {
+          const fallbackProjects = await Project.find({ _id: { $in: projIds } }).select("_id projectCode title status").lean();
+          const byId = new Map(fallbackProjects.map((p) => [p._id.toString(), p]));
+          for (const a of assessments) {
+            const p = byId.get(a.projectId?.toString() ?? "");
+            if (!p) continue;
+            facts.push({
+              id: `T.f${factIdx++}`,
+              label: "risky_project",
+              value: `${p.projectCode}: ${p.title} (${a.overallLevel} risk, score: ${a.overallIndex ?? a.overallRisk ?? 0}, status: ${p.status})`,
+              ref: { type: "Project", id: p._id.toString(), label: p.projectCode },
+              basis: "RECORDED",
+            });
+          }
+        }
       }
 
       if (facts.length === 0) {
@@ -512,76 +625,138 @@ export const COPILOT_TOOLS: Record<string, CopilotToolDefinition<Record<string, 
 
   get_roadsync_conflicts: defineCopilotTool({
     name: "get_roadsync_conflicts",
-    description: "Get open RoadSync utility / road conflicts for a project or agency.",
+    description: "Get open RoadSync utility / road spatial conflicts for a project or agency.",
     argsSchema: z.object({
       projectId: z.string().trim().optional(),
     }).strict(),
     requires: ["project.read"],
     readOnly: true,
-    link: () => "/roadsync",
-    async run(_actor, _args, _ctx) {
-      // Return neutral conflict fact
-      return {
-        status: "OK",
-        facts: [
-          {
-            id: "T.f1",
-            label: "roadsync_conflicts",
-            value: "0 active spatial coordination conflicts identified for project/agency",
-            basis: "RECORDED",
-          },
-        ],
+    link: (id) => (id ? `/roadsync/conflicts/${id}` : "/roadsync/conflicts"),
+    async run(actor, args, _ctx) {
+      const query: mongoose.FilterQuery<Record<string, unknown>> = {
+        status: { $nin: ["closed", "dismissed", "resolved"] },
       };
+      if (actor.roleKey !== "SUPER_ADMIN") {
+        if (!actor.agencyId || !mongoose.Types.ObjectId.isValid(actor.agencyId)) {
+          return { status: "OK", facts: [{ id: "T.f1", label: "roadsync_conflicts", value: "0 active spatial coordination conflicts identified in scope." }] };
+        }
+        query.agencyIds = new mongoose.Types.ObjectId(actor.agencyId);
+      }
+      if (args.projectId && mongoose.Types.ObjectId.isValid(args.projectId)) {
+        const pid = new mongoose.Types.ObjectId(args.projectId);
+        query.$or = [{ aId: pid }, { bId: pid }];
+      }
+
+      const conflicts = await ConflictRecord.find(query).sort({ createdAt: -1 }).limit(8).lean();
+      if (conflicts.length === 0) {
+        return {
+          status: "OK",
+          facts: [
+            {
+              id: "T.f1",
+              label: "roadsync_conflicts",
+              value: "0 active spatial coordination conflicts identified for project/agency",
+              basis: "RECORDED",
+            },
+          ],
+        };
+      }
+
+      const facts: CopilotFact[] = conflicts.map((c, idx) => {
+        const sev = (c.severity as { current?: { band?: string } } | undefined)?.current?.band ?? "unknown";
+        const dist = c.district ? `, ${c.district}` : "";
+        return {
+          id: `T.f${idx + 1}`,
+          label: "roadsync_conflict",
+          value: `${c.conflictNo} (${c.recordType}, severity: ${sev}, status: ${c.status}${dist})`,
+          ref: { type: "RoadsyncConflict", id: c._id.toString(), label: c.conflictNo },
+          basis: "RECORDED",
+        };
+      });
+      return { status: "OK", facts };
     },
   }),
 
   get_contractor_performance: defineCopilotTool({
     name: "get_contractor_performance",
-    description: "Get contractor summary and performance profile indicators.",
+    description: "Get contractor summary and standing indicators by contractor ID or registration number.",
     argsSchema: z.object({
       contractorId: z.string().trim().min(1).max(50),
     }).strict(),
     requires: ["contractor.read"],
     readOnly: true,
     link: (id) => (id ? `/contractors/${id}` : "/contractors"),
-    async run(_actor, args, _ctx) {
-      return {
-        status: "OK",
-        facts: [
-          {
-            id: "T.f1",
-            label: "contractor_performance",
-            value: "Contractor is in good standing with active performance tracking",
-            ref: { type: "Contractor", id: args.contractorId, label: "Contractor" },
-            basis: "RECORDED",
-          },
-        ],
-      };
+    async run(actor, args, _ctx) {
+      const isOid = mongoose.Types.ObjectId.isValid(args.contractorId);
+      const contractor = await Contractor.findOne(
+        isOid ? { _id: args.contractorId } : { registrationNumber: args.contractorId.toUpperCase() },
+      ).lean();
+
+      if (!contractor || (contractor.registeredByAgencyId && !canAccessAgency(actor, contractor.registeredByAgencyId))) {
+        return { status: "NOT_FOUND", facts: [{ id: "T.f1", label: "error", value: "Contractor not found or outside agency scope" }] };
+      }
+
+      const facts: CopilotFact[] = [
+        {
+          id: "T.f1",
+          label: "contractor_standing",
+          value: `${contractor.name} (${contractor.registrationNumber}): status ${contractor.status}${contractor.category ? `, ${contractor.category}` : ""}`,
+          ref: { type: "Contractor", id: contractor._id.toString(), label: contractor.registrationNumber },
+          basis: "RECORDED",
+        },
+      ];
+      if (contractor.riskLevel) {
+        facts.push({
+          id: "T.f2",
+          label: "contractor_risk_level",
+          value: contractor.riskLevel,
+          ref: { type: "Contractor", id: contractor._id.toString(), label: contractor.registrationNumber },
+          basis: "RECORDED",
+        });
+      }
+      return { status: "OK", primaryRecordId: contractor._id.toString(), facts };
     },
   }),
 
   get_asset_summary: defineCopilotTool({
     name: "get_asset_summary",
-    description: "Get asset metadata and operational condition.",
+    description: "Get asset metadata and operational condition by asset ID or asset number.",
     argsSchema: z.object({
       assetId: z.string().trim().min(1).max(50),
     }).strict(),
     requires: ["asset.read"],
     readOnly: true,
     link: (id) => (id ? `/assets/${id}` : "/assets"),
-    async run(_actor, args, _ctx) {
-      return {
-        status: "OK",
-        facts: [
-          {
-            id: "T.f1",
-            label: "asset_status",
-            value: "Asset operational and in active service inventory",
-            ref: { type: "Asset", id: args.assetId, label: "Asset" },
-            basis: "RECORDED",
-          },
-        ],
-      };
+    async run(actor, args, _ctx) {
+      const isOid = mongoose.Types.ObjectId.isValid(args.assetId);
+      const asset = await Asset.findOne(
+        isOid ? { _id: args.assetId } : { assetNo: args.assetId.toUpperCase() },
+      ).lean();
+
+      if (!asset || !canAccessAgency(actor, asset.agencyId)) {
+        return { status: "NOT_FOUND", facts: [{ id: "T.f1", label: "error", value: "Asset not found or outside agency scope" }] };
+      }
+
+      const facts: CopilotFact[] = [
+        {
+          id: "T.f1",
+          label: "asset_status",
+          value: `${asset.assetNo || asset._id.toString()}: ${asset.name} (${asset.assetType}, status: ${asset.operationalStatus}, condition: ${asset.condition})`,
+          ref: { type: "Asset", id: asset._id.toString(), label: asset.assetNo || asset.name },
+          basis: "RECORDED",
+        },
+      ];
+      if (asset.nextMaintenanceAt) {
+        facts.push({
+          id: "T.f2",
+          label: "next_maintenance",
+          value: new Date(asset.nextMaintenanceAt).toISOString().slice(0, 10),
+          asOf: new Date(asset.nextMaintenanceAt).toISOString(),
+          ref: { type: "Asset", id: asset._id.toString(), label: asset.assetNo || asset.name },
+          basis: "RECORDED",
+        });
+      }
+      return { status: "OK", primaryRecordId: asset._id.toString(), facts };
     },
   }),
 
@@ -593,19 +768,48 @@ export const COPILOT_TOOLS: Record<string, CopilotToolDefinition<Record<string, 
     }).strict(),
     requires: ["asset.read"],
     readOnly: true,
-    link: () => "/assets",
-    async run(_actor, _args, _ctx) {
-      return {
-        status: "OK",
-        facts: [
-          {
-            id: "T.f1",
-            label: "asset_list",
-            value: "No assets currently overdue for critical maintenance",
-            basis: "RECORDED",
-          },
-        ],
-      };
+    link: (id) => (id ? `/assets/${id}` : "/assets"),
+    async run(actor, args, _ctx) {
+      const query: mongoose.FilterQuery<Record<string, unknown>> = {};
+      if (actor.roleKey !== "SUPER_ADMIN") {
+        if (!actor.agencyId || !mongoose.Types.ObjectId.isValid(actor.agencyId)) {
+          return { status: "OK", facts: [{ id: "T.f1", label: "asset_list", value: "No assets found in agency scope." }] };
+        }
+        query.agencyId = new mongoose.Types.ObjectId(actor.agencyId);
+      }
+      const now = new Date();
+      if (args.filter === "overdueMaintenance") {
+        query.nextMaintenanceAt = { $lt: now };
+      } else {
+        query.$or = [
+          { condition: { $in: ["POOR", "CRITICAL"] } },
+          { nextMaintenanceAt: { $lt: now } },
+        ];
+      }
+
+      const assets = await Asset.find(query).sort({ nextMaintenanceAt: 1 }).limit(8).lean();
+      if (assets.length === 0) {
+        return {
+          status: "OK",
+          facts: [
+            {
+              id: "T.f1",
+              label: "asset_list",
+              value: "No assets currently overdue for critical maintenance",
+              basis: "RECORDED",
+            },
+          ],
+        };
+      }
+
+      const facts: CopilotFact[] = assets.map((a, idx) => ({
+        id: `T.f${idx + 1}`,
+        label: "asset_attention",
+        value: `${a.assetNo || a._id.toString()}: ${a.name} (${a.assetType}, condition: ${a.condition}, status: ${a.operationalStatus})`,
+        ref: { type: "Asset", id: a._id.toString(), label: a.assetNo || a.name },
+        basis: "RECORDED",
+      }));
+      return { status: "OK", facts };
     },
   }),
 
@@ -626,7 +830,10 @@ export const COPILOT_TOOLS: Record<string, CopilotToolDefinition<Record<string, 
       }
       const pattern = escapeRegex(args.q);
       const query: mongoose.FilterQuery<Record<string, unknown>> = {
-        title: { $regex: pattern, $options: "i" },
+        $or: [
+          { title: { $regex: pattern, $options: "i" } },
+          { docNo: { $regex: pattern, $options: "i" } },
+        ],
         deletedAt: null,
       };
       if (agencyId && mongoose.Types.ObjectId.isValid(agencyId)) {
@@ -667,7 +874,7 @@ export const COPILOT_TOOLS: Record<string, CopilotToolDefinition<Record<string, 
     }).strict(),
     requires: ["document.ask"],
     readOnly: true,
-    link: () => "/documents/ai",
+    link: (id) => (id ? `/documents/${id}` : "/documents/ai"),
     async run(actor, args, ctx) {
       try {
         const result = await askQuestion(
@@ -686,6 +893,7 @@ export const COPILOT_TOOLS: Record<string, CopilotToolDefinition<Record<string, 
         );
 
         const answerText = result.interaction?.answer?.text || "No relevant document passages verified.";
+        const firstCite = result.interaction?.citations?.[0];
         return {
           status: "OK",
           facts: [
@@ -693,6 +901,7 @@ export const COPILOT_TOOLS: Record<string, CopilotToolDefinition<Record<string, 
               id: "T.f1",
               label: "DOC_ANSWER",
               value: answerText,
+              ...(firstCite?.documentId ? { ref: { type: "Document", id: String(firstCite.documentId), label: firstCite.title || firstCite.docNo || "Document" } } : {}),
               basis: "VERIFIED",
             },
           ],

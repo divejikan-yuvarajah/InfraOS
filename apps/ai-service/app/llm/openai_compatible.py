@@ -36,6 +36,10 @@ def _strip_fences(raw: str) -> str:
     return s
 
 
+class _FormatRejectedError(Exception):
+    """Internal signal that response_format was rejected with 400/422 by the provider."""
+
+
 class LlmClient:
     def __init__(self, s: Settings, client: httpx.AsyncClient | None = None, sleep=asyncio.sleep) -> None:  # noqa: ANN001
         self.s = s
@@ -80,7 +84,7 @@ class LlmClient:
                     if "context" in text and ("length" in text or "maximum" in text):
                         raise ApiError("LLM_CONTEXT_TOO_LONG")
                     if r.status_code in (400, 422) and "response_format" in body:
-                        raise ApiError("LLM_FORMAT_REJECTED")
+                        raise _FormatRejectedError()
                     raise ApiError("LLM_UNAVAILABLE")
             if last == "LLM_TIMEOUT":
                 break  # a timed-out generation is not retried; the caller falls back
@@ -112,11 +116,12 @@ class LlmClient:
                         data = await self._post(payload, timeout)
                         mode = cur_mode
                         break
-                    except ApiError as exc:
-                        if exc.code == "LLM_FORMAT_REJECTED" and fmt_idx + 1 < len(formats):
+                    except _FormatRejectedError:
+                        if fmt_idx + 1 < len(formats):
+                            log_event("llm_format_downgrade", from_mode=cur_mode, next_mode=formats[fmt_idx + 1][0], model=model)
                             fmt_idx += 1
                             continue
-                        raise ApiError("LLM_UNAVAILABLE") if exc.code == "LLM_FORMAT_REJECTED" else exc
+                        raise ApiError("LLM_UNAVAILABLE") from None
                 assert data is not None
                 usage = data.get("usage") or {}
                 tin += int(usage.get("prompt_tokens") or 0)
