@@ -6,9 +6,13 @@ import { AiUsageDaily } from "./usage-daily.model.js";
 
 export type LiteFeatureStatus = "available" | "degraded" | "unavailable" | "disabled";
 
+/** Why a feature is "unavailable". Additive: older clients ignore it. */
+export type AiUnavailableReason = "model_not_configured" | "daily_request_limit" | "token_budget";
+
 export type AiStatusLite = {
   features: Record<AiFeatureKey, LiteFeatureStatus>;
   overall: "available" | "degraded" | "unavailable";
+  reasons?: Partial<Record<AiFeatureKey, AiUnavailableReason>>;
   timestamp: string;
 };
 
@@ -17,6 +21,7 @@ export async function getAiStatusLite(agencyId?: string): Promise<AiStatusLite> 
   const today = colomboDayString();
 
   const statuses: Partial<Record<AiFeatureKey, LiteFeatureStatus>> = {};
+  const reasons: Partial<Record<AiFeatureKey, AiUnavailableReason>> = {};
 
   // Load rollups for today
   const rollups = await AiUsageDaily.find({
@@ -36,6 +41,7 @@ export async function getAiStatusLite(agencyId?: string): Promise<AiStatusLite> 
     const model = resolveModelForTier(tier, settings);
     if (!model) {
       statuses[feature] = "unavailable";
+      reasons[feature] = "model_not_configured";
       continue;
     }
 
@@ -48,6 +54,7 @@ export async function getAiStatusLite(agencyId?: string): Promise<AiStatusLite> 
 
     if (requestsUsed >= agencyLimit) {
       statuses[feature] = "unavailable";
+      reasons[feature] = "daily_request_limit";
       continue;
     }
 
@@ -68,6 +75,7 @@ export async function getAiStatusLite(agencyId?: string): Promise<AiStatusLite> 
 
     if (tokensUsed >= tierBudget) {
       statuses[feature] = "unavailable";
+      reasons[feature] = "token_budget";
       continue;
     }
 
@@ -91,6 +99,7 @@ export async function getAiStatusLite(agencyId?: string): Promise<AiStatusLite> 
   return {
     features: statuses as Record<AiFeatureKey, LiteFeatureStatus>,
     overall,
+    reasons,
     timestamp: new Date().toISOString(),
   };
 }

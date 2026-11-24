@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { analyzeSchedules, colomboDay, type ScheduleSide } from "../src/modules/roadsync/schedule.analysis.js";
-import { analyzeSpatial } from "../src/modules/roadsync/spatial.analysis.js";
+import { analyzeSpatial, simplifyForTransport } from "../src/modules/roadsync/spatial.analysis.js";
 import { pairRef } from "../src/modules/roadsync/detection.service.js";
 
 const line = (coordinates: number[][]) => ({ type: "LineString", coordinates });
@@ -83,5 +83,10 @@ describe("pair reference", () => {
   it("orders work request pairs canonically", () => {
     expect(pairRef("b", "a")).toEqual({ a: "a", b: "b", swapped: true });
     expect(pairRef("a", "b")).toEqual({ a: "a", b: "b", swapped: false });
+  });
+
+  it("simplifyForTransport tolerates a missing geometry (regression: one geometry-less project 503'd the national conflict list)", () => {
+    expect(simplifyForTransport(undefined as never)).toBeUndefined();
+    expect(simplifyForTransport({ type: "Point", coordinates: [79.86, 6.93] })).toEqual({ type: "Point", coordinates: [79.86, 6.93] });
   });
 });

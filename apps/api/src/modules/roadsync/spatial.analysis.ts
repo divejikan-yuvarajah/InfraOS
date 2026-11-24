@@ -237,7 +237,8 @@ export function searchPolygon(g: AnyGeometry, meters: number): { type: "Polygon"
 
 /** Douglas-Peucker thinning for transport; keeps the shape within about `toleranceMeters`. */
 export function simplifyForTransport<G extends AnyGeometry>(g: G, toleranceMeters = 1): G {
-  if (g.type === "Point") return g;
+  // A related project/work item may have no geometry yet; one such record must not fail a whole list.
+  if (!g || g.type === "Point") return g;
   const proj = projection(meanLat(g));
   const thin = (pts: Pos[], closed: boolean): Pos[] => {
     if (pts.length <= (closed ? 4 : 2)) return pts;

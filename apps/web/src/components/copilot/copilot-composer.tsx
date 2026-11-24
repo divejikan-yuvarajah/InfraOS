@@ -14,6 +14,7 @@ export function CopilotComposer({
   value,
   maxLength,
   featureStatus,
+  notConfigured,
   busy,
   rateLimitUntilMs,
   budgetResetAt,
@@ -28,6 +29,7 @@ export function CopilotComposer({
   value: string;
   maxLength: number;
   featureStatus: LiteFeatureStatus;
+  notConfigured: boolean;
   busy: boolean;
   rateLimitUntilMs: number | null;
   budgetResetAt: string | null;
@@ -68,7 +70,9 @@ export function CopilotComposer({
     featureStatus === "disabled"
       ? copy.composer.disabledByAdmin
       : featureStatus === "unavailable"
-        ? copy.composer.disabledUnavailable
+        ? notConfigured
+          ? copy.composer.disabledNotConfigured
+          : copy.composer.disabledUnavailable
         : rateLimitedSeconds > 0
           ? fillTemplate(copy.composer.disabledRateLimited, {
               countdown: formatCountdownSeconds(rateLimitedSeconds, aiCopy),

@@ -5,6 +5,7 @@ import { z } from "zod";
 
 import { env } from "../../config/env.js";
 import { failure, success } from "../../shared/http/envelope.js";
+import { logger } from "../../shared/logger.js";
 import { isJsonContentType } from "../identity/auth/auth.security.js";
 import { requireAuthenticated, type AuthenticatedActor } from "../identity/auth/require-authenticated.js";
 import { requirePermission } from "../identity/authorization/require-permission.js";
@@ -91,6 +92,8 @@ function handle(permission: "roadsync.conflict.read", fn: (c: Ctx) => Promise<vo
       await fn({ req, res, actor, w: await whoIs(actor) });
     } catch (error) {
       if (error instanceof FlowControl) return void res.status(error.status).json(failure(error.code, "request could not be completed", req.requestId));
+      // The client only ever sees the generic 503; the cause is recorded server-side so it can be diagnosed.
+      logger.error({ err: error, requestId: req.requestId, path: req.path }, "roadsync conflict handler failed");
       res.status(503).json(failure("SERVICE_UNAVAILABLE", "service is temporarily unavailable", req.requestId));
     }
   };

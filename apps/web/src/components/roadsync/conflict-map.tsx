@@ -2,18 +2,14 @@
 
 import "maplibre-gl/dist/maplibre-gl.css";
 
-import type { GeoJSONSource, Map as MlMap, StyleSpecification } from "maplibre-gl";
+import type { GeoJSONSource, Map as MlMap } from "maplibre-gl";
 import { useEffect, useRef, useState } from "react";
 
+import { resolveMapStyle } from "@/lib/inframap/map-style";
 import { BAND_COLOR } from "@/lib/roadsync/assessment";
 
 type Feature = { type: "Feature"; geometry: { type: string; coordinates: unknown }; properties: Record<string, unknown> };
 
-const STYLE: StyleSpecification = {
-  version: 8,
-  sources: { osm: { type: "raster", tiles: ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"], tileSize: 256, maxzoom: 19, attribution: "© OpenStreetMap contributors" } },
-  layers: [{ id: "osm", type: "raster", source: "osm" }],
-};
 const SRI_LANKA: [[number, number], [number, number]] = [[79.4, 5.8], [82.1, 9.95]];
 const band = ["match", ["get", "band"], "info", BAND_COLOR.info, "low", BAND_COLOR.low, "medium", BAND_COLOR.medium, "high", BAND_COLOR.high, "critical", BAND_COLOR.critical, "#64748b"] as never;
 
@@ -46,7 +42,7 @@ export function ConflictMap({ features, mode, onSelect, label, selectedId }: { f
         if (cancelled || !box.current) return;
         // The bundler moves maplibre into a chunk, so point it at its own self-contained worker file (same as the work map).
         if (!maplibre.getWorkerUrl()) maplibre.setWorkerUrl(new URL("maplibre-gl/dist/maplibre-gl-worker.mjs", import.meta.url).href);
-        const map = new maplibre.Map({ container: box.current, style: STYLE, bounds: SRI_LANKA, fitBoundsOptions: { padding: 20 }, attributionControl: { compact: true } });
+        const map = new maplibre.Map({ container: box.current, style: resolveMapStyle(), bounds: SRI_LANKA, fitBoundsOptions: { padding: 20 }, attributionControl: { compact: true } });
         mapRef.current = map;
         map.addControl(new maplibre.NavigationControl({ showCompass: false }), "top-right");
         map.on("load", () => {

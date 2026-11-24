@@ -7,6 +7,8 @@ export type LiteFeatureStatus = "available" | "degraded" | "unavailable" | "disa
 export type AiStatusLiteDto = {
   features: Record<AiFeatureKey, LiteFeatureStatus>;
   overall: "available" | "degraded" | "unavailable";
+  /** Why a feature is "unavailable" (additive; absent on older API builds). */
+  reasons?: Partial<Record<AiFeatureKey, "model_not_configured" | "daily_request_limit" | "token_budget">>;
   timestamp: string;
 };
 

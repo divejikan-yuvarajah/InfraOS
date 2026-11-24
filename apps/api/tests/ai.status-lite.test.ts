@@ -198,6 +198,20 @@ describe("AI Failure Mapping & Lite Status (Phase 10 Steps 126-127)", () => {
 
       const exhausted = await getAiStatusLite();
       expect(exhausted.features.copilot).toBe("unavailable");
+      expect(exhausted.reasons?.copilot).toBe("daily_request_limit");
+    });
+
+    it("explains an unavailable feature when no chat model is configured", async () => {
+      await AiSettings.create({
+        scope: "PLATFORM",
+        featureToggles: { copilotEnabled: true },
+        modelCatalog: {},
+      });
+
+      const status = await getAiStatusLite();
+      // Fail-closed: no model id is ever invented. The reason lets the UI say "not configured".
+      expect(status.features.copilot).toBe("unavailable");
+      expect(status.reasons?.copilot).toBe("model_not_configured");
     });
   });
 
