@@ -13,7 +13,6 @@ import {
   MetricCard,
   type AlignmentTimelineItem,
 } from "@/components/common/civic-atlas-primitives";
-import { WorkspaceContext } from "@/components/projects/project-record-nav";
 import { ProjectStatusBadge } from "@/components/common/status-badge";
 import { ApiError } from "@/lib/api/client";
 import { getAuthEpoch, getMemoryAccessToken, getMemorySession, subscribeAuth } from "@/lib/auth/state";
@@ -149,7 +148,7 @@ export function ProjectReviewClient({ id }: { id: string }) {
   });
 
   return (
-    <StaffWorkspaceShell title={copy.reviewTitle} description={project?.projectCode} wide context={<WorkspaceContext locale={locale} current={copy.reviewTitle} projects />}>
+    <StaffWorkspaceShell title={copy.reviewTitle} description={project?.projectCode} wide hidePageHeader><div className="max-w-[1600px] mx-auto px-4 sm:px-gutter-desktop py-4 pb-10">
       {locale !== "en" ? <p className="spp-small mb-3">{copy.nativeReview}</p> : null}
       {review.isLoading ? <p role="status" className="cac-card p-4 text-sm text-slate-600">Loading review record…</p> : null}
       {error ? <div className="auth-access-banner error mb-4" role="alert"><p>{error}</p></div> : null}
@@ -279,6 +278,6 @@ export function ProjectReviewClient({ id }: { id: string }) {
           </dialog>
         </div>
       ) : null}
-    </StaffWorkspaceShell>
+    </div></StaffWorkspaceShell>
   );
 }

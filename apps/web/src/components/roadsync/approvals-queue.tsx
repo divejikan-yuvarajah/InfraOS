@@ -40,17 +40,42 @@ export function ApprovalsQueue() {
 
   return (
     <StaffWorkspaceShell title={copy.approvals.title} description={copy.approvals.subtitle} wide>
-      <div className="rz rz-page">
-        <p className="rs-help">{copy.demoNote}</p>
-        <div className="rz-filters">
-          <div className="rz-chipset" role="tablist" aria-label={a.title}>{TABS.map((t) => <button key={t} role="tab" type="button" aria-selected={tab === t} className="rz-fchip" onClick={() => { setTab(t); setPage(1); }}>{a.tabs[t]}</button>)}</div>
-          <div className="rs-field"><label className="rs-label" htmlFor="rz-q-step">{a.step}</label>
-            <select id="rz-q-step" className="rs-input" value={step} onChange={(e) => { setStep(e.target.value); setPage(1); }}><option value="">{a.allSteps}</option>{STEPS.map((s) => <option key={s} value={s}>{copy.steps[s]}</option>)}</select></div>
-          <label className="rz-check"><input type="checkbox" checked={overdue} onChange={(e) => { setOverdue(e.target.checked); setPage(1); }} />{a.overdueOnly}</label>
+      <div className="rz rz-page space-y-4">
+        <div className="cac-card p-4 space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-2.5">
+            <div className="rz-chipset" role="tablist" aria-label={a.title}>
+              {TABS.map((t) => (
+                <button
+                  key={t}
+                  role="tab"
+                  type="button"
+                  aria-selected={tab === t}
+                  className="rz-fchip"
+                  onClick={() => { setTab(t); setPage(1); }}
+                >
+                  {a.tabs[t]}
+                </button>
+              ))}
+            </div>
+            <p className="rs-help" style={{ margin: 0 }}>{copy.demoNote}</p>
+          </div>
+          <div className="flex flex-wrap items-end gap-4">
+            <div className="rs-field min-w-[220px]">
+              <label className="rs-label" htmlFor="rz-q-step">{a.step}</label>
+              <select id="rz-q-step" className="rs-input" value={step} onChange={(e) => { setStep(e.target.value); setPage(1); }}>
+                <option value="">{a.allSteps}</option>
+                {STEPS.map((s) => <option key={s} value={s}>{copy.steps[s]}</option>)}
+              </select>
+            </div>
+            <label className="rz-check pb-2">
+              <input type="checkbox" checked={overdue} onChange={(e) => { setOverdue(e.target.checked); setPage(1); }} />
+              {a.overdueOnly}
+            </label>
+          </div>
         </div>
         {q.isPending ? <p className="rs-help" role="status">{copy.loading}</p>
-          : q.isError ? <div className="rz-state" role="alert"><p>{status === 403 ? copy.forbidden : copy.error}</p><button type="button" className="rs-btn" onClick={() => void q.refetch()}>{copy.retry}</button></div>
-          : q.data.items.length === 0 ? <div className="rz-state"><InboxIcon aria-hidden="true" /><p>{tab === "mine" && !step && !overdue ? a.empty : a.emptyOther}</p></div>
+          : q.isError ? <div className="cac-card rz-state p-8" role="alert"><p>{status === 403 ? copy.forbidden : copy.error}</p><button type="button" className="rs-btn" onClick={() => void q.refetch()}>{copy.retry}</button></div>
+          : q.data.items.length === 0 ? <div className="cac-card rz-state p-10"><InboxIcon aria-hidden="true" className="size-7 text-slate-400" /><p className="font-medium text-slate-700">{tab === "mine" && !step && !overdue ? a.empty : a.emptyOther}</p></div>
           : (
             <ul className="rz-list">
               {q.data.items.map((r) => (

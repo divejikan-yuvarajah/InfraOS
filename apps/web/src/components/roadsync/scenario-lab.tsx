@@ -131,7 +131,7 @@ export function ScenarioLab({ id, prefill }: { id: string; prefill?: Handoff | n
 
 function Shell({ copy, id, no, children }: { copy: SimCopy; id: string; no?: string; children: React.ReactNode }) {
   return (
-    <StaffWorkspaceShell title={copy.title} description={copy.subtitle} wide>
+    <StaffWorkspaceShell title={copy.title} description={copy.subtitle} wide hidePageHeader><div className="max-w-[1600px] mx-auto px-4 sm:px-gutter-desktop py-4 pb-10">
       <CommandHeader
         eyebrow={`RoadSync · Scenario Lab${no ? ` · ${no}` : ""}`}
         title={copy.title}
@@ -139,7 +139,7 @@ function Shell({ copy, id, no, children }: { copy: SimCopy; id: string; no?: str
         sourceKind="demo"
         sourceLabel="Simulation sandbox"
         secondaryActions={
-          <Link className="inline-flex min-h-[44px] items-center rounded-lg border border-white/25 px-3.5 py-2 text-xs font-semibold text-white hover:bg-white/10" href={`/roadsync/conflicts/${id}?tab=resolution`}>
+          <Link className="cac-header-btn" href={`/roadsync/conflicts/${id}?tab=resolution`}>
             {copy.back}{no ? ` ${no}` : ""}
           </Link>
         }
@@ -148,7 +148,7 @@ function Shell({ copy, id, no, children }: { copy: SimCopy; id: string; no?: str
         <p className="rs-help">{copy.demoNote}</p>
         {children}
       </div>
-    </StaffWorkspaceShell>
+    </div></StaffWorkspaceShell>
   );
 }
 

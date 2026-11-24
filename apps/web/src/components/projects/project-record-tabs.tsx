@@ -50,7 +50,7 @@ export function ProjectRecordTabs({ id, roleKey, copy }: { id: string; roleKey: 
   return (
     <nav
       aria-label="Project sections"
-      className="spp-tabs bg-surface-container-lowest border border-outline-variant/30 rounded shadow-2xs px-3 mb-5 sticky top-0 z-20"
+      className="spp-tabs bg-surface-container-lowest border border-outline-variant/30 rounded shadow-2xs px-3 mb-3.5 sticky top-0 z-20"
     >
       <ul className="flex items-center gap-1 overflow-x-auto no-scrollbar">
         {tabs.map((tab) => {
@@ -64,8 +64,8 @@ export function ProjectRecordTabs({ id, roleKey, copy }: { id: string; roleKey: 
                 href={href}
                 className={
                   current
-                    ? "spp-tab is-current inline-flex items-center gap-2 px-3.5 py-3 border-b-[3px] border-secondary text-xs font-bold text-on-surface bg-surface-container-low/40 whitespace-nowrap transition-colors"
-                    : "spp-tab inline-flex items-center gap-2 px-3.5 py-3 border-b-[3px] border-transparent text-xs font-medium text-on-surface-variant hover:text-on-surface hover:border-outline-variant/60 whitespace-nowrap transition-colors"
+                    ? "spp-tab is-current inline-flex items-center gap-1.5 px-3 py-2 border-b-[3px] border-secondary text-xs font-bold text-on-surface bg-surface-container-low/40 whitespace-nowrap transition-colors"
+                    : "spp-tab inline-flex items-center gap-1.5 px-3 py-2 border-b-[3px] border-transparent text-xs font-medium text-on-surface-variant hover:text-on-surface hover:border-outline-variant/60 whitespace-nowrap transition-colors"
                 }
                 aria-current={current ? "page" : undefined}
               >

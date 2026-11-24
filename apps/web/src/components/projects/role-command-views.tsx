@@ -225,7 +225,7 @@ export function PlatformCommandView({
   const isLiveUsers = typeof usersQ.data?.total === "number";
 
   return (
-    <div className="max-w-[1600px] mx-auto w-full px-4 sm:px-gutter-desktop py-6 pb-12 flex flex-col gap-space-lg">
+    <div className="max-w-[1600px] mx-auto w-full px-4 sm:px-gutter-desktop py-4 pb-10 flex flex-col gap-space-md">
       <CommandHeader
         eyebrow="PLATFORM GOVERNANCE COMMAND"
         title="Platform Command & System Governance"
@@ -791,7 +791,7 @@ export function GovAdminCommandView({
   const gatewayItems = reviewsQ.data?.projects ?? data.reviews?.items ?? [];
 
   return (
-    <div className="px-4 sm:px-gutter-desktop py-6 pb-12 flex flex-col gap-space-lg max-w-[1600px] mx-auto w-full">
+    <div className="px-4 sm:px-gutter-desktop py-4 pb-10 flex flex-col gap-space-md max-w-[1600px] mx-auto w-full">
       <CommandHeader
         eyebrow="GOVERNMENT OVERSIGHT COMMAND • ROLE: GOV_ADMIN"
         title="Government Infrastructure Overview"
@@ -824,9 +824,9 @@ export function GovAdminCommandView({
               showRulerLabels={false}
             />
           </div>
-          <div className="flex items-center gap-2 text-xs text-slate-300 flex-wrap lg:justify-end">
+          <div className="flex items-center gap-2 text-xs text-slate-600 flex-wrap lg:justify-end">
             <span className="w-2 h-2 rounded-full bg-[#ff5b00]" />
-            <span className="font-semibold text-white">Western Province Inter-Agency Infrastructure Oversight</span>
+            <span className="font-semibold text-slate-900">Western Province Inter-Agency Infrastructure Oversight</span>
             <span>•</span>
             <span>Ministry of Public Works &amp; Urban Development</span>
           </div>
@@ -1253,7 +1253,7 @@ export function AgencyOfficerCommandView({
 
   return (
     <div className="flex flex-col w-full">
-      <div className="max-w-[1600px] mx-auto w-full px-4 sm:px-gutter-desktop pt-6">
+      <div className="max-w-[1600px] mx-auto w-full px-4 sm:px-gutter-desktop pt-4">
         <CommandHeader
           eyebrow={`AGENCY OPERATIONAL COMMAND • ${sessionUser?.agencyId ?? "ROAD DEVELOPMENT AUTHORITY (RDA)"}`}
           title="Agency Operations Command"
@@ -1585,7 +1585,7 @@ export function ProjectManagerCommandView({
 
   return (
     <div className="flex flex-col w-full">
-      <div className="max-w-[1600px] mx-auto w-full px-4 sm:px-gutter-desktop pt-6 flex flex-col gap-space-md">
+      <div className="max-w-[1600px] mx-auto w-full px-4 sm:px-gutter-desktop pt-4 flex flex-col gap-space-sm">
         <CommandHeader
           eyebrow="PERSONAL WORKSPACE • PROJECT OPERATIONS COMMAND"
           title="My Project Command & Assigned Deliverables"
@@ -2046,7 +2046,7 @@ export function InspectorCommandView({
 
   return (
     <div className="flex flex-col w-full">
-      <div className="max-w-[1600px] mx-auto w-full px-4 sm:px-gutter-desktop pt-6">
+      <div className="max-w-[1600px] mx-auto w-full px-4 sm:px-gutter-desktop pt-4">
         <CommandHeader
           eyebrow="FIELD OPERATIONS COMMAND • QUALITY ASSURANCE & STATUTORY VERIFICATION"
           title="Field Inspection Command"
@@ -2081,19 +2081,19 @@ export function InspectorCommandView({
             </Link>
           }
         >
-          <div className="flex items-center gap-4 flex-wrap text-xs text-slate-300">
+          <div className="flex items-center gap-4 flex-wrap text-xs text-slate-600">
             <div className="flex items-center gap-2">
-              <span className="material-symbols-outlined text-[#ffb597] text-[18px]">verified_user</span>
-              <span className="font-semibold text-white">
+              <span className="material-symbols-outlined text-[#a83900] text-[18px]">verified_user</span>
+              <span className="font-semibold text-slate-900">
                 {sessionUser?.displayName || "Eng. Gamini Mendis, CEng MIE(SL)"}
               </span>
-              <span className="text-slate-300">(NBRO / RDA QA Directorate)</span>
+              <span className="text-slate-600">(NBRO / RDA QA Directorate)</span>
             </div>
-            <span className="text-white/25">•</span>
-            <div className="flex items-center gap-1.5 font-mono text-[11px] text-slate-200 bg-white/10 px-2.5 py-1 rounded border border-white/15">
-              <span className="w-2 h-2 rounded-full bg-emerald-400" />
+            <span className="text-slate-300">•</span>
+            <div className="flex items-center gap-1.5 font-mono text-[11px] text-slate-700 bg-slate-100 px-2.5 py-1 rounded border border-slate-200">
+              <span className="w-2 h-2 rounded-full bg-emerald-500" />
               <span>EPSG:5234 [6.9271° N, 79.8612° E]</span>
-              <span className="text-[#ffb597] font-bold">
+              <span className="text-[#a83900] font-bold">
                 {cacheSynced ? "CACHE VERIFIED (100%)" : "CACHE READY (98MB)"}
               </span>
             </div>
@@ -2456,7 +2456,7 @@ export function ContractorCommandView({
   };
 
   return (
-    <div className="px-4 sm:px-gutter-desktop py-6 pb-12 flex flex-col gap-space-lg max-w-[1600px] mx-auto w-full">
+    <div className="px-4 sm:px-gutter-desktop py-4 pb-10 flex flex-col gap-space-md max-w-[1600px] mx-auto w-full">
       <CommandHeader
         eyebrow="CONTRACTOR OPERATIONS • CONTRACT: RDA-WP-2026-88"
         title="Contractor Execution Command & Field Works Center"
@@ -2483,9 +2483,9 @@ export function ContractorCommandView({
           </button>
         }
       >
-        <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-300">
+        <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-600">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-white/10 font-mono text-[11px] font-bold text-[#ffb597] tracking-wider uppercase">
+            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-orange-50 border border-orange-200 font-mono text-[11px] font-bold text-[#a83900] tracking-wider uppercase">
               LK-CENTRAL-01
             </span>
             <span>Prime EPC Lead: Maga Engineering PLC · Joint Venture Access Engineering</span>
