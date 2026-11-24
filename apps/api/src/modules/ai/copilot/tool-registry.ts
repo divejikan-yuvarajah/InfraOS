@@ -36,9 +36,9 @@ function canAccessAgency(actor: AuthenticatedActor, targetAgencyId?: string | mo
 export const COPILOT_TOOLS: Record<string, CopilotToolDefinition<Record<string, unknown>>> = {
   list_projects: defineCopilotTool({
     name: "list_projects",
-    description: "List accessible infrastructure projects in the user's agency (or across agencies for SUPER_ADMIN), optionally filtered by status (e.g. ACTIVE, DRAFT, SUBMITTED, UNDER_REVIEW, APPROVED, ON_HOLD, COMPLETED) or district.",
+    description: "List accessible infrastructure projects in the user's agency (or across all agencies for SUPER_ADMIN), optionally filtered by status (e.g. ACTIVE, DELAYED, APPROVED, ON_HOLD, SUBMITTED, DRAFT, COMPLETED) or district.",
     argsSchema: z.object({
-      status: z.enum(["DRAFT", "SUBMITTED", "UNDER_REVIEW", "APPROVED", "ACTIVE", "ON_HOLD", "COMPLETED", "REJECTED", "CANCELLED"]).optional(),
+      status: z.enum(["DRAFT", "SUBMITTED", "UNDER_REVIEW", "APPROVED", "ACTIVE", "ON_HOLD", "DELAYED", "COMPLETED", "REJECTED", "CANCELLED"]).optional(),
       district: z.string().trim().max(80).optional(),
       agencyId: z.string().optional(),
       limit: z.number().int().min(1).max(15).default(10),
@@ -47,17 +47,24 @@ export const COPILOT_TOOLS: Record<string, CopilotToolDefinition<Record<string, 
     readOnly: true,
     link: (id) => (id ? `/projects/${id}/overview` : "/projects"),
     async run(actor, args, _ctx) {
-      const agencyId = actor.roleKey === "SUPER_ADMIN" ? (args.agencyId || actor.agencyId) : actor.agencyId;
+      const agencyId = actor.roleKey === "SUPER_ADMIN" ? args.agencyId : actor.agencyId;
       if (actor.roleKey !== "SUPER_ADMIN" && (!agencyId || !mongoose.Types.ObjectId.isValid(agencyId))) {
-        return { status: "OK", facts: [{ id: "T.f1", label: "projects_list", value: "No accessible projects found in agency scope." }] };
+        return {
+          status: "OK",
+          facts: [{ id: "T.f1", label: "projects_list", value: "No accessible projects found in agency scope.", ref: { type: "Project", id: "", label: "Projects Directory" }, basis: "RECORDED" }],
+        };
       }
-      const query: mongoose.FilterQuery<Record<string, unknown>> = {};
+      const baseQuery: mongoose.FilterQuery<Record<string, unknown>> = {};
       if (agencyId) {
         if (!mongoose.Types.ObjectId.isValid(agencyId)) {
-          return { status: "OK", facts: [{ id: "T.f1", label: "projects_list", value: "No accessible projects found in agency scope." }] };
+          return {
+            status: "OK",
+            facts: [{ id: "T.f1", label: "projects_list", value: "No accessible projects found in agency scope.", ref: { type: "Project", id: "", label: "Projects Directory" }, basis: "RECORDED" }],
+          };
         }
-        query.agencyId = new mongoose.Types.ObjectId(agencyId);
+        baseQuery.agencyId = new mongoose.Types.ObjectId(agencyId);
       }
+      const query: mongoose.FilterQuery<Record<string, unknown>> = { ...baseQuery };
       if (args.status) query.status = args.status;
       if (args.district) query["location.district"] = { $regex: escapeRegex(args.district), $options: "i" };
 
@@ -72,7 +79,34 @@ export const COPILOT_TOOLS: Record<string, CopilotToolDefinition<Record<string, 
 
       if (projects.length === 0) {
         const label = args.status ? `${args.status} projects` : "projects";
-        return { status: "OK", facts: [{ id: "T.f1", label: "projects_list", value: `No ${label} found in scope.` }] };
+        const allInScope = args.status
+          ? await Project.find(baseQuery).sort({ updatedAt: -1 }).limit(8).select("_id projectCode title status physicalProgress riskLevel").lean()
+          : [];
+        if (allInScope.length > 0) {
+          const facts: CopilotFact[] = [
+            {
+              id: "T.f1",
+              label: "projects_count",
+              value: `0 ${args.status} projects found; ${allInScope.length} project(s) exist in other statuses in scope`,
+              ref: { type: "Project", id: "", label: "Projects Directory" },
+              basis: "RECORDED",
+            },
+          ];
+          allInScope.forEach((p, idx) => {
+            facts.push({
+              id: `T.f${idx + 2}`,
+              label: "project_summary_row",
+              value: `${p.projectCode}: ${p.title} (${p.status}, ${p.physicalProgress ?? 0}% reported progress${p.riskLevel ? `, risk: ${p.riskLevel}` : ""})`,
+              ref: { type: "Project", id: p._id.toString(), label: p.projectCode },
+              basis: "RECORDED",
+            });
+          });
+          return { status: "OK", facts };
+        }
+        return {
+          status: "OK",
+          facts: [{ id: "T.f1", label: "projects_list", value: `No ${label} found in scope.`, ref: { type: "Project", id: "", label: "Projects Directory" }, basis: "RECORDED" }],
+        };
       }
 
       const facts: CopilotFact[] = [
@@ -80,6 +114,7 @@ export const COPILOT_TOOLS: Record<string, CopilotToolDefinition<Record<string, 
           id: "T.f1",
           label: "projects_count",
           value: `${totalCount} ${args.status ? `${args.status} ` : ""}project(s) in scope (showing ${projects.length})`,
+          ref: { type: "Project", id: "", label: "Projects Directory" },
           basis: "RECORDED",
         },
       ];
@@ -111,7 +146,7 @@ export const COPILOT_TOOLS: Record<string, CopilotToolDefinition<Record<string, 
     readOnly: true,
     link: (id) => (id ? `/projects/${id}/overview` : "/projects"),
     async run(actor, args, _ctx) {
-      const agencyId = actor.roleKey === "SUPER_ADMIN" ? (args.agencyId || actor.agencyId) : actor.agencyId;
+      const agencyId = actor.roleKey === "SUPER_ADMIN" ? args.agencyId : actor.agencyId;
       if (actor.roleKey !== "SUPER_ADMIN" && (!agencyId || !mongoose.Types.ObjectId.isValid(agencyId))) {
         return { status: "OK", facts: [{ id: "T.f1", label: "search_results", value: `No projects found matching "${args.q || args.status || ""}"` }] };
       }
@@ -477,7 +512,7 @@ export const COPILOT_TOOLS: Record<string, CopilotToolDefinition<Record<string, 
     readOnly: true,
     link: (id) => (id ? `/projects/${id}/risk` : "/risk"),
     async run(actor, args, _ctx) {
-      const agencyId = actor.roleKey === "SUPER_ADMIN" ? (args.agencyId || actor.agencyId) : actor.agencyId;
+      const agencyId = actor.roleKey === "SUPER_ADMIN" ? args.agencyId : actor.agencyId;
       if (actor.roleKey !== "SUPER_ADMIN" && (!agencyId || !mongoose.Types.ObjectId.isValid(agencyId))) {
         return { status: "OK", facts: [{ id: "T.f1", label: "risky_projects", value: "No high or critical risk projects found in scope." }] };
       }
