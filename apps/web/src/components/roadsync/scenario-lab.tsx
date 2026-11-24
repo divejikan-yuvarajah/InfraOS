@@ -6,6 +6,7 @@ import { useState } from "react";
 import { AlertTriangleIcon, FlaskConicalIcon, Loader2Icon, PlusIcon, SaveIcon, Trash2Icon } from "lucide-react";
 
 import { StaffWorkspaceShell } from "@/components/auth/staff-workspace-shell";
+import { CommandHeader } from "@/components/common/civic-atlas-primitives";
 import { ApiError } from "@/lib/api/client";
 import { useWorkspaceLocale } from "@/lib/i18n/workspace-locale";
 import { BAND_COLOR, fmt } from "@/lib/roadsync/assessment";
@@ -131,9 +132,20 @@ export function ScenarioLab({ id, prefill }: { id: string; prefill?: Handoff | n
 function Shell({ copy, id, no, children }: { copy: SimCopy; id: string; no?: string; children: React.ReactNode }) {
   return (
     <StaffWorkspaceShell title={copy.title} description={copy.subtitle} wide>
+      <CommandHeader
+        eyebrow={`RoadSync · Scenario Lab${no ? ` · ${no}` : ""}`}
+        title={copy.title}
+        subtitle={copy.subtitle}
+        sourceKind="demo"
+        sourceLabel="Simulation sandbox"
+        secondaryActions={
+          <Link className="inline-flex min-h-[44px] items-center rounded-lg border border-white/25 px-3.5 py-2 text-xs font-semibold text-white hover:bg-white/10" href={`/roadsync/conflicts/${id}?tab=resolution`}>
+            {copy.back}{no ? ` ${no}` : ""}
+          </Link>
+        }
+      />
       <div className="rz sl">
         <p className="rs-help">{copy.demoNote}</p>
-        <div className="rz-actions"><Link className="rs-btn" href={`/roadsync/conflicts/${id}?tab=resolution`}>{copy.back}{no ? ` ${no}` : ""}</Link></div>
         {children}
       </div>
     </StaffWorkspaceShell>

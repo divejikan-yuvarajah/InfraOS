@@ -9,7 +9,7 @@ import { clampOpacity, layerFactor, OPACITY_PROPS, scaleOpacity } from "@/lib/in
 import { featureBounds, summarize, viewportBbox, type Bbox, type LayerData, type LayerKey, type MapFeature } from "@/lib/inframap/inframap";
 import type { ConflictEvidence } from "@/lib/inframap/inframap-api";
 import { ALL_INTERACTIVE_IDS, EMPTY_COLLECTION, ensureLayers, LAYER_BY_ID, LAYER_DEFS } from "@/lib/inframap/layer-registry";
-import { resolveMapStyle, SRI_LANKA_BOUNDS, SRI_LANKA_MAX_BOUNDS } from "@/lib/inframap/map-style";
+import { attachBasemapFallback, resolveMapStyle, SRI_LANKA_BOUNDS, SRI_LANKA_MAX_BOUNDS } from "@/lib/inframap/map-style";
 import { orderCandidates, type Candidate } from "@/lib/inframap/selection-priority";
 
 export type Selection = { layer: LayerKey; id: string };
@@ -98,14 +98,16 @@ export function InframapMap(props: Props) {
         // The bundler moves maplibre into a chunk, so point it at its own self-contained worker file.
         if (!ml.getWorkerUrl()) ml.setWorkerUrl(new URL("maplibre-gl/dist/maplibre-gl-worker.mjs", import.meta.url).href);
         const init = cb.current.initialView;
+        const initialStyle = resolveMapStyle("positron");
         const created = new ml.Map({
-          container: box.current, style: resolveMapStyle(), maxBounds: SRI_LANKA_MAX_BOUNDS,
+          container: box.current, style: initialStyle, maxBounds: SRI_LANKA_MAX_BOUNDS,
           ...(init ? { center: init.center, zoom: init.zoom } : { bounds: SRI_LANKA_BOUNDS, fitBoundsOptions: { padding: 20 } }),
           attributionControl: { compact: window.innerWidth < 640 },
           // Retina drawing is capped at 2x: a 3x phone gets no visible gain for twice the pixels.
           pixelRatio: Math.min(window.devicePixelRatio || 1, 2),
         });
         map = created;
+        attachBasemapFallback(created, initialStyle, { onFallback: (offline) => cb.current.onTilesFailed(offline) });
         observer = new ResizeObserver(() => created.resize());
         observer.observe(box.current);
         created.addControl(new ml.NavigationControl({ showCompass: false }), "top-right");

@@ -57,6 +57,9 @@ export function createAiClient(deps: AiClientDeps = {}) {
   const breaker = deps.breaker ?? new CircuitBreaker();
   const sleep = deps.sleep ?? ((ms: number) => new Promise<void>((r) => setTimeout(r, ms)));
 
+  /** Last time the AI service answered (any signed call or /health). Used to detect a cold, sleeping instance. */
+  let lastOkAt = 0;
+
   async function call<T>(method: "GET" | "POST", path: string, opts: { body?: string; form?: FormData; bodyHash: string; timeoutMs: number; schema: z.ZodType<T>; requestId?: string; authenticated?: boolean; signal?: AbortSignal }): Promise<T> {
     if (!cfg.baseUrl || !cfg.secret) throw new AiClientError("AI_SERVICE_UNAVAILABLE", true);
     if (breaker.isOpen) throw new AiClientError("AI_SERVICE_UNAVAILABLE", true, true);
@@ -102,6 +105,7 @@ export function createAiClient(deps: AiClientDeps = {}) {
       throw new AiClientError(code, retryable);
     }
     breaker.success();
+    lastOkAt = Date.now();
     const ok = opts.schema.safeParse(json);
     if (!ok.success) {
       logger.error({ path, requestId: rid }, "ai service response failed contract validation");
@@ -118,6 +122,8 @@ export function createAiClient(deps: AiClientDeps = {}) {
   return {
     breaker,
     get configured(): boolean { return cfg.configured; },
+    /** True when the service has not answered for 5 minutes (e.g. a free-tier instance that went to sleep). */
+    get isCold(): boolean { return Date.now() - lastOkAt > 5 * 60_000; },
 
     /** Unauthenticated liveness; also used to wake a sleeping free-tier instance. Does not touch the circuit breaker's open check. */
     async health(): Promise<boolean> {
@@ -127,6 +133,7 @@ export function createAiClient(deps: AiClientDeps = {}) {
         const timer = setTimeout(() => ctrl.abort(), cfg.timeoutsMs.health);
         try {
           const r = await doFetch(`${cfg.baseUrl}/health`, { method: "GET", signal: ctrl.signal, redirect: "error" });
+          if (r.ok) lastOkAt = Date.now();
           return r.ok;
         } finally { clearTimeout(timer); }
       } catch { return false; }

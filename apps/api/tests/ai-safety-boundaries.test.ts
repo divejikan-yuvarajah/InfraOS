@@ -441,6 +441,7 @@ describe("Batch 12 Safety Boundaries, Gate Regression, Role Matrix & Zero-Author
       });
 
       let stepCall = 0;
+      vi.spyOn(client, "health").mockResolvedValue(true);
       vi.spyOn(client, "copilotStep").mockImplementation(async () => {
         stepCall++;
         if (stepCall === 1) {

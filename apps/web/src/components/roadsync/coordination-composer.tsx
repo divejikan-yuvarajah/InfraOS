@@ -11,6 +11,7 @@ import { getAdvisorCopy } from "@/lib/roadsync/advisor-copy";
 import { clearHandoff, type Handoff } from "@/lib/roadsync/advisor";
 import { fetchCachedAdvisor, fetchHandoff } from "@/lib/roadsync/advisor-api";
 import { StaffWorkspaceShell } from "@/components/auth/staff-workspace-shell";
+import { CommandHeader } from "@/components/common/civic-atlas-primitives";
 import { ApiError } from "@/lib/api/client";
 import { getAuthEpoch, getMemorySession, subscribeAuth } from "@/lib/auth/state";
 import { useWorkspaceLocale } from "@/lib/i18n/workspace-locale";
@@ -273,8 +274,17 @@ export function CoordinationComposer({ conflictId, prefill }: { conflictId: stri
 
   return (
     <StaffWorkspaceShell title={c.title} description={`${d.conflictNo}`} wide>
+      <CommandHeader
+        eyebrow={`RoadSync · ${d.conflictNo}`}
+        title={c.title}
+        sourceKind="live"
+        secondaryActions={
+          <Link className="inline-flex min-h-[44px] items-center rounded-lg border border-white/25 px-3.5 py-2 text-xs font-semibold text-white hover:bg-white/10" href={`/roadsync/conflicts/${conflictId}`}>
+            ← {copy.room.openConflict}
+          </Link>
+        }
+      />
       <div className="co-composer">
-        <Link className="co-back" href={`/roadsync/conflicts/${conflictId}`}>← {copy.room.openConflict}</Link>
         {prefill ? <p className="rz-toast" role="note">{fmt(getAdvisorCopy(locale).banner, { recNo: prefill.banner.recNo })}</p> : null}
         {!prefill && step === 1 && cached.data?.available && cached.data.top ? <p className="co-quick"><button type="button" className="rs-btn" onClick={() => void applyAdvisor()}>{getAdvisorCopy(locale).entry.try}: {cached.data.top.archetype ? getAdvisorCopy(locale).archetype[cached.data.top.archetype] : ""} · {cached.data.top.riskBefore} → {cached.data.top.riskAfter}</button></p> : null}
         <ol className="co-steps" aria-label={fmt(c.step, { n: step })}>{c.steps.map((s, i) => <li key={s} aria-current={step === i + 1 ? "step" : undefined} data-done={step > i + 1}>{i + 1}. {s}</li>)}</ol>

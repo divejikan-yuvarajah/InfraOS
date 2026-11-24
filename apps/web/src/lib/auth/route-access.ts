@@ -39,6 +39,7 @@ const PRIVATE_ROOTS = new Set([
   "settings",
   "admin",
   "risk",
+  "copilot",
 ]);
 
 const ERROR_PATHS = ["/403", "/404", "/500"] as const;

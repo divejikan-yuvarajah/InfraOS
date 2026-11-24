@@ -8,6 +8,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 
 import { StaffWorkspaceShell } from "@/components/auth/staff-workspace-shell";
+import { CommandHeader, MetricCard } from "@/components/common/civic-atlas-primitives";
 import { WorkspaceContext } from "@/components/projects/project-record-nav";
 import { ProjectStatusBadge } from "@/components/common/status-badge";
 import { DataTable } from "@/components/data-table/data-table";
@@ -135,13 +136,41 @@ export function ReviewQueueClient() {
 
   return (
     <StaffWorkspaceShell title={copy.title} description={copy.subtitle} wide context={<WorkspaceContext locale={locale} current={copy.title} projects />}>
-      {locale !== "en" ? <p className="spp-small">{copy.nativeReview}</p> : null}
-      <p><Link href="/projects">{copy.backToProjects}</Link></p>
-      <section className="auth-access-card" aria-label="Review counts">
-        <p>{copy.submittedCount}: {list.data?.counts.submitted ?? "—"}</p>
-        <p>{copy.underReviewCount}: {list.data?.counts.underReview ?? "—"}</p>
+      <CommandHeader
+        eyebrow="ProjectTrace · Approval Queue"
+        title={copy.title}
+        subtitle={copy.subtitle}
+        sourceKind="live"
+        secondaryActions={
+          <Link href="/projects" className="inline-flex min-h-[44px] items-center rounded-lg border border-white/25 px-3.5 py-2 text-xs font-semibold text-white hover:bg-white/10">
+            {copy.backToProjects}
+          </Link>
+        }
+      />
+      {locale !== "en" ? <p className="spp-small mb-3">{copy.nativeReview}</p> : null}
+      <section className="grid grid-cols-1 gap-3 sm:grid-cols-3 mb-5" aria-label="Review counts">
+        <MetricCard
+          label={copy.submittedCount}
+          value={list.data?.counts.submitted ?? "—"}
+          sourceKind="live"
+          tone="warning"
+          loading={list.isLoading}
+        />
+        <MetricCard
+          label={copy.underReviewCount}
+          value={list.data?.counts.underReview ?? "—"}
+          sourceKind="live"
+          tone="brand"
+          loading={list.isLoading}
+        />
+        <MetricCard
+          label={copy.title}
+          value={list.data?.total ?? "—"}
+          sourceKind="live"
+          loading={list.isLoading}
+        />
       </section>
-      <form className="project-list-filters" aria-label={copy.title} onSubmit={(event) => event.preventDefault()}>
+      <form className="cac-card project-list-filters p-4 mb-4" aria-label={copy.title} onSubmit={(event) => event.preventDefault()}>
         <div>
           <label className="auth-access-field-label" htmlFor="review-search">{copy.searchLabel}</label>
           <input id="review-search" className="auth-access-input" value={searchDraft} maxLength={80} onChange={(event) => setSearchDraft(event.target.value)} />

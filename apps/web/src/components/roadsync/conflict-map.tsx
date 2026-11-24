@@ -5,7 +5,7 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import type { GeoJSONSource, Map as MlMap } from "maplibre-gl";
 import { useEffect, useRef, useState } from "react";
 
-import { resolveMapStyle } from "@/lib/inframap/map-style";
+import { attachBasemapFallback, resolveMapStyle } from "@/lib/inframap/map-style";
 import { BAND_COLOR } from "@/lib/roadsync/assessment";
 
 type Feature = { type: "Feature"; geometry: { type: string; coordinates: unknown }; properties: Record<string, unknown> };
@@ -42,11 +42,14 @@ export function ConflictMap({ features, mode, onSelect, label, selectedId }: { f
         if (cancelled || !box.current) return;
         // The bundler moves maplibre into a chunk, so point it at its own self-contained worker file (same as the work map).
         if (!maplibre.getWorkerUrl()) maplibre.setWorkerUrl(new URL("maplibre-gl/dist/maplibre-gl-worker.mjs", import.meta.url).href);
-        const map = new maplibre.Map({ container: box.current, style: resolveMapStyle(), bounds: SRI_LANKA, fitBoundsOptions: { padding: 20 }, attributionControl: { compact: true } });
+        const initialStyle = resolveMapStyle("positron");
+        const map = new maplibre.Map({ container: box.current, style: initialStyle, bounds: SRI_LANKA, fitBoundsOptions: { padding: 20 }, attributionControl: { compact: true } });
         mapRef.current = map;
+        attachBasemapFallback(map, initialStyle);
         map.addControl(new maplibre.NavigationControl({ showCompass: false }), "top-right");
-        map.on("load", () => {
+        map.on("style.load", () => {
           if (mode === "pins") {
+            if (map.getSource("pins")) { setReady(true); return; }
             map.addSource("pins", { type: "geojson", data: { type: "FeatureCollection", features: [] }, cluster: true, clusterRadius: 40, clusterMaxZoom: 12 });
             map.addLayer({ id: "pin-cluster", type: "circle", source: "pins", filter: ["has", "point_count"], paint: { "circle-radius": ["step", ["get", "point_count"], 16, 10, 22, 50, 28], "circle-color": "#0B1F3A", "circle-stroke-color": "#fff", "circle-stroke-width": 3 } });
             map.addLayer({ id: "pin-count", type: "symbol", source: "pins", filter: ["has", "point_count"], layout: { "text-field": ["get", "point_count_abbreviated"], "text-size": 12 }, paint: { "text-color": "#fff" } });
@@ -56,6 +59,7 @@ export function ConflictMap({ features, mode, onSelect, label, selectedId }: { f
             map.on("click", "pin", (e) => { const id = e.features?.[0]?.properties?.id; if (typeof id === "string") selectRef.current?.(id); });
             map.on("click", "pin-cluster", (e) => { map.easeTo({ center: e.lngLat, zoom: map.getZoom() + 2 }); });
           } else {
+            if (map.getSource("dossier")) { setReady(true); return; }
             map.addSource("dossier", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
             const is = (f: string) => ["==", ["get", "feature"], f] as never;
             map.addLayer({ id: "d-party-casing", type: "line", source: "dossier", filter: ["all", is("party"), ["!=", ["geometry-type"], "Point"]] as never, paint: { "line-color": "#fff", "line-width": 8 } });

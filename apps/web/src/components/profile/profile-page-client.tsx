@@ -9,6 +9,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 
 import { StaffWorkspaceShell } from "@/components/auth/staff-workspace-shell";
+import { CommandHeader } from "@/components/common/civic-atlas-primitives";
 import { ROLE_LABELS, initialsOf } from "@/components/auth/workspace-nav";
 import { logoutWithAuthClient } from "@/lib/auth/client";
 import {
@@ -109,6 +110,13 @@ export function ProfilePageClient({
       hidePageHeader
     >
       <div className="max-w-[1440px] mx-auto px-4 sm:px-gutter-desktop py-6 space-y-6 pb-12">
+        <CommandHeader
+          eyebrow="Personal Workspace"
+          title={pageTitle}
+          subtitle={pageSubtitle}
+          scopeLabel={profileQuery.data?.agencyName ?? undefined}
+          sourceKind="live"
+        />
         {/* PAGE HEADER & EDITORIAL CONTEXT */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-outline-variant/30 pb-4">
           <div>

@@ -11,7 +11,7 @@ import { useSearchParams } from "next/navigation";
 import { useState, useSyncExternalStore } from "react";
 
 import { StaffWorkspaceShell } from "@/components/auth/staff-workspace-shell";
-import { DataSourceBadge } from "@/components/common/civic-atlas-primitives";
+import { ChainageBar, DataSourceBadge, MetricCard } from "@/components/common/civic-atlas-primitives";
 import { ContextBar, DualProgress, FactsList, HonestyChip, LifecycleRail, StatusChip } from "@/components/site-plan/site-plan";
 import { ApiError } from "@/lib/api/client";
 import { getAuthEpoch, getMemoryAccessToken, getMemorySession, subscribeAuth } from "@/lib/auth/state";
@@ -177,11 +177,10 @@ function OverviewBody({
             </Link>
             <Link
               href="/roadsync/conflicts"
-              className="inline-flex items-center gap-1.5 px-3 py-2 rounded text-xs font-semibold bg-error text-white hover:bg-error/90 transition-colors shadow-2xs"
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded text-xs font-semibold bg-surface-container-low hover:bg-surface-container-high text-on-surface border border-outline-variant/50 transition-colors"
             >
-              <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-              <span className="material-symbols-outlined text-[16px]">warning</span>
-              <span>Clash Clearance (1 Active)</span>
+              <span className="material-symbols-outlined text-[16px] text-secondary">warning</span>
+              <span>RoadSync Conflicts</span>
             </Link>
             <Link
               href="/inframap"
@@ -219,77 +218,46 @@ function OverviewBody({
           </div>
         </div>
 
-        {/* 4-Card Project Metadata Strip */}
+        {/* 4-Card Project KPI Strip */}
         <div className="mt-5 pt-4 border-t border-outline-variant/25 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-          <div className="bg-surface-container-low/60 border border-outline-variant/30 rounded p-3 flex items-center justify-between">
-            <div>
-              <div className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">
-                {copy.physicalProgress}
-              </div>
-              <div className="mt-0.5 flex items-baseline gap-2">
-                <span className="text-lg font-bold font-mono tabular-nums text-on-surface">
-                  {physicalPct}%
-                </span>
-                <span className="text-[11px] font-medium text-emerald-700">
-                  Rev #{project.revision}
-                </span>
-              </div>
-            </div>
-            <div className="w-16 h-1.5 bg-surface-container-high rounded-full overflow-hidden">
-              <div
-                className="bg-secondary h-full rounded-full"
-                style={{ width: `${Math.min(100, Math.max(0, physicalPct))}%` }}
-              />
-            </div>
-          </div>
+          <MetricCard
+            label={copy.physicalProgress}
+            value={`${physicalPct}%`}
+            context={`Rev #${project.revision}`}
+            sourceKind="recorded"
+            tone="brand"
+          />
+          <MetricCard
+            label={copy.fieldGeometry}
+            value={<span className="text-sm">{geometrySummary(project.geometry, copy.notProvided)}</span>}
+            sourceKind="live"
+            action={
+              <Link href="/roadsync/conflicts" className="font-semibold text-secondary hover:underline">
+                RoadSync →
+              </Link>
+            }
+          />
+          <MetricCard
+            label="Statutory Stage"
+            value={`Stage 0${activeIdx} / 08`}
+            context={statusText}
+            sourceKind="live"
+            tone={hasDeviation ? "warning" : "success"}
+          />
+          <MetricCard
+            label={copy.fieldEnd}
+            value={<span className="text-base">{utcDateLabel(project.plannedEndDate, copy.notProvided)}</span>}
+            context={project.budget ? lkrBudgetLabel(project.budget.amountMinor, copy.notProvided) : undefined}
+            sourceKind="live"
+          />
+        </div>
 
-          <div className="bg-surface-container-low/60 border border-outline-variant/30 rounded p-3 flex items-center justify-between">
-            <div className="min-w-0">
-              <div className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">
-                {copy.fieldGeometry}
-              </div>
-              <div className="mt-0.5 text-xs font-mono font-bold text-on-surface truncate">
-                {geometrySummary(project.geometry, copy.notProvided)}
-              </div>
-            </div>
-            <Link
-              href="/roadsync/conflicts"
-              className="text-[11px] font-bold text-secondary hover:underline shrink-0 ml-2"
-            >
-              RoadSync →
-            </Link>
-          </div>
-
-          <div className="bg-surface-container-low/60 border border-outline-variant/30 rounded p-3 flex items-center justify-between">
-            <div>
-              <div className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">
-                Statutory Stage
-              </div>
-              <div className="mt-0.5 flex items-baseline gap-2">
-                <span className="text-sm font-bold font-mono text-on-surface">
-                  Stage 0{activeIdx} / 08
-                </span>
-                <span className="text-[11px] font-medium text-on-surface-variant">
-                  {statusText}
-                </span>
-              </div>
-            </div>
-            <span className="material-symbols-outlined text-secondary text-[20px]">verified</span>
-          </div>
-
-          <div className="bg-surface-container-low/60 border border-outline-variant/30 rounded p-3 flex items-center justify-between">
-            <div>
-              <div className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">
-                {copy.fieldEnd}
-              </div>
-              <div className="mt-0.5 flex items-baseline gap-2">
-                <span className="text-sm font-bold font-mono tabular-nums text-on-surface">
-                  {utcDateLabel(project.plannedEndDate, copy.notProvided)}
-                </span>
-              </div>
-            </div>
-            <span className="material-symbols-outlined text-on-surface-variant text-[20px]">event_upcoming</span>
-          </div>
+        <div className="mt-4">
+          <ChainageBar
+            reportedPercent={physicalPct}
+            label={copy.physicalProgress}
+            reportedLabel="Reported progress"
+          />
         </div>
 
         <div className="mt-4">
@@ -463,124 +431,43 @@ function OverviewBody({
             />
           </section>
 
-          {/* Inter-Agency Statutory Accords & Clearances Matrix (CORE-01.04) */}
+          {/* Inter-Agency Coordination & Clearances (honest link — no fabricated gazetted refs) */}
           <section
-            className="bg-surface-container-lowest border border-outline-variant/30 rounded overflow-hidden shadow-2xs"
-            aria-label="Inter-Agency Statutory Accords and Clearances Matrix"
+            className="cac-card p-5 space-y-3"
+            aria-label="Inter-Agency Coordination and Clearances"
           >
-            <div className="px-5 py-3.5 border-b border-outline-variant/25 flex flex-wrap items-center justify-between gap-2 bg-surface-container-low/40">
+            <div className="flex flex-wrap items-center justify-between gap-2">
               <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-xs bg-secondary-container" />
-                <h3 className="text-sm font-bold text-on-surface">
-                  Inter-Agency Statutory Accords &amp; Clearances
+                <h3 className="text-sm font-bold text-slate-900">
+                  Inter-Agency Coordination &amp; Clearances
                 </h3>
+                <DataSourceBadge kind="live" label="RoadSync" />
               </div>
-              <div className="flex items-center gap-2">
-                <span className="text-[11px] font-mono text-outline">
-                  Joint Utility Coordination Matrix #JUC-2026-W
-                </span>
-                <Link
-                  href="/roadsync/coordination"
-                  className="text-xs font-semibold text-secondary hover:underline ml-2"
-                >
-                  Coordination Hub →
-                </Link>
-              </div>
+              <Link
+                href="/roadsync/coordination"
+                className="text-xs font-semibold text-secondary hover:underline"
+              >
+                Open Coordination Hub →
+              </Link>
             </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="bg-surface-container-low/60 text-on-surface-variant text-[11px] font-bold uppercase tracking-wider border-b border-outline-variant/20">
-                    <th className="py-2.5 px-4">Statutory Agency</th>
-                    <th className="py-2.5 px-3">Scope &amp; Utility Jurisdiction</th>
-                    <th className="py-2.5 px-3">Accord Status</th>
-                    <th className="py-2.5 px-3">Gazetted Ref</th>
-                    <th className="py-2.5 px-4 text-right">Action</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-outline-variant/15 text-xs">
-                  <tr className="hover:bg-surface-container-low/40 transition-colors">
-                    <td className="py-3 px-4 font-bold text-on-surface">
-                      <div className="flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-emerald-600" />
-                        <span>RDA</span>
-                      </div>
-                    </td>
-                    <td className="py-3 px-3 text-on-surface-variant">Right of Way &amp; Pavement Sub-grade</td>
-                    <td className="py-3 px-3">
-                      <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-100 text-emerald-800">
-                        Granted (Lead)
-                      </span>
-                    </td>
-                    <td className="py-3 px-3 font-mono text-[11px] text-outline">RDA/WP/ROW-904</td>
-                    <td className="py-3 px-4 text-right">
-                      <Link className="text-secondary font-bold text-[11px] hover:underline" href="/roadsync/coordination">
-                        VIEW DOCKET
-                      </Link>
-                    </td>
-                  </tr>
-                  <tr className="hover:bg-surface-container-low/40 transition-colors">
-                    <td className="py-3 px-4 font-bold text-on-surface">
-                      <div className="flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-amber-500" />
-                        <span>CEB (Power)</span>
-                      </div>
-                    </td>
-                    <td className="py-3 px-3 text-on-surface-variant">33kV High Voltage Underground Conduit</td>
-                    <td className="py-3 px-3">
-                      <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-amber-100 text-amber-900">
-                        Conditional Wayleave
-                      </span>
-                    </td>
-                    <td className="py-3 px-3 font-mono text-[11px] text-outline">CEB/D3/2026/04</td>
-                    <td className="py-3 px-4 text-right">
-                      <Link className="text-secondary font-bold text-[11px] hover:underline" href="/roadsync/coordination">
-                        AMEND TERMS
-                      </Link>
-                    </td>
-                  </tr>
-                  <tr className="bg-error-container/20 hover:bg-error-container/30 transition-colors">
-                    <td className="py-3 px-4 font-bold text-on-surface">
-                      <div className="flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-error" />
-                        <span>NWSDB (Water)</span>
-                      </div>
-                    </td>
-                    <td className="py-3 px-3 text-on-surface-variant">450mm Ductile Iron Potable Trunk Line</td>
-                    <td className="py-3 px-3">
-                      <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-error text-white">
-                        Spatial Collision Enjoined
-                      </span>
-                    </td>
-                    <td className="py-3 px-3 font-mono text-[11px] text-error font-bold">CLASH-904-ACT</td>
-                    <td className="py-3 px-4 text-right">
-                      <Link className="text-error font-bold text-[11px] hover:underline" href="/roadsync/conflicts">
-                        CLEAR ISSUE →
-                      </Link>
-                    </td>
-                  </tr>
-                  <tr className="hover:bg-surface-container-low/40 transition-colors">
-                    <td className="py-3 px-4 font-bold text-on-surface">
-                      <div className="flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-emerald-600" />
-                        <span>CMC (Municipal)</span>
-                      </div>
-                    </td>
-                    <td className="py-3 px-3 text-on-surface-variant">Surface Storm Drainage &amp; Streetlighting</td>
-                    <td className="py-3 px-3">
-                      <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-100 text-emerald-800">
-                        Approved
-                      </span>
-                    </td>
-                    <td className="py-3 px-3 font-mono text-[11px] text-outline">CMC/ENG/DR/41</td>
-                    <td className="py-3 px-4 text-right">
-                      <Link className="text-secondary font-bold text-[11px] hover:underline" href="/roadsync/coordination">
-                        VIEW DOCKET
-                      </Link>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+            <p className="text-xs text-slate-600 leading-relaxed">
+              Utility clearances, joint work requests, and spatial conflict records for{" "}
+              <span className="font-mono font-semibold text-slate-800">{project.projectCode}</span> are managed in RoadSync.
+              Check the live conflict register before scheduling trenching or surface works.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <Link
+                href="/roadsync/conflicts"
+                className="inline-flex min-h-[40px] items-center rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-800 hover:border-[#ff5b00]"
+              >
+                Check Spatial Conflicts
+              </Link>
+              <Link
+                href="/roadsync/requests"
+                className="inline-flex min-h-[40px] items-center rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-800 hover:border-[#ff5b00]"
+              >
+                RoadSync Work Requests
+              </Link>
             </div>
           </section>
 
@@ -590,102 +477,58 @@ function OverviewBody({
           <LinkedDocumentsPanel entity={{ type: "project", id: project.id, label: `${project.projectCode} ${project.title}` }} />
         </div>
 
-        {/* CORE-01.04 RIGHT COLUMN: Urgent Clashes, Financial Burn, Contacts & Cadastral Downloads */}
+        {/* RIGHT COLUMN: Coordination Links, Live Financial Snapshot, Lifecycle Controls */}
         <div className="spp-col lg:col-span-4 space-y-6">
-          {/* Priority Spatial Collision Alert Card (CORE-01.04) */}
-          <div className="bg-error-container rounded-xl p-5 shadow-sm text-on-error-container flex flex-col gap-3 relative overflow-hidden border border-error/30">
-            <div className="flex items-start justify-between">
-              <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-error animate-ping" />
-                <span className="text-[11px] uppercase tracking-wider font-bold text-error">
-                  PRIORITY SPATIAL CLASH #CR-904
-                </span>
-              </div>
-              <span className="text-[10px] px-2 py-0.5 rounded bg-error text-white font-bold uppercase tracking-wider">
-                URGENT
-              </span>
-            </div>
-            <h4 className="text-sm font-bold leading-snug text-on-error-container">
-              CEB 33kV Trench Intersects NWSDB Trunk at Dematagoda Junction
-            </h4>
-            <p className="text-xs text-on-error-container/90 leading-relaxed">
-              Excavation clearance violated by 220mm at Chainage 04+320. Section under 48-hour emergency freeze order by Civil Inspectorate.
-            </p>
-            <div className="p-3 rounded bg-white/90 border border-outline-variant/30 flex items-center justify-between">
-              <div className="flex flex-col">
-                <span className="text-[10px] text-outline uppercase font-semibold">
-                  Statutory Arbitration Deadline
-                </span>
-                <span className="text-sm font-mono font-bold text-error">
-                  17h 42m 10s
-                </span>
-              </div>
-              <Link
-                href="/roadsync/conflicts"
-                className="px-3 py-1.5 rounded bg-error text-white hover:bg-error/90 text-xs font-bold transition-colors shadow-2xs"
-              >
-                Convene Session
-              </Link>
-            </div>
-          </div>
-
-          {/* Financial Capital Burn & Disbursements Card (CORE-01.04) */}
-          <div className="bg-surface-container-lowest rounded-xl p-5 border border-outline-variant/30 shadow-2xs flex flex-col gap-3">
-            <div className="flex items-center justify-between">
+          {/* Financial Capital Burn & Disbursements Card (live budget + finance summary only) */}
+          <div className="cac-card p-5 flex flex-col gap-3">
+            <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2">
                 <span className="material-symbols-outlined text-secondary text-[20px]">payments</span>
-                <h3 className="text-xs font-bold uppercase tracking-wider text-on-surface">
-                  Financial Capital Burn
+                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900">
+                  Financial Snapshot
                 </h3>
               </div>
-              <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-surface-container text-on-surface font-medium">
-                AUDITED Q2
-              </span>
+              <DataSourceBadge
+                kind={financial.withheld ? "unavailable" : project.budget ? "live" : "unavailable"}
+                label={financial.withheld ? "Restricted" : project.budget ? "Live" : "Not recorded"}
+              />
             </div>
-            <div className="flex flex-col gap-1.5">
-              <div className="flex items-baseline justify-between text-xs">
-                <span className="text-on-surface-variant">Total Contract Outlay:</span>
-                <span className="font-mono font-bold text-on-surface">
-                  {project.budget ? lkrBudgetLabel(project.budget.amountMinor, copy.notProvided) : "LKR 1,840,000,000"}
-                </span>
-              </div>
-              <div className="flex items-baseline justify-between text-xs">
-                <span className="text-on-surface-variant">Verified IPC Disbursements:</span>
-                <span className="font-mono font-bold text-secondary">
-                  {financial.value !== null
-                    ? `LKR ${Math.round(((project.budget?.amountMinor ?? 1840000000) * financial.value) / 100).toLocaleString()}`
-                    : "LKR 940,240,000"}
-                </span>
-              </div>
-              {/* Visual Multi-Segment Bar */}
-              <div className="w-full h-2.5 rounded-full bg-surface-container-high overflow-hidden my-1 flex">
-                <div
-                  className="h-full bg-secondary transition-all"
-                  style={{ width: `${Math.min(100, Math.max(0, financial.value ?? 51.1))}%` }}
-                  title={`Disbursed: ${financial.value ?? 51.1}%`}
+
+            {financial.withheld ? (
+              <p className="text-xs text-slate-600">Financial disbursement details are restricted for your role.</p>
+            ) : (
+              <div className="flex flex-col gap-2">
+                <div className="flex items-baseline justify-between text-xs">
+                  <span className="text-slate-600">Approved Budget:</span>
+                  <span className="font-mono font-bold text-slate-900 tabular-nums">
+                    {project.budget ? lkrBudgetLabel(project.budget.amountMinor, copy.notProvided) : copy.notProvided}
+                  </span>
+                </div>
+                <div className="flex items-baseline justify-between text-xs">
+                  <span className="text-slate-600">Disbursed (recorded):</span>
+                  <span className="font-mono font-bold text-secondary tabular-nums">
+                    {project.budget && financial.value !== null
+                      ? lkrBudgetLabel(Math.round((project.budget.amountMinor * financial.value) / 100), copy.notProvided)
+                      : copy.notProvided}
+                  </span>
+                </div>
+                <ChainageBar
+                  verifiedPercent={financial.value}
+                  label="Financial disbursement"
+                  verifiedLabel="Disbursed"
+                  tone="budget"
+                  showRulerLabels={false}
                 />
-                <div
-                  className="h-full bg-amber-400"
-                  style={{ width: "5%" }}
-                  title="Retention: 5.0%"
-                />
+                <div className="pt-2 border-t border-slate-100 flex justify-end">
+                  <Link
+                    href={`/projects/${project.id}/finance`}
+                    className="text-xs font-semibold text-secondary hover:underline"
+                  >
+                    Open Finance Ledger →
+                  </Link>
+                </div>
               </div>
-              <div className="flex items-center justify-between text-[11px] text-outline font-mono">
-                <span>Disbursed: {financial.value ?? 51.1}%</span>
-                <span>Retention: 5.0%</span>
-              </div>
-            </div>
-            {/* Micro Metric List */}
-            <div className="flex flex-col gap-1.5 pt-2 border-t border-outline-variant/20 text-xs">
-              <div className="flex justify-between items-center">
-                <span className="text-on-surface-variant">Interim Payment Cert:</span>
-                <span className="font-mono font-bold text-on-surface">IPC #04 (Approved)</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-on-surface-variant">Price Escalation (VOP):</span>
-                <span className="font-mono font-bold text-emerald-700">+3.2% within tolerance</span>
-              </div>
-            </div>
+            )}
           </div>
 
           {hasAction || gaps.length > 0 || notice ? (
