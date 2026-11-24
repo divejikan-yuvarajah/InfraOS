@@ -20,6 +20,8 @@ export type AiStatusContextValue = {
   loading: boolean;
   canAccessAi: boolean;
   getFeatureStatus: (feature: AiFeatureKey) => LiteFeatureStatus;
+  /** True when the feature is unavailable only because no model is configured yet. */
+  isModelNotConfigured: (feature: AiFeatureKey) => boolean;
   isFeatureEnabled: (feature: AiFeatureKey) => boolean;
   isFeatureAvailable: (feature: AiFeatureKey) => boolean;
   refetch: () => void;
@@ -31,6 +33,7 @@ const DEFAULT_VALUE: AiStatusContextValue = {
   loading: false,
   canAccessAi: false,
   getFeatureStatus: () => "unavailable",
+  isModelNotConfigured: () => false,
   isFeatureEnabled: () => false,
   isFeatureAvailable: () => false,
   refetch: () => undefined,
@@ -99,6 +102,9 @@ export function AiStatusProvider({ children }: { children: ReactNode }) {
       return query.isError ? "unavailable" : "degraded";
     };
 
+    const isModelNotConfigured = (feature: AiFeatureKey): boolean =>
+      getFeatureStatus(feature) === "unavailable" && data?.reasons?.[feature] === "model_not_configured";
+
     const isFeatureEnabled = (feature: AiFeatureKey): boolean => getFeatureStatus(feature) !== "disabled";
     const isFeatureAvailable = (feature: AiFeatureKey): boolean => {
       const state = getFeatureStatus(feature);
@@ -111,6 +117,7 @@ export function AiStatusProvider({ children }: { children: ReactNode }) {
       loading,
       canAccessAi,
       getFeatureStatus,
+      isModelNotConfigured,
       isFeatureEnabled,
       isFeatureAvailable,
       refetch: () => {

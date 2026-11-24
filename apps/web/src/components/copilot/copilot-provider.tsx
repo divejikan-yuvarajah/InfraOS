@@ -87,8 +87,9 @@ function CopilotWorkspace({
   const [locale] = useWorkspaceLocale();
   const copy = getCopilotCopy(locale);
   const aiCopy = getAiAdminCopy(locale);
-  const { getFeatureStatus, loading: statusLoading } = useAiStatus();
+  const { getFeatureStatus, isModelNotConfigured, loading: statusLoading } = useAiStatus();
   const featureStatus = statusLoading ? "available" : getFeatureStatus("copilot");
+  const notConfigured = !statusLoading && isModelNotConfigured("copilot");
 
   const [prefs] = useState(() => loadCopilotUiPrefs());
   const [open, setOpen] = useState(prefs.open);
@@ -413,6 +414,7 @@ function CopilotWorkspace({
         activeThreadId={activeThreadId}
         threadsLoading={threadsQuery.isPending}
         featureStatus={featureStatus}
+        notConfigured={notConfigured}
         busy={busy}
         cancelling={cancelling}
         pollTimedOut={pollTimedOut}

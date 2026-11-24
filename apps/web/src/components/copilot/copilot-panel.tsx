@@ -36,6 +36,7 @@ export function CopilotPanel({
   activeThreadId,
   threadsLoading,
   featureStatus,
+  notConfigured,
   busy,
   cancelling,
   pollTimedOut,
@@ -80,6 +81,7 @@ export function CopilotPanel({
   activeThreadId?: string;
   threadsLoading: boolean;
   featureStatus: LiteFeatureStatus;
+  notConfigured: boolean;
   busy: boolean;
   cancelling: boolean;
   pollTimedOut: boolean;
@@ -191,7 +193,7 @@ export function CopilotPanel({
 
                 {turns.length === 0 && aiUnavailable ? (
                   <UnavailableState
-                    mode={featureStatus}
+                    mode={notConfigured ? "notConfigured" : featureStatus}
                     copy={copy}
                     onOpenQuickFacts={() => onTabChange("quickFacts")}
                   />
@@ -235,6 +237,7 @@ export function CopilotPanel({
               value={draft}
               maxLength={maxLength}
               featureStatus={featureStatus}
+              notConfigured={notConfigured}
               busy={busy}
               rateLimitUntilMs={rateLimitUntilMs}
               budgetResetAt={budgetResetAt}

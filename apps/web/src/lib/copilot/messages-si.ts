@@ -59,6 +59,7 @@ export const COPILOT_SI: CopilotMessages = {
     enterHint: "යැවීමට Enter · නව පේළියට Shift+Enter",
     disabledByAdmin: "පරිපාලක විසින් Copilot අක්‍රිය කර ඇත. සත්‍යාපිත දත්ත සඳහා ක්ෂණික දත්ත භාවිතා කරන්න.",
     disabledUnavailable: "AI තාවකාලිකව ලබා ගත නොහැක. නිශ්චිත වාර්තා සඳහා ක්ෂණික දත්ත වෙත මාරු වන්න.",
+    disabledNotConfigured: "Copilot තවමත් සකසා නැත. AI chat model එක සැකසීමට පරිපාලකයාගෙන් ඉල්ලන්න. ක්ෂණික දත්ත තවමත් ක්‍රියාත්මකයි.", // unverified-draft
     disabledRateLimited: "සීමාවට ළඟා විය · {countdown} කින් නැවත උත්සාහ කරන්න",
     disabledBudgetExceeded: "ආයතන දෛනික අයවැය අවසන් · {reset} දී යළි සැකසේ",
     switchToQuickFacts: "ක්ෂණික දත්ත විවෘත කරන්න",
@@ -178,6 +179,8 @@ export const COPILOT_SI: CopilotMessages = {
     disabledBody: "ඔබේ පරිපාලක විසින් Copilot අක්‍රිය කර ඇත. ක්ෂණික දත්ත තුළින් සත්‍යාපිත දත්ත බැලිය හැක.",
     unavailableTitle: "Copilot තාවකාලිකව ලබා ගත නොහැක",
     unavailableBody: "දැනට AI සේවා වෙත සම්බන්ධ විය නොහැක. සාමාන්‍ය වැඩ කටයුතු සහ ක්ෂණික දත්ත ක්‍රියාත්මකයි.",
+    notConfiguredTitle: "Copilot තවමත් සකසා නැත", // unverified-draft
+    notConfiguredBody: "මෙම සේවාදායකයේ Copilot වින්‍යාස කර නැත. පරිපාලකයා AI chat model (AI_CHAT_MODEL) සකසා සේවාව නැවත ආරම්භ කළ යුතුය. ක්ෂණික දත්ත සහ වෙනත් ක්‍රියාවලි දිගටම ක්‍රියා කරයි.", // unverified-draft
     forbiddenTitle: "Copilot ප්‍රවේශය අවශ්‍යයි",
     forbiddenBody: "ඔබේ භූමිකාවට copilot.use අවසරය නොමැත.",
   },
