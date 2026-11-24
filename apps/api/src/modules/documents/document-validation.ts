@@ -61,16 +61,29 @@ export type InspectResult = { ok: true; sizeBytes: number; activeContent: boolea
  */
 export class FileInspector {
   private size = 0;
-  private head: Buffer = Buffer.alloc(0);
-  private tail: Buffer = Buffer.alloc(0);
+  private headChunks: Buffer[] = [];
+  private headLen = 0;
+  private tailChunks: Buffer[] = [];
+  private tailLen = 0;
   private readonly decoder = new TextDecoder("utf-8", { fatal: true });
   private textError: DocumentErrorCode | null = null;
   constructor(private readonly family: Family, private readonly ext: string) {}
 
   push(chunk: Buffer): void {
+    if (chunk.length === 0) return;
     this.size += chunk.length;
-    if (this.head.length < HEAD) this.head = Buffer.concat([this.head, chunk.subarray(0, HEAD - this.head.length)]);
-    this.tail = this.tail.length + chunk.length > TAIL * 2 ? Buffer.concat([this.tail, chunk]).subarray(-TAIL) : Buffer.concat([this.tail, chunk]);
+    if (this.headLen < HEAD) {
+      const slice = chunk.subarray(0, HEAD - this.headLen);
+      this.headChunks.push(slice);
+      this.headLen += slice.length;
+    }
+    this.tailChunks.push(chunk);
+    this.tailLen += chunk.length;
+    if (this.tailLen > TAIL * 2) {
+      const kept = Buffer.concat(this.tailChunks, this.tailLen).subarray(-TAIL);
+      this.tailChunks = [kept];
+      this.tailLen = kept.length;
+    }
     if ((this.family === "txt" || this.family === "csv") && !this.textError) {
       if (chunk.includes(0)) { this.textError = "FILE_SIGNATURE_MISMATCH"; return; }
       try { this.decoder.decode(chunk, { stream: true }); } catch { this.textError = "FILE_CORRUPT"; }
@@ -80,8 +93,8 @@ export class FileInspector {
   finish(): InspectResult {
     const size = this.size;
     if (size === 0) return { ok: false, code: "FILE_EMPTY" };
-    const tail = this.tail.subarray(-TAIL);
-    const h = this.head;
+    const tail = Buffer.concat(this.tailChunks, this.tailLen).subarray(-TAIL);
+    const h = Buffer.concat(this.headChunks, this.headLen);
     const fail = (code: DocumentErrorCode): InspectResult => ({ ok: false, code });
     switch (this.family) {
       case "pdf": {
