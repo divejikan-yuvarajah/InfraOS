@@ -8,7 +8,7 @@ export const COPILOT_TA: CopilotMessages = {
     unreadBadge: "நிறைவடைந்த பதில் {n}",
   },
   header: {
-    status: { live: "செயலில்", limited: "வரையறுக்கப்பட்டது", offline: "ஆஃப்லைன்" }, // unverified-draft
+    status: { warming: "தயாராகிறது", live: "செயலில்", limited: "வரையறுக்கப்பட்டது", offline: "ஆஃப்லைன்" }, // unverified-draft
     title: "உள்கட்டமைப்பு Copilot",
     subtitle: "படிக்க மட்டும் உதவியாளர் · பதில்கள் சரிபார்க்கப்பட்ட பதிவுகளுடன் இணைக்கப்பட வேண்டும்",
     expandWidth: "பலகையை விரிவாக்கு",

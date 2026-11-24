@@ -16,10 +16,16 @@ import type {
 
 import { CopilotComposer } from "./copilot-composer";
 import { CopilotHeader } from "./copilot-header";
+import { DocumentQaTab } from "./document-qa-tab";
 import { LimitBanner } from "./limit-banner";
 import { MessageList } from "./message-list";
 import { QuickFactsTab } from "./quick-facts-tab";
 import { UnavailableState } from "./unavailable-state";
+
+const isWarming = (turns: readonly CopilotTurnDto[]): boolean => {
+  const s = turns[turns.length - 1]?.steps.at(-1);
+  return Boolean(s && (s.labelKey === "copilot.step.service_warming" || s.tool === "service_warming"));
+};
 
 export type CopilotTab = "chat" | "quickFacts" | "documents";
 
@@ -130,6 +136,7 @@ export function CopilotPanel({
         >
           <CopilotHeader
             featureStatus={featureStatus}
+            warming={busy && isWarming(turns)}
             wide={wide}
             includeContext={includeContext}
             pageContext={pageContext}
@@ -182,12 +189,15 @@ export function CopilotPanel({
             </div>
 
             {tab === "documents" ? (
-              <div className="ctr-small" style={{ padding: "1rem", display: "grid", gap: "0.75rem" }}>
-                <p>{copy.documents.body}</p>
-                <Link href="/documents/ai" className="underline hover:text-foreground" onClick={onNavigate}>
-                  {copy.documents.open}
-                </Link>
-              </div>
+              <>
+                <p className="ctr-small" style={{ padding: "0.75rem 1rem 0" }}>{copy.documents.body}</p>
+                <DocumentQaTab locale={locale} onNavigate={onNavigate} />
+                <p className="ctr-small" style={{ padding: "0 1rem 0.75rem" }}>
+                  <Link href="/documents/ai" className="underline hover:text-foreground" onClick={onNavigate}>
+                    {copy.documents.open}
+                  </Link>
+                </p>
+              </>
             ) : tab === "chat" ? (
               <>
                 {errorMessage && !rateLimitUntilMs && !budgetResetAt ? (

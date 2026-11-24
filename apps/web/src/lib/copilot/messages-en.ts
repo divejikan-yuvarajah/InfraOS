@@ -6,7 +6,7 @@ export const COPILOT_EN = {
     unreadBadge: "{n} completed reply",
   },
   header: {
-    status: { live: "Live", limited: "Limited", offline: "Offline" }, // unverified-draft
+    status: { warming: "Warming up", live: "Live", limited: "Limited", offline: "Offline" }, // unverified-draft
     title: "Infrastructure Copilot",
     subtitle: "Read-only assistant · answers must link to verified records",
     expandWidth: "Widen panel",

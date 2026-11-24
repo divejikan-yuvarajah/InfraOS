@@ -8,7 +8,7 @@ export const COPILOT_SI: CopilotMessages = {
     unreadBadge: "සම්පූර්ණ කළ පිළිතුරු {n}",
   },
   header: {
-    status: { live: "සක්‍රීය", limited: "සීමිත", offline: "නොබැඳි" }, // unverified-draft
+    status: { warming: "අවදි වෙමින්", live: "සක්‍රීය", limited: "සීමිත", offline: "නොබැඳි" }, // unverified-draft
     title: "යටිතල පහසුකම් Copilot",
     subtitle: "කියවීමට පමණක් වූ සහායක · පිළිතුරු සත්‍යාපිත වාර්තාවලට සම්බන්ධ විය යුතුය",
     expandWidth: "පුවරුව පුළුල් කරන්න",
