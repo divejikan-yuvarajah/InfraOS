@@ -162,6 +162,17 @@ export function attachBasemapFallback(
   return () => clearTimeout(timer);
 }
 
+export type BasemapChoice = MapStyleVariant | "local";
+
+/** Resolves an explicit user basemap choice from the in-map Google-Maps-style switcher. */
+export function resolveBasemapChoice(choice: BasemapChoice): StyleSpecification | string {
+  if (choice === "local") {
+    const origin = typeof window === "undefined" ? "" : window.location.origin;
+    return buildLocalGridStyle(origin);
+  }
+  return OPENFREEMAP_STYLES[choice];
+}
+
 export const SRI_LANKA_BOUNDS: [[number, number], [number, number]] = [[79.4, 5.8], [82.1, 9.95]];
-/** Slightly larger than the island so panning never drifts into empty ocean. */
-export const SRI_LANKA_MAX_BOUNDS: [[number, number], [number, number]] = [[78.4, 4.9], [83.1, 10.9]];
+/** Tighter bounds around Sri Lanka so panning never drifts out into empty Indian Ocean. */
+export const SRI_LANKA_MAX_BOUNDS: [[number, number], [number, number]] = [[79.0, 5.5], [82.4, 10.2]];

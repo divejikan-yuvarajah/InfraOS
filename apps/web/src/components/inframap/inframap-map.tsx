@@ -9,7 +9,7 @@ import { clampOpacity, layerFactor, OPACITY_PROPS, scaleOpacity } from "@/lib/in
 import { featureBounds, summarize, viewportBbox, type Bbox, type LayerData, type LayerKey, type MapFeature } from "@/lib/inframap/inframap";
 import type { ConflictEvidence } from "@/lib/inframap/inframap-api";
 import { ALL_INTERACTIVE_IDS, EMPTY_COLLECTION, ensureLayers, LAYER_BY_ID, LAYER_DEFS } from "@/lib/inframap/layer-registry";
-import { attachBasemapFallback, resolveMapStyle, SRI_LANKA_BOUNDS, SRI_LANKA_MAX_BOUNDS } from "@/lib/inframap/map-style";
+import { attachBasemapFallback, resolveBasemapChoice, resolveMapStyle, SRI_LANKA_BOUNDS, SRI_LANKA_MAX_BOUNDS, type BasemapChoice } from "@/lib/inframap/map-style";
 import { orderCandidates, type Candidate } from "@/lib/inframap/selection-priority";
 
 export type Selection = { layer: LayerKey; id: string };
@@ -40,6 +40,7 @@ type Props = {
   initialView: { center: [number, number]; zoom: number } | null;
   resetKey: number;
   retryKey: number;
+  basemap?: BasemapChoice;
   label: string;
   captureRef: MutableRefObject<CaptureFn | null>;
   onViewport: (bbox: Bbox, zoom: number) => void;
@@ -73,7 +74,7 @@ type Visual = { attention: boolean; focus: LayerKey | null; opacity: Record<Laye
  * through layout/paint properties; everything is removed on unmount.
  */
 export function InframapMap(props: Props) {
-  const { data, visible, opacity, order, selectedFeature, evidence, attention, focus, exposed, lens, pin, camera, padding, resetKey, retryKey, label } = props;
+  const { data, visible, opacity, order, selectedFeature, evidence, attention, focus, exposed, lens, pin, camera, padding, resetKey, retryKey, basemap = "liberty", label } = props;
   const box = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MlMap | null>(null);
   const readyRef = useRef(false);
@@ -98,10 +99,10 @@ export function InframapMap(props: Props) {
         // The bundler moves maplibre into a chunk, so point it at its own self-contained worker file.
         if (!ml.getWorkerUrl()) ml.setWorkerUrl(new URL("maplibre-gl/dist/maplibre-gl-worker.mjs", import.meta.url).href);
         const init = cb.current.initialView;
-        const initialStyle = resolveMapStyle("positron");
+        const initialStyle = resolveMapStyle("liberty");
         const created = new ml.Map({
           container: box.current, style: initialStyle, maxBounds: SRI_LANKA_MAX_BOUNDS,
-          ...(init ? { center: init.center, zoom: init.zoom } : { bounds: SRI_LANKA_BOUNDS, fitBoundsOptions: { padding: 20 } }),
+          ...(init ? { center: init.center, zoom: init.zoom } : { bounds: SRI_LANKA_BOUNDS, fitBoundsOptions: { padding: 32 } }),
           attributionControl: { compact: window.innerWidth < 640 },
           // Retina drawing is capped at 2x: a 3x phone gets no visible gain for twice the pixels.
           pixelRatio: Math.min(window.devicePixelRatio || 1, 2),
@@ -110,7 +111,7 @@ export function InframapMap(props: Props) {
         attachBasemapFallback(created, initialStyle, { onFallback: (offline) => cb.current.onTilesFailed(offline) });
         observer = new ResizeObserver(() => created.resize());
         observer.observe(box.current);
-        created.addControl(new ml.NavigationControl({ showCompass: false }), "top-right");
+        created.addControl(new ml.NavigationControl({ showCompass: true, visualizePitch: true }), "bottom-right");
         created.addControl(new ml.ScaleControl({ unit: "metric" }), "bottom-left");
 
         const restore = () => {
@@ -240,7 +241,13 @@ export function InframapMap(props: Props) {
 
   useEffect(() => { if (resetKey > 0) mapRef.current?.fitBounds(SRI_LANKA_BOUNDS, { padding: 20, duration: reduceMotion() ? 0 : 400 }); }, [resetKey]);
   // Retry for a failed basemap: reloading the style also exercises the style.load restore path.
-  useEffect(() => { if (retryKey > 0) mapRef.current?.setStyle(resolveMapStyle()); }, [retryKey]);
+  const lastBasemapRef = useRef<BasemapChoice>(basemap);
+  useEffect(() => {
+    if (lastBasemapRef.current === basemap) return;
+    lastBasemapRef.current = basemap;
+    mapRef.current?.setStyle(resolveBasemapChoice(basemap));
+  }, [basemap]);
+  useEffect(() => { if (retryKey > 0) mapRef.current?.setStyle(resolveBasemapChoice(basemap)); }, [retryKey, basemap]);
 
   return <div ref={box} className="im-map" role="region" aria-label={label} />;
 }

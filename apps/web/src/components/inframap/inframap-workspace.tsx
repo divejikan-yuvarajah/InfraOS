@@ -24,6 +24,7 @@ import { getInframapCopy } from "@/lib/inframap/inframap-copy";
 import { getB3Copy } from "@/lib/inframap/inframap-copy-b3";
 import { DEFAULT_ORDER, LAYER_BY_ID, LAYER_DEFS } from "@/lib/inframap/layer-registry";
 import { addView, allLayers, deleteView, loadViews, renameView, storeViews, type SavedView } from "@/lib/inframap/local-store";
+import type { BasemapChoice } from "@/lib/inframap/map-style";
 import type { Candidate } from "@/lib/inframap/selection-priority";
 import { mapPaddingForSheet, type Snap } from "@/lib/inframap/sheet-math";
 import { parseViewState, serializeViewState, ZOOM_RANGE, type ViewState } from "@/lib/inframap/url-state";
@@ -124,6 +125,7 @@ export function InframapWorkspace() {
   const [placeOutline, setPlaceOutline] = useState<{ type: "Polygon"; coordinates: number[][][] } | null>(null);
   const [scope, setScope] = useState<"view" | "all">("all");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [basemap, setBasemap] = useState<BasemapChoice>("liberty");
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [legendOpen, setLegendOpen] = useState(false);
   const [panel, setPanel] = useState<PanelName | null>(null);
@@ -577,8 +579,19 @@ export function InframapWorkspace() {
         <div className="im-body" ref={body} data-drawer={Boolean(selected) && !isPhone && !isTablet} style={{ ["--im-drawer-w" as string]: `${drawerWidth}px` }}>
           {!isPhone ? (
             <aside id="im-side" className="im-side" data-open={sidebarOpen} aria-label={copy.controls.heading}>
+              <div className="flex items-center justify-between gap-2">
+                <h2 className="im-h">{copy.controls.heading}</h2>
+                <button
+                  type="button"
+                  className="im-x"
+                  aria-label="Hide layers panel"
+                  title="Hide layers panel"
+                  onClick={() => setSidebarOpen(false)}
+                >
+                  ×
+                </button>
+              </div>
               {searchBox("im-search", false)}
-              <h2 className="im-h">{copy.controls.heading}</h2>
               {deck}
               <details id="im-filters" className="im-fdetails" open={filtersOpen} onToggle={(e) => setFiltersOpen((e.currentTarget as HTMLDetailsElement).open)}>
                 <summary>{c3.fp.heading}{filterCount ? <small className="im-count">{filterCount}</small> : null}</summary>
@@ -588,16 +601,49 @@ export function InframapWorkspace() {
             </aside>
           ) : null}
           <div className="im-stage">
+            {!isPhone && !sidebarOpen ? (
+              <div className="im-float-top-left">
+                <button
+                  type="button"
+                  className="im-gm-pill"
+                  onClick={() => setSidebarOpen(true)}
+                >
+                  <LayersIcon aria-hidden="true" />
+                  <span>Layers &amp; Search</span>
+                </button>
+              </div>
+            ) : null}
             {mapFailed
               ? <div className="im-failed" role="alert"><p>{copy.states.mapFailed}</p></div>
               : (
                 <InframapMap
                   data={data} visible={shown} opacity={opacity} order={order} selectedFeature={selectedFeature} evidence={evidence.data} attention={attention} focus={focus} exposed={exposed} lens={lens} pin={pin}
-                  camera={camera} padding={padding} initialView={initial.center && initial.zoom !== null ? { center: initial.center, zoom: initial.zoom } : null} resetKey={resetKey} retryKey={retryKey}
+                  camera={camera} padding={padding} initialView={initial.center && initial.zoom !== null ? { center: initial.center, zoom: initial.zoom } : null} resetKey={resetKey} retryKey={retryKey} basemap={basemap}
                   label={copy.mapLabel} captureRef={captureRef} onViewport={onViewport} onPick={onPick} onHover={setHover} onReadout={(r: Readout) => setReadout((prev) => ({ zoom: r.zoom, lng: r.lng ?? prev.lng, lat: r.lat ?? prev.lat }))}
                   onLongPress={(ll) => { setPin(ll); setPanel("menu"); setPanelSnap("peek"); }} onTilesFailed={setTilesFailed} onFailed={() => setMapFailed(true)}
                 />
               )}
+            <div className="im-basemap-switch" role="group" aria-label="Map style">
+              {([["liberty", "Map"], ["positron", "Light"], ["bright", "Bright"], ["local", "Offline"]] as const).map(([key, lbl]) => (
+                <button
+                  key={key}
+                  type="button"
+                  className="im-basemap-btn"
+                  aria-pressed={basemap === key}
+                  onClick={() => { setTilesFailed(false); setBasemap(key); }}
+                >
+                  {lbl}
+                </button>
+              ))}
+              <button
+                type="button"
+                className="im-basemap-btn"
+                title={copy.controls.reset}
+                onClick={() => setResetKey((n) => n + 1)}
+              >
+                Fit Sri Lanka
+              </button>
+            </div>
             {tilesFailed ? <div className="im-banner" role="status">{copy.more.tilesFailed}<button type="button" className="rs-btn" onClick={() => { setTilesFailed(false); setRetryKey((n) => n + 1); }}><RefreshCwIcon aria-hidden="true" />{copy.controls.retry}</button></div> : null}
             {settled && filterCount > 0 && totalFeatures === 0 ? <div className="im-empty" role="status"><p>{c3.fp.empty}</p><button type="button" className="rs-btn is-primary" onClick={() => setUf(EMPTY_UF)}>{copy.filters.clearFilters}</button></div> : null}
             {hover && hoverFeature && !chooser && !isPhone ? <HoverCard layer={hover.layer} feature={hoverFeature} at={hover} copy={copy} locale={locale} /> : null}
