@@ -1,0 +1,2 @@
+Sri Lanka district boundaries (simplified) derived from Natural Earth 1:10m Admin 1 - States, Provinces
+https://www.naturalearthdata.com/ - public domain (CC0). Simplified to ~300 m for the offline INFRAOS map grid.
