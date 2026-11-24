@@ -8,6 +8,7 @@ import { fetchAgencies } from "@/lib/admin-agencies/api";
 import {
   AlignmentTimeline,
   ChainageBar,
+  CommandHeader,
   DataSourceBadge,
 } from "@/components/common/civic-atlas-primitives";
 import { fetchRoles } from "@/lib/admin-roles/api";
@@ -224,64 +225,38 @@ export function PlatformCommandView({
   const isLiveUsers = typeof usersQ.data?.total === "number";
 
   return (
-    <div className="flex flex-col w-full">
-      {/* Top Platform Governance Masthead */}
-      <div className="w-full cac-survey-header px-4 sm:px-gutter-desktop py-space-lg shadow-2xs">
-        <div className="max-w-[1600px] mx-auto flex flex-col xl:flex-row xl:items-center justify-between gap-space-md">
-          <div className="flex flex-col max-w-3xl">
-            <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-              <span className="px-2 py-0.5 bg-white/10 text-slate-200 font-label-sm text-label-sm uppercase tracking-widest rounded">
-                PLATFORM GOVERNANCE COMMAND
-              </span>
-              <span className="text-slate-400 text-xs">/</span>
-              <DataSourceBadge
-                kind={isLiveAgencies ? "live" : "demo"}
-                asOf={data.asOf ? new Date(data.asOf).toLocaleTimeString() : undefined}
-              />
-            </div>
-            <h1 className="font-headline-lg text-headline-lg text-white tracking-tight">
-              Platform Command &amp; System Governance
-            </h1>
-            <p className="font-body-md text-body-md text-slate-300 mt-1">
-              National infrastructure administration, federation security oversight, append-only audit logs, and multi-tenant telemetry across Sri Lanka’s ministries, provincial agencies, and statutory authorities.
-            </p>
-          </div>
-
-          <div className="flex flex-col sm:flex-row xl:flex-col items-start xl:items-end gap-3 self-start xl:self-auto">
-            <div className="flex items-center gap-2 flex-wrap">
-              <DataSourceBadge kind={isLiveUsers ? "live" : "demo"} label={isLiveUsers ? "Identity: Live" : "Identity: Demo"} />
-              <DataSourceBadge kind="live" label={`Corridors: ${data.counts.total} Recorded`} />
-            </div>
-            <div className="flex items-center gap-2 flex-wrap">
-              <Link
-                href="/admin/roles"
-                className="inline-flex items-center gap-1.5 px-3 py-2 bg-white/10 hover:bg-white/15 text-white font-label-md text-label-md rounded-lg border border-white/20 shadow-2xs transition-colors"
-              >
-                <span className="material-symbols-outlined text-[18px] text-slate-200">policy</span>
-                <span>Audit &amp; RBAC</span>
-              </Link>
-              <button
-                type="button"
-                onClick={onExportTelemetry}
-                className="inline-flex items-center gap-1.5 px-3 py-2 bg-white/10 hover:bg-white/15 text-white font-label-md text-label-md rounded-lg border border-white/20 shadow-2xs transition-colors"
-              >
-                <span className="material-symbols-outlined text-[18px] text-slate-200">download</span>
-                <span>Telemetry Export</span>
-              </button>
-              <Link
-                href="/admin/agencies"
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-[#c43d00] hover:bg-[#802a00] text-white font-label-md text-label-md rounded-lg shadow-2xs transition-colors"
-              >
-                <span className="material-symbols-outlined text-[18px]">admin_panel_settings</span>
-                <span>Manage Agencies &amp; RBAC</span>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </div>
+    <div className="max-w-[1600px] mx-auto w-full px-4 sm:px-gutter-desktop py-6 pb-12 flex flex-col gap-space-lg">
+      <CommandHeader
+        eyebrow="PLATFORM GOVERNANCE COMMAND"
+        title="Platform Command & System Governance"
+        subtitle="National infrastructure administration, federation security oversight, append-only audit logs, and multi-tenant telemetry across Sri Lanka’s ministries, provincial agencies, and statutory authorities."
+        scopeLabel={`Corridors: ${data.counts.total} Recorded`}
+        asOf={data.asOf ? new Date(data.asOf).toLocaleTimeString() : undefined}
+        sourceKind={isLiveAgencies ? "live" : "demo"}
+        className="mb-0"
+        secondaryActions={
+          <>
+            <DataSourceBadge kind={isLiveUsers ? "live" : "demo"} label={isLiveUsers ? "Identity: Live" : "Identity: Demo"} />
+            <Link href="/admin/roles" className="cac-header-btn">
+              <span className="material-symbols-outlined text-[18px]">policy</span>
+              <span>Audit &amp; RBAC</span>
+            </Link>
+            <button type="button" onClick={onExportTelemetry} className="cac-header-btn">
+              <span className="material-symbols-outlined text-[18px]">download</span>
+              <span>Telemetry Export</span>
+            </button>
+          </>
+        }
+        primaryAction={
+          <Link href="/admin/agencies" className="cac-header-btn-primary">
+            <span className="material-symbols-outlined text-[18px]">admin_panel_settings</span>
+            <span>Manage Agencies &amp; RBAC</span>
+          </Link>
+        }
+      />
 
       {/* Main Viewport Canvas */}
-      <div className="max-w-[1600px] mx-auto w-full px-4 sm:px-gutter-desktop py-space-xl flex flex-col gap-space-xl">
+      <div className="w-full flex flex-col gap-space-xl">
         {/* Platform Pulse: 5-card Telemetry Rail */}
         <section aria-label="Platform Governance Metrics" className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-4">
           <div className="relative bg-surface-container-lowest p-4 rounded-xl border border-outline-variant/30 shadow-2xs flex flex-col justify-between overflow-hidden">
@@ -816,31 +791,30 @@ export function GovAdminCommandView({
   const gatewayItems = reviewsQ.data?.projects ?? data.reviews?.items ?? [];
 
   return (
-    <div className="px-4 sm:px-gutter-desktop py-space-lg flex flex-col gap-space-lg max-w-[1520px] mx-auto w-full">
-      {/* Executive Header */}
-      <div className="relative bg-surface-container-lowest rounded-xl p-space-lg border border-outline-variant/30 shadow-2xs flex flex-col xl:flex-row xl:items-center justify-between gap-space-md">
-        <div className="flex flex-col gap-1.5 min-w-0">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="px-2 py-0.5 rounded bg-primary-container text-surface-container-lowest font-label-sm text-label-sm uppercase tracking-wider">
-              CIVIC ATLAS COMMAND V2
-            </span>
-            <span className="px-2 py-0.5 rounded bg-surface-container text-on-surface-variant font-label-sm text-label-sm uppercase tracking-wider">
-              ROLE: GOV_ADMIN
-            </span>
-            <span className="px-2 py-0.5 rounded bg-surface-container-low text-on-surface font-label-sm text-label-sm uppercase tracking-wider">
-              [ SOVEREIGN OVERSIGHT ]
-            </span>
-            <DataSourceBadge kind="live" asOf={data.asOf ? new Date(data.asOf).toLocaleTimeString() : undefined} />
-          </div>
-          <div className="flex flex-col">
-            <h1 className="font-headline-lg text-headline-lg text-on-surface tracking-tight">
-              Government Infrastructure Overview
-            </h1>
-            <p className="font-body-md text-body-md text-on-surface-variant">
-              Monitor inter-agency infrastructure delivery, statutory approvals, RoadSync coordination, and provincial capital performance.
-            </p>
-          </div>
-          <div className="pt-2 max-w-2xl">
+    <div className="px-4 sm:px-gutter-desktop py-6 pb-12 flex flex-col gap-space-lg max-w-[1600px] mx-auto w-full">
+      <CommandHeader
+        eyebrow="GOVERNMENT OVERSIGHT COMMAND • ROLE: GOV_ADMIN"
+        title="Government Infrastructure Overview"
+        subtitle="Monitor inter-agency infrastructure delivery, statutory approvals, RoadSync coordination, and provincial capital performance."
+        scopeLabel="Sovereign Oversight"
+        asOf={data.asOf ? new Date(data.asOf).toLocaleTimeString() : undefined}
+        sourceKind="live"
+        className="mb-0"
+        secondaryActions={
+          <button type="button" onClick={onExportTelemetry} className="cac-header-btn">
+            <span className="material-symbols-outlined text-[18px]">table_chart</span>
+            <span>Fiscal Audit Export</span>
+          </button>
+        }
+        primaryAction={
+          <Link href="/projects/reviews" className="cac-header-btn-primary">
+            <span className="material-symbols-outlined text-[18px]">gavel</span>
+            <span>Review Statutory Gateways ({pendingGateways})</span>
+          </Link>
+        }
+      >
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-center">
+          <div className="bg-white rounded-lg p-3 text-slate-900">
             <ChainageBar
               verifiedPercent={data.counts.total > 0 ? Math.round(((data.counts.byStatus.COMPLETED ?? 0) / data.counts.total) * 100) : 0}
               reportedPercent={data.counts.total > 0 ? Math.round(((data.counts.active + (data.counts.byStatus.COMPLETED ?? 0)) / data.counts.total) * 100) : 0}
@@ -850,33 +824,14 @@ export function GovAdminCommandView({
               showRulerLabels={false}
             />
           </div>
-          <div className="flex items-center gap-2 pt-1 font-body-sm text-body-sm text-outline flex-wrap">
-            <span className="w-2 h-2 rounded-full bg-secondary-container animate-ping" />
-            <span className="font-label-md text-label-md text-on-surface">
-              Western Province Inter-Agency Infrastructure Oversight
-            </span>
+          <div className="flex items-center gap-2 text-xs text-slate-300 flex-wrap lg:justify-end">
+            <span className="w-2 h-2 rounded-full bg-[#ff5b00]" />
+            <span className="font-semibold text-white">Western Province Inter-Agency Infrastructure Oversight</span>
             <span>•</span>
             <span>Ministry of Public Works &amp; Urban Development</span>
           </div>
         </div>
-        <div className="flex flex-wrap items-center gap-space-sm pt-2 xl:pt-0">
-          <button
-            type="button"
-            onClick={onExportTelemetry}
-            className="h-10 px-4 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface font-label-md text-label-md flex items-center gap-2 transition-all shadow-2xs"
-          >
-            <span className="material-symbols-outlined text-[18px]">table_chart</span>
-            <span>Fiscal Audit Export</span>
-          </button>
-          <Link
-            href="/projects/reviews"
-            className="h-10 px-4 rounded-lg bg-secondary hover:bg-secondary-container text-on-secondary font-label-md text-label-md flex items-center gap-2 transition-all shadow-2xs"
-          >
-            <span className="material-symbols-outlined text-[18px]">gavel</span>
-            <span>Review Statutory Gateways ({pendingGateways})</span>
-          </Link>
-        </div>
-      </div>
+      </CommandHeader>
 
       {/* Infrastructure Portfolio Pulse */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-space-md">
@@ -1298,49 +1253,34 @@ export function AgencyOfficerCommandView({
 
   return (
     <div className="flex flex-col w-full">
-      {/* Command Header Context Strip */}
-      <div className="px-4 sm:px-gutter-desktop py-space-lg bg-surface-container-low border-b border-outline-variant/25 flex flex-col gap-space-md">
-        <div className="max-w-[1600px] mx-auto w-full flex flex-col lg:flex-row lg:items-center justify-between gap-space-md">
-          <div className="flex flex-col gap-1">
-            <div className="flex items-center gap-space-xs font-label-sm text-label-sm uppercase tracking-widest text-secondary font-bold flex-wrap">
-              <span className="inline-block w-2 h-2 rounded-full bg-secondary animate-pulse" />
-              <span>AGENCY OPERATIONAL COMMAND • {sessionUser?.agencyId ?? "ROAD DEVELOPMENT AUTHORITY (RDA)"}</span>
-              <span className="px-1.5 py-0.5 rounded bg-surface-container text-on-surface-variant font-label-sm text-[10px] uppercase tracking-normal">
-                Western Urban Division Desk
-              </span>
-            </div>
-            <h1 className="font-headline-lg text-headline-lg text-on-surface tracking-tight">
-              Agency Operations Command
-            </h1>
-            <p className="font-body-md text-body-md text-on-surface-variant max-w-3xl">
-              Coordinate daily infrastructure activity, dispatch work requests, resolve municipal conflicts, and manage agency-level operational priorities across urban primary corridors.
-            </p>
-          </div>
-          <div className="flex flex-wrap items-center gap-space-sm">
-            <Link
-              href="/roadsync/work-requests/new"
-              className="flex items-center gap-2 px-space-md h-10 bg-secondary hover:bg-secondary-container text-on-secondary font-label-md text-label-md rounded-lg shadow-2xs transition-all"
-            >
+      <div className="max-w-[1600px] mx-auto w-full px-4 sm:px-gutter-desktop pt-6">
+        <CommandHeader
+          eyebrow={`AGENCY OPERATIONAL COMMAND • ${sessionUser?.agencyId ?? "ROAD DEVELOPMENT AUTHORITY (RDA)"}`}
+          title="Agency Operations Command"
+          subtitle="Coordinate daily infrastructure activity, dispatch work requests, resolve municipal conflicts, and manage agency-level operational priorities across urban primary corridors."
+          scopeLabel="Western Urban Division Desk"
+          asOf={data.asOf ? new Date(data.asOf).toLocaleTimeString() : undefined}
+          sourceKind="live"
+          className="mb-0"
+          secondaryActions={
+            <>
+              <Link href="/roadsync/conflicts" className="cac-header-btn">
+                <span className="material-symbols-outlined text-[18px]">share_location</span>
+                <span>RoadSync Spatial Triage</span>
+              </Link>
+              <button type="button" onClick={onExportTelemetry} className="cac-header-btn">
+                <span className="material-symbols-outlined text-[18px]">download_for_offline</span>
+                <span className="hidden sm:inline">Export Corridor Manifest</span>
+              </button>
+            </>
+          }
+          primaryAction={
+            <Link href="/roadsync/work-requests/new" className="cac-header-btn-primary">
               <span className="material-symbols-outlined text-[18px]">add_circle</span>
               <span>Submit Work Request (WR)</span>
             </Link>
-            <Link
-              href="/roadsync/conflicts"
-              className="flex items-center gap-2 px-space-md h-10 bg-surface-container-lowest hover:bg-surface-container text-on-surface font-label-md text-label-md rounded-lg border border-outline-variant/50 shadow-2xs transition-all"
-            >
-              <span className="material-symbols-outlined text-[18px] text-secondary">share_location</span>
-              <span>RoadSync Spatial Triage</span>
-            </Link>
-            <button
-              type="button"
-              onClick={onExportTelemetry}
-              className="flex items-center gap-2 px-3 h-10 bg-surface-container-lowest hover:bg-surface-container text-on-surface-variant font-label-md text-label-md rounded-lg border border-outline-variant/50 shadow-2xs transition-all"
-            >
-              <span className="material-symbols-outlined text-[18px]">download_for_offline</span>
-              <span className="hidden sm:inline">Export Corridor Manifest</span>
-            </button>
-          </div>
-        </div>
+          }
+        />
       </div>
 
       <div className="max-w-[1600px] mx-auto w-full px-4 sm:px-gutter-desktop py-space-xl flex flex-col gap-space-xl">
@@ -1645,69 +1585,54 @@ export function ProjectManagerCommandView({
 
   return (
     <div className="flex flex-col w-full">
-      {/* Command Header & Breadcrumb Ribbon */}
-      <div className="w-full bg-surface-container-low px-4 sm:px-gutter-desktop py-space-lg border-b border-outline-variant/25 flex flex-col gap-space-md">
-        <div className="max-w-[1600px] mx-auto w-full flex flex-col gap-space-md">
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-space-md">
-            <div className="flex flex-col gap-1 max-w-3xl">
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="w-2 h-2 rounded-full bg-secondary" />
-                <span className="font-label-sm text-label-sm tracking-widest uppercase text-on-surface-variant font-bold">
-                  PERSONAL WORKSPACE • PROJECT OPERATIONS COMMAND
-                </span>
-                <DataSourceBadge kind="live" />
-              </div>
-              <h1 className="font-headline-lg text-headline-lg text-primary tracking-tight">
-                My Project Command &amp; Assigned Deliverables
-              </h1>
-              <p className="font-body-md text-body-md text-on-surface-variant">
-                Operational tracking of assigned infrastructure projects, milestone timelines, contractor physical progress reports, and roadwork coordination clearances across Western Province corridors.
-              </p>
-              <div className="pt-2 max-w-xl">
-                <ChainageBar
-                  verifiedPercent={data.counts.total > 0 ? Math.round(((data.counts.byStatus.COMPLETED ?? 0) / data.counts.total) * 100) : 0}
-                  reportedPercent={assignedProjects.length > 0 ? Math.round(assignedProjects.reduce((acc, p) => acc + p.progress, 0) / assignedProjects.length) : 68}
-                  label="Portfolio Certified Completion vs. Reported Physical Progress"
-                  verifiedLabel="Certified completed"
-                  reportedLabel="Avg reported"
-                  showRulerLabels={false}
-                />
-              </div>
-            </div>
-            <div className="flex flex-wrap items-center gap-space-sm self-start lg:self-center">
-              <button
-                type="button"
-                onClick={onExportTelemetry}
-                className="h-10 px-space-md bg-surface-container-lowest hover:bg-surface-container text-on-surface rounded font-label-md text-label-md flex items-center gap-2 border border-outline-variant/50 shadow-2xs transition-all"
-              >
-                <span className="material-symbols-outlined text-[18px] text-on-surface-variant">download</span>
+      <div className="max-w-[1600px] mx-auto w-full px-4 sm:px-gutter-desktop pt-6 flex flex-col gap-space-md">
+        <CommandHeader
+          eyebrow="PERSONAL WORKSPACE • PROJECT OPERATIONS COMMAND"
+          title="My Project Command & Assigned Deliverables"
+          subtitle="Operational tracking of assigned infrastructure projects, milestone timelines, contractor physical progress reports, and roadwork coordination clearances across Western Province corridors."
+          scopeLabel={sessionUser?.agencyId ?? "Assigned Portfolio"}
+          asOf={data.asOf ? new Date(data.asOf).toLocaleTimeString() : undefined}
+          sourceKind="live"
+          className="mb-0"
+          secondaryActions={
+            <>
+              <button type="button" onClick={onExportTelemetry} className="cac-header-btn">
+                <span className="material-symbols-outlined text-[18px]">download</span>
                 <span>Export Portfolio</span>
               </button>
-              <Link
-                href="/inspections"
-                className="h-10 px-space-md bg-surface-container-lowest hover:bg-surface-container text-on-surface rounded font-label-md text-label-md flex items-center gap-2 border border-outline-variant/50 shadow-2xs transition-all"
-              >
-                <span className="material-symbols-outlined text-[18px] text-on-surface-variant">verified_user</span>
+              <Link href="/inspections" className="cac-header-btn">
+                <span className="material-symbols-outlined text-[18px]">verified_user</span>
                 <span>Milestone Verification</span>
               </Link>
-              <Link
-                href="/roadsync/work-requests/new"
-                className="h-10 px-space-md bg-secondary hover:bg-secondary-container text-on-secondary rounded font-label-md text-label-md flex items-center gap-2 shadow-2xs transition-all"
-              >
-                <span className="material-symbols-outlined text-[18px]">add_task</span>
-                <span>Create Work Coordination</span>
-              </Link>
-            </div>
+            </>
+          }
+          primaryAction={
+            <Link href="/roadsync/work-requests/new" className="cac-header-btn-primary">
+              <span className="material-symbols-outlined text-[18px]">add_task</span>
+              <span>Create Work Coordination</span>
+            </Link>
+          }
+        >
+          <div className="bg-white rounded-lg p-3 text-slate-900 max-w-2xl">
+            <ChainageBar
+              verifiedPercent={data.counts.total > 0 ? Math.round(((data.counts.byStatus.COMPLETED ?? 0) / data.counts.total) * 100) : 0}
+              reportedPercent={assignedProjects.length > 0 ? Math.round(assignedProjects.reduce((acc, p) => acc + p.progress, 0) / assignedProjects.length) : 68}
+              label="Portfolio Certified Completion vs. Reported Physical Progress"
+              verifiedLabel="Certified completed"
+              reportedLabel="Avg reported"
+              showRulerLabels={false}
+            />
           </div>
+        </CommandHeader>
 
-          {/* Active Operational Officer Banner */}
-          <div className="flex flex-wrap items-center justify-between gap-space-sm bg-surface-container-lowest/90 px-4 py-2.5 rounded-lg border border-outline-variant/30 shadow-2xs">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center text-on-primary">
-                <span className="material-symbols-outlined text-[18px]">engineering</span>
-              </div>
-              <div className="flex flex-col">
-                <span className="font-label-md text-label-md text-on-surface">
+        {/* Active Operational Officer Banner */}
+        <div className="flex flex-wrap items-center justify-between gap-space-sm cac-card px-4 py-2.5">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center text-on-primary">
+              <span className="material-symbols-outlined text-[18px]">engineering</span>
+            </div>
+            <div className="flex flex-col">
+              <span className="font-label-md text-label-md text-on-surface">
                   {sessionUser?.displayName || "Alex Perera, CEng MIE(SL)"}
                 </span>
                 <span className="font-body-sm text-body-sm text-on-surface-variant">
@@ -1729,7 +1654,6 @@ export function ProjectManagerCommandView({
             </div>
           </div>
         </div>
-      </div>
 
       <div className="max-w-[1600px] mx-auto w-full px-4 sm:px-gutter-desktop py-space-xl flex flex-col gap-space-xl">
         {/* Portfolio Pulse: 4 Key Metric Cards */}
@@ -2122,72 +2046,59 @@ export function InspectorCommandView({
 
   return (
     <div className="flex flex-col w-full">
-      {/* Command Header Strip */}
-      <div className="px-4 sm:px-gutter-desktop py-space-lg bg-surface-container-lowest border-b border-outline-variant/25 shadow-2xs">
-        <div className="max-w-[1600px] mx-auto w-full flex flex-col lg:flex-row lg:items-center justify-between gap-space-lg">
-          <div className="flex flex-col gap-1 min-w-0">
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="font-label-sm text-label-sm uppercase tracking-widest text-secondary font-bold">
-                FIELD OPERATIONS COMMAND • QUALITY ASSURANCE &amp; STATUTORY VERIFICATION
-              </span>
-              <DataSourceBadge kind={(summaryQ.data !== undefined) ? "live" : "demo"} />
-            </div>
-            <div className="flex items-baseline gap-3 flex-wrap">
-              <h1 className="font-headline-lg text-headline-lg text-on-surface tracking-tight">Field Inspection Command</h1>
-              <span className="font-body-sm text-body-sm text-on-surface-variant">Western Province Corridors • Civil Authority Engine</span>
-            </div>
-            <p className="font-body-md text-body-md text-on-surface-variant max-w-4xl mt-0.5">
-              Manage geolocated civil engineering inspections, field test lab verifications, non-conformance reports, and milestone sign-offs across Western Province corridors.
-            </p>
-            <div className="flex items-center gap-4 flex-wrap mt-2 pt-2 border-t border-outline-variant/20">
-              <div className="flex items-center gap-2">
-                <span className="material-symbols-outlined text-secondary text-[18px]">verified_user</span>
-                <span className="font-label-md text-label-md text-on-surface">
-                  {sessionUser?.displayName || "Eng. Gamini Mendis, CEng MIE(SL)"}
-                </span>
-                <span className="font-body-sm text-[11px] text-on-surface-variant font-medium">(NBRO / RDA QA Directorate)</span>
-              </div>
-              <span className="text-outline-variant">•</span>
-              <div className="flex items-center gap-1.5 font-mono text-[11px] text-on-surface-variant bg-surface-container-low px-2 py-0.5 rounded">
-                <span className="w-2 h-2 rounded-full bg-emerald-600 animate-pulse" />
-                <span>EPSG:5234 [6.9271° N, 79.8612° E]</span>
-                <span className="text-secondary font-bold">
-                  {cacheSynced ? "CACHE VERIFIED (100%)" : "CACHE READY (98MB)"}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-space-sm flex-wrap shrink-0">
-            <button
-              type="button"
-              onClick={onExportTelemetry}
-              className="inline-flex items-center gap-2 px-3 py-2 bg-surface-container-lowest hover:bg-surface-container text-on-surface font-label-md text-label-md rounded border border-outline-variant/40 shadow-2xs transition-all"
-            >
-              <span className="material-symbols-outlined text-[18px]">download</span>
-              <span>Export QA Log</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setCacheSynced(true);
-                void summaryQ.refetch();
-                void myWorkQ.refetch();
-              }}
-              className="inline-flex items-center gap-2 px-3 py-2 bg-surface-container hover:bg-surface-container-high text-on-surface font-label-md text-label-md rounded shadow-2xs transition-all"
-            >
-              <span className="material-symbols-outlined text-[18px] text-secondary">sync</span>
-              <span>Sync Field Cache</span>
-            </button>
-            <Link
-              href="/inspections"
-              className="inline-flex items-center gap-2 px-4 py-2 bg-secondary hover:bg-secondary-container text-on-secondary font-label-md text-label-md rounded shadow-2xs transition-all"
-            >
+      <div className="max-w-[1600px] mx-auto w-full px-4 sm:px-gutter-desktop pt-6">
+        <CommandHeader
+          eyebrow="FIELD OPERATIONS COMMAND • QUALITY ASSURANCE & STATUTORY VERIFICATION"
+          title="Field Inspection Command"
+          subtitle="Manage geolocated civil engineering inspections, field test lab verifications, non-conformance reports, and milestone sign-offs across Western Province corridors."
+          scopeLabel="Western Province Corridors"
+          sourceKind={summaryQ.data !== undefined ? "live" : "demo"}
+          className="mb-0"
+          secondaryActions={
+            <>
+              <button type="button" onClick={onExportTelemetry} className="cac-header-btn">
+                <span className="material-symbols-outlined text-[18px]">download</span>
+                <span>Export QA Log</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setCacheSynced(true);
+                  void summaryQ.refetch();
+                  void myWorkQ.refetch();
+                }}
+                className="cac-header-btn"
+              >
+                <span className="material-symbols-outlined text-[18px]">sync</span>
+                <span>Sync Field Cache</span>
+              </button>
+            </>
+          }
+          primaryAction={
+            <Link href="/inspections" className="cac-header-btn-primary">
               <span className="material-symbols-outlined text-[18px]">add_location_alt</span>
               <span>Start Geocoded Inspection</span>
             </Link>
+          }
+        >
+          <div className="flex items-center gap-4 flex-wrap text-xs text-slate-300">
+            <div className="flex items-center gap-2">
+              <span className="material-symbols-outlined text-[#ffb597] text-[18px]">verified_user</span>
+              <span className="font-semibold text-white">
+                {sessionUser?.displayName || "Eng. Gamini Mendis, CEng MIE(SL)"}
+              </span>
+              <span className="text-slate-300">(NBRO / RDA QA Directorate)</span>
+            </div>
+            <span className="text-white/25">•</span>
+            <div className="flex items-center gap-1.5 font-mono text-[11px] text-slate-200 bg-white/10 px-2.5 py-1 rounded border border-white/15">
+              <span className="w-2 h-2 rounded-full bg-emerald-400" />
+              <span>EPSG:5234 [6.9271° N, 79.8612° E]</span>
+              <span className="text-[#ffb597] font-bold">
+                {cacheSynced ? "CACHE VERIFIED (100%)" : "CACHE READY (98MB)"}
+              </span>
+            </div>
           </div>
-        </div>
+        </CommandHeader>
       </div>
 
       {/* Operational Pulse (5 Metric KPIs) */}
@@ -2545,24 +2456,43 @@ export function ContractorCommandView({
   };
 
   return (
-    <div className="p-4 sm:p-gutter-desktop flex flex-col gap-space-lg max-w-[1440px] mx-auto w-full">
-      {/* Top Operational Eyebrow & Meta Bar */}
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-space-sm cac-survey-header p-space-md rounded-lg shadow-2xs">
-        <div className="flex flex-wrap items-center gap-space-sm">
-          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-white/10 font-label-sm text-label-sm text-secondary-fixed tracking-widest uppercase">
-            <span className="w-1.5 h-1.5 rounded-full bg-secondary-container" />
-            LK-CENTRAL-01
-          </span>
-          <span className="text-slate-400 text-body-sm">/</span>
-          <span className="font-label-md text-label-md text-slate-200 uppercase tracking-wider">
-            Prime EPC Lead: Maga Engineering PLC · Joint Venture Access Engineering
-          </span>
-        </div>
-        <div className="flex items-center gap-2 self-end md:self-auto">
-          <DataSourceBadge kind="live" label={`Active Sites: ${activeProjectsCount}`} />
+    <div className="px-4 sm:px-gutter-desktop py-6 pb-12 flex flex-col gap-space-lg max-w-[1600px] mx-auto w-full">
+      <CommandHeader
+        eyebrow="CONTRACTOR OPERATIONS • CONTRACT: RDA-WP-2026-88"
+        title="Contractor Execution Command & Field Works Center"
+        subtitle="Real-time progress submission, excavation permitting chainage tracking, heavy equipment telematics, and Interim Payment Certificate (IPC) billing milestones."
+        scopeLabel={`Active Sites: ${activeProjectsCount}`}
+        sourceKind="live"
+        className="mb-0"
+        secondaryActions={
+          <>
+            <button type="button" onClick={() => setShiftModalOpen(true)} className="cac-header-btn">
+              <span className="material-symbols-outlined text-[18px]">edit_note</span>
+              <span>Log Daily Field Shift</span>
+            </button>
+            <Link href="/roadsync/work-requests/new" className="cac-header-btn">
+              <span className="material-symbols-outlined text-[18px]">alt_route</span>
+              <span>Submit Excavation Wayleave</span>
+            </Link>
+          </>
+        }
+        primaryAction={
+          <button type="button" onClick={() => setIpcModalOpen(true)} className="cac-header-btn-primary">
+            <span className="material-symbols-outlined text-[18px]">payments</span>
+            <span>Submit IPC Milestone Claim (LKR)</span>
+          </button>
+        }
+      >
+        <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-300">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-white/10 font-mono text-[11px] font-bold text-[#ffb597] tracking-wider uppercase">
+              LK-CENTRAL-01
+            </span>
+            <span>Prime EPC Lead: Maga Engineering PLC · Joint Venture Access Engineering</span>
+          </div>
           <DataSourceBadge kind="demo" label="Field Schedule Overlay" />
         </div>
-      </div>
+      </CommandHeader>
 
       {shiftLoggedMessage && (
         <div
@@ -2582,51 +2512,6 @@ export function ContractorCommandView({
           </button>
         </div>
       )}
-
-      {/* Header Section with Key Action Buttons */}
-      <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-space-lg">
-        <div className="flex flex-col gap-1 max-w-3xl">
-          <div className="flex items-center gap-2 font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">
-            <span>DASHBOARD</span>
-            <span>›</span>
-            <span>CONTRACTOR OPERATIONS</span>
-            <span>›</span>
-            <span className="text-secondary font-bold">CONTRACT: RDA-WP-2026-88</span>
-          </div>
-          <h1 className="font-headline-lg text-headline-lg text-on-surface tracking-tight mt-1">
-            Contractor Execution Command &amp; Field Works Center
-          </h1>
-          <p className="font-body-md text-body-md text-on-surface-variant">
-            Real-time progress submission, excavation permitting chainage tracking, heavy equipment telematics, and Interim Payment Certificate (IPC) billing milestones.
-          </p>
-        </div>
-        {/* Action Buttons */}
-        <div className="flex flex-wrap items-center gap-space-sm shrink-0">
-          <button
-            type="button"
-            onClick={() => setShiftModalOpen(true)}
-            className="h-10 px-4 rounded-lg bg-surface-container-highest text-on-surface font-label-lg text-label-lg hover:bg-surface-container-high transition-colors shadow-2xs flex items-center gap-2"
-          >
-            <span className="material-symbols-outlined text-[18px]">edit_note</span>
-            <span>Log Daily Field Shift</span>
-          </button>
-          <Link
-            href="/roadsync/work-requests/new"
-            className="h-10 px-4 rounded-lg bg-surface-container-highest text-on-surface font-label-lg text-label-lg hover:bg-surface-container-high transition-colors shadow-2xs flex items-center gap-2"
-          >
-            <span className="material-symbols-outlined text-[18px]">alt_route</span>
-            <span>Submit Excavation Wayleave</span>
-          </Link>
-          <button
-            type="button"
-            onClick={() => setIpcModalOpen(true)}
-            className="h-10 px-4 rounded-lg bg-secondary text-on-secondary font-label-lg text-label-lg hover:bg-secondary-container transition-colors shadow-2xs flex items-center gap-2"
-          >
-            <span className="material-symbols-outlined text-[18px]">payments</span>
-            <span>Submit IPC Milestone Claim (LKR)</span>
-          </button>
-        </div>
-      </div>
 
       {/* Contractor Chainage Ruler & Alignment Schedule (§5.4) */}
       <div className="cac-card p-5 space-y-4">

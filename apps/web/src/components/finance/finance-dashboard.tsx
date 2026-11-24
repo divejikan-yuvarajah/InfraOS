@@ -1,13 +1,18 @@
 "use client";
 
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { DownloadIcon } from "lucide-react";
+import { DownloadIcon, RefreshCwIcon } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
 
 import { StaffWorkspaceShell } from "@/components/auth/staff-workspace-shell";
-import { ContextBar } from "@/components/site-plan/site-plan";
+import {
+  CommandHeader,
+  DashboardCanvas,
+  DashboardKpiCard,
+  DashboardKpiGrid,
+} from "@/components/common/civic-atlas-primitives";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { fetchAgencies } from "@/lib/admin-agencies/api";
@@ -33,17 +38,6 @@ import type { PaymentStatus, ExpenseStatus } from "@/lib/finance/types";
 const PROJECT_STATUSES = ["APPROVED", "ACTIVE", "ON_HOLD", "DELAYED", "COMPLETED"] as const;
 const SORTS = ["code", "budget", "utilization", "gap"] as const;
 type Common = { copy: Copy; locale: AuthLocale };
-
-function Kpi({ label, hint, minor, bp, locale, copy, onClick, aria }: Common & { label: string; hint: string; minor: number | null; bp?: number | null; onClick?: () => void; aria: string }) {
-  return (
-    <button type="button" className="fin-kpi" onClick={onClick} aria-label={`${label}: ${minor === null ? copy.money.unavailable : formatLkr(minor, locale)}. ${aria}`}>
-      <span className="fin-kpi-label">{label}</span>
-      <span className="fin-kpi-value"><MoneyText minor={minor} locale={locale} compact copy={copy} /></span>
-      {bp !== undefined ? <span className="fin-kpi-bar" aria-hidden="true"><i style={{ width: `${Math.min(100, (bp ?? 0) / 100)}%` }} /></span> : null}
-      <span className="fin-kpi-hint">{hint}</span>
-    </button>
-  );
-}
 
 function ProjectDrawer({ row, copy, locale, onClose }: Common & { row: PortfolioRow | null; onClose: () => void }) {
   return (
@@ -109,22 +103,51 @@ export function FinanceDashboard() {
       title={copy.dashboard.title}
       description={copy.subtitle}
       wide
-      context={
-        <ContextBar crumbs={[{ label: copy.breadcrumbWorkspace, href: "/dashboard" }, { label: copy.title }]} scope={s ? (s.scope === "platform" ? copy.scope.platform : copy.scope.agencies) : null}
-          actions={canHintFinance(keys.roleKey) ? (
-            <Popover>
-              <PopoverTrigger asChild><button type="button" className="ctr-btn"><DownloadIcon aria-hidden="true" />{copy.dashboard.export}</button></PopoverTrigger>
-              <PopoverContent align="end" className="w-56">
-                <div className="ctr-menu" role="menu">
-                  <button type="button" role="menuitem" disabled={exp.isPending} onClick={() => exp.mutate("payments")}>{copy.dashboard.exportPayments}</button>
-                  <button type="button" role="menuitem" disabled={exp.isPending} onClick={() => exp.mutate("expenses")}>{copy.dashboard.exportExpenses}</button>
-                </div>
-              </PopoverContent>
-            </Popover>
-          ) : null} />
-      }
+      hidePageHeader
     >
-      <div className="ctr" style={{ paddingBottom: hasApprover && inboxTotal > 0 ? "4.5rem" : undefined }}>
+      <DashboardCanvas className={hasApprover && inboxTotal > 0 ? "pb-24" : undefined}>
+        <CommandHeader
+          eyebrow="FINANCE COMMAND"
+          title={copy.dashboard.title}
+          subtitle={copy.subtitle}
+          scopeLabel={s ? (s.scope === "platform" ? copy.scope.platform : copy.scope.agencies) : undefined}
+          sourceKind="live"
+          secondaryActions={
+            <>
+              <button
+                type="button"
+                className="cac-header-btn"
+                onClick={() => { void summary.refetch(); void table.refetch(); void plot.refetch(); }}
+              >
+                <RefreshCwIcon aria-hidden="true" />
+                <span>Refresh</span>
+              </button>
+              {canHintFinance(keys.roleKey) ? (
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button type="button" className="cac-header-btn">
+                      <DownloadIcon aria-hidden="true" />
+                      <span>{copy.dashboard.export}</span>
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent align="end" className="w-56">
+                    <div className="ctr-menu" role="menu">
+                      <button type="button" role="menuitem" disabled={exp.isPending} onClick={() => exp.mutate("payments")}>{copy.dashboard.exportPayments}</button>
+                      <button type="button" role="menuitem" disabled={exp.isPending} onClick={() => exp.mutate("expenses")}>{copy.dashboard.exportExpenses}</button>
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              ) : null}
+            </>
+          }
+          primaryAction={
+            <Link className="cac-header-btn-primary" href="/finance/payments">
+              {copy.kpi.paid} &amp; Payments
+            </Link>
+          }
+        />
+
+      <div className="ctr">
         {locale !== "en" ? <p className="ctr-small">{copy.nativeReview}</p> : null}
         <RecordingNote copy={copy} />
 
@@ -161,17 +184,56 @@ export function FinanceDashboard() {
         ) : null}
 
         {summary.error ? <div role="alert" className="sp-surface ctr-panel"><p className="ctr-error">{err(summary.error)}</p><div><button type="button" className="ctr-btn" onClick={() => void summary.refetch()}>{copy.common.retry}</button></div></div> : null}
-        <section className="fin-kpis" aria-label={copy.title} aria-live="polite">
-          {summary.isLoading ? [0, 1, 2, 3, 4].map((i) => <div key={i} className="fin-kpi" aria-hidden="true"><span className="ctr-skel" style={{ height: "1rem", width: "60%" }} /><span className="ctr-skel" style={{ height: "1.5rem", width: "80%" }} /></div>) : s ? (
+        <DashboardKpiGrid columns={5} label={copy.title}>
+          {summary.isLoading ? (
+            [0, 1, 2, 3, 4].map((i) => <DashboardKpiCard key={i} label={copy.title} value="" loading />)
+          ) : s ? (
             <>
-              <Kpi copy={copy} locale={locale} label={copy.kpi.budget} hint={copy.kpi.budgetHint} minor={s.totals.budgetMinor} aria={copy.kpi.filter} onClick={() => url.set({ sort: "budget" })} />
-              <Kpi copy={copy} locale={locale} label={copy.kpi.committed} hint={`${copy.kpi.committedHint} · ${percentFromBp(s.totals.utilizationBp)}`} minor={s.totals.committedMinor} bp={s.totals.utilizationBp} aria={copy.kpi.filter} onClick={() => url.set({ sort: "utilization" })} />
-              <Link href="/finance/payments?tab=paid" className="fin-kpi" style={{ textDecoration: "none" }}><span className="fin-kpi-label">{copy.kpi.paid}</span><span className="fin-kpi-value"><MoneyText minor={s.totals.paidMinor} locale={locale} compact copy={copy} /></span><span className="fin-kpi-hint">{copy.kpi.paidHint}</span></Link>
-              <Link href="/finance/payments?tab=pending" className="fin-kpi" style={{ textDecoration: "none" }}><span className="fin-kpi-label">{copy.kpi.pending}</span><span className="fin-kpi-value"><MoneyText minor={s.totals.pendingMinor} locale={locale} compact copy={copy} /></span><span className="fin-kpi-hint">{copy.kpi.pendingHint}</span></Link>
-              <Kpi copy={copy} locale={locale} label={copy.kpi.remaining} hint={copy.kpi.remainingHint} minor={s.totals.remainingMinor} aria={copy.kpi.filter} onClick={() => url.set({ over: "1" })} />
+              <DashboardKpiCard
+                label={copy.kpi.budget}
+                value={<MoneyText minor={s.totals.budgetMinor} locale={locale} compact copy={copy} />}
+                hint={copy.kpi.budgetHint}
+                tone="brand"
+                active={sort === "budget"}
+                onClick={() => url.set({ sort: "budget" })}
+                ariaLabel={`${copy.kpi.budget}: ${s.totals.budgetMinor === null ? copy.money.unavailable : formatLkr(s.totals.budgetMinor, locale)}. ${copy.kpi.filter}`}
+              />
+              <DashboardKpiCard
+                label={copy.kpi.committed}
+                value={<MoneyText minor={s.totals.committedMinor} locale={locale} compact copy={copy} />}
+                hint={`${copy.kpi.committedHint} · ${percentFromBp(s.totals.utilizationBp)}`}
+                tone="neutral"
+                progressPercent={s.totals.utilizationBp !== null ? s.totals.utilizationBp / 100 : null}
+                active={sort === "utilization"}
+                onClick={() => url.set({ sort: "utilization" })}
+                ariaLabel={`${copy.kpi.committed}: ${s.totals.committedMinor === null ? copy.money.unavailable : formatLkr(s.totals.committedMinor, locale)}. ${copy.kpi.filter}`}
+              />
+              <DashboardKpiCard
+                label={copy.kpi.paid}
+                value={<MoneyText minor={s.totals.paidMinor} locale={locale} compact copy={copy} />}
+                hint={copy.kpi.paidHint}
+                tone="success"
+                href="/finance/payments?tab=paid"
+              />
+              <DashboardKpiCard
+                label={copy.kpi.pending}
+                value={<MoneyText minor={s.totals.pendingMinor} locale={locale} compact copy={copy} />}
+                hint={copy.kpi.pendingHint}
+                tone="warning"
+                href="/finance/payments?tab=pending"
+              />
+              <DashboardKpiCard
+                label={copy.kpi.remaining}
+                value={<MoneyText minor={s.totals.remainingMinor} locale={locale} compact copy={copy} />}
+                hint={copy.kpi.remainingHint}
+                tone={over ? "critical" : "neutral"}
+                active={over}
+                onClick={() => url.set({ over: over ? null : "1" })}
+                ariaLabel={`${copy.kpi.remaining}: ${s.totals.remainingMinor === null ? copy.money.unavailable : formatLkr(s.totals.remainingMinor, locale)}. ${copy.kpi.filter}`}
+              />
             </>
           ) : null}
-        </section>
+        </DashboardKpiGrid>
         {s?.truncated ? <p className="ctr-small">{fill(copy.dashboard.table.truncated, { n: 500 })}</p> : null}
 
         <section className="sp-surface ctr-panel" aria-label={copy.dashboard.quadrant.title}>
@@ -250,6 +312,7 @@ export function FinanceDashboard() {
           </section>
         </div>
       </div>
+      </DashboardCanvas>
       {hasApprover && inboxTotal > 0 ? <div className="fin-sticky-bar"><Link className="ctr-btn is-primary" href={s?.inbox.payments ? "/finance/payments?tab=mine" : s?.inbox.expenses ? "/finance/expenses?tab=needs" : `/projects/${s?.inbox.revisionProjects[0]?.projectId ?? ""}/finance?tab=budget`}>{fill(copy.dashboard.reviewBar, { n: inboxTotal })}</Link></div> : null}
       <ProjectDrawer row={selectedRow} copy={copy} locale={locale} onClose={() => setSelected(null)} />
     </StaffWorkspaceShell>

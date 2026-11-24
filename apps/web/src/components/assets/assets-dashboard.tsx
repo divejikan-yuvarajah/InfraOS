@@ -8,7 +8,12 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { StaffWorkspaceShell } from "@/components/auth/staff-workspace-shell";
-import { ContextBar } from "@/components/site-plan/site-plan";
+import {
+  CommandHeader,
+  DashboardCanvas,
+  DashboardKpiCard,
+  DashboardKpiGrid,
+} from "@/components/common/civic-atlas-primitives";
 import { downloadAssetsCsv, fetchAssets, fetchAssetSummary } from "@/lib/assets/api";
 import { getAssetCopy, type Copy } from "@/lib/assets/messages";
 import { hintConvert, useAssetKeys } from "@/lib/assets/session";
@@ -22,12 +27,6 @@ import { BarList, BasisChip, ConditionChip, ConditionDonut, EmptyState, errorTex
 
 const PAGE = 20;
 type Common = { copy: Copy; locale: AuthLocale };
-
-function Kpi({ label, value, hint, onClick, href }: { label: string; value: number | null | undefined; hint: string; onClick?: () => void; href?: string }) {
-  const inner = <><span className="ctr-card-label">{label}</span><span className="ctr-card-value">{value ?? "—"}</span><span className="ctr-card-hint">{hint}</span></>;
-  return href ? <Link href={href} className="ctr-card" style={{ textDecoration: "none" }} aria-label={`${label}: ${value ?? "—"}. ${hint}`}>{inner}</Link>
-    : <button type="button" className="ctr-card" onClick={onClick} aria-label={`${label}: ${value ?? "—"}. ${hint}`}>{inner}</button>;
-}
 
 function RowMenu({ row, copy }: { row: AssetRow; copy: Copy }) {
   const [open, setOpen] = useState(false);
@@ -158,21 +157,96 @@ export function AssetsDashboard() {
   const k = copy.dashboard.kpi;
 
   return (
-    <StaffWorkspaceShell title={copy.dashboard.title} description={copy.dashboard.description} wide
-      context={<ContextBar crumbs={[{ label: copy.nav.assets }]} scope={copy.dashboard.scope} asOf={null} actions={<div className="ctr-row">
-        <button type="button" className="ctr-btn" onClick={() => { void summary.refetch(); void list.refetch(); }}><RefreshCwIcon aria-hidden="true" />{copy.common.refresh}</button>
-        <button type="button" className="ctr-btn" disabled={exportCsv.isPending || !total} onClick={() => exportCsv.mutate()}><DownloadIcon aria-hidden="true" />{copy.dashboard.export}</button>
-        {canConvert ? <Link className="ctr-btn is-primary" href="/assets/convert"><PlusIcon aria-hidden="true" />{copy.dashboard.convert}</Link> : null}
-      </div>} />}>
+    <StaffWorkspaceShell title={copy.dashboard.title} description={copy.dashboard.description} wide hidePageHeader>
+      <DashboardCanvas>
+        <CommandHeader
+          eyebrow="ASSET LIFECYCLE COMMAND"
+          title={copy.dashboard.title}
+          subtitle={copy.dashboard.description}
+          scopeLabel={copy.dashboard.scope}
+          sourceKind="live"
+          secondaryActions={
+            <>
+              <button type="button" className="cac-header-btn" onClick={() => { void summary.refetch(); void list.refetch(); }}>
+                <RefreshCwIcon aria-hidden="true" />
+                <span>{copy.common.refresh}</span>
+              </button>
+              <button type="button" className="cac-header-btn" disabled={exportCsv.isPending || !total} onClick={() => exportCsv.mutate()}>
+                <DownloadIcon aria-hidden="true" />
+                <span>{copy.dashboard.export}</span>
+              </button>
+            </>
+          }
+          primaryAction={
+            canConvert ? (
+              <Link className="cac-header-btn-primary" href="/assets/convert">
+                <PlusIcon aria-hidden="true" />
+                <span>{copy.dashboard.convert}</span>
+              </Link>
+            ) : undefined
+          }
+        />
+
       <div className="ins ast">
-        <section className="ins-strip" aria-label={k.hint}>
-          <Kpi label={k.total} value={s?.total} hint={k.hint} onClick={() => go(DEFAULT_ASSET_FILTERS)} />
-          <Kpi label={k.attention} value={s?.attention} hint={k.hint} onClick={() => go({ ...DEFAULT_ASSET_FILTERS, attention: true })} />
-          <Kpi label={k.assessments} value={s ? s.assessments.overdue + s.assessments.dueSoon : undefined} hint={k.hint} onClick={() => go({ ...DEFAULT_ASSET_FILTERS, attention: true })} />
-          <Kpi label={k.overdueMaintenance} value={s?.maintenance.overdue} hint={k.hint} href="/maintenance?overdue=true" />
-          <Kpi label={k.openRequests} value={s?.maintenance.openRequests} hint={k.hint} href="/maintenance?status=REQUESTED" />
-          {s && s.pendingConversions !== null ? <Kpi label={k.pendingConversions} value={s.pendingConversions} hint={k.hint} href="/assets/conversions" /> : null}
-        </section>
+        <DashboardKpiGrid columns={s && s.pendingConversions !== null ? 6 : 5} label={k.hint}>
+          <DashboardKpiCard
+            label={k.total}
+            value={s?.total ?? "—"}
+            hint={k.hint}
+            tone="brand"
+            loading={summary.isPending}
+            active={!filters.attention && !filters.condition && !filters.assetType}
+            onClick={() => go(DEFAULT_ASSET_FILTERS)}
+            ariaLabel={`${k.total}: ${s?.total ?? "—"}. ${k.hint}`}
+          />
+          <DashboardKpiCard
+            label={k.attention}
+            value={s?.attention ?? "—"}
+            hint={k.hint}
+            tone={(s?.attention ?? 0) > 0 ? "warning" : "neutral"}
+            loading={summary.isPending}
+            active={filters.attention}
+            onClick={() => go({ ...DEFAULT_ASSET_FILTERS, attention: true })}
+            ariaLabel={`${k.attention}: ${s?.attention ?? "—"}. ${k.hint}`}
+          />
+          <DashboardKpiCard
+            label={k.assessments}
+            value={s ? s.assessments.overdue + s.assessments.dueSoon : "—"}
+            hint={k.hint}
+            tone={s && s.assessments.overdue > 0 ? "critical" : "warning"}
+            loading={summary.isPending}
+            onClick={() => go({ ...DEFAULT_ASSET_FILTERS, attention: true })}
+            ariaLabel={`${k.assessments}: ${s ? s.assessments.overdue + s.assessments.dueSoon : "—"}. ${k.hint}`}
+          />
+          <DashboardKpiCard
+            label={k.overdueMaintenance}
+            value={s?.maintenance.overdue ?? "—"}
+            hint={k.hint}
+            tone={(s?.maintenance.overdue ?? 0) > 0 ? "critical" : "success"}
+            loading={summary.isPending}
+            href="/maintenance?overdue=true"
+            ariaLabel={`${k.overdueMaintenance}: ${s?.maintenance.overdue ?? "—"}. ${k.hint}`}
+          />
+          <DashboardKpiCard
+            label={k.openRequests}
+            value={s?.maintenance.openRequests ?? "—"}
+            hint={k.hint}
+            tone="neutral"
+            loading={summary.isPending}
+            href="/maintenance?status=REQUESTED"
+            ariaLabel={`${k.openRequests}: ${s?.maintenance.openRequests ?? "—"}. ${k.hint}`}
+          />
+          {s && s.pendingConversions !== null ? (
+            <DashboardKpiCard
+              label={k.pendingConversions}
+              value={s.pendingConversions}
+              hint={k.hint}
+              tone="brand"
+              href="/assets/conversions"
+              ariaLabel={`${k.pendingConversions}: ${s.pendingConversions}. ${k.hint}`}
+            />
+          ) : null}
+        </DashboardKpiGrid>
 
         {summary.isPending ? <Skeletons n={1} /> : summary.isError ? <ErrorState error={summary.error} copy={copy} onRetry={() => void summary.refetch()} /> : <Insight summary={summary.data} copy={copy} locale={locale} />}
 
@@ -226,6 +300,7 @@ export function AssetsDashboard() {
         )}
         <p className="ins-muted">{copy.common.syntheticNote}</p>
       </div>
+      </DashboardCanvas>
     </StaffWorkspaceShell>
   );
 }
