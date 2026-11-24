@@ -8,7 +8,6 @@ import { toast } from "sonner";
 
 import { StaffWorkspaceShell } from "@/components/auth/staff-workspace-shell";
 import { CommandHeader } from "@/components/common/civic-atlas-primitives";
-import { WorkspaceContext } from "@/components/projects/project-record-nav";
 import { fetchAgencies } from "@/lib/admin-agencies/api";
 import { createProject } from "@/lib/projects/api";
 import { classifyCreateError, type CreateFailure } from "@/lib/projects/create-outcome";
@@ -65,7 +64,7 @@ export function ProjectCreatePageClient() {
   });
 
   return (
-    <StaffWorkspaceShell title={copy.createTitle} description={copy.createSubtitle} wide context={<WorkspaceContext locale={locale} current={copy.createTitle} projects />}>
+    <StaffWorkspaceShell title={copy.createTitle} description={copy.createSubtitle} wide hidePageHeader><div className="max-w-[1600px] mx-auto px-4 sm:px-gutter-desktop py-4 pb-10">
       <CommandHeader
         eyebrow="ProjectTrace · New Record"
         title={copy.createTitle}
@@ -97,6 +96,6 @@ export function ProjectCreatePageClient() {
           await mutation.mutateAsync(body);
         }}
       />
-    </StaffWorkspaceShell>
+    </div></StaffWorkspaceShell>
   );
 }

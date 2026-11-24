@@ -33,13 +33,14 @@ export function StatusPill({ status, copy, belowThreshold }: { status: RecordSta
 }
 
 /** Time-to-impact ring: depletes across the final 30 days before overlap start. Always paired with text. */
-export function TimeRing({ t, copy, size = 40 }: { t: TimeToImpact; copy: ConflictCopy; size?: number }) {
+export function TimeRing({ t, copy, size = 40 }: { t?: TimeToImpact | null; copy: ConflictCopy; size?: number }) {
+  const safeT: TimeToImpact = t ?? { state: "none", days: null, dayIndex: null, totalDays: null };
   const r = size / 2 - 4;
   const c = 2 * Math.PI * r;
-  const tone = impactTone(t);
-  const frac = t.state === "upcoming" ? ringFraction(t.days) : t.state === "active" ? 1 : 0;
-  const text = ringText(copy, t);
-  const center = t.state === "upcoming" ? `${t.days}d` : t.state === "active" ? `${t.dayIndex}/${t.totalDays}` : "—";
+  const tone = impactTone(safeT);
+  const frac = safeT.state === "upcoming" ? ringFraction(safeT.days) : safeT.state === "active" ? 1 : 0;
+  const text = ringText(copy, safeT);
+  const center = safeT.state === "upcoming" ? `${safeT.days}d` : safeT.state === "active" ? `${safeT.dayIndex}/${safeT.totalDays}` : "—";
   return (
     <span className="cr-ring" data-tone={tone} title={text}>
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} role="img" aria-label={fmt(copy.ring.aria, { text })}>
@@ -47,7 +48,7 @@ export function TimeRing({ t, copy, size = 40 }: { t: TimeToImpact; copy: Confli
         <circle className="cr-ring-arc" cx={size / 2} cy={size / 2} r={r} fill="none" strokeWidth="4" strokeLinecap="round" strokeDasharray={`${frac * c} ${c}`} transform={`rotate(-90 ${size / 2} ${size / 2})`} />
         <text x="50%" y="50%" dominantBaseline="central" textAnchor="middle" fontSize={size * 0.27} fontWeight="700" fill="currentColor">{center}</text>
       </svg>
-      {t.state === "active" ? <span className="cr-pulse" aria-hidden="true" /> : null}
+      {safeT.state === "active" ? <span className="cr-pulse" aria-hidden="true" /> : null}
       <span className="cr-ring-text">{text}</span>
     </span>
   );
@@ -78,13 +79,14 @@ export function AckRing({ status, excluded, size = 22, label }: { status: AckSta
 
 /** One segment per REQUIRED agency, filled when acknowledged; the viewer's own segment is outlined. */
 export function AckSegments({ row, copy }: { row: RecordRow; copy: ConflictCopy }) {
-  const required = row.affectedAgencies.filter((a) => a.active && a.required);
+  const required = (row.affectedAgencies ?? []).filter((a) => a.active && a.required);
+  const prog = row.ackProgress ?? { done: 0, required: required.length };
   return (
-    <span className="cr-segs" role="img" aria-label={fmt(copy.row.ackProgress, row.ackProgress)}>
+    <span className="cr-segs" role="img" aria-label={fmt(copy.row.ackProgress, prog)}>
       {required.map((a) => (
         <span key={a.agencyId} className="cr-seg" data-done={a.ackStatus === "acknowledged"} data-mine={row.myAgency?.agencyId === a.agencyId} title={`${a.agencyName ?? ""} · ${copy.ack[a.ackStatus === "acknowledged" ? "acknowledged" : "pending"]}`} />
       ))}
-      <span className="cr-segs-text">{row.ackProgress.done}/{row.ackProgress.required}</span>
+      <span className="cr-segs-text">{prog.done}/{prog.required}</span>
     </span>
   );
 }

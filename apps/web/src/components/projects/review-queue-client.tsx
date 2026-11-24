@@ -9,7 +9,6 @@ import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 
 import { StaffWorkspaceShell } from "@/components/auth/staff-workspace-shell";
 import { CommandHeader, MetricCard } from "@/components/common/civic-atlas-primitives";
-import { WorkspaceContext } from "@/components/projects/project-record-nav";
 import { ProjectStatusBadge } from "@/components/common/status-badge";
 import { DataTable } from "@/components/data-table/data-table";
 import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header";
@@ -135,7 +134,7 @@ export function ReviewQueueClient() {
   const agencies = list.data?.agencies ?? [];
 
   return (
-    <StaffWorkspaceShell title={copy.title} description={copy.subtitle} wide context={<WorkspaceContext locale={locale} current={copy.title} projects />}>
+    <StaffWorkspaceShell title={copy.title} description={copy.subtitle} wide hidePageHeader><div className="max-w-[1600px] mx-auto px-4 sm:px-gutter-desktop py-4 pb-10">
       <CommandHeader
         eyebrow="ProjectTrace · Approval Queue"
         title={copy.title}
@@ -220,6 +219,6 @@ export function ReviewQueueClient() {
         />
       </div>
       {!list.isLoading && !error && (list.data?.total ?? 0) === 0 ? <p role="status">{filtered ? copy.noMatch : copy.empty}</p> : null}
-    </StaffWorkspaceShell>
+    </div></StaffWorkspaceShell>
   );
 }

@@ -532,7 +532,16 @@ export function StaffWorkspaceShell({
     (coordSummaryQuery.data?.needsMyResponse ?? 0) +
     (coordSummaryQuery.data?.escalated ?? 0);
 
-  const effectiveScope = scopeLabel || agency || copy.allAgencies;
+  const isRawObjectId = /^[0-9a-f]{24}$/i.test(agency);
+  const readableAgency =
+    role === "SUPER_ADMIN"
+      ? copy.allAgencies
+      : agency && !isRawObjectId
+        ? agency
+        : role
+          ? copy.agencyScope
+          : copy.allAgencies;
+  const effectiveScope = scopeLabel || readableAgency;
 
   const handleSignOut = async () => {
     setLoggingOut(true);
@@ -607,43 +616,43 @@ export function StaffWorkspaceShell({
 
       {/* 2. MAIN WORKSPACE WRAPPER */}
       <div className="flex-1 flex flex-col min-w-0 bg-surface overflow-hidden">
-        {/* TOP GLOBAL HEADER BAR (h-[70px]) */}
-        <header className="h-[70px] bg-surface-container-lowest border-b border-outline-variant/30 px-4 sm:px-gutter-desktop flex items-center justify-between gap-3 shrink-0 z-20">
+        {/* TOP GLOBAL HEADER BAR (h-[60px]) */}
+        <header className="h-[60px] bg-surface-container-lowest border-b border-outline-variant/30 px-4 sm:px-gutter-desktop flex items-center justify-between gap-3 shrink-0 z-20">
           {/* Left: Mobile Trigger + Breadcrumb & Command Context */}
-          <div className="flex items-center gap-3 min-w-0">
+          <div className="flex items-center gap-2.5 shrink-0 min-w-0 max-w-[240px] 2xl:max-w-[340px]">
             <button
               type="button"
               onClick={() => setDrawerOpen(true)}
               aria-label={copy.openNav}
-              className="lg:hidden p-2 rounded text-on-surface-variant hover:bg-surface-container-low"
+              className="lg:hidden p-2 rounded text-on-surface-variant hover:bg-surface-container-low shrink-0"
             >
               <span className="material-symbols-outlined text-[20px]">menu</span>
             </button>
 
-            <nav aria-label="Breadcrumb" className="hidden sm:flex items-center gap-2 text-body-md min-w-0">
+            <nav aria-label="Breadcrumb" className="hidden md:flex items-center gap-1.5 text-xs min-w-0">
               <Link
                 href="/dashboard"
-                className="text-on-surface-variant font-medium hover:text-on-surface transition-colors shrink-0"
+                className="hidden 2xl:inline text-on-surface-variant font-medium hover:text-on-surface transition-colors shrink-0"
               >
                 {copy.civilCommand}
               </Link>
-              <span className="text-outline-variant">/</span>
+              <span className="hidden 2xl:inline text-outline-variant">/</span>
               {breadcrumbs && breadcrumbs.length > 0 ? (
                 breadcrumbs.map((crumb, idx) => {
                   const isLast = idx === breadcrumbs.length - 1;
                   return (
-                    <span key={`${crumb.label}-${idx}`} className="flex items-center gap-2 min-w-0">
+                    <span key={`${crumb.label}-${idx}`} className="flex items-center gap-1.5 min-w-0">
                       {crumb.href && !isLast ? (
                         <Link
                           href={crumb.href}
-                          className="text-on-surface-variant hover:text-on-surface truncate max-w-[160px]"
+                          className="text-on-surface-variant hover:text-on-surface truncate max-w-[120px]"
                         >
                           {crumb.label}
                         </Link>
                       ) : (
                         <span
                           aria-current={isLast ? "page" : undefined}
-                          className="font-semibold text-on-surface flex items-center gap-1.5 truncate max-w-[220px]"
+                          className="font-semibold text-on-surface flex items-center gap-1.5 truncate max-w-[180px]"
                         >
                           <span className="w-2 h-2 rounded-full bg-secondary-container shrink-0" />
                           <span className="truncate">{crumb.label}</span>
@@ -654,7 +663,7 @@ export function StaffWorkspaceShell({
                   );
                 })
               ) : (
-                <span className="font-semibold text-on-surface flex items-center gap-1.5 truncate max-w-[240px]">
+                <span className="font-semibold text-on-surface flex items-center gap-1.5 truncate max-w-[190px]">
                   <span className="w-2 h-2 rounded-full bg-secondary-container shrink-0" />
                   <span className="truncate">{title}</span>
                 </span>
@@ -663,7 +672,7 @@ export function StaffWorkspaceShell({
           </div>
 
           {/* Center: Global Search / Command Palette Trigger (CORE-01.16) */}
-          <div className="flex-1 max-w-md mx-1 sm:mx-4">
+          <div className="flex-1 min-w-[160px] max-w-sm mx-1 sm:mx-2">
             <button
               type="button"
               onClick={() => setCommandOpen(true)}
@@ -841,7 +850,7 @@ export function StaffWorkspaceShell({
                       {displayName || "Authenticated Staff"}
                     </div>
                     <div className="text-[10px] text-on-surface-variant font-medium truncate">
-                      {agency ? `${agency} • ${roleLabel}` : roleLabel || "Staff"}
+                      {roleLabel || "Staff"}
                     </div>
                   </div>
                   <span className="material-symbols-outlined text-[16px] text-outline">
@@ -863,7 +872,7 @@ export function StaffWorkspaceShell({
                     </div>
                     <div className="text-[11px] text-on-surface-variant mt-0.5 truncate">
                       {roleLabel}
-                      {agency ? ` · ${agency}` : ""}
+                      {readableAgency ? ` · ${readableAgency}` : ""}
                     </div>
                   </div>
 
@@ -932,38 +941,40 @@ export function StaffWorkspaceShell({
         {/* SCROLLABLE WORKSPACE CONTENT CANVAS */}
         <main className="flex-1 overflow-y-auto main-scroll bg-surface">
           {!hidePageHeader && (
-            <div className="bg-surface-container-low/70 cad-grid-bg border-b-2 border-b-[#ff5b00]/80 px-4 sm:px-gutter-desktop py-2.5 sm:py-3">
-              <div className="max-w-[1600px] mx-auto flex flex-col lg:flex-row lg:items-center justify-between gap-2.5">
-                <div className="min-w-0">
-                  <div className="flex items-center gap-1.5 text-[10px] font-label-sm uppercase text-secondary mb-0.5 flex-wrap">
-                    <span className="material-symbols-outlined text-[13px]">share_location</span>
-                    <span>{section ?? copy.civilCommand}</span>
-                    <span>/</span>
-                    <span className="rounded bg-white/80 px-1.5 py-0.5 text-[10px] font-mono font-semibold text-slate-700 border border-slate-200/80 normal-case">
-                      {effectiveScope}
-                    </span>
-                    <DataSourceBadge
-                      kind={hasToken ? "live" : "demo"}
-                      asOf={asOf}
-                    />
-                  </div>
-                  <h1 className="font-headline-md text-lg sm:text-xl font-bold text-on-surface tracking-tight leading-tight">
-                    {title}
-                  </h1>
-                  {effectiveSubtitle && (
-                    <div className="text-xs text-on-surface-variant mt-0.5 max-w-3xl leading-snug line-clamp-2">
-                      {effectiveSubtitle}
+            <>
+              <div className="cac-survey-header px-4 sm:px-gutter-desktop py-2.5 sm:py-3">
+                <div className="max-w-[1600px] mx-auto flex flex-col lg:flex-row lg:items-center justify-between gap-2.5">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-1.5 text-[10px] font-mono font-bold uppercase tracking-wider text-[#ffb597] mb-0.5 flex-wrap">
+                      <span className="material-symbols-outlined text-[13px]">share_location</span>
+                      <span>{section ?? copy.civilCommand}</span>
+                      <span className="text-white/30">/</span>
+                      <span className="rounded bg-white/10 px-1.5 py-0.5 text-[10px] font-mono font-medium text-slate-200 border border-white/15 normal-case">
+                        {effectiveScope}
+                      </span>
+                      <DataSourceBadge
+                        kind={hasToken ? "live" : "demo"}
+                        asOf={asOf}
+                      />
                     </div>
-                  )}
+                    <h1 className="text-lg sm:text-xl font-bold text-white tracking-tight leading-tight">
+                      {title}
+                    </h1>
+                    {effectiveSubtitle && (
+                      <div className="text-xs text-slate-300 mt-0.5 max-w-3xl leading-snug line-clamp-2">
+                        {effectiveSubtitle}
+                      </div>
+                    )}
+                  </div>
+                  {actions && <div className="flex items-center gap-2 flex-wrap shrink-0">{actions}</div>}
                 </div>
-                {actions && <div className="flex items-center gap-2 flex-wrap shrink-0">{actions}</div>}
               </div>
               {context && (
-                <div className="max-w-[1600px] mx-auto mt-2 pt-2 border-t border-outline-variant/25">
-                  {context}
+                <div className="bg-surface-container-lowest border-b border-outline-variant/25 px-4 sm:px-gutter-desktop py-2">
+                  <div className="max-w-[1600px] mx-auto">{context}</div>
                 </div>
               )}
-            </div>
+            </>
           )}
 
           <div

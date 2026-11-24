@@ -131,7 +131,7 @@ export function ScenarioLab({ id, prefill }: { id: string; prefill?: Handoff | n
 
 function Shell({ copy, id, no, children }: { copy: SimCopy; id: string; no?: string; children: React.ReactNode }) {
   return (
-    <StaffWorkspaceShell title={copy.title} description={copy.subtitle} wide>
+    <StaffWorkspaceShell title={copy.title} description={copy.subtitle} wide hidePageHeader><div className="max-w-[1600px] mx-auto px-4 sm:px-gutter-desktop py-4 pb-10">
       <CommandHeader
         eyebrow={`RoadSync · Scenario Lab${no ? ` · ${no}` : ""}`}
         title={copy.title}
@@ -148,7 +148,7 @@ function Shell({ copy, id, no, children }: { copy: SimCopy; id: string; no?: str
         <p className="rs-help">{copy.demoNote}</p>
         {children}
       </div>
-    </StaffWorkspaceShell>
+    </div></StaffWorkspaceShell>
   );
 }
 

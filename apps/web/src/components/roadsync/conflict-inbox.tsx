@@ -7,6 +7,7 @@ import { Suspense, useCallback, useEffect, useMemo, useRef, useState, useSyncExt
 import { ChevronDownIcon, ChevronRightIcon, CrownIcon, DownloadIcon, EyeIcon, FilterIcon, KeyboardIcon, RefreshCwIcon, ShieldCheckIcon, XIcon } from "lucide-react";
 
 import { StaffWorkspaceShell } from "@/components/auth/staff-workspace-shell";
+import { CommandHeader, DashboardCanvas, DashboardKpiCard, DashboardKpiGrid } from "@/components/common/civic-atlas-primitives";
 import { ApiError } from "@/lib/api/client";
 import { getAuthEpoch, getMemorySession, subscribeAuth } from "@/lib/auth/state";
 import { useWorkspaceLocale } from "@/lib/i18n/workspace-locale";
@@ -153,7 +154,7 @@ function Inbox() {
   };
   const activeFilterCount = FILTER_KEYS.filter((k) => k !== "sort" && params.get(k)).length;
   const clearAll = () => { setSearch(""); router.replace(pathname, { scroll: false }); };
-  const mapFeatures = useMemo(() => rows.map((r) => ({ type: "Feature" as const, geometry: r.hotspot, properties: { id: r.id, band: r.severity.band, recordType: r.recordType, conflictNo: r.conflictNo } })), [rows]);
+  const mapFeatures = useMemo(() => rows.filter((r) => r.hotspot && Array.isArray(r.hotspot.coordinates) && r.hotspot.coordinates.length >= 2).map((r) => ({ type: "Feature" as const, geometry: r.hotspot, properties: { id: r.id, band: r.severity?.band ?? "info", recordType: r.recordType, conflictNo: r.conflictNo } })), [rows]);
 
   const rail = (
     <nav className="cr-rail" aria-label={copy.filters.presets}>
@@ -178,26 +179,54 @@ function Inbox() {
     : null;
 
   return (
-    <StaffWorkspaceShell title={copy.title} description={copy.subtitle} wide>
-      <div className="cr-bridge">
-        <header className="cr-band">
-          <p className="rs-help">{copy.demoNote}</p>
-          <div className="cr-band-actions">
-            <div className="cr-switch" role="group" aria-label={copy.title}>
-              {(["inbox", "board", "map"] as const).map((v) => <button key={v} type="button" aria-pressed={view === v} onClick={() => setParams({ view: v === "inbox" ? null : v })}>{copy.views[v]}</button>)}
-            </div>
-            <button type="button" className="rs-btn" onClick={() => void downloadFile(exportCsvPath(query), "roadsync-conflicts.csv").catch(() => setToast(copy.states.failed))}><DownloadIcon aria-hidden="true" /> {copy.exportCsv}</button>
-            <button type="button" className="rs-btn" onClick={() => setHelpOpen((v) => !v)} aria-expanded={helpOpen}><KeyboardIcon aria-hidden="true" /><span className="sr-only">{copy.shortcuts.title}</span></button>
-          </div>
-        </header>
+    <StaffWorkspaceShell title={copy.title} description={copy.subtitle} wide hidePageHeader>
+      <DashboardCanvas>
+        <CommandHeader
+          eyebrow="ROADSYNC · CONFLICT TRIAGE"
+          title={copy.title}
+          subtitle={copy.subtitle}
+          scopeLabel={national ? "National Scope" : "Agency Scope"}
+          sourceKind="live"
+          secondaryActions={
+            <>
+              <div className="inline-flex rounded-lg border border-white/20 bg-white/10 p-0.5" role="group" aria-label={copy.title}>
+                {(["inbox", "board", "map"] as const).map((v) => (
+                  <button
+                    key={v}
+                    type="button"
+                    aria-pressed={view === v}
+                    onClick={() => setParams({ view: v === "inbox" ? null : v })}
+                    className={`rounded-md px-2.5 py-1 text-xs font-semibold transition-colors ${view === v ? "bg-white text-slate-900" : "text-slate-200 hover:bg-white/10"}`}
+                  >
+                    {copy.views[v]}
+                  </button>
+                ))}
+              </div>
+              <button type="button" className="cac-header-btn" onClick={() => void downloadFile(exportCsvPath(query), "roadsync-conflicts.csv").catch(() => setToast(copy.states.failed))}>
+                <DownloadIcon aria-hidden="true" />
+                <span>{copy.exportCsv}</span>
+              </button>
+              <button type="button" className="cac-header-btn" onClick={() => setHelpOpen((v) => !v)} aria-expanded={helpOpen}>
+                <KeyboardIcon aria-hidden="true" />
+                <span className="sr-only">{copy.shortcuts.title}</span>
+              </button>
+            </>
+          }
+        />
 
-        <div className="cr-mission">
+      <div className="cr-bridge">
+        <DashboardKpiGrid columns={5} label={copy.title}>
           {tiles.map((t) => (
-            <button key={t.preset} type="button" className="cr-tile" data-alarm={t.alarm ? "true" : undefined} aria-pressed={preset === t.preset} onClick={() => setParams({ preset: t.preset, status: null, band: null, class: null, recordType: null, startsWithinDays: null })}>
-              <strong>{t.value ?? "–"}</strong><span>{copy.mission[t.preset as keyof typeof copy.mission]}</span>
-            </button>
+            <DashboardKpiCard
+              key={t.preset}
+              label={copy.mission[t.preset as keyof typeof copy.mission]}
+              value={t.value ?? "–"}
+              tone={t.alarm ? "critical" : t.preset === "criticalHigh" ? "brand" : t.preset === "opportunities" ? "success" : "neutral"}
+              active={preset === t.preset}
+              onClick={() => setParams({ preset: t.preset, status: null, band: null, class: null, recordType: null, startsWithinDays: null })}
+            />
           ))}
-        </div>
+        </DashboardKpiGrid>
         {helpOpen ? <div className="cr-help" role="dialog" aria-label={copy.shortcuts.title}><strong>{copy.shortcuts.title}</strong><ul>{Object.entries(copy.shortcuts).filter(([k]) => k !== "title").map(([k, v]) => <li key={k}>{v}</li>)}</ul></div> : null}
         {s?.capped ? <p className="rs-help">{copy.states.capped}</p> : null}
 
@@ -241,29 +270,33 @@ function Inbox() {
         {toast ? <div className="cr-toast" role="status" onAnimationEnd={() => undefined}>{toast} <button type="button" onClick={() => setToast(null)} aria-label={copy.filters.close}><XIcon aria-hidden="true" /></button></div> : null}
         <p className="sr-only" aria-live="polite">{live}</p>
       </div>
+      </DashboardCanvas>
     </StaffWorkspaceShell>
   );
 }
 
 function PartyLine({ row, copy }: { row: RecordRow; copy: ReturnType<typeof getConflictCopy> }) {
-  const { a, b } = row.parties;
+  const a = row.parties?.a;
+  const b = row.parties?.b;
+  if (!a || !b) return null;
   return (
     <span className="cr-parties">
-      <span className="cr-party"><code>{a.ref}</code><span className="rs-nb-chip" data-mine={a.mine}>{a.agencyName ?? "—"}</span></span>
+      <span className="cr-party"><code>{a.ref ?? "—"}</code><span className="rs-nb-chip" data-mine={a.mine}>{a.agencyName ?? "—"}</span></span>
       <span aria-hidden="true">{copy.row.vs}</span>
-      <span className="cr-party"><code>{b.ref}</code><span className="rs-nb-chip" data-mine={b.mine}>{b.agencyName ?? "—"}</span></span>
+      <span className="cr-party"><code>{b.ref ?? "—"}</code><span className="rs-nb-chip" data-mine={b.mine}>{b.agencyName ?? "—"}</span></span>
     </span>
   );
 }
 
 function Row({ row, index, active, selected, copy, ac, locale, now, onFocus, onOpen, onSelect }: { row: RecordRow; index: number; active: boolean; selected: boolean; copy: ReturnType<typeof getConflictCopy>; ac: ReturnType<typeof getAssessmentCopy>; locale: string; now: number; onFocus: () => void; onOpen: () => void; onSelect: (on: boolean) => void }) {
-  const classes = row.severity.classes;
+  const band = row.severity?.band ?? "info";
+  const classes = row.severity?.classes ?? [];
   return (
-    <div id={`cr-row-${row.id}`} role="option" aria-selected={selected} data-active={active} data-band={row.severity.band} data-kind={row.recordType} className="cr-row" style={{ animationDelay: `${Math.min(index, 8) * 30}ms` }} onClick={onFocus}>
+    <div id={`cr-row-${row.id}`} role="option" aria-selected={selected} data-active={active} data-band={band} data-kind={row.recordType} className="cr-row" style={{ animationDelay: `${Math.min(index, 8) * 30}ms` }} onClick={onFocus}>
       <input type="checkbox" checked={selected} onChange={(e) => onSelect(e.target.checked)} aria-label={fmt(copy.row.select, { no: row.conflictNo })} />
       <div className="cr-row-main">
         <div className="cr-row-top">
-          {row.recordType === "conflict" ? <BandPill band={row.severity.band} copy={ac} /> : <span className="rs-sev" data-kind="opportunity"><span>{copy.recordType.opportunity}</span></span>}
+          {row.recordType === "conflict" ? <BandPill band={band} copy={ac} /> : <span className="rs-sev" data-kind="opportunity"><span>{copy.recordType.opportunity}</span></span>}
           <code className="cr-no">{row.conflictNo}</code>
           <StatusPill status={row.status} copy={copy} belowThreshold={row.belowThreshold} />
           {row.internal ? <span className="rs-nb-chip">{copy.internalChip}</span> : null}
@@ -283,19 +316,23 @@ function Row({ row, index, active, selected, copy, ac, locale, now, onFocus, onO
 }
 
 function Preview({ row, copy, ac, locale, now, canAck, onAck, onWatch, compact }: { row: RecordRow; copy: ReturnType<typeof getConflictCopy>; ac: ReturnType<typeof getAssessmentCopy>; locale: string; now: number; canAck: boolean; onAck: () => void; onWatch: () => void; compact?: boolean }) {
+  const band = row.severity?.band ?? "info";
+  const score = row.severity?.score ?? 0;
+  const coords = Array.isArray(row.hotspot?.coordinates) && row.hotspot.coordinates.length >= 2 ? row.hotspot.coordinates : null;
+  const partyList = [row.parties?.a, row.parties?.b].filter((p): p is NonNullable<typeof p> => Boolean(p));
   const lead = row.lead ? (row.lead.source === "national" ? fmt(copy.lead.national, { agency: row.lead.agencyName ?? "—" }) : fmt(copy.lead.suggested, { agency: row.lead.agencyName ?? "—", reason: copy.reasons[row.lead.reasonCode] ?? "" })) : copy.lead.none;
   return (
     <div className="cr-pv">
-      <div className="cr-pv-head"><ScoreRing score={row.severity.score} band={row.severity.band} size={54} label={`${row.severity.score} ${ac.bands[row.severity.band]}`} /><div><code>{row.conflictNo}</code><StatusPill status={row.status} copy={copy} belowThreshold={row.belowThreshold} /></div></div>
+      <div className="cr-pv-head"><ScoreRing score={score} band={band} size={54} label={`${score} ${ac.bands[band]}`} /><div><code>{row.conflictNo}</code><StatusPill status={row.status} copy={copy} belowThreshold={row.belowThreshold} /></div></div>
       <div className="cr-pv-parties">
-        {([row.parties.a, row.parties.b]).map((p) => (
-          <div key={p.id} className="cr-pv-party" data-mine={p.mine}><code>{p.ref}</code><strong>{p.title}</strong><span>{p.agencyName ?? "—"}</span><span className="rs-help">{p.plannedStart?.slice(0, 10)} → {p.plannedEnd?.slice(0, 10)}</span></div>
+        {partyList.map((p, idx) => (
+          <div key={p.id ?? idx} className="cr-pv-party" data-mine={p.mine}><code>{p.ref ?? "—"}</code><strong>{p.title ?? "—"}</strong><span>{p.agencyName ?? "—"}</span><span className="rs-help">{p.plannedStart?.slice(0, 10) ?? "—"} → {p.plannedEnd?.slice(0, 10) ?? "—"}</span></div>
         ))}
       </div>
       <p className="rs-help">{lead}</p>
       <AckSegments row={row} copy={copy} />
       <div className="cr-pv-row"><TimeRing t={row.timeToImpact} copy={copy} /><SlaChip due={ackSlaDue(row.status, row.myAgency)} now={now} copy={copy} locale={locale} /></div>
-      {compact ? null : <p className="rs-help">{row.hotspot.coordinates[1].toFixed(4)}, {row.hotspot.coordinates[0].toFixed(4)}</p>}
+      {compact || !coords ? null : <p className="rs-help">{Number(coords[1]).toFixed(4)}, {Number(coords[0]).toFixed(4)}</p>}
       <div className="cr-pv-actions">
         {canAck ? <button type="button" className="rs-btn is-primary" onClick={onAck}>{copy.row.acknowledge}</button> : null}
         <Link className="rs-btn" href={`/roadsync/conflicts/${row.id}`}>{copy.row.open}</Link>
@@ -311,7 +348,7 @@ function Board({ rows, copy, ac, locale, now, onOpen }: { rows: RecordRow[]; cop
   return (
     <div className="cr-board">
       {lanes.map((band) => {
-        const cards = rows.filter((r) => r.severity.band === band).sort((x, y) => (x.overlapWindow?.start ?? "9").localeCompare(y.overlapWindow?.start ?? "9"));
+        const cards = rows.filter((r) => (r.severity?.band ?? "info") === band).sort((x, y) => (x.overlapWindow?.start ?? "9").localeCompare(y.overlapWindow?.start ?? "9"));
         const collapsed = closed.has(band);
         return (
           <section key={band} className="cr-lane" data-band={band}>

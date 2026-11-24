@@ -27,7 +27,7 @@ import { projectCoreQueryKey } from "@/lib/projects/overview-format";
 import { fetchProgress, fetchProgressHistory, submitProgress } from "@/lib/projects/progress-api";
 import { progressFormSchema, progressNoteReady } from "@/lib/projects/progress-form";
 import { getProgressCopy } from "@/lib/projects/progress-messages";
-import { ProjectRecordNav, RecordContext } from "./project-record-nav";
+import { ProjectRecordNav } from "./project-record-nav";
 
 type FormValues = { percentage: number; note: string };
 
@@ -119,8 +119,8 @@ export function ProjectProgressClient({ id }: { id: string }) {
       title={copy.title}
       description={copy.description}
       wide
-      context={<RecordContext id={id} locale={locale} current={copy.title} />}
-    >
+      hidePageHeader
+    ><div className="max-w-[1600px] mx-auto px-4 sm:px-gutter-desktop py-4 pb-10">
       <ProjectRecordNav id={id} locale={locale} />
 
       <div className="mt-4 space-y-6">
@@ -330,7 +330,7 @@ export function ProjectProgressClient({ id }: { id: string }) {
           </section>
         ) : null}
       </div>
-    </StaffWorkspaceShell>
+    </div></StaffWorkspaceShell>
   );
 }
 
