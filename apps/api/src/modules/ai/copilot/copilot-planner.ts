@@ -31,6 +31,7 @@ export type RunPlannerParams = {
   language: "en" | "si" | "ta";
   actor: AuthenticatedActor;
   requestId: string;
+  model?: string;
   isCancelled: () => Promise<boolean>;
   onStep?: (step: CopilotStepDto) => Promise<void>;
 };
@@ -108,7 +109,7 @@ export async function runCopilotPlanner(params: RunPlannerParams): Promise<Plann
 
   // Cold-start tolerance (Render free tier sleeps; first call can take 30-60 s): if the service does not answer a
   // liveness probe quickly, tell the user it is warming up, wait for it, and only then start the wall-clock budget.
-  const warmUp = async (): Promise<void> => {
+  const warmUp = async (): Promise<boolean> => {
     const warmStart = Date.now();
     const warmStep: CopilotStepDto = {
       at: new Date().toISOString(),
@@ -119,9 +120,14 @@ export async function runCopilotPlanner(params: RunPlannerParams): Promise<Plann
     };
     steps.push(warmStep);
     await params.onStep?.(warmStep);
-    await aiClient().wake(65_000).catch(() => undefined);
+    const woke = await aiClient()
+      .wake(65_000)
+      .then(() => true)
+      .catch(() => false);
+    warmStep.status = woke ? "OK" : "ERROR";
     warmStep.durationMs = Date.now() - warmStart;
     startTime = Date.now();
+    return woke;
   };
   if (aiClient().isCold) {
     const quick = await Promise.race([
@@ -159,19 +165,23 @@ export async function runCopilotPlanner(params: RunPlannerParams): Promise<Plann
         toolResults: toolResultsForLlm,
         round,
         maxOutputTokens: 2000,
+        ...(params.model ? { model: params.model } : {}),
       });
 
       totalInputTokens += stepResponse.usage.inputTokens;
       totalOutputTokens += stepResponse.usage.outputTokens;
       usedModel = stepResponse.model;
     } catch (err: unknown) {
-      const errCode = (err as { code?: string } | null)?.code;
+      const errObj = err as { code?: string; llm?: string } | null;
+      const errCode = errObj?.llm ?? errObj?.code;
       // One safe retry (the step is a read-only, idempotent LLM call) when the service was unreachable or timed out.
       if (!transportRetried && (errCode === "AI_SERVICE_UNAVAILABLE" || errCode === "AI_SERVICE_TIMEOUT")) {
         transportRetried = true;
-        await warmUp();
-        round -= 1;
-        continue;
+        const woke = await warmUp();
+        if (woke) {
+          round -= 1;
+          continue;
+        }
       }
       const failStep: CopilotStepDto = {
         at: new Date().toISOString(),

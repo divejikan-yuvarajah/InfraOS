@@ -124,6 +124,7 @@ async def copilot_step(req: CopilotStepRequest, request: Request) -> CopilotStep
         max_tokens=req.maxOutputTokens,
         timeout=s.llm_answer_timeout_s,
         strong=req.round >= 4,
+        model_override=req.model,
     )
     log_event("llm_copilot_step", round=req.round, tokens_in=c.input_tokens, tokens_out=c.output_tokens)
     return CopilotStepResponse(output=c.parsed, **_meta(c, prompts.PROMPT_VERSIONS["copilot"]))

@@ -127,6 +127,7 @@ export async function createCopilotTurn(
         language,
         actor,
         requestId,
+        model: gate.model,
         isCancelled: async () => {
           const fresh = await AiInteraction.findById(turnId).select("cancelRequested").lean();
           return Boolean(fresh?.cancelRequested);

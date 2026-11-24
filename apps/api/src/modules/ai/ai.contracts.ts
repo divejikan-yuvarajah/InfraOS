@@ -235,6 +235,7 @@ export const copilotStepRequest = z.object({
   })).default([]),
   round: z.number().int().min(1).max(5),
   maxOutputTokens: z.number().int().min(100).max(4000).default(2500),
+  model: z.string().min(1).max(120).optional(),
 });
 export type CopilotStepRequest = z.infer<typeof copilotStepRequest>;
 

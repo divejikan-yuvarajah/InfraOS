@@ -305,6 +305,7 @@ class CopilotStepRequest(Strict):
     toolResults: list[CopilotToolResult] = Field(default_factory=list)
     round: int = Field(ge=1, le=5)
     maxOutputTokens: int = Field(default=2500, ge=100, le=4000)
+    model: str | None = Field(default=None, max_length=120)
 
 
 class CopilotStepResponse(LlmMeta):

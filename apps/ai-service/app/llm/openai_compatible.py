@@ -27,6 +27,15 @@ class Completion:
     mode: str
 
 
+def _strip_fences(raw: str) -> str:
+    s = raw.strip()
+    if s.startswith("```"):
+        lines = s.splitlines()
+        if len(lines) >= 3 and lines[-1].strip() == "```":
+            return "\n".join(lines[1:-1]).strip()
+    return s
+
+
 class LlmClient:
     def __init__(self, s: Settings, client: httpx.AsyncClient | None = None, sleep=asyncio.sleep) -> None:  # noqa: ANN001
         self.s = s
@@ -34,8 +43,10 @@ class LlmClient:
         self._sleep = sleep
         self._sem = asyncio.Semaphore(s.llm_concurrency)
 
-    def model_for(self, strong: bool = False, vision: bool = False) -> str:
-        if vision:
+    def model_for(self, strong: bool = False, vision: bool = False, model_override: str | None = None) -> str:
+        if model_override and model_override.strip():
+            m = model_override.strip()
+        elif vision:
             m = self.s.ai_vision_model or self.s.ai_chat_model
         else:
             m = (self.s.ai_chat_model_strong if strong and self.s.ai_chat_model_strong else self.s.ai_chat_model)
@@ -66,7 +77,11 @@ class LlmClient:
                 else:  # 4xx: retrying cannot help
                     text = r.text.lower()
                     log_event("llm_rejected", status=r.status_code)
-                    raise ApiError("LLM_CONTEXT_TOO_LONG" if ("context" in text and ("length" in text or "maximum" in text)) else "LLM_UNAVAILABLE")
+                    if "context" in text and ("length" in text or "maximum" in text):
+                        raise ApiError("LLM_CONTEXT_TOO_LONG")
+                    if r.status_code in (400, 422) and "response_format" in body:
+                        raise ApiError("LLM_FORMAT_REJECTED")
+                    raise ApiError("LLM_UNAVAILABLE")
             if last == "LLM_TIMEOUT":
                 break  # a timed-out generation is not retried; the caller falls back
             if attempt < self.s.llm_max_retries:
@@ -74,21 +89,41 @@ class LlmClient:
         log_event("llm_failed", code=last)
         raise ApiError(last)
 
-    async def complete(self, messages: list[dict[str, Any]], schema: dict[str, Any], out_model: type[T], *, max_tokens: int, timeout: float, strong: bool = False, vision: bool = False) -> Completion:
-        model = self.model_for(strong, vision=vision)
+    async def complete(self, messages: list[dict[str, Any]], schema: dict[str, Any], out_model: type[T], *, max_tokens: int, timeout: float, strong: bool = False, vision: bool = False, model_override: str | None = None) -> Completion:
+        model = self.model_for(strong, vision=vision, model_override=model_override)
         mode = self.s.llm_structured_mode if self.s.llm_structured_mode in ("json_schema", "json_object") else "json_schema"
-        response_format = {"type": "json_schema", "json_schema": schema} if mode == "json_schema" else {"type": "json_object"}
+        formats: list[tuple[str, dict[str, Any] | None]] = (
+            [("json_schema", {"type": "json_schema", "json_schema": schema}), ("json_object", {"type": "json_object"}), ("plain", None)]
+            if mode == "json_schema"
+            else [("json_object", {"type": "json_object"}), ("plain", None)]
+        )
         msgs = list(messages)
         tin = tout = 0
         async with self._sem:
+            fmt_idx = 0
             for attempt in range(2):  # original + one repair
-                data = await self._post({"model": model, "messages": msgs, "temperature": 0.1, "max_tokens": max_tokens, "response_format": response_format}, timeout)
+                data: dict[str, Any] | None = None
+                while fmt_idx < len(formats):
+                    cur_mode, rf = formats[fmt_idx]
+                    payload: dict[str, Any] = {"model": model, "messages": msgs, "temperature": 0.1, "max_tokens": max_tokens}
+                    if rf is not None:
+                        payload["response_format"] = rf
+                    try:
+                        data = await self._post(payload, timeout)
+                        mode = cur_mode
+                        break
+                    except ApiError as exc:
+                        if exc.code == "LLM_FORMAT_REJECTED" and fmt_idx + 1 < len(formats):
+                            fmt_idx += 1
+                            continue
+                        raise ApiError("LLM_UNAVAILABLE") if exc.code == "LLM_FORMAT_REJECTED" else exc
+                assert data is not None
                 usage = data.get("usage") or {}
                 tin += int(usage.get("prompt_tokens") or 0)
                 tout += int(usage.get("completion_tokens") or 0)
                 try:
-                    content = data["choices"][0]["message"]["content"]
-                except (KeyError, IndexError, TypeError):
+                    content = _strip_fences(data["choices"][0]["message"]["content"])
+                except (KeyError, IndexError, TypeError, AttributeError):
                     raise ApiError("LLM_INVALID_OUTPUT") from None
                 try:
                     parsed = out_model.model_validate(json.loads(content))

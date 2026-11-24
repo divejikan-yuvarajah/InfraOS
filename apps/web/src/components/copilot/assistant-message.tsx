@@ -88,8 +88,20 @@ export function AssistantMessage({
   const hasDeniedStep = turn.steps.some((s) => s.status === "DENIED");
   const bySourceRef = new Map(turn.sources.map((s) => [s.n, s]));
 
-  const errKey = turn.errorCode as keyof typeof aiCopy.failures | undefined;
-  const errMessage = errKey && errKey in aiCopy.failures ? aiCopy.failures[errKey] : null;
+  const errAlias: Record<string, keyof typeof aiCopy.failures> = {
+    NOT_CONFIGURED: "MODEL_NOT_CONFIGURED",
+    AI_SERVICE_UNAVAILABLE: "AI_UNAVAILABLE",
+    LLM_UNAVAILABLE: "AI_UNAVAILABLE",
+    LLM_PROVIDER_ERROR: "AI_UNAVAILABLE",
+    AI_SERVICE_TIMEOUT: "MODEL_TIMEOUT",
+    LLM_TIMEOUT: "MODEL_TIMEOUT",
+    LLM_RATE_LIMITED: "AI_RATE_LIMITED",
+    LLM_CONTEXT_TOO_LONG: "CONTEXT_TOO_LARGE",
+  };
+  const resolvedErrKey = (turn.errorCode ? (errAlias[turn.errorCode] ?? turn.errorCode) : undefined) as
+    | keyof typeof aiCopy.failures
+    | undefined;
+  const errMessage = resolvedErrKey && resolvedErrKey in aiCopy.failures ? aiCopy.failures[resolvedErrKey] : null;
 
   const doCopy = async () => {
     const raw = turn.answer?.text ?? "";
@@ -232,13 +244,15 @@ export function AssistantMessage({
               <span>{copy.answer.retry}</span>
             </button>
           ) : null}
-          <button
-            type="button"
-            className="ctr-btn is-ghost"
-            onClick={() => onFollowUp(turn.message ? `${turn.message} — ` : "")}
-          >
-            {copy.answer.followUp}
-          </button>
+          {turn.status !== "FAILED" && turn.status !== "CANCELLED" ? (
+            <button
+              type="button"
+              className="ctr-btn is-ghost"
+              onClick={() => onFollowUp(turn.message ? `${turn.message} — ` : "")}
+            >
+              {copy.answer.followUp}
+            </button>
+          ) : null}
           {hasAnswer ? (
             <div className="ctr-row" style={{ gap: "0.25rem" }}>
               <button
