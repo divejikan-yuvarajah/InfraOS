@@ -4,6 +4,7 @@ import { ArrowLeftIcon } from "lucide-react";
 import Link from "next/link";
 import { useSyncExternalStore } from "react";
 
+import { CommandHeader } from "@/components/common/civic-atlas-primitives";
 import { getAiAdminCopy } from "@/lib/ai-admin/messages";
 import { getAuthSnapshot, getServerAuthSnapshot, subscribeAuth } from "@/lib/auth/state";
 import { useWorkspaceLocale } from "@/lib/i18n/workspace-locale";
@@ -27,19 +28,22 @@ export function AboutAiPageClient() {
         gap: "1rem",
       }}
     >
-      <header className="ctr-panel" style={{ display: "grid", gap: "0.45rem" }}>
-        <div className="ctr-row" style={{ justifyContent: "space-between", flexWrap: "wrap", gap: "0.5rem" }}>
+      <CommandHeader
+        eyebrow="INFRAOS · AI Governance"
+        title={copy.about.title}
+        subtitle={copy.about.subtitle}
+        sourceKind="recorded"
+        sourceLabel="Policy & Architecture"
+        secondaryActions={
           <Link
             href={auth.authenticated ? "/settings/ai" : "/"}
-            className="ctr-btn is-ghost"
+            className="inline-flex min-h-[44px] items-center gap-1.5 rounded-lg border border-white/25 px-3.5 py-2 text-xs font-semibold text-white hover:bg-white/10"
           >
-            <ArrowLeftIcon aria-hidden="true" />
+            <ArrowLeftIcon aria-hidden="true" className="h-4 w-4" />
             <span>{copy.about.backToWorkspace}</span>
           </Link>
-        </div>
-        <h1 style={{ margin: 0, fontSize: "1.5rem", fontWeight: 700 }}>{copy.about.title}</h1>
-        <p className="ctr-small" style={{ margin: 0 }}>{copy.about.subtitle}</p>
-      </header>
+        }
+      />
 
       <AboutAi locale={locale} />
     </main>
