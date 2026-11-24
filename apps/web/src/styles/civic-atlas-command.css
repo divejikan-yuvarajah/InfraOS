@@ -613,9 +613,9 @@
   min-height: 2.125rem;
   padding: 0.35rem 0.75rem;
   border-radius: 0.5rem;
-  border: 1px solid rgba(255, 255, 255, 0.22);
-  background: rgba(255, 255, 255, 0.09);
-  color: #f8fafc;
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #1e293b;
   font-size: 0.75rem;
   font-weight: 600;
   line-height: 1.2;
@@ -625,6 +625,17 @@
 }
 
 .cac-header-btn:hover:not(:disabled) {
+  background: #f8fafc;
+  border-color: #94a3b8;
+}
+
+.cac-survey-header .cac-header-btn {
+  border-color: rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.09);
+  color: #f8fafc;
+}
+
+.cac-survey-header .cac-header-btn:hover:not(:disabled) {
   background: rgba(255, 255, 255, 0.16);
   border-color: rgba(255, 255, 255, 0.35);
 }

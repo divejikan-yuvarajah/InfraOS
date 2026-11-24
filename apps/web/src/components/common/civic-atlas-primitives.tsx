@@ -589,7 +589,7 @@ export function CommandHeader({
   sourceLabel,
   primaryAction,
   secondaryActions,
-  variant = "navy",
+  variant = "light",
   className,
   children,
 }: {
@@ -611,33 +611,41 @@ export function CommandHeader({
   return (
     <section
       className={cn(
-        "rounded-xl px-4 py-2.5 sm:px-5 sm:py-3 mb-3.5",
+        "rounded-lg px-4 py-2.5 sm:px-5 mb-4",
         isNavy
           ? "cac-survey-header shadow-sm"
-          : "cac-card border-l-4 border-l-[#ff5b00]",
+          : "cac-card border-l-[3px] border-l-[#ff5b00]",
         className,
       )}
     >
-      <div className="flex flex-col gap-2.5 lg:flex-row lg:items-center lg:justify-between">
-        <div className="min-w-0 space-y-0.5">
+      <div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between min-h-[40px]">
+        <div className="min-w-0 flex flex-col gap-0.5">
           <div className="flex flex-wrap items-center gap-1.5 text-xs">
             {eyebrow ? (
               <span
                 className={cn(
                   "font-mono text-[10px] font-bold uppercase tracking-wider",
-                  isNavy ? "text-[#ffb597]" : "text-[#c43d00]",
+                  isNavy ? "text-[#ffb597]" : "text-[#a83900]",
                 )}
               >
                 {eyebrow}
               </span>
             ) : null}
+            <h1
+              className={cn(
+                "text-xl font-bold tracking-tight leading-tight",
+                isNavy ? "text-white" : "text-slate-900",
+              )}
+            >
+              {title}
+            </h1>
             {scopeLabel ? (
               <span
                 className={cn(
-                  "rounded px-1.5 py-0.5 font-mono text-[10px] font-medium",
+                  "hidden md:inline-flex items-center rounded px-1.5 py-0.5 font-mono text-[10px] font-medium",
                   isNavy
                     ? "bg-white/10 text-slate-200 border border-white/15"
-                    : "bg-slate-100 text-slate-700 border border-slate-200",
+                    : "bg-slate-100 text-slate-600 border border-slate-200",
                 )}
               >
                 {scopeLabel}
@@ -650,19 +658,10 @@ export function CommandHeader({
             />
           </div>
 
-          <h1
-            className={cn(
-              "text-lg sm:text-xl font-bold tracking-tight leading-tight",
-              isNavy ? "text-white" : "text-slate-900",
-            )}
-          >
-            {title}
-          </h1>
-
           {subtitle ? (
             <div
               className={cn(
-                "max-w-3xl text-xs leading-snug line-clamp-2",
+                "hidden sm:block max-w-2xl text-xs leading-snug truncate",
                 isNavy ? "text-slate-300" : "text-slate-600",
               )}
             >
@@ -683,7 +682,7 @@ export function CommandHeader({
         <div
           className={cn(
             "mt-2 pt-2 border-t",
-            isNavy ? "border-white/10" : "border-slate-200",
+            isNavy ? "border-white/10" : "border-slate-200/80",
           )}
         >
           {children}
@@ -905,7 +904,7 @@ export function DashboardKpiGrid({
     <section
       aria-label={label}
       aria-live="polite"
-      className={cn("grid gap-3.5", colClass, className)}
+      className={cn("grid gap-4", colClass, className)}
     >
       {children}
     </section>
@@ -1102,6 +1101,67 @@ export function DashboardSection({
         ) : null}
       </div>
       {children}
+    </section>
+  );
+}
+
+/**
+ * Standardised DashboardPage template: compact 56-72px header + optional KPI strip + 16px content grid.
+ */
+export function DashboardPage({
+  header,
+  kpis,
+  children,
+  className,
+}: {
+  header: ReactNode;
+  kpis?: ReactNode;
+  children: ReactNode;
+  className?: string;
+}) {
+  return (
+    <DashboardCanvas className={className}>
+      {header}
+      {kpis}
+      <div className="space-y-4">{children}</div>
+    </DashboardCanvas>
+  );
+}
+
+/**
+ * Collapsible secondary section ("Show more") to keep dashboards uncluttered while keeping all features reachable.
+ */
+export function CollapsibleSection({
+  title,
+  subtitle,
+  defaultOpen = false,
+  children,
+  className,
+}: {
+  title: string;
+  subtitle?: string;
+  defaultOpen?: boolean;
+  children: ReactNode;
+  className?: string;
+}) {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <section className={cn("cac-card", className)} aria-label={title}>
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        className="w-full flex items-center justify-between gap-3 px-4 py-3 text-left hover:bg-slate-50/80 rounded-xl transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ff5b00]"
+      >
+        <div className="min-w-0">
+          <span className="text-sm font-semibold text-slate-900">{title}</span>
+          {subtitle ? <p className="text-xs text-slate-500 truncate">{subtitle}</p> : null}
+        </div>
+        <span className="text-xs font-semibold text-[#a83900] shrink-0">
+          {open ? "Hide" : "Show more"}
+        </span>
+      </button>
+      {open ? <div className="px-4 pb-4 pt-1 border-t border-slate-100">{children}</div> : null}
     </section>
   );
 }

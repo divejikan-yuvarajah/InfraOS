@@ -189,14 +189,14 @@ function Inbox() {
           sourceKind="live"
           secondaryActions={
             <>
-              <div className="inline-flex rounded-lg border border-white/20 bg-white/10 p-0.5" role="group" aria-label={copy.title}>
+              <div className="inline-flex rounded-lg border border-slate-200 bg-slate-100 p-0.5" role="group" aria-label={copy.title}>
                 {(["inbox", "board", "map"] as const).map((v) => (
                   <button
                     key={v}
                     type="button"
                     aria-pressed={view === v}
                     onClick={() => setParams({ view: v === "inbox" ? null : v })}
-                    className={`rounded-md px-2.5 py-1 text-xs font-semibold transition-colors ${view === v ? "bg-white text-slate-900" : "text-slate-200 hover:bg-white/10"}`}
+                    className={`rounded-md px-2.5 py-1 text-xs font-semibold transition-colors ${view === v ? "bg-white text-slate-900 shadow-2xs" : "text-slate-600 hover:text-slate-900"}`}
                   >
                     {copy.views[v]}
                   </button>

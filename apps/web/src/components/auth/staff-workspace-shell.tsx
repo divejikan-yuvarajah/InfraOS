@@ -4,7 +4,7 @@ import { BrandMark } from "@/components/common/brand-mark";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState, useSyncExternalStore, type ReactNode } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Dialog, DropdownMenu } from "radix-ui";
 
 import { logoutWithAuthClient } from "@/lib/auth/client";
@@ -124,6 +124,8 @@ function SidebarNavContent({
   collapsed,
   onToggleCollapse,
   onNavigate,
+  onSignOut,
+  loggingOut,
 }: {
   pathname: string;
   locale: AuthLocale;
@@ -135,9 +137,15 @@ function SidebarNavContent({
   collapsed: boolean;
   onToggleCollapse?: () => void;
   onNavigate?: () => void;
+  onSignOut: () => void;
+  loggingOut: boolean;
 }) {
   const copy = SHELL_COPY[locale];
-  const [closedGroups, setClosedGroups] = useState<Record<string, boolean>>({});
+  const [closedGroups, setClosedGroups] = useState<Record<string, boolean>>(() => ({
+    "Citizen Services": true,
+    "Reports & Governance": true,
+    "Account & Settings": true,
+  }));
 
   const toggleGroup = (label: string) => {
     setClosedGroups((prev) => ({ ...prev, [label]: !prev[label] }));
@@ -307,35 +315,45 @@ function SidebarNavContent({
         })}
       </nav>
 
-      {/* Bottom Sidebar Role & Environment Context Card */}
-      <div className="p-3 border-t border-white/[0.08] bg-black/20 shrink-0">
+      {/* Bottom Sidebar Role, Scope & Sign Out */}
+      <div className="p-3 border-t border-white/[0.08] bg-black/20 shrink-0 space-y-2">
         {!collapsed ? (
           <>
-            <div className="p-2.5 rounded bg-white/[0.04] border border-white/[0.06] space-y-2">
-              <div className="flex items-center justify-between gap-1">
-                <span className="inline-flex items-center gap-1.5 px-1.5 py-0.5 rounded-xs border border-dashed border-amber-400/50 text-amber-300 text-[10px] font-bold tracking-wider uppercase">
-                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
-                  {copy.demoEnv}
+            <div className="px-2.5 py-2 rounded bg-white/[0.04] border border-white/[0.06] space-y-1">
+              <div className="flex items-center justify-between gap-1.5">
+                <span className="text-[11px] font-semibold text-white truncate">
+                  {ROLE_LABELS[role] ?? role ?? "Authorized Staff"}
                 </span>
-                <span className="text-[10px] font-mono text-on-primary-container uppercase truncate max-w-[90px]">
-                  {role || "STAFF"}
+                <span className="px-1.5 py-0.5 rounded-xs bg-white/10 text-[9px] font-mono font-semibold tracking-wider uppercase text-primary-fixed-dim shrink-0">
+                  DEMO
                 </span>
               </div>
-              <div className="text-[11px] text-primary-fixed-dim leading-tight">
-                <div className="font-semibold text-white truncate">
-                  {copy.agencyScope}: {agencyDisplay}
-                </div>
-                <div className="text-on-primary-container mt-0.5 truncate">
-                  {ROLE_LABELS[role] ?? role ?? "Authorized Staff"}
-                </div>
+              <div className="text-[11px] text-on-primary-container truncate">
+                {agencyDisplay}
               </div>
             </div>
+
+            <button
+              type="button"
+              disabled={loggingOut}
+              aria-busy={loggingOut}
+              onClick={() => {
+                onNavigate?.();
+                onSignOut();
+              }}
+              className="w-full min-h-[44px] flex items-center justify-between px-3 py-2 rounded-md border border-white/10 bg-white/[0.04] hover:bg-rose-500/20 hover:border-rose-400/35 text-rose-200 hover:text-white text-xs font-semibold transition-colors disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ff5b00]"
+            >
+              <span className="flex items-center gap-2.5">
+                <span className="material-symbols-outlined text-[18px]" aria-hidden="true">logout</span>
+                <span>{loggingOut ? copy.signingOut : copy.signOut}</span>
+              </span>
+            </button>
 
             {onToggleCollapse && (
               <button
                 type="button"
                 onClick={onToggleCollapse}
-                className="mt-2 w-full flex items-center justify-between px-2.5 py-1.5 rounded text-xs text-on-primary-container hover:text-white hover:bg-white/[0.04] transition-colors"
+                className="w-full flex items-center justify-between px-2.5 py-1.5 rounded text-xs text-on-primary-container hover:text-white hover:bg-white/[0.04] transition-colors"
               >
                 <span className="flex items-center gap-2">
                   <span className="material-symbols-outlined text-[16px]">dock_to_left</span>
@@ -348,16 +366,30 @@ function SidebarNavContent({
             )}
           </>
         ) : (
-          onToggleCollapse && (
+          <div className="flex flex-col items-center gap-1.5">
             <button
               type="button"
-              onClick={onToggleCollapse}
-              title={copy.expandRail}
-              className="w-full flex items-center justify-center py-2 rounded text-on-primary-container hover:text-white hover:bg-white/[0.06] transition-colors"
+              disabled={loggingOut}
+              aria-busy={loggingOut}
+              title={loggingOut ? copy.signingOut : copy.signOut}
+              aria-label={loggingOut ? copy.signingOut : copy.signOut}
+              onClick={onSignOut}
+              className="w-full min-h-[44px] flex items-center justify-center rounded-md border border-white/10 bg-white/[0.04] hover:bg-rose-500/20 hover:border-rose-400/35 text-rose-200 hover:text-white transition-colors disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ff5b00]"
             >
-              <span className="material-symbols-outlined text-[18px]">dock_to_right</span>
+              <span className="material-symbols-outlined text-[18px]" aria-hidden="true">logout</span>
             </button>
-          )
+            {onToggleCollapse && (
+              <button
+                type="button"
+                onClick={onToggleCollapse}
+                title={copy.expandRail}
+                aria-label={copy.expandRail}
+                className="w-full min-h-[40px] flex items-center justify-center rounded text-on-primary-container hover:text-white hover:bg-white/[0.06] transition-colors"
+              >
+                <span className="material-symbols-outlined text-[18px]">dock_to_right</span>
+              </button>
+            )}
+          </div>
         )}
       </div>
     </div>
@@ -543,10 +575,12 @@ export function StaffWorkspaceShell({
           : copy.allAgencies;
   const effectiveScope = scopeLabel || readableAgency;
 
+  const queryClient = useQueryClient();
   const handleSignOut = async () => {
     setLoggingOut(true);
     try {
       await logoutWithAuthClient();
+      queryClient.clear();
     } finally {
       router.replace("/login");
     }
@@ -577,6 +611,8 @@ export function StaffWorkspaceShell({
           coordinationCount={coordinationCount}
           collapsed={railCollapsed}
           onToggleCollapse={toggleRailCollapse}
+          onSignOut={() => void handleSignOut()}
+          loggingOut={loggingOut}
         />
       </aside>
 
@@ -608,6 +644,8 @@ export function StaffWorkspaceShell({
                 coordinationCount={coordinationCount}
                 collapsed={false}
                 onNavigate={() => setDrawerOpen(false)}
+                onSignOut={() => void handleSignOut()}
+                loggingOut={loggingOut}
               />
             </div>
           </Dialog.Content>
@@ -616,10 +654,10 @@ export function StaffWorkspaceShell({
 
       {/* 2. MAIN WORKSPACE WRAPPER */}
       <div className="flex-1 flex flex-col min-w-0 bg-surface overflow-hidden">
-        {/* TOP GLOBAL HEADER BAR (h-[60px]) */}
-        <header className="h-[60px] bg-surface-container-lowest border-b border-outline-variant/30 px-4 sm:px-gutter-desktop flex items-center justify-between gap-3 shrink-0 z-20">
-          {/* Left: Mobile Trigger + Breadcrumb & Command Context */}
-          <div className="flex items-center gap-2.5 shrink-0 min-w-0 max-w-[240px] 2xl:max-w-[340px]">
+        {/* TOP GLOBAL HEADER BAR (h-[56px]) — workspace search & controls without duplicating page title */}
+        <header className="h-[56px] bg-surface-container-lowest border-b border-outline-variant/30 px-4 sm:px-gutter-desktop flex items-center justify-between gap-3 shrink-0 z-20">
+          {/* Left: Mobile Trigger + Concise Workspace Context */}
+          <div className="flex items-center gap-2 shrink-0">
             <button
               type="button"
               onClick={() => setDrawerOpen(true)}
@@ -629,45 +667,39 @@ export function StaffWorkspaceShell({
               <span className="material-symbols-outlined text-[20px]">menu</span>
             </button>
 
-            <nav aria-label="Breadcrumb" className="hidden md:flex items-center gap-1.5 text-xs min-w-0">
+            <nav aria-label="Breadcrumb" className="hidden md:flex items-center gap-1.5 text-xs">
               <Link
                 href="/dashboard"
-                className="hidden 2xl:inline text-on-surface-variant font-medium hover:text-on-surface transition-colors shrink-0"
+                className="text-on-surface-variant font-medium hover:text-on-surface transition-colors shrink-0"
               >
                 {copy.civilCommand}
               </Link>
-              <span className="hidden 2xl:inline text-outline-variant">/</span>
               {breadcrumbs && breadcrumbs.length > 0 ? (
-                breadcrumbs.map((crumb, idx) => {
-                  const isLast = idx === breadcrumbs.length - 1;
-                  return (
-                    <span key={`${crumb.label}-${idx}`} className="flex items-center gap-1.5 min-w-0">
-                      {crumb.href && !isLast ? (
-                        <Link
-                          href={crumb.href}
-                          className="text-on-surface-variant hover:text-on-surface truncate max-w-[120px]"
-                        >
-                          {crumb.label}
-                        </Link>
-                      ) : (
-                        <span
-                          aria-current={isLast ? "page" : undefined}
-                          className="font-semibold text-on-surface flex items-center gap-1.5 truncate max-w-[180px]"
-                        >
-                          <span className="w-2 h-2 rounded-full bg-secondary-container shrink-0" />
-                          <span className="truncate">{crumb.label}</span>
-                        </span>
-                      )}
-                      {!isLast && <span className="text-outline-variant">/</span>}
-                    </span>
-                  );
-                })
-              ) : (
-                <span className="font-semibold text-on-surface flex items-center gap-1.5 truncate max-w-[190px]">
-                  <span className="w-2 h-2 rounded-full bg-secondary-container shrink-0" />
-                  <span className="truncate">{title}</span>
-                </span>
-              )}
+                breadcrumbs.slice(0, -1).map((crumb, idx) => (
+                  <span key={`${crumb.label}-${idx}`} className="flex items-center gap-1.5">
+                    <span className="text-outline-variant">/</span>
+                    {crumb.href ? (
+                      <Link
+                        href={crumb.href}
+                        className="text-on-surface-variant hover:text-on-surface truncate max-w-[140px]"
+                      >
+                        {crumb.label}
+                      </Link>
+                    ) : (
+                      <span className="text-on-surface-variant truncate max-w-[140px]">
+                        {crumb.label}
+                      </span>
+                    )}
+                  </span>
+                ))
+              ) : section ? (
+                <>
+                  <span className="text-outline-variant">/</span>
+                  <span className="text-on-surface-variant font-medium truncate max-w-[160px]">
+                    {section}
+                  </span>
+                </>
+              ) : null}
             </nav>
           </div>
 
@@ -942,14 +974,14 @@ export function StaffWorkspaceShell({
         <main className="flex-1 overflow-y-auto main-scroll bg-surface">
           {!hidePageHeader && (
             <>
-              <div className="cac-survey-header px-4 sm:px-gutter-desktop py-2.5 sm:py-3">
-                <div className="max-w-[1600px] mx-auto flex flex-col lg:flex-row lg:items-center justify-between gap-2.5">
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-1.5 text-[10px] font-mono font-bold uppercase tracking-wider text-[#ffb597] mb-0.5 flex-wrap">
-                      <span className="material-symbols-outlined text-[13px]">share_location</span>
-                      <span>{section ?? copy.civilCommand}</span>
-                      <span className="text-white/30">/</span>
-                      <span className="rounded bg-white/10 px-1.5 py-0.5 text-[10px] font-mono font-medium text-slate-200 border border-white/15 normal-case">
+              <div className="bg-white border-b border-slate-200 border-l-[3px] border-l-[#ff5b00] px-4 sm:px-gutter-desktop py-2.5">
+                <div className="max-w-[1600px] mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-2 min-h-[40px]">
+                  <div className="min-w-0 flex flex-col gap-0.5">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h1 className="text-xl font-bold text-slate-900 tracking-tight leading-tight truncate">
+                        {title}
+                      </h1>
+                      <span className="hidden md:inline-flex items-center rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-mono font-medium text-slate-600 border border-slate-200">
                         {effectiveScope}
                       </span>
                       <DataSourceBadge
@@ -957,11 +989,8 @@ export function StaffWorkspaceShell({
                         asOf={asOf}
                       />
                     </div>
-                    <h1 className="text-lg sm:text-xl font-bold text-white tracking-tight leading-tight">
-                      {title}
-                    </h1>
                     {effectiveSubtitle && (
-                      <div className="text-xs text-slate-300 mt-0.5 max-w-3xl leading-snug line-clamp-2">
+                      <div className="hidden sm:block text-xs text-slate-600 truncate max-w-2xl leading-snug">
                         {effectiveSubtitle}
                       </div>
                     )}
@@ -970,7 +999,7 @@ export function StaffWorkspaceShell({
                 </div>
               </div>
               {context && (
-                <div className="bg-surface-container-lowest border-b border-outline-variant/25 px-4 sm:px-gutter-desktop py-2">
+                <div className="bg-slate-50/80 border-b border-slate-200/80 px-4 sm:px-gutter-desktop py-1.5">
                   <div className="max-w-[1600px] mx-auto">{context}</div>
                 </div>
               )}

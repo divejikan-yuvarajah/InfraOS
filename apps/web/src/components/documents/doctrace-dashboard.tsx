@@ -271,12 +271,12 @@ export function DocTraceDashboard() {
                   <span>{copy.dashboard.exportCsv}</span>
                 </button>
               ) : null}
-              <div className="inline-flex rounded-lg border border-white/20 bg-white/10 p-0.5" role="group" aria-label={copy.dashboard.views}>
+              <div className="inline-flex rounded-lg border border-slate-200 bg-slate-100 p-0.5" role="group" aria-label={copy.dashboard.views}>
                 <button
                   type="button"
                   aria-pressed={layout === "table"}
                   onClick={() => setLayout("table")}
-                  className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-semibold transition-colors ${layout === "table" ? "bg-white text-slate-900" : "text-slate-200 hover:bg-white/10"}`}
+                  className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-semibold transition-colors ${layout === "table" ? "bg-white text-slate-900 shadow-2xs" : "text-slate-600 hover:text-slate-900"}`}
                 >
                   <TableIcon aria-hidden="true" className="size-3.5" />
                   <span>{copy.dashboard.viewTable}</span>
@@ -285,7 +285,7 @@ export function DocTraceDashboard() {
                   type="button"
                   aria-pressed={layout === "grid"}
                   onClick={() => setLayout("grid")}
-                  className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-semibold transition-colors ${layout === "grid" ? "bg-white text-slate-900" : "text-slate-200 hover:bg-white/10"}`}
+                  className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-semibold transition-colors ${layout === "grid" ? "bg-white text-slate-900 shadow-2xs" : "text-slate-600 hover:text-slate-900"}`}
                 >
                   <LayoutGridIcon aria-hidden="true" className="size-3.5" />
                   <span>{copy.dashboard.viewGrid}</span>

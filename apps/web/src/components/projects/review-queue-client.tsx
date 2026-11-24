@@ -141,7 +141,7 @@ export function ReviewQueueClient() {
         subtitle={copy.subtitle}
         sourceKind="live"
         secondaryActions={
-          <Link href="/projects" className="inline-flex min-h-[44px] items-center rounded-lg border border-white/25 px-3.5 py-2 text-xs font-semibold text-white hover:bg-white/10">
+          <Link href="/projects" className="cac-header-btn">
             {copy.backToProjects}
           </Link>
         }
