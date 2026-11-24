@@ -78,6 +78,7 @@ export const COPILOT_SI: CopilotMessages = {
     "copilot.step.plan_completed": "ලබාගත් කරුණු මත පිළිතුර සැකසෙමින්…",
     "copilot.step.grounding_verified": "මූලාශ්‍ර සමඟ කරුණු හා සංඛ්‍යා සත්‍යාපනය කරමින්…",
     "copilot.step.service_unavailable": "AI සැලසුම් සේවාව ලබා ගත නොහැක",
+    "copilot.step.service_warming": "AI සේවාව අවදි කරමින් (විරාමයකට පසු පළමු ඉල්ලීමට මිනිත්තුවක් දක්වා ගත විය හැක)", // unverified-draft
     "copilot.step.permission_denied": "ඉල්ලූ දත්ත මෙවලම සඳහා අවසර ප්‍රතික්ෂේප විය",
     "copilot.step.invalid_tool_args": "වලංගු නොවන මෙවලම් පරාමිතීන් ප්‍රතික්ෂේප විය",
     "copilot.step.unprovenanced_id": "තහවුරු නොකළ හැඳුනුම්පත් සෙවීම අවහිර කළා",
@@ -173,6 +174,18 @@ export const COPILOT_SI: CopilotMessages = {
     overdueMaintenance: "කල් ඉකුත් වූ නඩත්තු අයිතම {n}",
     latestInspection: "නවතම පරීක්ෂාව",
     linksTitle: "සෘජු පිවිසුම්",
+  },
+  page: {
+    title: "යටිතල පහසුකම් Copilot",
+    subtitle: "ඔබේ භූමිකාවට බැලිය හැකි ව්‍යාපෘති, අවදානම්, පරීක්ෂණ සහ වාර්තා ගැන ප්‍රශ්න අසන්න. පිළිතුරු ඒවා ලැබුණු සැබෑ වාර්තා වෙත සබැඳේ.", // unverified-draft
+    openButton: "Copilot විවෘත කරන්න", // unverified-draft
+    quickFactsButton: "ක්ෂණික දත්ත විවෘත කරන්න", // unverified-draft
+    whatCanIAskTitle: "මට අසන්න පුළුවන් දේ?", // unverified-draft
+    example1: "මගේ ව්‍යාපෘති අතරින් අවදානම්ව ඇත්තේ කුමක්ද?", // unverified-draft
+    example2: "මෙම මාසයේ කල් ඉකුත් වූ සන්ධිස්ථාන මොනවාද?", // unverified-draft
+    example3: "මගේ ආයතනයේ විවෘත ගැටුම් සාරාංශ කරන්න.", // unverified-draft
+    example4: "මෙම ව්‍යාපෘතිය පිළිබඳ නවතම පරීක්ෂණය කියන්නේ කුමක්ද?", // unverified-draft
+    scopeNote: "කියවීමට පමණි. Copilot වාර්තා වෙනස් නොකරන අතර ඔබේ භූමිකාවට දැනටමත් විවෘත කළ හැකි දත්ත පමණක් කියවයි.", // unverified-draft
   },
   unavailable: {
     disabledTitle: "Copilot අක්‍රිය කර ඇත",

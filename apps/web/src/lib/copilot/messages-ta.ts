@@ -78,6 +78,7 @@ export const COPILOT_TA: CopilotMessages = {
     "copilot.step.plan_completed": "பெறப்பட்ட உண்மைகளிலிருந்து பதிலைத் தொகுக்கிறது…",
     "copilot.step.grounding_verified": "ஆதாரங்களுடன் கூற்றுகள் மற்றும் எண்களைச் சரிபார்க்கிறது…",
     "copilot.step.service_unavailable": "AI திட்டமிடல் சேவை கிடைக்கவில்லை",
+    "copilot.step.service_warming": "AI சேவையை எழுப்புகிறது (இடைவேளைக்குப் பிறகு முதல் கோரிக்கைக்கு ஒரு நிமிடம் வரை ஆகலாம்)", // unverified-draft
     "copilot.step.permission_denied": "கோரப்பட்ட தரவு கருவிக்கான அனுமதி மறுக்கப்பட்டது",
     "copilot.step.invalid_tool_args": "தவறான கருவி வினவல் அளவுருக்கள் நிராகரிக்கப்பட்டன",
     "copilot.step.unprovenanced_id": "சான்றில்லாத அடையாள எண் தேடல் தடுக்கப்பட்டது",
@@ -173,6 +174,18 @@ export const COPILOT_TA: CopilotMessages = {
     overdueMaintenance: "காலம் கடந்த பராமரிப்பு உருப்படிகள் {n}",
     latestInspection: "சமீபத்திய ஆய்வு",
     linksTitle: "நேரடி இணைப்புகள்",
+  },
+  page: {
+    title: "உள்கட்டமைப்பு Copilot",
+    subtitle: "உங்கள் பங்கு பார்க்க அனுமதிக்கப்பட்ட திட்டங்கள், அபாயங்கள், ஆய்வுகள் மற்றும் பதிவுகள் பற்றி கேளுங்கள். பதில்கள் அவை வந்த உண்மையான பதிவுகளுடன் இணைக்கப்படும்.", // unverified-draft
+    openButton: "Copilot ஐத் திறக்கவும்", // unverified-draft
+    quickFactsButton: "விரைவு உண்மைகளைத் திறக்கவும்", // unverified-draft
+    whatCanIAskTitle: "நான் என்ன கேட்கலாம்?", // unverified-draft
+    example1: "என் திட்டங்களில் எவை அபாயத்தில் உள்ளன?", // unverified-draft
+    example2: "இந்த மாதம் தாமதமான மைல்கற்கள் எவை?", // unverified-draft
+    example3: "என் நிறுவனத்தின் திறந்த மோதல்களைச் சுருக்கவும்.", // unverified-draft
+    example4: "இந்தத் திட்டம் பற்றிய சமீபத்திய ஆய்வு என்ன சொல்கிறது?", // unverified-draft
+    scopeNote: "படிக்க மட்டும். Copilot பதிவுகளை மாற்றாது; உங்கள் பங்கு ஏற்கனவே திறக்கக்கூடிய தரவை மட்டுமே படிக்கும்.", // unverified-draft
   },
   unavailable: {
     disabledTitle: "Copilot முடக்கப்பட்டுள்ளது",
