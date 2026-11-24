@@ -32,6 +32,9 @@ adminRegistrationRouter.get(
   "/",
   requireAuthenticated,
   requirePermission("user.read"),
+  // Registration requests are platform-wide applicant PII, not agency records: only roles that can also
+  // approve (user.create: SUPER_ADMIN, GOV_ADMIN) may read the queue. AGENCY_OFFICER holds user.read only.
+  requirePermission("user.create"),
   async (req, res, next) => {
     try {
       noStore(res);
@@ -56,6 +59,9 @@ adminRegistrationRouter.get(
   "/:id",
   requireAuthenticated,
   requirePermission("user.read"),
+  // Registration requests are platform-wide applicant PII, not agency records: only roles that can also
+  // approve (user.create: SUPER_ADMIN, GOV_ADMIN) may read the queue. AGENCY_OFFICER holds user.read only.
+  requirePermission("user.create"),
   async (req, res, next) => {
     try {
       noStore(res);

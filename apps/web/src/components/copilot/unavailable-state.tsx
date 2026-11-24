@@ -11,19 +11,24 @@ export function UnavailableState({
   copy,
   onOpenQuickFacts,
 }: {
-  mode: "disabled" | "unavailable" | "forbidden";
+  mode: "disabled" | "unavailable" | "forbidden" | "notConfigured";
   copy: CopilotMessages;
   onOpenQuickFacts?: () => void;
 }) {
   const Icon = mode === "disabled" ? BanIcon : mode === "forbidden" ? LockIcon : CloudOffIcon;
+  const notConfigured = mode === "notConfigured";
   const title =
-    mode === "disabled"
+    notConfigured
+      ? copy.unavailable.notConfiguredTitle
+      : mode === "disabled"
       ? copy.unavailable.disabledTitle
       : mode === "forbidden"
         ? copy.unavailable.forbiddenTitle
         : copy.unavailable.unavailableTitle;
   const body =
-    mode === "disabled"
+    notConfigured
+      ? copy.unavailable.notConfiguredBody
+      : mode === "disabled"
       ? copy.unavailable.disabledBody
       : mode === "forbidden"
         ? copy.unavailable.forbiddenBody

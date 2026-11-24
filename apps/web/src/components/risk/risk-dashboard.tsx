@@ -90,7 +90,8 @@ export function RiskDashboard() {
   // 4. Fetch Portfolio Trend
   const { data: trendData } = useQuery({
     queryKey: ["risk", "trend"],
-    queryFn: () => fetchRiskPortfolioTrend("12w"),
+    // The API takes the window as a number of weeks (4-26); "12w" was rejected with 400.
+    queryFn: () => fetchRiskPortfolioTrend("12"),
     staleTime: 60_000,
   });
 
@@ -99,6 +100,8 @@ export function RiskDashboard() {
     queryKey: ["risk", "runs"],
     queryFn: fetchRiskRuns,
     staleTime: 30_000,
+    // GET /risk/runs is limited to GOV_ADMIN and SUPER_ADMIN; other roles would only collect a 403.
+    enabled: roleKey === "GOV_ADMIN" || roleKey === "SUPER_ADMIN",
   });
 
   // 6. Selected project risk query

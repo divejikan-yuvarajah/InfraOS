@@ -59,6 +59,7 @@ export const COPILOT_TA: CopilotMessages = {
     enterHint: "அனுப்ப Enter · புதிய வரிக்கு Shift+Enter",
     disabledByAdmin: "நிர்வாகியால் Copilot முடக்கப்பட்டுள்ளது. சரிபார்க்கப்பட்ட தரவுக்கு விரைவுத் தகவல்களைப் பயன்படுத்தவும்.",
     disabledUnavailable: "AI தற்காலிகமாகக் கிடைக்கவில்லை. நிலையான பதிவுகளுக்கு விரைவுத் தகவல்களுக்கு மாறவும்.",
+    disabledNotConfigured: "Copilot இன்னும் அமைக்கப்படவில்லை. AI chat model-ஐ அமைக்க நிர்வாகியிடம் கேளுங்கள். விரைவு உண்மைகள் தொடர்ந்து செயல்படும்.", // unverified-draft
     disabledRateLimited: "வரம்பு எட்டப்பட்டது · {countdown} க்குப் பின் மீண்டும் முயற்சிக்கவும்",
     disabledBudgetExceeded: "முகமை தினசரி வரவு எட்டப்பட்டது · {reset} அன்று மீட்டமைக்கப்படும்",
     switchToQuickFacts: "விரைவுத் தகவல்களைத் திற",
@@ -178,6 +179,8 @@ export const COPILOT_TA: CopilotMessages = {
     disabledBody: "உங்கள் நிர்வாகி Copilot ஐ முடக்கியுள்ளார். விரைவுத் தகவல்களில் சரிபார்க்கப்பட்ட தரவைத் தொடர்ந்து காணலாம்.",
     unavailableTitle: "Copilot தற்காலிகமாகக் கிடைக்கவில்லை",
     unavailableBody: "இப்போது AI சேவைகளை அணுக முடியவில்லை. நிலையான செயல்முறைகளும் விரைவுத் தகவல்களும் வழக்கம் போல் செயல்படுகின்றன.",
+    notConfiguredTitle: "Copilot இன்னும் அமைக்கப்படவில்லை", // unverified-draft
+    notConfiguredBody: "இந்த சர்வரில் Copilot கட்டமைக்கப்படவில்லை. நிர்வாகி AI chat model (AI_CHAT_MODEL) ஐ அமைத்து சேவையை மறுதொடக்கம் செய்ய வேண்டும். விரைவு உண்மைகள் மற்றும் பிற பணிகள் தொடர்ந்து செயல்படும்.", // unverified-draft
     forbiddenTitle: "Copilot அணுகல் தேவை",
     forbiddenBody: "உங்கள் பங்கில் copilot.use அனுமதி இல்லை.",
   },

@@ -31,10 +31,14 @@ export function PortalMapClient({ locale = "en" }: { locale?: AuthLocale }) {
 
     void import("maplibre-gl").then((mod) => {
       if (!active || !mapContainerRef.current || mapRef.current) return;
+      // The bundler moves maplibre into a chunk, so point it at its own self-contained worker file
+      // (same guard as the InfraMap and RoadSync maps; without it the public map fails to start).
+      if (!mod.getWorkerUrl()) mod.setWorkerUrl(new URL("maplibre-gl/dist/maplibre-gl-worker.mjs", import.meta.url).href);
       const map = new mod.Map({
         container: mapContainerRef.current,
         style: resolveMapStyle(),
         bounds: SRI_LANKA_BOUNDS,
+        fitBoundsOptions: { padding: 24 },
         maxBounds: SRI_LANKA_MAX_BOUNDS,
         attributionControl: { compact: true },
       });

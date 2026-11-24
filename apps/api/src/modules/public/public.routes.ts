@@ -67,6 +67,15 @@ const trackBodySchema = z.object({
   trackingSecret: z.string().trim().min(6).max(80),
 });
 
+// Allow-listed public read DTOs only (never the tracking routes): a short shared cache keeps the portal and the
+// public map cheap under load while staying fresh. Issue tracking sets its own no-store.
+publicRouter.use((req, res, next) => {
+  if (req.method === "GET" && !req.path.startsWith("/issues")) {
+    res.setHeader("Cache-Control", "public, max-age=30, stale-while-revalidate=60");
+  }
+  next();
+});
+
 publicRouter.get("/summary", async (req, res) => {
   const data = await getPublicSummary();
   res.status(200).json(success(data, req.requestId));
