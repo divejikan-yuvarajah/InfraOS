@@ -600,3 +600,117 @@
     animation: none !important;
   }
 }
+
+/* ==========================================================================
+   Unified Dashboard Header Actions & Legacy Panel Harmonization
+   ========================================================================== */
+
+.cac-header-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  min-height: 2.5rem;
+  padding: 0.5rem 0.9rem;
+  border-radius: 0.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.09);
+  color: #f8fafc;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1.2;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 140ms ease, border-color 140ms ease, transform 140ms ease;
+}
+
+.cac-header-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.16);
+  border-color: rgba(255, 255, 255, 0.35);
+}
+
+.cac-header-btn:focus-visible {
+  outline: 2px solid #ff5b00;
+  outline-offset: 2px;
+}
+
+.cac-header-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.cac-header-btn svg {
+  width: 0.95rem;
+  height: 0.95rem;
+  flex-shrink: 0;
+}
+
+.cac-header-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  min-height: 2.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  border: 1px solid #ff5b00;
+  background: #ff5b00;
+  color: #ffffff;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1.2;
+  text-decoration: none;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(255, 91, 0, 0.28);
+  transition: background-color 140ms ease, transform 140ms ease;
+}
+
+.cac-header-btn-primary:hover:not(:disabled) {
+  background: #e55200;
+  border-color: #e55200;
+}
+
+.cac-header-btn-primary:focus-visible {
+  outline: 2px solid #ffb597;
+  outline-offset: 2px;
+}
+
+.cac-header-btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.cac-header-btn-primary svg {
+  width: 0.95rem;
+  height: 0.95rem;
+  flex-shrink: 0;
+}
+
+/* Harmonize module panels across Finance, Assets, Inspections, DocTrace, and RoadSync
+   so every dashboard surface matches the Civic Atlas Command 2.0 card language. */
+[data-infra-app] .ins-panel,
+[data-infra-app] .dt-panel,
+[data-infra-app] .sp-surface.ctr-panel,
+[data-infra-app] .sp-surface.ctr-filters,
+[data-infra-app] .dc-widget {
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 2px rgba(17, 24, 39, 0.06);
+}
+
+[data-infra-app] .ins-panel > .ins-h,
+[data-infra-app] .dt-panel > h3,
+[data-infra-app] .sp-surface.ctr-panel > h2 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: #0f172a;
+}
+
+[data-infra-app] .dc-band {
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 2px rgba(17, 24, 39, 0.06);
+}

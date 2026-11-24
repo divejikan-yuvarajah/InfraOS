@@ -8,7 +8,12 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { StaffWorkspaceShell } from "@/components/auth/staff-workspace-shell";
-import { ContextBar } from "@/components/site-plan/site-plan";
+import {
+  CommandHeader,
+  DashboardCanvas,
+  DashboardKpiCard,
+  DashboardKpiGrid,
+} from "@/components/common/civic-atlas-primitives";
 import { fetchCalendar, fetchInspections, fetchSummary, startInspection } from "@/lib/inspections/api";
 import { addDays, dayKey, isoToColomboParts, windowFor, type CalendarView } from "@/lib/inspections/calendar-math";
 import { activeFilterCount, DEFAULT_FILTERS, parseFilters, toApiQuery, toParams, type ListFilters } from "@/lib/inspections/list-query";
@@ -27,14 +32,6 @@ import { EmptyState, ErrorState, Field, InspectionStepper, PriorityChip, Skeleto
 type View = "list" | "calendar" | "review";
 type Common = { copy: Copy; locale: AuthLocale };
 const PAGE = 20;
-
-function Kpi({ label, value, hint, onClick, pressed }: { label: string; value: number | undefined; hint: string; onClick: () => void; pressed?: boolean }) {
-  return (
-    <button type="button" className="ctr-card" onClick={onClick} aria-pressed={pressed} aria-label={`${label}: ${value ?? "—"}. ${hint}`}>
-      <span className="ctr-card-label">{label}</span><span className="ctr-card-value">{value ?? "—"}</span><span className="ctr-card-hint">{hint}</span>
-    </button>
-  );
-}
 
 /** Per-row actions only appear when the server said the viewer may use them; the buttons open the real dialogs. */
 function RowMenu({ row, copy, canAssign, onReschedule, onReassign, onCancel }: Common & { row: InspectionRow; canAssign: boolean; onReschedule: () => void; onReassign: () => void; onCancel: () => void }) {
@@ -200,21 +197,98 @@ export function InspectionsDashboard() {
   };
 
   return (
-    <StaffWorkspaceShell title={copy.overview.title} description={copy.overview.description} wide
-      context={<ContextBar crumbs={[{ label: copy.nav.title }]} scope={copy.overview.scope} asOf={null} actions={<div className="ctr-row">
-        <button type="button" className="ctr-btn" onClick={() => { void refresh(); }}><RefreshCwIcon aria-hidden="true" />{copy.common.refresh}</button>
-        {inspector ? <Link className="ctr-btn" href="/inspections/my">{copy.nav.my}</Link> : null}
-        {canAssign ? <button type="button" className="ctr-btn is-primary" onClick={() => openSchedule()}><PlusIcon aria-hidden="true" />{copy.overview.schedule}</button> : null}
-      </div>} />}>
+    <StaffWorkspaceShell title={copy.overview.title} description={copy.overview.description} wide hidePageHeader>
+      <DashboardCanvas>
+        <CommandHeader
+          eyebrow="FIELD INSPECTIONS COMMAND"
+          title={copy.overview.title}
+          subtitle={copy.overview.description}
+          scopeLabel={copy.overview.scope}
+          sourceKind="live"
+          secondaryActions={
+            <>
+              <button type="button" className="cac-header-btn" onClick={() => { void refresh(); }}>
+                <RefreshCwIcon aria-hidden="true" />
+                <span>{copy.common.refresh}</span>
+              </button>
+              {inspector ? (
+                <Link className="cac-header-btn" href="/inspections/my">
+                  {copy.nav.my}
+                </Link>
+              ) : null}
+            </>
+          }
+          primaryAction={
+            canAssign ? (
+              <button type="button" className="cac-header-btn-primary" onClick={() => openSchedule()}>
+                <PlusIcon aria-hidden="true" />
+                <span>{copy.overview.schedule}</span>
+              </button>
+            ) : undefined
+          }
+        />
+
       <div className="ins">
-        <section className="ins-strip" aria-label={copy.kpi.hint}>
-          <Kpi label={copy.kpi.upcoming7d} value={c?.upcoming7d} hint={copy.kpi.hint} onClick={() => kpiClick({ status: ["SCHEDULED"], dateFrom: today, dateTo: dayKey(addDays(new Date(), 7)) })} />
-          <Kpi label={copy.kpi.inProgress} value={c?.inProgress} hint={copy.kpi.hint} pressed={filters.status.join() === "IN_PROGRESS"} onClick={() => kpiClick({ status: ["IN_PROGRESS"] })} />
-          <Kpi label={copy.kpi.awaitingReview} value={c?.awaitingReview} hint={copy.kpi.hint} onClick={() => router.replace("/inspections?view=review", { scroll: false })} />
-          <Kpi label={copy.kpi.revisionRequired} value={c?.revisionRequired} hint={copy.kpi.hint} onClick={() => kpiClick({ status: ["REQUIRES_REVIEW"] })} />
-          <Kpi label={copy.kpi.overdue} value={c?.overdue} hint={copy.kpi.hint} pressed={filters.overdue} onClick={() => kpiClick({ overdue: true })} />
-          <Kpi label={copy.kpi.verified30d} value={c?.verified30d} hint={copy.kpi.hint} onClick={() => kpiClick({ status: ["VERIFIED"], dateFrom: dayKey(addDays(new Date(), -30)) })} />
-        </section>
+        <DashboardKpiGrid columns={6} label={copy.kpi.hint}>
+          <DashboardKpiCard
+            label={copy.kpi.upcoming7d}
+            value={c?.upcoming7d ?? "—"}
+            hint={copy.kpi.hint}
+            tone="brand"
+            loading={summary.isPending}
+            onClick={() => kpiClick({ status: ["SCHEDULED"], dateFrom: today, dateTo: dayKey(addDays(new Date(), 7)) })}
+            ariaLabel={`${copy.kpi.upcoming7d}: ${c?.upcoming7d ?? "—"}. ${copy.kpi.hint}`}
+          />
+          <DashboardKpiCard
+            label={copy.kpi.inProgress}
+            value={c?.inProgress ?? "—"}
+            hint={copy.kpi.hint}
+            tone="neutral"
+            loading={summary.isPending}
+            active={filters.status.join() === "IN_PROGRESS"}
+            onClick={() => kpiClick({ status: ["IN_PROGRESS"] })}
+            ariaLabel={`${copy.kpi.inProgress}: ${c?.inProgress ?? "—"}. ${copy.kpi.hint}`}
+          />
+          <DashboardKpiCard
+            label={copy.kpi.awaitingReview}
+            value={c?.awaitingReview ?? "—"}
+            hint={copy.kpi.hint}
+            tone="warning"
+            loading={summary.isPending}
+            active={view === "review"}
+            onClick={() => router.replace("/inspections?view=review", { scroll: false })}
+            ariaLabel={`${copy.kpi.awaitingReview}: ${c?.awaitingReview ?? "—"}. ${copy.kpi.hint}`}
+          />
+          <DashboardKpiCard
+            label={copy.kpi.revisionRequired}
+            value={c?.revisionRequired ?? "—"}
+            hint={copy.kpi.hint}
+            tone={(c?.revisionRequired ?? 0) > 0 ? "warning" : "neutral"}
+            loading={summary.isPending}
+            active={filters.status.join() === "REQUIRES_REVIEW"}
+            onClick={() => kpiClick({ status: ["REQUIRES_REVIEW"] })}
+            ariaLabel={`${copy.kpi.revisionRequired}: ${c?.revisionRequired ?? "—"}. ${copy.kpi.hint}`}
+          />
+          <DashboardKpiCard
+            label={copy.kpi.overdue}
+            value={c?.overdue ?? "—"}
+            hint={copy.kpi.hint}
+            tone={(c?.overdue ?? 0) > 0 ? "critical" : "success"}
+            loading={summary.isPending}
+            active={filters.overdue}
+            onClick={() => kpiClick({ overdue: true })}
+            ariaLabel={`${copy.kpi.overdue}: ${c?.overdue ?? "—"}. ${copy.kpi.hint}`}
+          />
+          <DashboardKpiCard
+            label={copy.kpi.verified30d}
+            value={c?.verified30d ?? "—"}
+            hint={copy.kpi.hint}
+            tone="success"
+            loading={summary.isPending}
+            onClick={() => kpiClick({ status: ["VERIFIED"], dateFrom: dayKey(addDays(new Date(), -30)) })}
+            ariaLabel={`${copy.kpi.verified30d}: ${c?.verified30d ?? "—"}. ${copy.kpi.hint}`}
+          />
+        </DashboardKpiGrid>
 
         <section className="ins-panel" aria-label={copy.overview.needsAction}>
           <h2 className="ins-h">{copy.overview.needsAction}</h2>
@@ -286,6 +360,7 @@ export function InspectionsDashboard() {
         {summary.data && !inspector ? <Insights summary={summary.data} copy={copy} locale={locale} /> : null}
         <p className="ins-muted">{copy.common.syntheticNote}</p>
       </div>
+      </DashboardCanvas>
 
       <ScheduleDialog open={scheduleOpen} onOpenChange={setScheduleOpen} copy={copy} locale={locale} initial={initial} />
       <RescheduleDialog row={rs} onClose={() => setRs(null)} copy={copy} locale={locale} />
