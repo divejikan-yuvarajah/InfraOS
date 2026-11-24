@@ -225,7 +225,7 @@ export function PlatformCommandView({
   const isLiveUsers = typeof usersQ.data?.total === "number";
 
   return (
-    <div className="max-w-[1600px] mx-auto w-full px-4 sm:px-gutter-desktop py-6 pb-12 flex flex-col gap-space-lg">
+    <div className="max-w-[1600px] mx-auto w-full px-4 sm:px-gutter-desktop py-4 pb-10 flex flex-col gap-space-md">
       <CommandHeader
         eyebrow="PLATFORM GOVERNANCE COMMAND"
         title="Platform Command & System Governance"
@@ -791,7 +791,7 @@ export function GovAdminCommandView({
   const gatewayItems = reviewsQ.data?.projects ?? data.reviews?.items ?? [];
 
   return (
-    <div className="px-4 sm:px-gutter-desktop py-6 pb-12 flex flex-col gap-space-lg max-w-[1600px] mx-auto w-full">
+    <div className="px-4 sm:px-gutter-desktop py-4 pb-10 flex flex-col gap-space-md max-w-[1600px] mx-auto w-full">
       <CommandHeader
         eyebrow="GOVERNMENT OVERSIGHT COMMAND • ROLE: GOV_ADMIN"
         title="Government Infrastructure Overview"
@@ -1253,7 +1253,7 @@ export function AgencyOfficerCommandView({
 
   return (
     <div className="flex flex-col w-full">
-      <div className="max-w-[1600px] mx-auto w-full px-4 sm:px-gutter-desktop pt-6">
+      <div className="max-w-[1600px] mx-auto w-full px-4 sm:px-gutter-desktop pt-4">
         <CommandHeader
           eyebrow={`AGENCY OPERATIONAL COMMAND • ${sessionUser?.agencyId ?? "ROAD DEVELOPMENT AUTHORITY (RDA)"}`}
           title="Agency Operations Command"
@@ -1585,7 +1585,7 @@ export function ProjectManagerCommandView({
 
   return (
     <div className="flex flex-col w-full">
-      <div className="max-w-[1600px] mx-auto w-full px-4 sm:px-gutter-desktop pt-6 flex flex-col gap-space-md">
+      <div className="max-w-[1600px] mx-auto w-full px-4 sm:px-gutter-desktop pt-4 flex flex-col gap-space-sm">
         <CommandHeader
           eyebrow="PERSONAL WORKSPACE • PROJECT OPERATIONS COMMAND"
           title="My Project Command & Assigned Deliverables"
@@ -2046,7 +2046,7 @@ export function InspectorCommandView({
 
   return (
     <div className="flex flex-col w-full">
-      <div className="max-w-[1600px] mx-auto w-full px-4 sm:px-gutter-desktop pt-6">
+      <div className="max-w-[1600px] mx-auto w-full px-4 sm:px-gutter-desktop pt-4">
         <CommandHeader
           eyebrow="FIELD OPERATIONS COMMAND • QUALITY ASSURANCE & STATUTORY VERIFICATION"
           title="Field Inspection Command"
@@ -2456,7 +2456,7 @@ export function ContractorCommandView({
   };
 
   return (
-    <div className="px-4 sm:px-gutter-desktop py-6 pb-12 flex flex-col gap-space-lg max-w-[1600px] mx-auto w-full">
+    <div className="px-4 sm:px-gutter-desktop py-4 pb-10 flex flex-col gap-space-md max-w-[1600px] mx-auto w-full">
       <CommandHeader
         eyebrow="CONTRACTOR OPERATIONS • CONTRACT: RDA-WP-2026-88"
         title="Contractor Execution Command & Field Works Center"

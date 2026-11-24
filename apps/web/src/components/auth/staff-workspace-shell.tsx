@@ -932,14 +932,14 @@ export function StaffWorkspaceShell({
         {/* SCROLLABLE WORKSPACE CONTENT CANVAS */}
         <main className="flex-1 overflow-y-auto main-scroll bg-surface">
           {!hidePageHeader && (
-            <div className="bg-surface-container-low/70 cad-grid-bg border-b-2 border-b-[#ff5b00]/80 px-4 sm:px-gutter-desktop py-5">
-              <div className="max-w-[1600px] mx-auto flex flex-col lg:flex-row lg:items-end justify-between gap-4">
+            <div className="bg-surface-container-low/70 cad-grid-bg border-b-2 border-b-[#ff5b00]/80 px-4 sm:px-gutter-desktop py-2.5 sm:py-3">
+              <div className="max-w-[1600px] mx-auto flex flex-col lg:flex-row lg:items-center justify-between gap-2.5">
                 <div className="min-w-0">
-                  <div className="flex items-center gap-2 text-label-sm font-label-sm uppercase text-secondary mb-1.5 flex-wrap">
-                    <span className="material-symbols-outlined text-[14px]">share_location</span>
+                  <div className="flex items-center gap-1.5 text-[10px] font-label-sm uppercase text-secondary mb-0.5 flex-wrap">
+                    <span className="material-symbols-outlined text-[13px]">share_location</span>
                     <span>{section ?? copy.civilCommand}</span>
                     <span>/</span>
-                    <span className="rounded bg-white/80 px-2 py-0.5 text-[11px] font-mono font-semibold text-slate-700 border border-slate-200/80 normal-case">
+                    <span className="rounded bg-white/80 px-1.5 py-0.5 text-[10px] font-mono font-semibold text-slate-700 border border-slate-200/80 normal-case">
                       {effectiveScope}
                     </span>
                     <DataSourceBadge
@@ -947,19 +947,19 @@ export function StaffWorkspaceShell({
                       asOf={asOf}
                     />
                   </div>
-                  <h1 className="font-headline-lg text-headline-lg text-on-surface tracking-tight">
+                  <h1 className="font-headline-md text-lg sm:text-xl font-bold text-on-surface tracking-tight leading-tight">
                     {title}
                   </h1>
                   {effectiveSubtitle && (
-                    <div className="text-body-md text-on-surface-variant mt-1 max-w-3xl">
+                    <div className="text-xs text-on-surface-variant mt-0.5 max-w-3xl leading-snug line-clamp-2">
                       {effectiveSubtitle}
                     </div>
                   )}
                 </div>
-                {actions && <div className="flex items-center gap-2.5 flex-wrap shrink-0">{actions}</div>}
+                {actions && <div className="flex items-center gap-2 flex-wrap shrink-0">{actions}</div>}
               </div>
               {context && (
-                <div className="max-w-[1600px] mx-auto mt-3 pt-3 border-t border-outline-variant/25">
+                <div className="max-w-[1600px] mx-auto mt-2 pt-2 border-t border-outline-variant/25">
                   {context}
                 </div>
               )}
@@ -970,7 +970,7 @@ export function StaffWorkspaceShell({
             className={
               hidePageHeader
                 ? "min-h-full"
-                : "max-w-[1600px] mx-auto px-4 sm:px-gutter-desktop py-6 pb-12"
+                : "max-w-[1600px] mx-auto px-4 sm:px-gutter-desktop py-4 pb-10"
             }
           >
             {children}

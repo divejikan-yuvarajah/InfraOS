@@ -113,11 +113,11 @@ function OverviewBody({
     <div className="space-y-6">
       {/* CORE-01.04: MASTER WORKSPACE HEADER BAND */}
       <section
-        className="sp-surface spp-identity bg-surface-container-lowest border border-outline-variant/30 rounded shadow-2xs p-5 sm:p-6"
+        className="sp-surface spp-identity bg-surface-container-lowest border border-outline-variant/30 rounded shadow-2xs p-3.5 sm:p-4"
         aria-labelledby="project-overview-title"
       >
-        <div className="flex flex-col xl:flex-row xl:items-start xl:justify-between gap-4">
-          <div className="space-y-2 min-w-0">
+        <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-3">
+          <div className="space-y-1 min-w-0">
             <div className="flex flex-wrap items-center gap-2">
               <span className="inline-flex items-center px-2 py-0.5 rounded-xs text-[10px] font-mono font-bold tracking-wider uppercase bg-primary-container text-primary-fixed">
                 [ SOVEREIGN CAPITAL WORKS • {copy.types[project.projectType as keyof typeof copy.types] ?? project.projectType} ]
