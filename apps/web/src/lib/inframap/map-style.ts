@@ -55,16 +55,36 @@ export function buildLocalGridStyle(origin: string): StyleSpecification {
   };
 }
 
-/** Opt-in online OpenStreetMap raster style (see resolveMapStyle). */
+export type MapStyleVariant = "liberty" | "positron" | "bright";
+
+/**
+ * OpenFreeMap public vector styles (OpenMapTiles schema, OpenStreetMap data, no API key).
+ * Required attribution ("OpenFreeMap © OpenMapTiles · Data from OpenStreetMap") is embedded
+ * in the style specification and kept visible via MapLibre's AttributionControl.
+ * Note: tile requests expose visitor IP addresses to the tile host (important for public portal privacy notices).
+ */
+export const OPENFREEMAP_STYLES: Record<MapStyleVariant, string> = {
+  liberty: "https://tiles.openfreemap.org/styles/liberty",
+  positron: "https://tiles.openfreemap.org/styles/positron",
+  bright: "https://tiles.openfreemap.org/styles/bright",
+};
+
+export const OPENFREEMAP_ATTRIBUTION = "OpenFreeMap © OpenMapTiles · Data from OpenStreetMap";
+export const LOCAL_GRID_ATTRIBUTION = "Boundaries: Natural Earth (public domain)";
+
+/** Opt-in online OpenStreetMap raster style (dev/demo only — never production default). */
 export const MAP_STYLE: StyleSpecification = OSM_STYLE;
 
 /**
- * One basemap for every map. Order of precedence:
- *  1. a valid https NEXT_PUBLIC_MAP_STYLE_URL (a compliant hosted style);
- *  2. NEXT_PUBLIC_MAP_BASEMAP=osm: opt-in OpenStreetMap raster tiles (online enhancement, needs network);
- *  3. default: the self-contained local grid, which never depends on an external tile server.
+ * One shared basemap resolver for every map in InfraOS. Order of precedence:
+ *  1. a valid https NEXT_PUBLIC_MAP_STYLE_URL (MapTiler, Stadia, self-hosted PMTiles, etc.);
+ *  2. NEXT_PUBLIC_MAP_BASEMAP=local: forces the bundled Sri Lanka survey-sheet grid immediately;
+ *  3. NEXT_PUBLIC_MAP_BASEMAP=osm: dev-only opt-in OpenStreetMap raster tiles;
+ *  4. default: OpenFreeMap vector style (positron for dense operational overlays, liberty for exploration).
+ * Call attachBasemapFallback() on the MapLibre instance so blocked/offline networks automatically
+ * switch to buildLocalGridStyle() without dead spinners.
  */
-export function resolveMapStyle(): StyleSpecification | string {
+export function resolveMapStyle(variant: MapStyleVariant = "positron"): StyleSpecification | string {
   const url = process.env.NEXT_PUBLIC_MAP_STYLE_URL?.trim();
   if (url) {
     try {
@@ -73,11 +93,73 @@ export function resolveMapStyle(): StyleSpecification | string {
       /* invalid URL: fall back to the default style */
     }
   }
-  // Glyphs are needed only for cluster counts. A failed glyph request hides the numbers; markers still draw.
-  const glyphs = "https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf";
-  if (process.env.NEXT_PUBLIC_MAP_BASEMAP?.trim().toLowerCase() === "osm") return { ...OSM_STYLE, glyphs };
-  const origin = typeof window === "undefined" ? "" : window.location.origin;
-  return { ...buildLocalGridStyle(origin), glyphs };
+  const basemap = process.env.NEXT_PUBLIC_MAP_BASEMAP?.trim().toLowerCase();
+  if (basemap === "local") {
+    const origin = typeof window === "undefined" ? "" : window.location.origin;
+    return buildLocalGridStyle(origin);
+  }
+  if (basemap === "osm") {
+    const glyphs = "https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf";
+    return { ...OSM_STYLE, glyphs };
+  }
+  return OPENFREEMAP_STYLES[variant];
+}
+
+type FallbackMapLike = {
+  on(event: string, fn: (e?: unknown) => void): void;
+  setStyle(style: StyleSpecification | string): void;
+  isStyleLoaded?: () => boolean | void;
+};
+
+/**
+ * Resilience safety net: if a remote vector style/tile host fails to load (blocked network, CSP,
+ * provider outage, or timeout), automatically switch the MapLibre instance to the bundled
+ * Sri Lanka survey-sheet GeoJSON + graticule basemap and notify the caller so an "Offline basemap"
+ * badge can be shown. Safe to call on every map; no-op when already using the local grid.
+ */
+export function attachBasemapFallback(
+  map: FallbackMapLike,
+  initialStyle: StyleSpecification | string,
+  options: { onFallback?: (offline: boolean) => void; timeoutMs?: number } = {},
+): () => void {
+  if (typeof initialStyle !== "string") {
+    if (initialStyle.name === "infraos-local-grid") options.onFallback?.(true);
+    return () => undefined;
+  }
+
+  let fallenBack = false;
+  let loaded = false;
+  const trigger = () => {
+    if (fallenBack) return;
+    fallenBack = true;
+    const origin = typeof window === "undefined" ? "" : window.location.origin;
+    map.setStyle(buildLocalGridStyle(origin));
+    options.onFallback?.(true);
+  };
+
+  const timer = setTimeout(() => {
+    if (!loaded && !map.isStyleLoaded?.()) trigger();
+  }, options.timeoutMs ?? 6500);
+
+  map.on("load", () => {
+    loaded = true;
+    clearTimeout(timer);
+  });
+
+  map.on("error", (e) => {
+    const err = e as { sourceId?: string; error?: { status?: number; message?: string } } | undefined;
+    const sourceId = err?.sourceId;
+    // Ignore errors from app-owned GeoJSON overlay sources; fall back on basemap style/tile failures.
+    if (sourceId && (sourceId.startsWith("im-") || sourceId === "shapes" || sourceId === "pins" || sourceId === "dossier" || sourceId === "public-features")) {
+      return;
+    }
+    if (!loaded) {
+      clearTimeout(timer);
+      trigger();
+    }
+  });
+
+  return () => clearTimeout(timer);
 }
 
 export const SRI_LANKA_BOUNDS: [[number, number], [number, number]] = [[79.4, 5.8], [82.1, 9.95]];

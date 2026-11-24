@@ -1,10 +1,13 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { toast } from "sonner";
 
 import { StaffWorkspaceShell } from "@/components/auth/staff-workspace-shell";
+import { CommandHeader } from "@/components/common/civic-atlas-primitives";
 import { WorkspaceContext } from "@/components/projects/project-record-nav";
 import { fetchAgencies } from "@/lib/admin-agencies/api";
 import { createProject } from "@/lib/projects/api";
@@ -51,16 +54,31 @@ export function ProjectCreatePageClient() {
       }
       queryClient.setQueryData(plan.queryKey, result.project);
       void queryClient.invalidateQueries({ queryKey: ["projects"] });
+      toast.success(`${result.project.projectCode} — ${copy.saveDraft}`);
       router.push(plan.href);
     },
     onError: (error) => {
-      setFailure(classifyCreateError(error));
+      const kind = classifyCreateError(error);
+      setFailure(kind);
+      toast.error(copy.errors[kind]);
     },
   });
 
   return (
     <StaffWorkspaceShell title={copy.createTitle} description={copy.createSubtitle} wide context={<WorkspaceContext locale={locale} current={copy.createTitle} projects />}>
-      {locale !== "en" ? <p className="spp-small">{copy.nativeReview}</p> : null}
+      <CommandHeader
+        eyebrow="ProjectTrace · New Record"
+        title={copy.createTitle}
+        subtitle={copy.createSubtitle}
+        sourceKind="live"
+        sourceLabel="Draft autosave"
+        secondaryActions={
+          <Link href="/projects" className="inline-flex min-h-[44px] items-center rounded-lg border border-white/25 px-3.5 py-2 text-xs font-semibold text-white hover:bg-white/10">
+            {copy.cancel}
+          </Link>
+        }
+      />
+      {locale !== "en" ? <p className="spp-small mb-3">{copy.nativeReview}</p> : null}
       <ProjectCreateForm
         copy={copy}
         failure={failure}

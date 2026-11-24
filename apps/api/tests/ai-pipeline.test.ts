@@ -21,7 +21,7 @@ import { pointId } from "../src/modules/ai/point-id.js";
 import { colomboDayStart, nextColomboMidnight } from "../src/modules/ai/processing/budget.js";
 import { isEligibleForAi } from "../src/modules/ai/processing/eligibility.js";
 import { ProcessingJob } from "../src/modules/ai/processing/job.model.js";
-import { claimNextJob, enqueueJob, requeueExpiredLeases } from "../src/modules/ai/processing/job.service.js";
+import { CIRCUIT_DEFER_MAX_AGE_MS, claimNextJob, enqueueJob, requeueExpiredLeases, retryDelayMs } from "../src/modules/ai/processing/job.service.js";
 import { runJob } from "../src/modules/ai/processing/pipeline.js";
 import { purgeDocument } from "../src/modules/ai/processing/purge.js";
 import { reconcile } from "../src/modules/ai/processing/reconciler.js";
@@ -226,6 +226,36 @@ describe("processing jobs, pipeline, purge and reconciler", { timeout: 120_000 }
     job = await claimAndRun();
     expect(job).toMatchObject({ status: "FAILED", attempt: 3, errorCode: "EMBEDDING_PROVIDER_ERROR" });
     expect((await Document.findById(d._id))!.extractedTextStatus).toBe("FAILED");
+  });
+  it("backoff is capped exponential with jitter", () => {
+    const zero = () => 0;
+    const one = () => 0.999999;
+    expect([1, 2, 3].map((a) => retryDelayMs(a, zero))).toEqual([30_000, 120_000, 480_000]);
+    expect(retryDelayMs(4, zero)).toBe(600_000); // capped
+    expect(retryDelayMs(9, one)).toBe(600_000); // jitter never exceeds the cap
+    const j = retryDelayMs(1, one);
+    expect(j).toBeGreaterThan(30_000);
+    expect(j).toBeLessThanOrEqual(36_000);
+  });
+  it("circuit-open deferral is bounded: a fresh job waits, a job older than the max age FAILS with a clear status", async () => {
+    const c = client();
+    for (let i = 0; i < 6; i += 1) c.breaker.failure(); // threshold is 5: the circuit is now open
+    const d1 = await makeDoc();
+    await enqueueJob({ documentId: String(d1._id), trigger: "UPLOAD" });
+    const j1 = await claimNextJob("w1");
+    await runJob(j1!, "w1", { client: c, open });
+    const waiting = await ProcessingJob.findById(j1!._id).lean();
+    expect(waiting).toMatchObject({ status: "QUEUED", errorCode: "AI_SERVICE_UNAVAILABLE" });
+    expect(waiting!.nextAttemptAt.getTime() - Date.now()).toBeGreaterThan(50_000);
+
+    const d2 = await makeDoc();
+    await enqueueJob({ documentId: String(d2._id), trigger: "UPLOAD" });
+    const j2 = await claimNextJob("w1");
+    await ProcessingJob.collection.updateOne({ _id: j2!._id }, { $set: { createdAt: new Date(Date.now() - CIRCUIT_DEFER_MAX_AGE_MS - 60_000) } });
+    const stale = (await ProcessingJob.findById(j2!._id))!;
+    await runJob(stale, "w1", { client: c, open });
+    expect(await ProcessingJob.findById(j2!._id).lean()).toMatchObject({ status: "FAILED", errorCode: "AI_SERVICE_UNAVAILABLE" });
+    expect((await Document.findById(d2._id))!.extractedTextStatus).toBe("FAILED");
   });
   it("defers (does not fail) when the daily token budget is exhausted, without consuming an attempt", async () => {
     cfg.dailyTokenBudget = 100;

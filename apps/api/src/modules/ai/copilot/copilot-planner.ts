@@ -66,7 +66,7 @@ export type PlannerResult = {
 };
 
 export async function runCopilotPlanner(params: RunPlannerParams): Promise<PlannerResult> {
-  const startTime = Date.now();
+  let startTime = Date.now();
   const steps: CopilotStepDto[] = [];
   const toolsUsedSet = new Set<string>();
   const executedFacts: ExecutedFactRef[] = [];
@@ -106,6 +106,32 @@ export async function runCopilotPlanner(params: RunPlannerParams): Promise<Plann
   let finalRawClaims: Array<{ text: string; sourceRefs?: number[] }> = [];
   let finalRawMissingInfo: string[] = [];
 
+  // Cold-start tolerance (Render free tier sleeps; first call can take 30-60 s): if the service does not answer a
+  // liveness probe quickly, tell the user it is warming up, wait for it, and only then start the wall-clock budget.
+  const warmUp = async (): Promise<void> => {
+    const warmStart = Date.now();
+    const warmStep: CopilotStepDto = {
+      at: new Date().toISOString(),
+      kind: "PLAN",
+      status: "OK",
+      labelKey: "copilot.step.service_warming",
+      durationMs: 0,
+    };
+    steps.push(warmStep);
+    await params.onStep?.(warmStep);
+    await aiClient().wake(65_000).catch(() => undefined);
+    warmStep.durationMs = Date.now() - warmStart;
+    startTime = Date.now();
+  };
+  if (aiClient().isCold) {
+    const quick = await Promise.race([
+      aiClient().health(),
+      new Promise<boolean>((resolve) => setTimeout(() => resolve(false), 2_000)),
+    ]);
+    if (!quick) await warmUp();
+  }
+  let transportRetried = false;
+
   for (let round = 1; round <= MAX_ROUNDS; round++) {
     // 1. Check wall clock timeout and cancel
     if (Date.now() - startTime > MAX_WALL_CLOCK_MS) {
@@ -140,6 +166,13 @@ export async function runCopilotPlanner(params: RunPlannerParams): Promise<Plann
       usedModel = stepResponse.model;
     } catch (err: unknown) {
       const errCode = (err as { code?: string } | null)?.code;
+      // One safe retry (the step is a read-only, idempotent LLM call) when the service was unreachable or timed out.
+      if (!transportRetried && (errCode === "AI_SERVICE_UNAVAILABLE" || errCode === "AI_SERVICE_TIMEOUT")) {
+        transportRetried = true;
+        await warmUp();
+        round -= 1;
+        continue;
+      }
       const failStep: CopilotStepDto = {
         at: new Date().toISOString(),
         kind: "PLAN",

@@ -6,6 +6,7 @@ export const COPILOT_EN = {
     unreadBadge: "{n} completed reply",
   },
   header: {
+    status: { warming: "Warming up", live: "Live", limited: "Limited", offline: "Offline" }, // unverified-draft
     title: "Infrastructure Copilot",
     subtitle: "Read-only assistant · answers must link to verified records",
     expandWidth: "Widen panel",
@@ -19,6 +20,7 @@ export const COPILOT_EN = {
     deleteThread: "Delete conversation",
     aboutLink: "How AI is used",
   },
+  documents: { body: "Ask a question about one document. Answers cite the document passages they came from.", open: "Open document Q&A" }, // unverified-draft
   context: {
     thisPage: "This page",
     include: "Using page context",
@@ -27,6 +29,7 @@ export const COPILOT_EN = {
     toggleExclude: "Exclude current record context",
   },
   tabs: {
+    documents: "Ask about a document", // unverified-draft
     chat: "Chat",
     quickFacts: "Quick facts",
   },
@@ -76,6 +79,7 @@ export const COPILOT_EN = {
     "copilot.step.plan_completed": "Synthesizing answer from retrieved facts…",
     "copilot.step.grounding_verified": "Verifying claims and numbers against sources…",
     "copilot.step.service_unavailable": "AI planning service unavailable",
+    "copilot.step.service_warming": "Waking the AI service (the first request after a pause can take up to a minute)",
     "copilot.step.permission_denied": "Access denied for requested data tool",
     "copilot.step.invalid_tool_args": "Rejected invalid tool query parameters",
     "copilot.step.unprovenanced_id": "Blocked unprovenanced identifier lookup",
@@ -171,6 +175,18 @@ export const COPILOT_EN = {
     overdueMaintenance: "{n} overdue maintenance items",
     latestInspection: "Latest inspection",
     linksTitle: "Direct navigation",
+  },
+  page: {
+    title: "Infrastructure Copilot",
+    subtitle: "Ask questions about the projects, risks, inspections and records your role is allowed to see. Answers link to the real records they came from.",
+    openButton: "Open Copilot",
+    quickFactsButton: "Open Quick facts",
+    whatCanIAskTitle: "What can I ask?",
+    example1: "Which of my projects are at risk?",
+    example2: "What milestones are overdue this month?",
+    example3: "Summarise the open conflicts for my agency.",
+    example4: "What does the latest inspection say about this project?",
+    scopeNote: "Read-only. Copilot never changes records, and it only reads data your role can already open.",
   },
   unavailable: {
     disabledTitle: "Copilot is disabled",

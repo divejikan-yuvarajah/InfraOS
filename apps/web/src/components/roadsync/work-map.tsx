@@ -6,7 +6,7 @@ import type { GeoJSONSource, Map as MlMap } from "maplibre-gl";
 import { useEffect, useRef, useState } from "react";
 import { DownloadIcon, Trash2Icon, Undo2Icon, UploadIcon } from "lucide-react";
 
-import { MAP_STYLE, resolveMapStyle, SRI_LANKA_BOUNDS } from "@/lib/inframap/map-style";
+import { attachBasemapFallback, MAP_STYLE, resolveMapStyle, SRI_LANKA_BOUNDS } from "@/lib/inframap/map-style";
 import { useWorkspaceLocale } from "@/lib/i18n/workspace-locale";
 import { BAND_COLOR as BAND_HEX, BANDS_ASC as BAND_ORDER } from "@/lib/roadsync/assessment";
 import { getAssessmentCopy } from "@/lib/roadsync/assessment-copy";
@@ -129,14 +129,17 @@ function useMap(container: React.RefObject<HTMLDivElement | null>, onReady: (map
       if (cancelled || !container.current) return;
       // The bundler moves maplibre into a chunk, so point it at its own self-contained worker file explicitly.
       if (!ml.getWorkerUrl()) ml.setWorkerUrl(new URL("maplibre-gl/dist/maplibre-gl-worker.mjs", import.meta.url).href);
-      const created = new ml.Map({ container: container.current, style: resolveMapStyle(), bounds: SRI_LANKA_BOUNDS, attributionControl: { compact: false } });
+      const initialStyle = resolveMapStyle("positron");
+      const created = new ml.Map({ container: container.current, style: initialStyle, bounds: SRI_LANKA_BOUNDS, attributionControl: { compact: false } });
       map = created;
+      attachBasemapFallback(created, initialStyle);
       // Keep the canvas matched to its box when the layout settles or the viewport changes.
       observer = new ResizeObserver(() => created.resize());
       observer.observe(container.current);
       created.addControl(new ml.NavigationControl({ showCompass: false }), "top-right");
-      created.once("style.load", () => {
+      created.on("style.load", () => {
         const map = created;
+        if (map.getSource("shapes")) { setReady(true); return; }
         map.addSource("shapes", { type: "geojson", data: EMPTY as never });
         map.addLayer({ id: "shape-fill", type: "fill", source: "shapes", filter: ["==", ["geometry-type"], "Polygon"], paint: { "fill-color": ["coalesce", ["get", "color"], ACCENT], "fill-opacity": 0.18 } });
         // Steps 70-71: a band-coloured ring under assessed requests on the overview map.

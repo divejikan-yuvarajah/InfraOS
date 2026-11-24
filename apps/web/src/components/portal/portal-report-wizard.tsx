@@ -15,6 +15,18 @@ const PROVINCES = ["Western", "Central", "Southern", "Northern", "Eastern", "Nor
 
 type PhotoDraft = { base64: string; fileName: string; sizeBytes: number };
 
+function readInitialCoord(param: "lat" | "lng", min: number, max: number, fallback: string): string {
+  if (typeof window === "undefined") return fallback;
+  try {
+    const raw = new URLSearchParams(window.location.search).get(param);
+    if (!raw) return fallback;
+    const n = Number(raw);
+    return Number.isFinite(n) && n >= min && n <= max ? n.toFixed(5) : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
 export function PortalReportWizard({ locale = "en" }: { locale?: AuthLocale }) {
   const copy = PORTAL_COPY[locale];
   const [step, setStep] = useState(1);
@@ -25,8 +37,8 @@ export function PortalReportWizard({ locale = "en" }: { locale?: AuthLocale }) {
   const [province, setProvince] = useState<(typeof PROVINCES)[number]>("Western");
   const [district, setDistrict] = useState<(typeof DISTRICTS)[number]>("Colombo");
   const [addressLine, setAddressLine] = useState("");
-  const [lat, setLat] = useState("6.927");
-  const [lng, setLng] = useState("79.861");
+  const [lat, setLat] = useState(() => readInitialCoord("lat", 5.5, 10.2, "6.927"));
+  const [lng, setLng] = useState(() => readInitialCoord("lng", 79.3, 82.2, "79.861"));
   const [photos, setPhotos] = useState<PhotoDraft[]>([]);
   const [contactName, setContactName] = useState("");
   const [contactPhone, setContactPhone] = useState("");

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 
+import { DataSourceBadge } from "@/components/common/civic-atlas-primitives";
 import type { AuthLocale } from "@/lib/auth/types";
 import { useWorkspaceLocale } from "@/lib/i18n/workspace-locale";
 
@@ -332,9 +333,10 @@ export function PublicPortalClient() {
                 <span className="w-1.5 h-1.5 rounded-full bg-[#a83900]" />
                 {copy.badge}
               </span>
-              <span className="text-xs text-[#44474c] font-mono">
-                GAZETTE REF: LK-INFRA-2026-PUB · UPDATED 14 MINS AGO
-              </span>
+              <DataSourceBadge kind="demo" label="Synthetic demo showcase" />
+              <Link href="/portal" className="text-xs font-semibold text-[#a83900] underline hover:no-underline">
+                Open live public directory →
+              </Link>
             </div>
             <h1 className="text-2xl sm:text-[32px] sm:leading-[40px] font-bold text-[#141b2b] tracking-tight">
               {copy.title}
