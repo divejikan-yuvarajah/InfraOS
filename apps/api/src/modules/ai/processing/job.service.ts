@@ -8,7 +8,16 @@ import { isEligibleForAi, type AiEligibility } from "./eligibility.js";
 import { ProcessingJob, type ProcessingJobDocument } from "./job.model.js";
 
 const oid = (v: string | mongoose.Types.ObjectId) => new mongoose.Types.ObjectId(String(v));
-export const RETRY_DELAYS_MS = [30_000, 120_000, 600_000] as const;
+/** Capped exponential backoff: 30 s, 2 min, 8 min ... never more than 10 min, with up to +20 % jitter so a batch of failing jobs does not retry in lockstep. */
+export const RETRY_BASE_MS = 30_000;
+export const RETRY_FACTOR = 4;
+export const RETRY_CAP_MS = 600_000;
+export function retryDelayMs(attempt: number, rand: () => number = Math.random): number {
+  const exp = RETRY_BASE_MS * RETRY_FACTOR ** Math.max(0, attempt - 1);
+  return Math.min(RETRY_CAP_MS, Math.round(exp * (1 + 0.2 * rand())));
+}
+/** While the AI service circuit is open, jobs wait without using an attempt; after this age they fail instead of waiting forever. */
+export const CIRCUIT_DEFER_MAX_AGE_MS = 6 * 60 * 60 * 1000;
 export const LEASE_MS = 90_000;
 export const KEEP_JOBS_PER_DOCUMENT = 20;
 export const STAGES_ORDER: AiJobStage[] = ["EXTRACT", "CHUNK", "EMBED", "INDEX"];

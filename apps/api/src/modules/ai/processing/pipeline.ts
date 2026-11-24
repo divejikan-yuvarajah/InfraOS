@@ -17,7 +17,7 @@ import { pointId } from "../point-id.js";
 import { AiUsageRecord } from "../usage.model.js";
 import { budgetState } from "./budget.js";
 import { ProcessingJob, type ProcessingJobDocument } from "./job.model.js";
-import { RETRY_DELAYS_MS, UNSUPPORTED_CODES, addStats, heartbeat, loadAiDocument, pruneOldJobs, setStage } from "./job.service.js";
+import { CIRCUIT_DEFER_MAX_AGE_MS, UNSUPPORTED_CODES, retryDelayMs, addStats, heartbeat, loadAiDocument, pruneOldJobs, setStage } from "./job.service.js";
 import { purgeDocument } from "./purge.js";
 
 const MAX_FILE_BYTES = 30 * 1024 * 1024;
@@ -184,12 +184,13 @@ async function handleFailure(job: ProcessingJobDocument, workerId: string, err: 
   logger.warn({ jobId: String(job._id), code: err.code, permanent: err.permanent, attempt: job.attempt, circuit }, "ai job stage failed");
   const owned = { _id: job._id, status: "RUNNING", lockedBy: workerId };
   await markStageFailed(job, err.code);
-  if (circuit) { // the service is known to be down: wait without consuming an attempt
+  const circuitExpired = circuit && at.getTime() - new Date(job.createdAt).getTime() > CIRCUIT_DEFER_MAX_AGE_MS;
+  if (circuit && !circuitExpired) { // the service is known to be down: wait without consuming an attempt (bounded by job age)
     await ProcessingJob.updateOne(owned, { $set: { status: "QUEUED", nextAttemptAt: new Date(at.getTime() + 60_000), errorCode: err.code, errorMessageKey: `ai.error.${err.code}` }, $unset: { lockedBy: 1, leaseUntil: 1 }, $inc: { attempt: -1, version: 1 } });
     return;
   }
-  if (!err.permanent && job.attempt < job.maxAttempts) {
-    const delay = RETRY_DELAYS_MS[Math.min(job.attempt - 1, RETRY_DELAYS_MS.length - 1)]!;
+  if (!circuitExpired && !err.permanent && job.attempt < job.maxAttempts) {
+    const delay = retryDelayMs(job.attempt);
     await ProcessingJob.updateOne(owned, { $set: { status: "QUEUED", nextAttemptAt: new Date(at.getTime() + delay), errorCode: err.code, errorMessageKey: `ai.error.${err.code}` }, $unset: { lockedBy: 1, leaseUntil: 1 }, $inc: { version: 1 } });
     return;
   }
