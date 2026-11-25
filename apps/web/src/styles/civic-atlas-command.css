@@ -609,14 +609,14 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.45rem;
-  min-height: 2.5rem;
-  padding: 0.5rem 0.9rem;
+  gap: 0.4rem;
+  min-height: 2.125rem;
+  padding: 0.35rem 0.75rem;
   border-radius: 0.5rem;
-  border: 1px solid rgba(255, 255, 255, 0.22);
-  background: rgba(255, 255, 255, 0.09);
-  color: #f8fafc;
-  font-size: 0.8125rem;
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #1e293b;
+  font-size: 0.75rem;
   font-weight: 600;
   line-height: 1.2;
   text-decoration: none;
@@ -625,6 +625,17 @@
 }
 
 .cac-header-btn:hover:not(:disabled) {
+  background: #f8fafc;
+  border-color: #94a3b8;
+}
+
+.cac-survey-header .cac-header-btn {
+  border-color: rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.09);
+  color: #f8fafc;
+}
+
+.cac-survey-header .cac-header-btn:hover:not(:disabled) {
   background: rgba(255, 255, 255, 0.16);
   border-color: rgba(255, 255, 255, 0.35);
 }
@@ -649,14 +660,14 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.45rem;
-  min-height: 2.5rem;
-  padding: 0.5rem 1rem;
+  gap: 0.4rem;
+  min-height: 2.125rem;
+  padding: 0.35rem 0.85rem;
   border-radius: 0.5rem;
   border: 1px solid #ff5b00;
   background: #ff5b00;
   color: #ffffff;
-  font-size: 0.8125rem;
+  font-size: 0.75rem;
   font-weight: 600;
   line-height: 1.2;
   text-decoration: none;

@@ -114,25 +114,48 @@ export function SeverityCards({
     },
   ];
 
+  const primaryCards = cards.filter((c) => !["NOT_ASSESSABLE", "STALE"].includes(c.id));
+  const secondaryChips = cards.filter((c) => ["NOT_ASSESSABLE", "STALE"].includes(c.id));
+
   return (
-    <DashboardKpiGrid columns={8} label="Portfolio Risk Metrics">
-      {cards.map((c) => (
-        <DashboardKpiCard
-          key={c.id}
-          label={c.label}
-          value={c.count}
-          tone={c.tone}
-          active={c.active}
-          badge={
-            c.glyph ? (
-              <span className="font-mono text-xs text-slate-500 leading-none" aria-hidden="true">
-                {c.glyph}
-              </span>
-            ) : undefined
-          }
-          onClick={c.onClick}
-        />
-      ))}
-    </DashboardKpiGrid>
+    <div className="space-y-2.5">
+      <DashboardKpiGrid columns={6} label="Portfolio Risk Metrics">
+        {primaryCards.map((c) => (
+          <DashboardKpiCard
+            key={c.id}
+            label={c.label}
+            value={c.count}
+            tone={c.tone}
+            active={c.active}
+            badge={
+              c.glyph ? (
+                <span className="font-mono text-xs text-slate-500 leading-none" aria-hidden="true">
+                  {c.glyph}
+                </span>
+              ) : undefined
+            }
+            onClick={c.onClick}
+          />
+        ))}
+      </DashboardKpiGrid>
+      <div className="flex flex-wrap items-center gap-2">
+        {secondaryChips.map((c) => (
+          <button
+            key={c.id}
+            type="button"
+            aria-pressed={c.active}
+            onClick={c.onClick}
+            className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold transition-colors ${
+              c.active
+                ? "border-[#ff5b00] bg-[#fff7ed] text-[#9a3412]"
+                : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+            }`}
+          >
+            <span>{c.label}</span>
+            <span className="font-mono tabular-nums">{c.count}</span>
+          </button>
+        ))}
+      </div>
+    </div>
   );
 }

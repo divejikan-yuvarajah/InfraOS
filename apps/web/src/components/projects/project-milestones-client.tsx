@@ -31,7 +31,7 @@ import {
   type MilestoneRecord,
 } from "@/lib/projects/milestones-api";
 import { projectCoreQueryKey } from "@/lib/projects/overview-format";
-import { ProjectRecordNav, RecordContext } from "./project-record-nav";
+import { ProjectRecordNav } from "./project-record-nav";
 
 const WRITE_ROLES = new Set(["SUPER_ADMIN", "GOV_ADMIN", "AGENCY_OFFICER", "PROJECT_MANAGER"]);
 const ELIGIBLE = new Set(["APPROVED", "ACTIVE"]);
@@ -190,8 +190,8 @@ export function ProjectMilestonesClient({ id }: { id: string }) {
     <StaffWorkspaceShell
       title={copy.title}
       wide
-      context={<RecordContext id={id} locale={locale} current={copy.title} />}
-    >
+      hidePageHeader
+    ><div className="max-w-[1600px] mx-auto px-4 sm:px-gutter-desktop py-4 pb-10">
       <ProjectRecordNav id={id} locale={locale} />
 
       <div className="mt-4 space-y-6">
@@ -701,6 +701,6 @@ export function ProjectMilestonesClient({ id }: { id: string }) {
           </div>
         ) : null}
       </div>
-    </StaffWorkspaceShell>
+    </div></StaffWorkspaceShell>
   );
 }

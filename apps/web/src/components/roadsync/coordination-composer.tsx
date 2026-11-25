@@ -273,13 +273,13 @@ export function CoordinationComposer({ conflictId, prefill }: { conflictId: stri
   if (dossier.isError || !d) return <StaffWorkspaceShell title={c.title} wide><div className="rs-state" role="alert"><p>{copy.room.notFound}</p><Link className="rs-btn" href="/roadsync/conflicts">{copy.room.back}</Link></div></StaffWorkspaceShell>;
 
   return (
-    <StaffWorkspaceShell title={c.title} description={`${d.conflictNo}`} wide>
+    <StaffWorkspaceShell title={c.title} description={`${d.conflictNo}`} wide hidePageHeader><div className="max-w-[1600px] mx-auto px-4 sm:px-gutter-desktop py-4 pb-10">
       <CommandHeader
         eyebrow={`RoadSync · ${d.conflictNo}`}
         title={c.title}
         sourceKind="live"
         secondaryActions={
-          <Link className="inline-flex min-h-[44px] items-center rounded-lg border border-white/25 px-3.5 py-2 text-xs font-semibold text-white hover:bg-white/10" href={`/roadsync/conflicts/${conflictId}`}>
+          <Link className="cac-header-btn" href={`/roadsync/conflicts/${conflictId}`}>
             ← {copy.room.openConflict}
           </Link>
         }
@@ -340,6 +340,6 @@ export function CoordinationComposer({ conflictId, prefill }: { conflictId: stri
           </Dialog.Portal>
         </Dialog.Root>
       </div>
-    </StaffWorkspaceShell>
+    </div></StaffWorkspaceShell>
   );
 }

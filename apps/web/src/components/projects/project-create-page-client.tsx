@@ -8,7 +8,6 @@ import { toast } from "sonner";
 
 import { StaffWorkspaceShell } from "@/components/auth/staff-workspace-shell";
 import { CommandHeader } from "@/components/common/civic-atlas-primitives";
-import { WorkspaceContext } from "@/components/projects/project-record-nav";
 import { fetchAgencies } from "@/lib/admin-agencies/api";
 import { createProject } from "@/lib/projects/api";
 import { classifyCreateError, type CreateFailure } from "@/lib/projects/create-outcome";
@@ -65,7 +64,7 @@ export function ProjectCreatePageClient() {
   });
 
   return (
-    <StaffWorkspaceShell title={copy.createTitle} description={copy.createSubtitle} wide context={<WorkspaceContext locale={locale} current={copy.createTitle} projects />}>
+    <StaffWorkspaceShell title={copy.createTitle} description={copy.createSubtitle} wide hidePageHeader><div className="max-w-[1600px] mx-auto px-4 sm:px-gutter-desktop py-4 pb-10">
       <CommandHeader
         eyebrow="ProjectTrace · New Record"
         title={copy.createTitle}
@@ -73,7 +72,7 @@ export function ProjectCreatePageClient() {
         sourceKind="live"
         sourceLabel="Draft autosave"
         secondaryActions={
-          <Link href="/projects" className="inline-flex min-h-[44px] items-center rounded-lg border border-white/25 px-3.5 py-2 text-xs font-semibold text-white hover:bg-white/10">
+          <Link href="/projects" className="cac-header-btn">
             {copy.cancel}
           </Link>
         }
@@ -97,6 +96,6 @@ export function ProjectCreatePageClient() {
           await mutation.mutateAsync(body);
         }}
       />
-    </StaffWorkspaceShell>
+    </div></StaffWorkspaceShell>
   );
 }

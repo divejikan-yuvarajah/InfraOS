@@ -29,7 +29,7 @@ import {
   type TimelineGroup,
   type TimelineViewEntry,
 } from "@/lib/projects/timeline-view";
-import { ProjectRecordNav, RecordContext } from "./project-record-nav";
+import { ProjectRecordNav } from "./project-record-nav";
 
 function useAuthPart(read: () => string): string {
   return useSyncExternalStore(subscribeAuth, read, () => "");
@@ -85,8 +85,8 @@ export function ProjectTimelineClient({ id }: { id: string }) {
       title={copy.title}
       description={copy.description}
       wide
-      context={<RecordContext id={id} locale={locale} current={copy.title} />}
-    >
+      hidePageHeader
+    ><div className="max-w-[1600px] mx-auto px-4 sm:px-gutter-desktop py-4 pb-10">
       <ProjectRecordNav id={id} locale={locale} />
 
       <div className="mt-4 space-y-6">
@@ -499,6 +499,6 @@ export function ProjectTimelineClient({ id }: { id: string }) {
           </div>
         ) : null}
       </div>
-    </StaffWorkspaceShell>
+    </div></StaffWorkspaceShell>
   );
 }
